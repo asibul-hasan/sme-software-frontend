@@ -1,25 +1,25 @@
 {
-  "name": "sme-software-frontend",
+  "name": "web-support",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/sme-software-frontend/src",
+  "sourceRoot": "apps/web-support/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/sme-software-frontend",
-        "browser": "apps/sme-software-frontend/src/main.ts",
-        "tsConfig": "apps/sme-software-frontend/tsconfig.app.json",
+        "outputPath": "dist/apps/web-support",
+        "browser": "apps/web-support/src/main.ts",
+        "tsConfig": "apps/web-support/tsconfig.app.json",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/sme-software-frontend/public"
+            "input": "apps/web-support/public"
           }
         ],
-        "styles": ["apps/sme-software-frontend/src/styles.css"]
+        "styles": ["apps/web-support/src/styles.css"]
       },
       "configurations": {
         "production": {
@@ -50,10 +50,10 @@
       "executor": "@angular/build:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "sme-software-frontend:build:production"
+          "buildTarget": "web-support:build:production"
         },
         "development": {
-          "buildTarget": "sme-software-frontend:build:development"
+          "buildTarget": "web-support:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -65,8 +65,8 @@
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "sme-software-frontend:build",
-        "staticFilePath": "dist/apps/sme-software-frontend/browser",
+        "buildTarget": "web-support:build",
+        "staticFilePath": "dist/apps/web-support/browser",
         "spa": true
       }
     }
