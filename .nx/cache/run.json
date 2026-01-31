@@ -1,0 +1,9 @@
+{
+  "run": {
+    "command": "nx serve web-client",
+    "startTime": "2026-01-31T13:48:36.353Z",
+    "endTime": "2026-01-31T13:48:37.753Z",
+    "inner": false
+  },
+  "tasks": []
+}
