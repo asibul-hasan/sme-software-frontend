@@ -1,0 +1,38 @@
+// Buttons
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius-md;
+  font-weight: 500;
+  transition: all $transition-base;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.25);
+  }
+}
+
+.btn-primary {
+  @include button-variant($primary-color);
+}
+
+.btn-secondary {
+  @include button-variant($secondary-color);
+}
+
+.btn-success {
+  @include button-variant($success-color);
+}
+
+.btn-danger {
+  @include button-variant($danger-color);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+}

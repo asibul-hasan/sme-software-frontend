@@ -1,0 +1,58 @@
+@use 'variables' as *;
+
+// Themes
+// Light Theme
+[data-theme='light'] {
+  --bg-primary: #{$light-bg};
+  --bg-secondary: #{$light-surface};
+  --text-primary: #{$light-text};
+  --text-secondary: #{$light-text-secondary};
+  --border-color: #{$light-border};
+
+  --sidebar-bg: #2b3035;
+  --sidebar-text: #{$dark-text};
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active: rgba(255, 255, 255, 0.15);
+
+  --header-bg: #ffffff;
+  --header-text: #{$light-text};
+  --header-border: #{$light-border};
+
+  --card-bg: #ffffff;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Dark Theme
+[data-theme='dark'] {
+  --bg-primary: #{$dark-bg};
+  --bg-secondary: #{$dark-surface};
+  --text-primary: #{$dark-text};
+  --text-secondary: #{$dark-text-secondary};
+  --border-color: #{$dark-border};
+
+  --sidebar-bg: #{$dark-surface};
+  --sidebar-text: #{$dark-text};
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active: rgba(255, 255, 255, 0.15);
+
+  --header-bg: #{$dark-surface};
+  --header-text: #{$dark-text};
+  --header-border: #{$dark-border};
+
+  --card-bg: #{$dark-surface};
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+// Apply theme variables
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+}
+
+.card {
+  background-color: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}

@@ -1881,3 +1881,54 @@ Time for 'nx/core/project-json:createNodes' 6.744899999990594
 [NX v22.4.3 Daemon Server] - 2026-01-31T13:50:07.925Z - Old daemon __dirname: D:\app\erp\sme-software-frontend\node_modules\nx\src\daemon\server
 [NX v22.4.3 Daemon Server] - 2026-01-31T13:50:07.926Z - Current process.execPath: C:\nvm4w\nodejs\node.exe
 [NX v22.4.3 Daemon Server] - 2026-01-31T13:50:07.945Z - Started new daemon process in background
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.136Z - New daemon starting from: D:\app\erp\sme-software-frontend\node_modules\nx\src\daemon\server\server.js
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.142Z - New daemon __dirname: D:\app\erp\sme-software-frontend\node_modules\nx\src\daemon\server
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.142Z - New daemon nxVersion: 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.144Z - New daemon getInstalledNxVersion(): 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.157Z - [Server] Starting outdated check interval (20ms)
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.164Z - Started listening on: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\b69d6d262eaff5850106\d.sock
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.174Z - [WATCHER]: Subscribed to changes within: D:\app\erp\sme-software-frontend (native)
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:09.179Z - [NX-CONSOLE]: Pulling latest Nx (latest) to check console status...
+Fetching nx...
+[plugin-pool] spawned worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 18936, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-0-3178.2063.sock)
+[plugin-pool] spawned worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 14324, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-1-3193.6256.sock)
+[plugin-pool] spawned worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 4932, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-2-3211.5555.sock)
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 18936) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-0-3178.2063.sock
+[plugin-pool] connected to worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 18936) after 9 attempt(s)
+Time for 'plugin worker 18936 code loading' 46.792799999999986
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 18936) connected
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 4932) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-2-3211.5555.sock
+[plugin-pool] connected to worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 4932) after 11 attempt(s)
+[plugin-pool] connected to worker for "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 14324) after 12 attempt(s)
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 14324) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin14344-1-3193.6256.sock
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 4932) connected
+Time for 'plugin worker 4932 code loading' 50.934100000000015
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 14324) connected
+Time for 'plugin worker 14324 code loading' 46.24990000000001
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 4932) loaded successfully
+[plugin-pool] loaded plugin "nx/core/project-json" from worker (pid: 4932)
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 14324) loaded successfully
+[plugin-worker] "D:\app\erp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 18936) loaded successfully
+[plugin-pool] loaded plugin "nx/core/package-json" from worker (pid: 14324)
+[plugin-pool] loaded plugin "nx/js/dependencies-and-lockfile" from worker (pid: 18936)
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:12.088Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:12.089Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:12.089Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.5138000000000602
+Time for 'nx/core/project-json:createNodes' 0.5037999999999556
+Time for 'nx/core/package-json:createNodes' 1.9705000000000155
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:12.142Z - [SYNC]: collect registered sync generators
+Time for 'build typescript dependencies' 0.22939999999994143
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:42.877Z - [NX-CONSOLE]: Successfully pulled latest Nx to C:\Users\Asibul\AppData\Local\Temp\tmp-14344-SXCh4c09f3Cj
+[NX v22.4.4 Daemon Server] - 2026-01-31T13:50:46.856Z - [NX-CONSOLE]: Using local implementation (NX_USE_LOCAL=true or inner call)
+DEBUG nx::native::ide::install: Detected editor: VSCode
+DEBUG nx::native::ide::install: Checking if Nx Console extension is installed with: code.cmd --list-extensions
+DEBUG nx::native::ide::install: Nx Console extension is not installed
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:50:47.381Z - [NX-CONSOLE]: Console status check completed, shouldPrompt: false
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.202Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.208Z - [WATCHER]: 0 file(s) created or restored, 60 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.214Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.216Z - [WATCHER]: Stopping the watcher for D:\app\erp\sme-software-frontend (sources)
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.217Z - [WATCHER]: Stopping the watcher for D:\app\erp\sme-software-frontend (outputs)
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.219Z - [NX-CONSOLE]: Cleaning up latest Nx installation from C:\Users\Asibul\AppData\Local\Temp\tmp-14344-SXCh4c09f3Cj
+[NX v22.4.3 Daemon Server] - 2026-01-31T13:52:47.220Z - Server stopped because: "Stopping the daemon the set of ignored files changed (native)"
