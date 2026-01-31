@@ -1,1 +1,85 @@
 /* You can add global styles to this file, and also import other style files */
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// Import NGX Toastr
+@import 'ngx-toastr/toastr';
+
+// Import custom variables & mixins
+@import 'styles/variables';
+@import 'styles/mixins';
+@import 'styles/themes';
+@import 'styles/utilities';
+
+// Import component styles
+@import 'styles/components/buttons';
+@import 'styles/components/forms';
+@import 'styles/components/tables';
+@import 'styles/components/cards';
+
+// Global styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100%;
+  margin: 0;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--text-secondary);
+  }
+}
+
+// Loading spinner
+.spinner-container {
+  @include flex-center;
+  min-height: 200px;
+}
+
+// Animation utilities
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+// Print styles
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

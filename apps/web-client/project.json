@@ -14,12 +14,13 @@
         "browser": "apps/web-client/src/main.ts",
         "tsConfig": "apps/web-client/tsconfig.app.json",
         "assets": [
+          "apps/web-client/src/assets",
           {
             "glob": "**/*",
             "input": "apps/web-client/public"
           }
         ],
-        "styles": ["apps/web-client/src/styles.scss"]
+        "styles": ["apps/web-client/src/styles/styles.scss"]
       },
       "configurations": {
         "production": {

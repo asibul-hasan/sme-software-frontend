@@ -1,0 +1,102 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Utilities
+// Utility classes
+.flex-center {
+  @include flex-center;
+}
+
+.flex-between {
+  @include flex-between;
+}
+
+.flex-column {
+  @include flex-column;
+}
+
+.text-truncate-2 {
+  @include line-clamp(2);
+}
+
+.text-truncate-3 {
+  @include line-clamp(3);
+}
+
+.card-hover {
+  @include card-shadow(true);
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Spacing utilities
+.mt-xs {
+  margin-top: $spacing-xs !important;
+}
+.mt-sm {
+  margin-top: $spacing-sm !important;
+}
+.mt-md {
+  margin-top: $spacing-md !important;
+}
+.mt-lg {
+  margin-top: $spacing-lg !important;
+}
+.mt-xl {
+  margin-top: $spacing-xl !important;
+}
+
+.mb-xs {
+  margin-bottom: $spacing-xs !important;
+}
+.mb-sm {
+  margin-bottom: $spacing-sm !important;
+}
+.mb-md {
+  margin-bottom: $spacing-md !important;
+}
+.mb-lg {
+  margin-bottom: $spacing-lg !important;
+}
+.mb-xl {
+  margin-bottom: $spacing-xl !important;
+}
+
+.pt-xs {
+  padding-top: $spacing-xs !important;
+}
+.pt-sm {
+  padding-top: $spacing-sm !important;
+}
+.pt-md {
+  padding-top: $spacing-md !important;
+}
+.pt-lg {
+  padding-top: $spacing-lg !important;
+}
+.pt-xl {
+  padding-top: $spacing-xl !important;
+}
+
+.pb-xs {
+  padding-bottom: $spacing-xs !important;
+}
+.pb-sm {
+  padding-bottom: $spacing-sm !important;
+}
+.pb-md {
+  padding-bottom: $spacing-md !important;
+}
+.pb-lg {
+  padding-bottom: $spacing-lg !important;
+}
+.pb-xl {
+  padding-bottom: $spacing-xl !important;
+}

@@ -1,0 +1,56 @@
+// Cards
+.card {
+  border-radius: $border-radius-lg;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+
+  .card-header {
+    padding: 1rem 1.25rem;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .card-body {
+    padding: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .card-footer {
+    padding: 1rem 1.25rem;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+  }
+}
+
+.card-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: $border-radius-lg;
+    @include flex-center;
+    font-size: 1.5rem;
+  }
+
+  .stats-content {
+    flex: 1;
+
+    .stats-title {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .stats-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+}
