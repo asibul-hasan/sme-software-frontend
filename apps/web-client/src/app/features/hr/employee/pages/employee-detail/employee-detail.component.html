@@ -1,0 +1,125 @@
+
+<div class="page-container" *ngIf="employee">
+    <!-- Header / Profile Card -->
+    <mat-card class="profile-header-card">
+        <mat-card-content class="profile-content">
+            <div class="profile-main">
+                <img [src]="employee.photo_url" class="profile-avatar">
+                <div class="profile-info">
+                    <h1 class="profile-name">{{ employee.full_name }}</h1>
+                    <div class="profile-meta">
+                        <span class="designation">{{ employee.designation }}</span>
+                        <span class="separator">•</span>
+                        <span class="department">{{ employee.department }}</span>
+                    </div>
+                    <div class="profile-badges">
+                        <span class="status-badge" [ngClass]="employee.status.toLowerCase()">
+                            {{ employee.status }}
+                        </span>
+                        <span class="id-badge">ID: {{ employee.employee_id }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button mat-stroked-button color="primary" [routerLink]="['../../edit', employee.id]">
+                    <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-icon-button>
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- 360 View Tabs -->
+    <mat-tab-group class="detail-tabs" animationDuration="0ms">
+        
+        <!-- Overview Tab -->
+        <mat-tab label="Overview">
+            <div class="tab-content-grid">
+                <!-- Personal Info Card -->
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Personal Information</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <mat-list>
+                            <mat-list-item>
+                                <span matListItemTitle>Father's Name</span>
+                                <span matListItemLine>Mr. Doe Sr.</span>
+                            </mat-list-item>
+                            <mat-list-item>
+                                <span matListItemTitle>Date of Birth</span>
+                                <span matListItemLine>01 Jan 1990</span>
+                            </mat-list-item>
+                            <mat-list-item>
+                                <span matListItemTitle>Gender</span>
+                                <span matListItemLine>Male</span>
+                            </mat-list-item>
+                        </mat-list>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Contact Info Card -->
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Contact</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <mat-list>
+                            <mat-list-item>
+                                <mat-icon matListItemIcon>email</mat-icon>
+                                <span matListItemTitle>{{ employee.email }}</span>
+                            </mat-list-item>
+                            <mat-list-item>
+                                <mat-icon matListItemIcon>phone</mat-icon>
+                                <span matListItemTitle>{{ employee.mobile }}</span>
+                            </mat-list-item>
+                            <mat-list-item>
+                                <mat-icon matListItemIcon>location_on</mat-icon>
+                                <span matListItemTitle>Dhaka, Bangladesh</span>
+                            </mat-list-item>
+                        </mat-list>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </mat-tab>
+
+        <!-- Attendance Tab -->
+        <mat-tab label="Attendance">
+            <div class="placeholder-tab">
+                <mat-icon class="placeholder-icon">event_available</mat-icon>
+                <h3>Attendance Summary</h3>
+                <p>Monthly attendance view will be displayed here.</p>
+            </div>
+        </mat-tab>
+
+        <!-- Leave Tab -->
+        <mat-tab label="Leave">
+            <div class="placeholder-tab">
+                <mat-icon class="placeholder-icon">event_busy</mat-icon>
+                <h3>Leave Balance</h3>
+                <p>Leave history and balances will be displayed here.</p>
+            </div>
+        </mat-tab>
+
+        <!-- Payroll Tab -->
+        <mat-tab label="Payroll">
+             <div class="placeholder-tab">
+                <mat-icon class="placeholder-icon">payments</mat-icon>
+                <h3>Salary & Payslips</h3>
+                <p>Salary structure and payslip history will be displayed here.</p>
+            </div>
+        </mat-tab>
+
+        <!-- Documents Tab -->
+        <mat-tab label="Documents">
+             <div class="placeholder-tab">
+                <mat-icon class="placeholder-icon">folder</mat-icon>
+                <h3>Employee Documents</h3>
+                <p>Uploaded contracts, IDs, and certificates.</p>
+            </div>
+        </mat-tab>
+
+    </mat-tab-group>
+</div>

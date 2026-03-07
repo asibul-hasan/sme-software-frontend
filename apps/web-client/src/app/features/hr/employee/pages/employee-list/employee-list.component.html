@@ -1,0 +1,122 @@
+
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">{{ 'HR.EMPLOYEE_MANAGEMENT.LIST' | translate }}</h1>
+        <div class="header-actions">
+            <button mat-raised-button color="primary" routerLink="../create">
+                <mat-icon>add</mat-icon>
+                {{ 'COMMON.CREATE' | translate }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <mat-card class="filter-card">
+        <mat-card-content>
+            <div class="filter-row">
+                <mat-form-field appearance="outline" class="search-field">
+                    <mat-label>{{ 'COMMON.SEARCH' | translate }}</mat-label>
+                    <mat-icon matPrefix>search</mat-icon>
+                    <input matInput [formControl]="searchControl" placeholder="Name, ID, Designation...">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'COMMON.BRANCH' | translate }}</mat-label>
+                    <mat-select [formControl]="branchControl">
+                        <mat-option [value]="null">{{ 'COMMON.ALL' | translate }}</mat-option>
+                        <mat-option *ngFor="let branch of branches()" [value]="branch.id">
+                            {{ branch.name }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'COMMON.STATUS' | translate }}</mat-label>
+                    <mat-select [formControl]="statusControl">
+                        <mat-option [value]="null">{{ 'COMMON.ALL' | translate }}</mat-option>
+                        <mat-option value="Active">Active</mat-option>
+                        <mat-option value="Inactive">Inactive</mat-option>
+                        <mat-option value="Terminated">Terminated</mat-option>
+                        <mat-option value="Resigned">Resigned</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Table -->
+    <div class="table-container mat-elevation-z2">
+        <table mat-table [dataSource]="dataSource" matSort>
+
+            <!-- Employee ID -->
+            <ng-container matColumnDef="employee_id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+                <td mat-cell *matCellDef="let element"> {{element.employee_id}} </td>
+            </ng-container>
+
+            <!-- Name -->
+            <ng-container matColumnDef="full_name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                <td mat-cell *matCellDef="let element"> 
+                    <div class="employee-info">
+                        <img [src]="element.photo_url || 'assets/images/default-avatar.png'" class="avatar-sm">
+                        <span>{{element.full_name}}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Designation -->
+            <ng-container matColumnDef="designation">
+                <th mat-header-cell *matHeaderCellDef> Designation </th>
+                <td mat-cell *matCellDef="let element"> {{element.designation?.name || '-'}} </td>
+            </ng-container>
+
+            <!-- Primary Branch -->
+            <ng-container matColumnDef="branch">
+                <th mat-header-cell *matHeaderCellDef> Branch </th>
+                <td mat-cell *matCellDef="let element"> {{element.primary_branch?.name || '-'}} </td>
+            </ng-container>
+
+            <!-- Mobile -->
+            <ng-container matColumnDef="mobile">
+                <th mat-header-cell *matHeaderCellDef> Mobile </th>
+                <td mat-cell *matCellDef="let element"> {{element.mobile}} </td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef> Status </th>
+                <td mat-cell *matCellDef="let element">
+                    <span class="status-badge" [ngClass]="element.status?.toLowerCase()">
+                        {{element.status}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item [routerLink]="['../detail', element.id]">
+                            <mat-icon>visibility</mat-icon>
+                            <span>{{ 'COMMON.VIEW' | translate }}</span>
+                        </button>
+                        <button mat-menu-item [routerLink]="['../edit', element.id]">
+                            <mat-icon>edit</mat-icon>
+                            <span>{{ 'COMMON.EDIT' | translate }}</span>
+                        </button>
+                    </mat-menu>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+</div>

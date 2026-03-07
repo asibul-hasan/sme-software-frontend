@@ -1,1 +1,150 @@
-{}
+{
+  "aidlyErp": "Aidly ERP",
+  "dashboard": "Dashboard",
+  "hr": "HR",
+  "employee": "Employee",
+  "attendance": "Attendance",
+  "leave": "Leave",
+
+  "inventory": "Inventory",
+  "product": "Product",
+  "category": "Category",
+  "stock": "Stock",
+
+  "sales": "Sales",
+  "invoice": "Invoice",
+  "customer": "Customer",
+
+  "settings": "Settings",
+  "company": "Company",
+  "branch": "Branch",
+  "users": "Users",
+  "designation": "Designation",
+
+  "auth": "Authentication",
+  "login": "Login",
+
+  "reports": "Reports",
+
+  "name": "Name",
+  "email": "Email",
+  "password": "Password",
+  "phone": "Phone",
+  "address": "Address",
+
+  "rememberMe": "Remember Me",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "forgotPassword": "Forgot Password",
+  "noAccount": "Don't have an account?",
+  "allSystemsOperational": "All systems operational",
+  "companyAndBranchSetup": "Company & Branch Setup",
+  "financialYearSetup": "Financial Year Setup",
+  "currencySetup": "Currency Setup",
+  "vatOrTaxSetup": "VAT / Tax Setup",
+  "userManagement": "User Management",
+  "roleManagement": "Role Management",
+  "rolePermissionMatrix": "Role Permission Matrix",
+  "userBranchMapping": "User Branch Mapping",
+  "activityLogViewer": "Activity Log Viewer",
+  "dynamicMenuBuilder": "Dynamic Menu Builder",
+  "productMasterSetup": "Product Master Setup",
+  "barcodeGenerator": "Barcode Generator",
+  "openingStockEntry": "Opening Stock Entry",
+  "stockAdjustment": "Stock Adjustment",
+  "posSalesScreen": "POS Sales Screen",
+  "draftOrHoldSales": "Draft / Hold Sales",
+  "posClosing": "POS Closing",
+  "customerManagement": "Customer Management",
+  "customerDueCollection": "Customer Due Collection",
+  "supplierManagement": "Supplier Management",
+  "purchaseOrder": "Purchase Order",
+  "purchaseInvoice": "Purchase Invoice",
+  "purchaseReturn": "Purchase Return",
+  "supplierPayment": "Supplier Payment",
+
+  "chartOfAccountsSetup": "Chart of Accounts Setup",
+  "accountHeadMapping": "Account Head Mapping",
+  "openingBalanceEntry": "Opening Balance Entry",
+
+  "cashVoucher": "Cash Voucher",
+  "bankVoucher": "Bank Voucher",
+  "journalVoucher": "Journal Voucher",
+  "contraVoucher": "Contra Voucher",
+
+  "expenseCategory": "Expense Category",
+  "expenseEntry": "Expense Entry",
+
+  "warehouseSetup": "Warehouse Setup",
+  "rackOrShelfSetup": "Rack / Shelf Setup",
+  "stockTransfer": "Stock Transfer",
+  "batchAndExpiryManagement": "Batch & Expiry Management",
+  "reorderLevelSetup": "Reorder Level Setup",
+
+  "branchWiseLedger": "Branch-wise Ledger",
+  "interBranchTransfer": "Inter-Branch Transfer",
+  "consolidatedReportSetup": "Consolidated Report Setup",
+
+  "employeeManagement": "Employee Management",
+  "departmentAndDesignationSetup": "Department & Designation Setup",
+  "shiftSetup": "Shift Setup",
+
+  "manualAttendance": "Manual Attendance",
+  "deviceSyncAttendance": "Device Sync Attendance",
+  "attendanceAdjustment": "Attendance Adjustment",
+
+  "salaryStructureSetup": "Salary Structure Setup",
+  "salaryProcessing": "Salary Processing",
+  "salarySheet": "Salary Sheet",
+  "payslipGenerator": "Payslip Generator",
+
+  "salesReportsDashboard": "Sales Reports Dashboard",
+  "inventoryReports": "Inventory Reports",
+  "financialStatements": "Financial Statements",
+
+  "companyConfiguration": "Company Configuration",
+  "userAndSecurity": "User & Security",
+  "menuBuilder": "Menu Builder",
+
+  "productManagement": "Product Management",
+  "stockInitialization": "Stock Initialization",
+
+  "pos": "Point of Sale (POS)",
+
+  "supplier": "Supplier",
+  "purchaseWorkflow": "Purchase Workflow",
+
+  "chartOfAccounts": "Chart of Accounts",
+  "voucherSystem": "Voucher System",
+
+  "expense": "Expense",
+
+  "warehouse": "Warehouse",
+  "batchControl": "Batch Control",
+  "reorderControl": "Reorder Control",
+
+  "branchFinance": "Branch Finance",
+
+  "employeeSetup": "Employee Setup",
+  "payroll": "Payroll",
+
+  "salesReports": "Sales Reports",
+  "reporting": "Reporting",
+  "financialReports": "Financial Reports",
+
+  "systemAdministration": "System Administration",
+  "systemConfiguration": "System Configuration",
+  "inventoryManagement": "Inventory Management",
+  "warehouseManagement": "Warehouse Management",
+  "stockControl": "Stock Control",
+  "productStockManagement": "Product & Stock Management",
+  "salesPos": "Sales & POS",
+  "procurement": "Procurement",
+  "accountingFinance": "Accounting & Finance",
+  "inventoryOperations": "Inventory Operations",
+  "financialManagement": "Financial Management",
+  "humanResources": "Human Resources",
+  "reportsAnalytics": "Reports & Analytics",
+  "procurementManagement": "Procurement Management",
+  "salesAndPos": "Sales & POS"
+}

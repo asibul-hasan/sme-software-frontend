@@ -1,1 +1,27 @@
-<p>main-layout works!</p>
+<div
+  class="main-layout h-100 w-100 position-relative"
+  style="background: var(--bg-primary)"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+>
+  <!-- Sidebar -->
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (toggleCollapse)="toggleSidebar()"
+  ></app-sidebar>
+
+  <!-- Header -->
+  <app-header
+    [sidebarCollapsed]="sidebarCollapsed()"
+    (toggleSidebar)="toggleSidebar()"
+    (themeToggled)="onThemeToggle($event)"
+  >
+  </app-header>
+
+  <!-- Main Content Area -->
+  <main class="main-content position-relative z-1">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

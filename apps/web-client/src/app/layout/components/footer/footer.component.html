@@ -1,1 +1,54 @@
-<p>footer works!</p>
+<footer
+  class="app-footer d-flex align-items-center justify-content-between px-4 flex-wrap gap-2"
+>
+  <div class="d-flex align-items-center gap-2">
+    <span class="fw-bolder" style="letter-spacing: -0.02em">
+      <span style="color: var(--indigo); font-size: 14px">A</span
+      ><span style="color: var(--text-2); font-size: 12px">IDLY</span>
+    </span>
+    <span style="color: var(--border); font-size: 14px">|</span>
+    <span
+      class="font-monospace px-2 rounded-pill"
+      style="
+        font-size: 10px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        background: rgba(var(--indigo-rgb), 0.1);
+        border: 1px solid rgba(var(--indigo-rgb), 0.2);
+        color: var(--indigo);
+      "
+      >ERP v2025.1</span
+    >
+  </div>
+
+  <div class="flex-grow-1 text-center">
+    <span style="color: var(--text); font-size: 11px">
+      © {{ currentYear }} Infoaidtech. All rights reserved.
+    </span>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <span
+      class="d-flex align-items-center gap-1 fw-medium"
+      style="color: var(--emerald); font-size: 11px"
+    >
+      <span class="status-dot flex-shrink-0"></span>
+      {{ 'allSystemsOperational' | translate }}
+    </span>
+    <span style="color: var(--border); font-size: 14px">|</span>
+    <a
+      class="text-decoration-none footer-link"
+      style="font-size: 11px; color: var(--text)"
+      href="#"
+      (click)="onHelp($event)"
+      >Help</a
+    >
+    <a
+      class="text-decoration-none footer-link"
+      style="font-size: 11px; color: var(--text)"
+      href="#"
+      (click)="onPrivacy($event)"
+      >Privacy</a
+    >
+  </div>
+</footer>

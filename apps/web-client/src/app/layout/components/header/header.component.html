@@ -1,1 +1,91 @@
-<p>header works!</p>
+<header class="topbar d-flex align-items-center px-4 gap-2">
+  <!-- Left: Breadcrumb -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0">
+    <!-- Hamburger toggle for mobile / sidebar collapse -->
+    <button
+      class="top-btn me-1 d-flex justify-content-center align-items-center"
+      (click)="onToggleSidebar()"
+      title="Toggle Sidebar"
+    >
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+        >menu</mat-icon
+      >
+    </button>
+
+    <div class="d-flex align-items-center gap-1 text-nowrap overflow-hidden">
+      <ng-container
+        *ngFor="let crumb of breadcrumbs(); let last = last; let first = first"
+      >
+        <ng-container *ngIf="!last">
+          <span class="crumb-link" [routerLink]="crumb.url">{{
+            crumb.label | translate
+          }}</span>
+          <span class="sep">›</span>
+        </ng-container>
+        <ng-container *ngIf="last">
+          <span class="current">{{ crumb.label | translate }}</span>
+          <span class="form-chip" *ngIf="formCode()">{{ formCode() }}</span>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <!-- AI Assistant Pill -->
+    <!-- <div class="ai-pill" (click)="onAiClick()" *ngIf="showAiPill()">
+      <span class="ai-dot ai-dot-blink"></span>
+      <span>AI Assistant</span>
+    </div> -->
+
+    <!-- Search -->
+    <!-- <button class="top-btn" title="Search" (click)="onSearch()">
+      <mat-icon style="font-size:17px;width:17px;height:17px;">search</mat-icon>
+    </button> -->
+
+    <!-- Notifications -->
+    <button class="top-btn" title="Notifications" (click)="onNotifications()">
+      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
+        >notifications</mat-icon
+      >
+      <span class="notif-badge" *ngIf="notificationCount() > 0"></span>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="top-btn" title="Toggle Theme" (click)="onToggleTheme()">
+      <mat-icon style="font-size: 17px; width: 17px; height: 17px">
+        {{ isDark() ? 'light_mode' : 'dark_mode' }}
+      </mat-icon>
+    </button>
+
+    <!-- Language -->
+    <button class="top-btn" title="Language" (click)="onLanguage()">
+      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
+        >translate</mat-icon
+      >
+    </button>
+
+    <!-- User Card -->
+    <div
+      class="user-card d-flex align-items-center gap-2"
+      (click)="onUserMenu()"
+    >
+      <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
+      <div class="user-info d-none d-md-block">
+        <div class="user-name">{{ userName() }}</div>
+        <div class="user-role">{{ userRole() }}</div>
+      </div>
+      <mat-icon
+        style="
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+          color: var(--text-3);
+          margin-left: 2px;
+        "
+      >
+        expand_more
+      </mat-icon>
+    </div>
+  </div>
+</header>

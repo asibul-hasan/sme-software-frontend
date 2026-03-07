@@ -1,10 +1,54 @@
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
+  importProvidersFrom,
+  APP_INITIALIZER
 } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { appRoutes } from './app.routes';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
+import { provideToastr } from 'ngx-toastr';
+
+import { routes } from './app.routes';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { AuthService } from './core/services/auth.service';
+
+export function HttpLoaderFactory() {
+  return new TranslateHttpLoader();
+}
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideBrowserGlobalErrorListeners(), provideRouter(appRoutes)],
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideRouter(routes),
+    provideAnimations(),
+    provideToastr(), // Toastr providers
+    provideHttpClient(withInterceptorsFromDi()),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: AuthService) => () => auth.initialize(),
+      deps: [AuthService],
+      multi: true
+    },
+    {
+      provide: TRANSLATE_HTTP_LOADER_CONFIG,
+      useValue: {
+        prefix: './assets/i18n/',
+        suffix: '.json'
+      }
+    },
+    importProvidersFrom(TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory
+      }
+    })),
+  ],
 };

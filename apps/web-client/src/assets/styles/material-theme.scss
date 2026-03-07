@@ -1,0 +1,107 @@
+@use '@angular/material' as mat;
+
+// Include the common styles for Angular Material
+@include mat.core();
+
+// Define custom color palettes
+$primary-palette: (
+    50: #e3f2fd,
+    100: #bbdefb,
+    200: #90caf9,
+    300: #64b5f6,
+    400: #42a5f5,
+    500: #0d6efd,
+    600: #1e88e5,
+    700: #1976d2,
+    800: #1565c0,
+    900: #0d47a1,
+    A100: #82b1ff,
+    A200: #448aff,
+    A400: #2979ff,
+    A700: #2962ff,
+    contrast: (50: rgba(black, 0.87),
+        100: rgba(black, 0.87),
+        200: rgba(black, 0.87),
+        300: rgba(black, 0.87),
+        400: rgba(black, 0.87),
+        500: white,
+        600: white,
+        700: white,
+        800: white,
+        900: white,
+        A100: rgba(black, 0.87),
+        A200: white,
+        A400: white,
+        A700: white,
+    )
+);
+
+$accent-palette: (
+    50: #e8f5e9,
+    100: #c8e6c9,
+    200: #a5d6a7,
+    300: #81c784,
+    400: #66bb6a,
+    500: #198754,
+    600: #43a047,
+    700: #388e3c,
+    800: #2e7d32,
+    900: #1b5e20,
+    A100: #b9f6ca,
+    A200: #69f0ae,
+    A400: #00e676,
+    A700: #00c853,
+    contrast: (50: rgba(black, 0.87),
+        100: rgba(black, 0.87),
+        200: rgba(black, 0.87),
+        300: rgba(black, 0.87),
+        400: rgba(black, 0.87),
+        500: white,
+        600: white,
+        700: white,
+        800: white,
+        900: white,
+        A100: rgba(black, 0.87),
+        A200: rgba(black, 0.87),
+        A400: rgba(black, 0.87),
+        A700: rgba(black, 0.87),
+    )
+);
+
+// Define the light theme
+$light-primary: mat.m2-define-palette($primary-palette, 500);
+$light-accent: mat.m2-define-palette($accent-palette, 500);
+$light-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+$light-theme: mat.m2-define-light-theme((
+            color: (
+                primary: $light-primary,
+                accent: $light-accent,
+                warn: $light-warn,
+            ),
+            typography: mat.m2-define-typography-config(),
+            density: 0,
+        ));
+
+// Define the dark theme
+$dark-primary: mat.m2-define-palette($primary-palette, 500);
+$dark-accent: mat.m2-define-palette($accent-palette, 500);
+$dark-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+$dark-theme: mat.m2-define-dark-theme((
+            color: (
+                primary: $dark-primary,
+                accent: $dark-accent,
+                warn: $dark-warn,
+            ),
+            typography: mat.m2-define-typography-config(),
+            density: 0,
+        ));
+
+// Apply the light theme by default
+@include mat.all-component-themes($light-theme);
+
+// Apply the dark theme when data-theme="dark"
+[data-theme='dark'] {
+    @include mat.all-component-colors($dark-theme);
+}

@@ -1,0 +1,219 @@
+
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">{{ isEditMode ? 'Edit Employee' : 'Create Employee' }}</h1>
+        <div class="header-actions">
+            <button mat-button routerLink="../list">
+                <mat-icon>arrow_back</mat-icon>
+                {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button mat-raised-button color="primary" (click)="onSubmit()">
+                <mat-icon>save</mat-icon>
+                {{ 'COMMON.SAVE' | translate }}
+            </button>
+        </div>
+    </div>
+
+<div class="row mb-3">
+<div class="col">
+<input id="empId" class="form-control" placeholder="Employee ID">
+</div>
+<div class="col">
+<input id="empName" class="form-control" placeholder="Full Name">
+</div>
+</div>
+
+    <form [formGroup]="employeeForm">
+        <mat-tab-group animationDuration="0ms" class="employee-tabs">
+            <!-- Tab 1: Personal Info -->
+            <mat-tab label="Personal Info">
+                <div class="tab-content" formGroupName="personalInfo">
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Full Name *</mat-label>
+                            <input matInput formControlName="full_name" placeholder="John Doe">
+                            <mat-error>Name is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Father's Name</mat-label>
+                            <input matInput formControlName="father_name">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Mother's Name</mat-label>
+                            <input matInput formControlName="mother_name">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Date of Birth</mat-label>
+                            <input matInput [matDatepicker]="dobPicker" formControlName="dob">
+                            <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #dobPicker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Gender</mat-label>
+                            <mat-select formControlName="gender">
+                                <mat-option value="Male">Male</mat-option>
+                                <mat-option value="Female">Female</mat-option>
+                                <mat-option value="Other">Other</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Blood Group</mat-label>
+                            <mat-select formControlName="blood_group">
+                                <mat-option value="A+">A+</mat-option>
+                                <mat-option value="A-">A-</mat-option>
+                                <mat-option value="B+">B+</mat-option>
+                                <mat-option value="B-">B-</mat-option>
+                                <mat-option value="O+">O+</mat-option>
+                                <mat-option value="O-">O-</mat-option>
+                                <mat-option value="AB+">AB+</mat-option>
+                                <mat-option value="AB-">AB-</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        
+                        <mat-form-field appearance="outline">
+                            <mat-label>National ID</mat-label>
+                            <input matInput formControlName="nid">
+                        </mat-form-field>
+                        
+                        <mat-form-field appearance="outline">
+                            <mat-label>Marital Status</mat-label>
+                            <mat-select formControlName="marital_status">
+                                <mat-option value="Single">Single</mat-option>
+                                <mat-option value="Married">Married</mat-option>
+                                <mat-option value="Divorced">Divorced</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Tab 2: Contact Info -->
+            <mat-tab label="Contact Info">
+                <div class="tab-content" formGroupName="contactInfo">
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Mobile Number *</mat-label>
+                            <input matInput formControlName="mobile">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Email Address</mat-label>
+                            <input matInput formControlName="email">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Emergency Contact</mat-label>
+                            <input matInput formControlName="emergency_contact">
+                        </mat-form-field>
+                        
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Present Address</mat-label>
+                            <textarea matInput formControlName="present_address" rows="3"></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Permanent Address</mat-label>
+                            <textarea matInput formControlName="permanent_address" rows="3"></textarea>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Tab 3: Employment -->
+            <mat-tab label="Employment">
+                <div class="tab-content" formGroupName="employmentInfo">
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Designation *</mat-label>
+                            <!-- Replace with actual Designation Select -->
+                            <mat-select formControlName="designation_id">
+                                <mat-option [value]="1">Manager</mat-option>
+                                <mat-option [value]="2">Developer</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Department *</mat-label>
+                             <!-- Replace with actual Department Select -->
+                            <mat-select formControlName="department_id">
+                                <mat-option [value]="1">IT</mat-option>
+                                <mat-option [value]="2">HR</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Primary Branch *</mat-label>
+                            <mat-select formControlName="primary_branch_id">
+                                <mat-option [value]="1">Dhaka</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Joining Date *</mat-label>
+                            <input matInput [matDatepicker]="joinPicker" formControlName="join_date">
+                            <mat-datepicker-toggle matSuffix [for]="joinPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #joinPicker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Employment Type</mat-label>
+                            <mat-select formControlName="employment_type">
+                                <mat-option value="Permanent">Permanent</mat-option>
+                                <mat-option value="Probation">Probation</mat-option>
+                                <mat-option value="Contractual">Contractual</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+            
+            <!-- Tab 4: Financial -->
+            <mat-tab label="Financial & Salary">
+                <div class="tab-content">
+                    <h3>Bank Information</h3>
+                    <div class="form-grid" formGroupName="bankInfo">
+                         <mat-form-field appearance="outline">
+                            <mat-label>Bank Name</mat-label>
+                            <input matInput formControlName="bank_name">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Branch Name</mat-label>
+                            <input matInput formControlName="bank_branch">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Account Number</mat-label>
+                            <input matInput formControlName="account_number">
+                        </mat-form-field>
+                    </div>
+                    
+                    <h3>Salary Structure</h3>
+                    <div class="form-grid" formGroupName="salaryInfo">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Basic Salary</mat-label>
+                            <input matInput type="number" formControlName="basic_salary">
+                        </mat-form-field>
+                         <mat-form-field appearance="outline">
+                            <mat-label>House Rent</mat-label>
+                            <input matInput type="number" formControlName="house_rent">
+                        </mat-form-field>
+                         <mat-form-field appearance="outline">
+                            <mat-label>Medical Allowance</mat-label>
+                            <input matInput type="number" formControlName="medical_allowance">
+                        </mat-form-field>
+                        
+                        <mat-form-field appearance="outline" class="highlight-field">
+                            <mat-label>Gross Salary (Total)</mat-label>
+                            <input matInput type="number" formControlName="gross_salary" readonly>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+
+        </mat-tab-group>
+    </form>
+</div>

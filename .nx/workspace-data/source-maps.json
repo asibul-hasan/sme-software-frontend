@@ -76,6 +76,10 @@
       "apps/web-client/project.json",
       "nx/core/project-json"
     ],
+    "targets.build.options.scripts": [
+      "apps/web-client/project.json",
+      "nx/core/project-json"
+    ],
     "targets.build.configurations.production": [
       "apps/web-client/project.json",
       "nx/core/project-json"
