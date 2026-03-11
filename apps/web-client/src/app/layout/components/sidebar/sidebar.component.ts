@@ -1,48 +1,90 @@
-import { Component, signal, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { MatListModule } from '@angular/material/list';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBadgeModule } from '@angular/material/badge';
-import { TranslateModule } from '@ngx-translate/core';
-import { MenuItem, MENU_ITEMS } from './models/menu.model';
+import {
+  Component,
+  signal,
+  computed,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { MenuItem } from './models/menu.model';
 import { PermissionService } from '../../../core/services/permission.service';
 import { MenuService } from './services/menu-builder.service';
+import { SharedModule } from '../../../shared';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatExpansionModule,
-    MatTooltipModule,
-    MatBadgeModule,
-    TranslateModule,
-  ],
-  templateUrl: './sidebar.component.html'
+  imports: [SharedModule],
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
   menuItems = signal<MenuItem[]>([]);
-  
+
   @Input() set collapsed(val: boolean) {
     this.isCollapsed.set(val);
   }
-  
+
   @Output() toggleCollapse = new EventEmitter<void>();
 
   isCollapsed = signal(false);
+  searchTerm = signal('');
+
+  // Tracks if the global state is expanded or collapsed
+  isAllExpanded = signal(false);
+
+  // The filtered layout containing search matches and auto-expanding parents
+  filteredMenuItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const items = this.menuItems();
+
+    if (!term) {
+      return items;
+    }
+
+    // Deep copy and filter function
+    const filterNodes = (nodes: MenuItem[]): MenuItem[] => {
+      const result: MenuItem[] = [];
+
+      for (const node of nodes) {
+        // Create a copy to avoid mutating the original signal object
+        const n = { ...node };
+        let matchFound = false;
+
+        // Does this node itself match?
+        if (n.formName && n.formName.toLowerCase().includes(term)) {
+          matchFound = true;
+        }
+
+        // Recursively filter children
+        if (n.children && n.children.length > 0) {
+          const filteredChildren = filterNodes(n.children);
+          if (filteredChildren.length > 0) {
+            n.children = filteredChildren;
+            n.expanded = true; // Auto-expand because a child matched
+            matchFound = true;
+          } else {
+            n.children = [];
+          }
+        }
+
+        // Keep this node if it matched or if any of its descendants matched
+        if (matchFound) {
+          result.push(n);
+        }
+      }
+
+      return result;
+    };
+
+    return filterNodes(items);
+  });
 
   constructor(
     private permissionService: PermissionService,
     private router: Router,
-    private service: MenuService
+    private service: MenuService,
   ) {
     const builtMap = this.service.buildMenu(this.service.menu);
     localStorage.setItem('menu', JSON.stringify(builtMap));
@@ -53,13 +95,36 @@ export class SidebarComponent {
     this.toggleCollapse.emit();
   }
 
+  toggleExpandAll() {
+    const newState = !this.isAllExpanded();
+    this.isAllExpanded.set(newState);
+
+    const toggleNodes = (nodes: MenuItem[]) => {
+      for (const node of nodes) {
+        node.expanded = newState;
+        if (node.children) {
+          toggleNodes(node.children);
+        }
+      }
+    };
+
+    // Mutate the original items to open/close them
+    const items = [...this.menuItems()];
+    toggleNodes(items);
+    this.menuItems.set(items);
+
+    // If collapsing, also clear search
+    if (!newState) {
+      this.searchTerm.set('');
+    }
+  }
+
   private filterMenuItems() {
     // const filtered = MENU_ITEMS.filter(item => this.canShowMenuItem(item))
     //   .map(item => ({
     //     ...item,
     //     children: item.children?.filter(child => this.canShowMenuItem(child))
     //   }));
-
     // this.menuItems.set(filtered);
   }
 
@@ -78,6 +143,6 @@ export class SidebarComponent {
 
   hasActiveChild(item: MenuItem): boolean {
     if (!item.children) return false;
-    return item.children.some(child => this.isActive(child.route));
+    return item.children.some((child) => this.isActive(child.route));
   }
 }

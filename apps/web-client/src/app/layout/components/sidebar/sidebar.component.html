@@ -18,11 +18,48 @@
       {{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}
     </mat-icon>
   </button> -->
+  <!-- Top Search & Collapse Toggle Section -->
+  <div
+    class="sb-search-container w-100 px-3 pb-3 d-flex align-items-center justify-content-between gap-2"
+    *ngIf="!isCollapsed()"
+  >
+    <div class="search-input-wrapper position-relative flex-grow-1">
+      <mat-icon class="search-icon position-absolute">search</mat-icon>
+      <input
+        type="text"
+        class="form-control sb-search-input"
+        placeholder="Search menu..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+
+      <button
+        mat-icon-button
+        class="clear-search-btn position-absolute"
+        *ngIf="searchTerm()"
+        (click)="searchTerm.set('')"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <button
+      class="sb-collapse-toggle-btn btn btn-sm d-flex align-items-center justify-content-center flex-shrink-0"
+      (click)="toggleExpandAll()"
+      [matTooltip]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
+      matTooltipPosition="above"
+    >
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px">
+        {{ isAllExpanded() ? 'unfold_less_double' : 'unfold_more_double' }}
+      </mat-icon>
+    </button>
+  </div>
+
   <!-- Menu Items -->
   <nav
     class="sb-nav d-flex flex-column align-items-center flex-grow-1 w-100 overflow-y-auto overflow-x-hidden"
   >
-    <ng-container *ngFor="let module of menuItems()">
+    <ng-container *ngFor="let module of filteredMenuItems()">
       <!-- MODULE -->
       <div class="sb-module w-100 d-flex flex-column align-items-center">
         <a
@@ -48,46 +85,77 @@
           class="sb-submodule w-100 d-flex flex-column align-items-center"
           *ngIf="module.expanded && module.children"
         >
-          <ng-container *ngFor="let sub of module.children">
-            <a
-              class="sb-item submodule-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
-              (click)="sub.expanded = !sub.expanded"
-              [matTooltip]="sub.formName | translate"
-              matTooltipPosition="right"
-            >
-              <mat-icon
-                class="sb-icon d-grid place-items-center flex-shrink-0 m-0"
-                >{{ sub.icon }}</mat-icon
-              >
-              <span class="sb-label" *ngIf="!isCollapsed()">
-                {{ sub.formName | translate }}
-              </span>
-              <mat-icon *ngIf="!isCollapsed()" class="expand-icon">
-                {{ sub.expanded ? 'expand_less' : 'expand_more' }}
-              </mat-icon>
-            </a>
-            <!-- FORMS -->
+          <ng-container
+            *ngFor="let sub of module.children; let isLastSub = last"
+          >
             <div
-              class="sb-forms w-100 d-flex flex-column align-items-center"
-              *ngIf="sub.expanded && sub.children"
+              class="w-100 position-relative d-flex flex-column align-items-center"
+              style="gap: 2px"
             >
+              <!-- Tree Lines for Submodule -->
+              <div class="line-sub-v-top" *ngIf="!isCollapsed()"></div>
+              <div
+                class="line-sub-v-bottom"
+                *ngIf="!isCollapsed() && !isLastSub"
+              ></div>
+              <div class="line-sub-h" *ngIf="!isCollapsed()"></div>
+
               <a
-                *ngFor="let form of sub.children"
-                class="sb-item form-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
-                [routerLink]="form.route"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: false }"
-                [matTooltip]="form.formName | translate"
+                class="sb-item submodule-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
+                (click)="sub.expanded = !sub.expanded"
+                [matTooltip]="sub.formName | translate"
                 matTooltipPosition="right"
               >
                 <mat-icon
                   class="sb-icon d-grid place-items-center flex-shrink-0 m-0"
-                  >{{ form.icon }}</mat-icon
+                  >{{ sub.icon }}</mat-icon
                 >
                 <span class="sb-label" *ngIf="!isCollapsed()">
-                  {{ form.formName | translate }}
+                  {{ sub.formName | translate }}
                 </span>
+                <mat-icon *ngIf="!isCollapsed()" class="expand-icon">
+                  {{ sub.expanded ? 'expand_less' : 'expand_more' }}
+                </mat-icon>
               </a>
+              <!-- FORMS -->
+              <div
+                class="sb-forms w-100 d-flex flex-column align-items-center"
+                *ngIf="sub.expanded && sub.children"
+              >
+                <ng-container
+                  *ngFor="let form of sub.children; let isLastForm = last"
+                >
+                  <div
+                    class="w-100 position-relative d-flex flex-column align-items-center"
+                    style="gap: 2px"
+                  >
+                    <!-- Tree Lines for Forms -->
+                    <div class="line-form-v-top" *ngIf="!isCollapsed()"></div>
+                    <div
+                      class="line-form-v-bottom"
+                      *ngIf="!isCollapsed() && !isLastForm"
+                    ></div>
+                    <div class="line-form-h" *ngIf="!isCollapsed()"></div>
+
+                    <a
+                      class="sb-item form-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
+                      [routerLink]="form.route"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="{ exact: false }"
+                      [matTooltip]="form.formName | translate"
+                      matTooltipPosition="right"
+                    >
+                      <mat-icon
+                        class="sb-icon d-grid place-items-center flex-shrink-0 m-0"
+                        >{{ form.icon }}</mat-icon
+                      >
+                      <span class="sb-label" *ngIf="!isCollapsed()">
+                        {{ form.formName | translate }}
+                      </span>
+                    </a>
+                  </div>
+                </ng-container>
+              </div>
             </div>
           </ng-container>
         </div>
@@ -97,32 +165,13 @@
 
   <!-- Bottom Section -->
   <div
-    class="sb-bottom d-flex align-items-center justify-content-end px-4 flex-wrap gap-2"
+    class="sb-bottom d-flex align-items-center justify-content-end flex-wrap gap-2 w-100"
     style="border-top: 1px solid var(--border)"
   >
-    <!-- <a class="sb-item"
-       [matTooltip]="isCollapsed() ? 'Notifications' : ''"
-       matTooltipPosition="right"
-       [class.expanded-item]="!isCollapsed()">
-      <mat-icon class="sb-icon">notifications</mat-icon>
-      <span class="sb-label" *ngIf="!isCollapsed()">{{ 'Notifications' | translate }}</span>
-      <span class="sb-tooltip" *ngIf="isCollapsed()">Notifications</span>
-  </a> -->
-
-    <!-- <a class="sb-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
-       [routerLink]="['/settings']"
-       routerLinkActive="active"
-       [matTooltip]="'settings' | translate"
-       matTooltipPosition="right"
-       [class.expanded-item]="!isCollapsed()">
-      <mat-icon class="sb-icon d-grid place-items-center flex-shrink-0 m-0">settings</mat-icon>
-      <span class="sb-label" *ngIf="!isCollapsed()">{{ 'settings' | translate }}</span>
-  </a> -->
-
     <!-- Toggle Collapse Button -->
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center justify-content-end w-100 py-2">
       <button
-        class="sb-toggle-btn"
+        class="sb-toggle-btn m-0"
         (click)="toggleSidebar()"
         [title]="isCollapsed() ? 'Expand' : 'Collapse'"
       >
@@ -131,11 +180,5 @@
         </mat-icon>
       </button>
     </div>
-
-    <!-- <div class="sb-avatar"
-       [matTooltip]="isCollapsed() ? 'Profile' : ''"
-       matTooltipPosition="right">
-      AD
-  </div> -->
   </div>
 </aside>

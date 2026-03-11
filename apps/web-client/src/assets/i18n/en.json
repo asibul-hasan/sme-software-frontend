@@ -146,5 +146,7 @@
   "humanResources": "Human Resources",
   "reportsAnalytics": "Reports & Analytics",
   "procurementManagement": "Procurement Management",
-  "salesAndPos": "Sales & POS"
+  "salesAndPos": "Sales & POS",
+  "help": "Help",
+  "privacy": "Privacy"
 }

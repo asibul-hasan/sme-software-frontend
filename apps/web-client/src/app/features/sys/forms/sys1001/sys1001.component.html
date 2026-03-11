@@ -1,17 +1,356 @@
-<div class="">
-  <mat-card class="app-card">
-    <mat-card-header>
-      <mat-card-title>
-        {{ 'companyAndBranchSetup' | translate }}
-      </mat-card-title>
-      <mat-card-subtitle
-        >Configure your core company details here</mat-card-subtitle
-      >
-    </mat-card-header>
+<!-- ═══════════════════════════════════════════════════════
+     PAGE CARD
+     page-card-header : fixed (breadcrumb + title + buttons)
+     page-card-body   : scrollable
+       └── card       : company info  (card-header + card-body)
+       └── card       : branch setup  (card-header + card-body)
+════════════════════════════════════════════════════════ -->
+<div class="page-card">
+  <!-- ── PAGE CARD HEADER (FIXED) ─────────────────────── -->
+  <div class="page-card-header">
+    <div class="d-flex flex-column">
+      <nav class="page-breadcrumb" aria-label="Breadcrumb">
+        <span class="breadcrumb-item">System</span>
+        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+        <span class="breadcrumb-item">Master Setup</span>
+        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+        <span class="breadcrumb-item breadcrumb-item--active"
+          >Company &amp; Branch</span
+        >
+      </nav>
+      <h2 class="page-card-title">{{ 'companyAndBranchSetup' | translate }}</h2>
+    </div>
 
-    <mat-card-content class="pt-3">
-      <!-- Your form HTML goes here -->
-      <p class="text-muted">Form fields will load here...</p>
-    </mat-card-content>
-  </mat-card>
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <div class="record-status">
+        <span class="record-status-dot record-status-dot--saved"></span>
+        <span class="record-status-label">Saved</span>
+      </div>
+      <div class="btn-action-group">
+        <button
+          class="btn-action btn-new"
+          matTooltip="New (Ctrl+N)"
+          (click)="onNew()"
+        >
+          <mat-icon>add_circle_outline</mat-icon>
+          <span class="btn-action-label">New</span>
+        </button>
+        <button
+          class="btn-action btn-save"
+          matTooltip="Save (Ctrl+S)"
+          (click)="onSave()"
+        >
+          <mat-icon>save</mat-icon>
+          <span class="btn-action-label">Save</span>
+        </button>
+        <button
+          class="btn-action btn-reset"
+          matTooltip="Reset"
+          (click)="onReset()"
+        >
+          <mat-icon>restart_alt</mat-icon>
+          <span class="btn-action-label">Reset</span>
+        </button>
+        <button
+          class="btn-action btn-delete"
+          matTooltip="Delete (Ctrl+D)"
+          (click)="onDelete()"
+        >
+          <mat-icon>delete_outline</mat-icon>
+          <span class="btn-action-label">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE CARD BODY (SCROLLABLE) ──────────────────── -->
+  <div class="page-card-body">
+    <!-- ── CARD: Company Information ─────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">{{
+          'companyInformation' | translate
+        }}</span>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="formdata" autocomplete="off">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label required" for="companyName">{{
+                  'companyName' | translate
+                }}</label>
+                <div class="field-wrap">
+                  <mat-icon class="field-icon">business</mat-icon>
+                  <input
+                    id="companyName"
+                    type="text"
+                    formControlName="companyName"
+                    class="field-input field-input--icon"
+                    placeholder="e.g. Acme Global Holdings Ltd."
+                  />
+                </div>
+                <!-- <span
+                  class="field-error"
+                  *ngIf="
+                    formdata.get('companyName')?.invalid &&
+                    formdata.get('companyName')?.touched
+                  "
+                >
+                  Company name is required
+                </span> -->
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label required" for="vendorType"
+                  >Vendor Type</label
+                >
+                <select
+                  id="vendorType"
+                  class="field-select"
+                  formControlName="vendorType"
+                >
+                  <option value="">— Select vendor type —</option>
+                  <option value="supplier">Supplier</option>
+                  <option value="contractor">Contractor</option>
+                  <option value="service">Service Provider</option>
+                  <option value="distributor">Distributor</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label required" for="companyPhone">{{
+                  'phoneNumber' | translate
+                }}</label>
+                <div class="field-wrap">
+                  <mat-icon class="field-icon">phone</mat-icon>
+                  <input
+                    id="companyPhone"
+                    type="tel"
+                    formControlName="companyPhone"
+                    class="field-input field-input--icon"
+                    placeholder="+1 (555) 000-0000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="systemId">System ID</label>
+                <input
+                  id="systemId"
+                  type="text"
+                  formControlName="systemId"
+                  class="field-input field-readonly"
+                  readonly
+                  placeholder="Auto-generated"
+                />
+                <!-- <span class="field-helper">Auto-assigned on save</span> -->
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="companyEmail"
+                  >Email Address</label
+                >
+                <div class="field-wrap">
+                  <mat-icon class="field-icon">mail_outline</mat-icon>
+                  <input
+                    id="companyEmail"
+                    type="email"
+                    formControlName="companyEmail"
+                    class="field-input field-input--icon"
+                    placeholder="contact@company.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="companyWebsite">Website</label>
+                <div class="field-wrap">
+                  <mat-icon class="field-icon">language</mat-icon>
+                  <input
+                    id="companyWebsite"
+                    type="url"
+                    formControlName="companyWebsite"
+                    class="field-input field-input--icon"
+                    placeholder="https://www.company.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="regNo">Registration No.</label>
+                <input
+                  id="regNo"
+                  type="text"
+                  formControlName="regNo"
+                  class="field-input"
+                  placeholder="e.g. REG-2024-00421"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="fiscalYear"
+                  >Fiscal Year End</label
+                >
+                <select
+                  id="fiscalYear"
+                  class="field-select"
+                  formControlName="fiscalYear"
+                >
+                  <option value="">— Select month —</option>
+                  <option value="03">March</option>
+                  <option value="06">June</option>
+                  <option value="09">September</option>
+                  <option value="12">December</option>
+                </select>
+                <!-- <span class="field-helper">End month of fiscal year</span> -->
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label" for="companyAddress"
+                  >Registered Address</label
+                >
+                <textarea
+                  id="companyAddress"
+                  formControlName="companyAddress"
+                  class="field-textarea"
+                  rows="1"
+                  placeholder="Street address, city, state, country…"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="field-group">
+                <label class="field-label required">Company Status</label>
+                <fieldset
+                  class="radio-group inline"
+                  style="border: none; padding: 0; margin: 0"
+                >
+                  <legend class="sr-only">Company Status</legend>
+                  <label class="radio-item">
+                    <input
+                      type="radio"
+                      name="companyStatus"
+                      value="active"
+                      [checked]="true"
+                    />
+                    <div class="rb-label">Active</div>
+                  </label>
+                  <label class="radio-item">
+                    <input type="radio" name="companyStatus" value="inactive" />
+                    <div class="rb-label">Inactive</div>
+                  </label>
+                  <label class="radio-item">
+                    <input
+                      type="radio"
+                      name="companyStatus"
+                      value="suspended"
+                    />
+                    <div class="rb-label">Suspended</div>
+                  </label>
+                </fieldset>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="field-group">
+                <label class="field-label">Notification Preferences</label>
+                <div class="checkbox-group d-flex flex-row gap-3">
+                  <label class="checkbox-item">
+                    <input type="checkbox" [checked]="true" />
+                    <div>
+                      <div class="cb-label">Enable Notifications</div>
+                      <div class="cb-sub">Receive email alerts</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <div>
+                      <div class="cb-label">Two-Factor Auth</div>
+                      <div class="cb-sub">Requires SMS verification</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <div>
+                      <div class="cb-label">Audit Logging</div>
+                      <div class="cb-sub">Track all record changes</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /card: company information -->
+    <!-- Branch Code / ID
+
+Branch Address
+
+City / Region
+
+Contact Number & Email
+
+Branch Manager
+
+Opening Date
+
+Tax Registration (if applicable) -->
+    <!-- ── CARD: Branch Setup ─────────────────────────── -->
+    <div class="card">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <span class="card-header__title">Branch Setup</span>
+        <div class="d-flex card-header__action">
+          <button
+            class="btn-icon-action"
+            matTooltip="Add Branch"
+            (click)="onAddBranch()"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+          <button
+            class="btn-icon-action"
+            matTooltip="Refresh"
+            (click)="onRefreshBranch()"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <app-data-table
+          [config]="tableConfig"
+          [columns]="tableColumns"
+          [data]="tableData"
+          (dataChange)="onTableDataChange($event)"
+          (addRow)="onAddBranch()"
+        >
+        </app-data-table>
+      </div>
+    </div>
+    <!-- /card: branch setup -->
+  </div>
+  <!-- /page-card-body -->
 </div>
+<!-- /page-card -->

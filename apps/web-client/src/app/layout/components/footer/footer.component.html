@@ -1,14 +1,21 @@
 <footer
-  class="app-footer d-flex align-items-center justify-content-between px-4 flex-wrap gap-2"
+  class="app-footer d-flex align-items-center justify-content-center justify-content-md-between px-3 px-md-4 gap-2"
 >
   <div class="d-flex align-items-center gap-2">
-    <span class="fw-bolder" style="letter-spacing: -0.02em">
-      <span style="color: var(--indigo); font-size: 14px">A</span
-      ><span style="color: var(--text-2); font-size: 12px">IDLY</span>
-    </span>
-    <span style="color: var(--border); font-size: 14px">|</span>
     <span
-      class="font-monospace px-2 rounded-pill"
+      class="navbar-brand fw-bold d-inline-flex align-items-baseline m-0"
+      style="letter-spacing: -0.02em"
+    >
+      <span class="fs-6" style="color: var(--indigo)">A</span>
+      <span class="small text-light">IDLY</span>
+      <span class="small ms-1 text-secondary fw-normal">by</span>
+      <span class="small ms-1" style="color: var(--rose)">InfoaidTech</span>
+    </span>
+    <span class="d-none d-md-inline text-secondary mx-1" style="font-size: 14px"
+      >|</span
+    >
+    <span
+      class="font-monospace px-2 rounded-pill d-none d-md-inline"
       style="
         font-size: 10px;
         padding-top: 2px;
@@ -17,38 +24,43 @@
         border: 1px solid rgba(var(--indigo-rgb), 0.2);
         color: var(--indigo);
       "
-      >ERP v2025.1</span
     >
+      ERP v2025.1
+    </span>
   </div>
 
-  <div class="flex-grow-1 text-center">
-    <span style="color: var(--text); font-size: 11px">
+  <div class="flex-grow-1 text-center d-none d-md-block">
+    <span class="text-secondary" style="font-size: 11px">
       © {{ currentYear }} Infoaidtech. All rights reserved.
     </span>
   </div>
 
-  <div class="d-flex align-items-center gap-2">
+  <div class="d-flex align-items-center gap-2 d-none d-md-flex text-light">
     <span
       class="d-flex align-items-center gap-1 fw-medium"
-      style="color: var(--emerald); font-size: 11px"
+      style="font-size: 11px"
     >
       <span class="status-dot flex-shrink-0"></span>
       {{ 'allSystemsOperational' | translate }}
     </span>
-    <span style="color: var(--border); font-size: 14px">|</span>
+    <span class="text-secondary mx-1" style="font-size: 14px">|</span>
     <a
-      class="text-decoration-none footer-link"
-      style="font-size: 11px; color: var(--text)"
+      class="text-decoration-none footer-link text-light"
+      style="font-size: 11px"
       href="#"
       (click)="onHelp($event)"
-      >Help</a
     >
+      {{ 'help' | translate }}
+    </a>
+    <span class="text-secondary mx-1" style="font-size: 14px">|</span>
+
     <a
-      class="text-decoration-none footer-link"
-      style="font-size: 11px; color: var(--text)"
+      class="text-decoration-none footer-link text-light"
+      style="font-size: 11px"
       href="#"
       (click)="onPrivacy($event)"
-      >Privacy</a
     >
+      {{ 'privacy' | translate }}
+    </a>
   </div>
 </footer>

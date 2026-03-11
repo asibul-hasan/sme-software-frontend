@@ -1,4 +1,4 @@
-<header class="topbar d-flex align-items-center px-4 gap-2">
+<header class="topbar d-flex align-items-center px-2 gap-2">
   <!-- Left: Breadcrumb -->
   <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0">
     <!-- Hamburger toggle for mobile / sidebar collapse -->
@@ -43,8 +43,85 @@
       <mat-icon style="font-size:17px;width:17px;height:17px;">search</mat-icon>
     </button> -->
 
+    <!-- Quick Actions -->
+    <button
+      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      title="Quick Actions"
+    >
+      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
+        >bolt</mat-icon
+      >
+    </button>
+
+    <!-- Full Screen -->
+    <button
+      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      title="Toggle Fullscreen"
+      (click)="onToggleFullScreen()"
+    >
+      <mat-icon style="font-size: 17px; width: 17px; height: 17px">{{
+        isFullScreen() ? 'fullscreen_exit' : 'fullscreen'
+      }}</mat-icon>
+    </button>
+
+    <!-- Branch switcher -->
+    <div
+      class="user-card d-flex align-items-center justify-content-between gap-2"
+      [matMenuTriggerFor]="branchMenu"
+      title="Switch Branch"
+      style="height: 36px; width: 150px"
+    >
+      <div class="d-flex align-items-center gap-2 overflow-hidden">
+        <mat-icon
+          style="
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            color: var(--indigo);
+            flex-shrink: 0;
+          "
+          >store</mat-icon
+        >
+        <div class="user-info d-none d-md-block text-truncate">
+          <div class="user-name text-truncate" style="font-size: 11px">
+            {{ currentBranchName() }}
+          </div>
+        </div>
+      </div>
+      <mat-icon
+        style="
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+          color: var(--text-3);
+          margin-left: 2px;
+          flex-shrink: 0;
+        "
+      >
+        expand_more
+      </mat-icon>
+    </div>
+
+    <mat-menu #branchMenu="matMenu">
+      <button
+        mat-menu-item
+        *ngFor="let branch of branches()"
+        (click)="onBranchChange(branch.id)"
+        [ngClass]="{
+          'mdc-list-item--selected': branch.id === selectedBranch(),
+          'mat-mdc-option-active': branch.id === selectedBranch(),
+        }"
+      >
+        <span>{{ branch.name }}</span>
+      </button>
+    </mat-menu>
+
     <!-- Notifications -->
-    <button class="top-btn" title="Notifications" (click)="onNotifications()">
+    <button
+      class="top-btn"
+      title="Notifications"
+      [matMenuTriggerFor]="notifMenu"
+    >
       <mat-icon style="font-size: 17px; width: 17px; height: 17px"
         >notifications</mat-icon
       >
@@ -52,23 +129,20 @@
     </button>
 
     <!-- Theme Toggle -->
-    <button class="top-btn" title="Toggle Theme" (click)="onToggleTheme()">
+    <button
+      class="top-btn d-none d-sm-flex align-items-center justify-content-center"
+      title="Toggle Theme"
+      (click)="onToggleTheme()"
+    >
       <mat-icon style="font-size: 17px; width: 17px; height: 17px">
         {{ isDark() ? 'light_mode' : 'dark_mode' }}
       </mat-icon>
     </button>
 
-    <!-- Language -->
-    <button class="top-btn" title="Language" (click)="onLanguage()">
-      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
-        >translate</mat-icon
-      >
-    </button>
-
     <!-- User Card -->
     <div
       class="user-card d-flex align-items-center gap-2"
-      (click)="onUserMenu()"
+      [matMenuTriggerFor]="userProfileMenu"
     >
       <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
       <div class="user-info d-none d-md-block">
@@ -88,4 +162,151 @@
       </mat-icon>
     </div>
   </div>
+
+  <!-- ============================================== -->
+  <!-- NOTIFICATIONS MENU                             -->
+  <!-- ============================================== -->
+  <mat-menu
+    #notifMenu="matMenu"
+    class="custom-mat-menu notif-menu-panel"
+    xPosition="before"
+  >
+    <div
+      class="notif-header d-flex align-items-center justify-content-between"
+      (click)="$event.stopPropagation()"
+    >
+      <span class="notif-title">Notification</span>
+      <mat-icon class="notif-read-all">check_circle_outline</mat-icon>
+    </div>
+
+    <div class="notif-list">
+      <div
+        class="notif-item d-flex align-items-start"
+        *ngFor="let item of notifications()"
+        mat-menu-item
+      >
+        <div
+          class="notif-icon-wrapper"
+          [style.background]="item.bgColor"
+          [style.color]="item.color"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+        </div>
+        <div class="notif-content flex-grow-1 overflow-hidden">
+          <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <div class="notif-text text-truncate">
+              <span class="fw-bold">{{ item.title }}</span> {{ item.text }}
+            </div>
+            <span class="notif-time flex-shrink-0 ms-2">{{ item.time }}</span>
+          </div>
+          <div class="notif-subtext text-truncate" *ngIf="item.subtext">
+            {{ item.subtext }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-footer text-center" mat-menu-item>
+      <a
+        href="javascript:void(0)"
+        class="text-primary text-decoration-none fw-medium"
+        >View all</a
+      >
+    </div>
+  </mat-menu>
+
+  <!-- ============================================== -->
+  <!-- USER PROFILE MENU                              -->
+  <!-- ============================================== -->
+  <mat-menu
+    #userProfileMenu="matMenu"
+    class="custom-mat-menu profile-menu-panel"
+    xPosition="before"
+  >
+    <div
+      class="profile-header d-flex align-items-center mb-2"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="profile-ava d-grid me-3">{{ userInitials() }}</div>
+      <div class="profile-info flex-grow-1">
+        <div class="profile-name fw-bold">{{ userName() }}</div>
+        <div class="profile-role text-secondary">{{ userRole() }}</div>
+      </div>
+      <button mat-icon-button class="logout-icon-btn" (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+    <div class="profile-tabs d-flex mb-2" (click)="$event.stopPropagation()">
+      <div
+        class="profile-tab flex-fill text-center"
+        [class.active]="activeProfileTab() === 'profile'"
+        (click)="activeProfileTab.set('profile')"
+      >
+        <mat-icon
+          style="
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            vertical-align: middle;
+          "
+          >person_outline</mat-icon
+        >
+        Profile
+      </div>
+      <div
+        class="profile-tab flex-fill text-center"
+        [class.active]="activeProfileTab() === 'setting'"
+        (click)="activeProfileTab.set('setting')"
+      >
+        <mat-icon
+          style="
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            vertical-align: middle;
+          "
+          >settings</mat-icon
+        >
+        Setting
+      </div>
+    </div>
+
+    <div class="profile-menu-list pb-2">
+      <!-- These only show if profile tab is selected, as per typical design, or we just render them statically -->
+      <ng-container *ngIf="activeProfileTab() === 'profile'">
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>edit</mat-icon>
+          <span>Edit Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>person_outline</mat-icon>
+          <span>View Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>list_alt</mat-icon>
+          <span>Social Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>Billing</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item" (click)="onLanguage()">
+          <mat-icon>translate</mat-icon>
+          <span>Change Language</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item" (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="activeProfileTab() === 'setting'">
+        <div class="px-3 py-2 text-center text-secondary small">
+          Settings goes here.
+        </div>
+      </ng-container>
+    </div>
+  </mat-menu>
 </header>

@@ -2,13 +2,20 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
   importProvidersFrom,
-  APP_INITIALIZER
+  APP_INITIALIZER,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { TranslateHttpLoader, TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
+import {
+  TranslateHttpLoader,
+  TRANSLATE_HTTP_LOADER_CONFIG,
+} from '@ngx-translate/http-loader';
 import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
@@ -24,31 +31,36 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
-    provideToastr(), // Toastr providers
+    provideToastr({
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+    }), // Toastr providers
     provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi: true
+      multi: true,
     },
     {
       provide: APP_INITIALIZER,
       useFactory: (auth: AuthService) => () => auth.initialize(),
       deps: [AuthService],
-      multi: true
+      multi: true,
     },
     {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,
       useValue: {
         prefix: './assets/i18n/',
-        suffix: '.json'
-      }
+        suffix: '.json',
+      },
     },
-    importProvidersFrom(TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory
-      }
-    })),
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        loader: {
+          provide: TranslateLoader,
+          useFactory: HttpLoaderFactory,
+        },
+      }),
+    ),
   ],
 };

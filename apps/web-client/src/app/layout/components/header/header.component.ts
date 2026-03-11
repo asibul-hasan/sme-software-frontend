@@ -8,35 +8,34 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { TranslateModule } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
 import { AuthService, ThemeService, LanguageService } from '../../../core';
 import { MenuService } from '../sidebar/services/menu-builder.service';
+import { SharedModule } from '../../../shared';
 
 export interface BreadcrumbItem {
   label: string;
   url?: string;
 }
 
+export interface NotificationItem {
+  id: string;
+  icon: string;
+  bgColor: string;
+  color: string;
+  title: string;
+  text: string;
+  time: string;
+  subtext?: string;
+}
+
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule,
-    MatTooltipModule,
-    TranslateModule,
-  ],
+  imports: [SharedModule],
   templateUrl: './header.component.html',
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
   // ── Inputs ──────────────────────────────────────────────
@@ -51,8 +50,64 @@ export class HeaderComponent implements OnInit {
   // ── Signals ─────────────────────────────────────────────
   breadcrumbs = signal<BreadcrumbItem[]>([{ label: 'Dashboard', url: '/' }]);
   formCode = signal<string | null>(null);
-  notificationCount = signal<number>(3);
   showAiPill = signal<boolean>(true);
+
+  notifications = signal<NotificationItem[]>([
+    {
+      id: '1',
+      icon: 'redeem',
+      bgColor: 'rgba(16, 185, 129, 0.1)',
+      color: '#10b981',
+      title: "It's Cristina danny's",
+      text: 'birthday today.',
+      time: '3:00 AM',
+      subtext: '2 min ago',
+    },
+    {
+      id: '2',
+      icon: 'chat',
+      bgColor: 'rgba(14, 165, 233, 0.1)',
+      color: '#0ea5e9',
+      title: 'Aida Burg',
+      text: 'commented your post.',
+      time: '6:00 PM',
+      subtext: '5 August',
+    },
+    {
+      id: '3',
+      icon: 'settings',
+      bgColor: 'rgba(244, 63, 94, 0.1)',
+      color: '#f43f5e',
+      title: 'Your Profile is Complete',
+      text: '60%',
+      time: '2:45 PM',
+      subtext: '7 hours ago',
+    },
+    {
+      id: '4',
+      icon: 'call',
+      bgColor: 'rgba(99, 102, 241, 0.1)',
+      color: '#6366f1',
+      title: 'Cristina Danny',
+      text: 'invited to join Meeting.',
+      time: '9:10 PM',
+      subtext: 'Daily scrum meeting time',
+    },
+  ]);
+  notificationCount = computed(() => this.notifications().length);
+
+  activeProfileTab = signal<'profile' | 'setting'>('profile');
+
+  branches = signal<{ id: string; name: string }[]>([
+    { id: '1', name: 'Head Office' },
+    { id: '2', name: 'Dhaka Branch' },
+    { id: '3', name: 'Chittagong Branch' },
+  ]);
+  selectedBranch = signal<string>('1');
+  currentBranchName = computed(() => {
+    const b = this.branches().find((x) => x.id === this.selectedBranch());
+    return b ? b.name : 'Unknown Branch';
+  });
 
   private router = inject(Router);
   public authService = inject(AuthService);
@@ -61,6 +116,7 @@ export class HeaderComponent implements OnInit {
   public menuService = inject(MenuService);
 
   private _sidebarCollapsed = signal(false);
+  isFullScreen = signal(false);
 
   // Computed Theme
   isDark = computed(() => this.themeService.isDarkMode());
@@ -145,11 +201,30 @@ export class HeaderComponent implements OnInit {
     this.themeToggled.emit(this.isDark());
   }
 
+  onToggleFullScreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+      this.isFullScreen.set(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        this.isFullScreen.set(false);
+      }
+    }
+  }
+
   onSearch() {
     /* open search dialog */
   }
+
+  onBranchChange(branchId: string) {
+    this.selectedBranch.set(branchId);
+  }
+
   onNotifications() {
-    /* open notifications panel */
+    /* currently handled by matMenuTriggerFor in HTML */
   }
 
   onLanguage() {
@@ -157,8 +232,12 @@ export class HeaderComponent implements OnInit {
   }
 
   onUserMenu() {
-    // Open user dropdown -> usually handled by MatMenu but we can manually navigate for now
-    this.router.navigate(['/profile']);
+    /* currently handled by matMenuTriggerFor in HTML */
+  }
+
+  onLogout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   onAiClick() {

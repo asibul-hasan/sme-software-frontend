@@ -1,8 +1,8 @@
-
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { filter } from 'rxjs/operators';
 import { HeaderComponent } from '../components/header/header.component';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
@@ -18,46 +18,85 @@ import { FooterComponent } from '../components/footer/footer.component';
     FooterComponent,
   ],
   templateUrl: './main-layout.component.html',
-  styleUrls: ['./main-layout.component.scss']
+  styleUrls: ['./main-layout.component.scss'],
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit {
   isMobile = signal(false);
   isTablet = signal(false);
   sidebarCollapsed = signal(false);
+  private router = inject(Router);
 
   constructor(private breakpointObserver: BreakpointObserver) {
     this.observeBreakpoints();
   }
 
-  private observeBreakpoints() {
-    this.breakpointObserver.observe([
-      Breakpoints.HandsetPortrait,
-      Breakpoints.HandsetLandscape,
-      Breakpoints.TabletPortrait,
-    ]).subscribe(result => {
-      const isHandset = this.breakpointObserver.isMatched([
-        Breakpoints.HandsetPortrait,
-        Breakpoints.HandsetLandscape
-      ]);
-
-      const isTablet = this.breakpointObserver.isMatched(Breakpoints.TabletPortrait);
-
-      this.isMobile.set(isHandset);
-      this.isTablet.set(isTablet);
-
-      if (isHandset || isTablet) {
-        this.sidebarCollapsed.set(false); // Mobile sidebar is always full width when open
-      } else {
-        this.sidebarCollapsed.set(false);
+  // ── Global Keyboard Shortcuts ───────────────────────────
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.ctrlKey) {
+      switch (event.key.toLowerCase()) {
+        case 's':
+          event.preventDefault();
+          document.getElementById('mstSave')?.click();
+          break;
+        case 'n':
+          event.preventDefault();
+          document.getElementById('mstNew')?.click();
+          break;
+        case 'd':
+          event.preventDefault();
+          document.getElementById('mstDelete')?.click();
+          break;
       }
-    });
+    }
+  }
+
+  ngOnInit() {
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.isMobile() || this.isTablet()) {
+          this.sidebarCollapsed.set(true);
+        }
+      });
+  }
+
+  private observeBreakpoints() {
+    this.breakpointObserver
+      .observe([
+        Breakpoints.HandsetPortrait,
+        Breakpoints.HandsetLandscape,
+        Breakpoints.TabletPortrait,
+      ])
+      .subscribe((result) => {
+        const isHandset = this.breakpointObserver.isMatched([
+          Breakpoints.HandsetPortrait,
+          Breakpoints.HandsetLandscape,
+        ]);
+
+        const isTablet = this.breakpointObserver.isMatched(
+          Breakpoints.TabletPortrait,
+        );
+
+        this.isMobile.set(isHandset);
+        this.isTablet.set(isTablet);
+
+        if (isHandset || isTablet) {
+          this.sidebarCollapsed.set(true); // Mobile sidebar is closed by default
+        } else {
+          this.sidebarCollapsed.set(false);
+        }
+      });
   }
 
   toggleSidebar() {
-      this.sidebarCollapsed.update(v => !v);
+    this.sidebarCollapsed.update((v) => !v);
   }
 
   onThemeToggle(isDark: boolean) {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      'data-theme',
+      isDark ? 'dark' : 'light',
+    );
   }
 }

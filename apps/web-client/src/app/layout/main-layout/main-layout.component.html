@@ -9,6 +9,14 @@
     (toggleCollapse)="toggleSidebar()"
   ></app-sidebar>
 
+  <!-- Mobile Overlay -->
+  <div
+    *ngIf="!sidebarCollapsed()"
+    class="position-fixed top-0 start-0 w-100 h-100 bg-dark z-2 d-lg-none"
+    style="opacity: 0.5"
+    (click)="toggleSidebar()"
+  ></div>
+
   <!-- Header -->
   <app-header
     [sidebarCollapsed]="sidebarCollapsed()"

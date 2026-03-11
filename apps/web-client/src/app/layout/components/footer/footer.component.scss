@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.app-footer {
+  position: fixed;
+  right: 0;
+  left: 230px;
+  bottom: 0;
+  z-index: 100;
+  height: 44px;
+  background: var(--footer-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--text-3);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 6px var(--emerald);
+  animation: statusPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--emerald);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 12px var(--emerald);
+  }
+}
+
+.footer-link {
+  color: var(--text-3);
+  text-decoration: none;
+  font-size: 11px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--text-2);
+  }
+}
