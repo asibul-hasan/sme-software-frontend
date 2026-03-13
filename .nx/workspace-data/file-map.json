@@ -5,6 +5,86 @@
   "nxJsonPlugins": [],
   "fileMap": {
     "projectFileMap": {
+      "web-support": [
+        {
+          "file": "apps/web-support/eslint.config.mjs",
+          "hash": "4022437926435226564"
+        },
+        {
+          "file": "apps/web-support/project.json",
+          "hash": "772572301203323809"
+        },
+        {
+          "file": "apps/web-support/public/favicon.ico",
+          "hash": "9303420814833116677"
+        },
+        {
+          "file": "apps/web-support/src/app/app.config.ts",
+          "hash": "12279013514839509586"
+        },
+        {
+          "file": "apps/web-support/src/app/app.css",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/web-support/src/app/app.html",
+          "hash": "1889378473367225142"
+        },
+        {
+          "file": "apps/web-support/src/app/app.routes.ts",
+          "hash": "12790378059371385261"
+        },
+        {
+          "file": "apps/web-support/src/app/app.ts",
+          "hash": "1320985325496550370"
+        },
+        {
+          "file": "apps/web-support/src/app/nx-welcome.ts",
+          "hash": "3428749500432037933"
+        },
+        {
+          "file": "apps/web-support/src/index.html",
+          "hash": "13933110631827457213"
+        },
+        {
+          "file": "apps/web-support/src/main.ts",
+          "hash": "17436527127367840298"
+        },
+        {
+          "file": "apps/web-support/src/styles.css",
+          "hash": "2917954890128038984"
+        },
+        {
+          "file": "apps/web-support/tsconfig.app.json",
+          "hash": "1904063451971987368"
+        },
+        {
+          "file": "apps/web-support/tsconfig.json",
+          "hash": "13197230760538749365"
+        }
+      ],
+      "shared-ui": [
+        {
+          "file": "libs/shared-ui/project.json",
+          "hash": "1389868326933519382"
+        },
+        {
+          "file": "libs/shared-ui/src/lib/components/index.ts",
+          "hash": "6752633469762681791"
+        },
+        {
+          "file": "libs/shared-ui/src/lib/directives/index.ts",
+          "hash": "6752633469762681791"
+        },
+        {
+          "file": "libs/shared-ui/src/lib/index.ts",
+          "hash": "13990513168269067474"
+        },
+        {
+          "file": "libs/shared-ui/src/lib/pipes/index.ts",
+          "hash": "6752633469762681791"
+        }
+      ],
       "web-client": [
         {
           "file": "apps/web-client/eslint.config.mjs",
@@ -224,7 +304,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/hr/components/employee-table/employee-table.component.ts",
-          "hash": "12102573731451787695"
+          "hash": "5728151086063161347"
         },
         {
           "file": "apps/web-client/src/app/features/hr/employee/employee.routes.ts",
@@ -492,11 +572,11 @@
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/sys1001.component.html",
-          "hash": "2049959202145539918"
+          "hash": "1538498804018139110"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/sys1001.component.ts",
-          "hash": "17904544343940730175"
+          "hash": "11341210192139986913"
         },
         {
           "file": "apps/web-client/src/app/features/sys/services/data.service.ts",
@@ -639,20 +719,52 @@
           "hash": "12830315405170917852"
         },
         {
-          "file": "apps/web-client/src/app/shared/components/data-table/data-table.component.html",
-          "hash": "12505481759598653317"
+          "file": "apps/web-client/src/app/shared/components/data-table/README.md",
+          "hash": "9714349086138702361"
         },
         {
-          "file": "apps/web-client/src/app/shared/components/data-table/data-table.component.scss",
-          "hash": "5771534311860716809"
+          "file": "apps/web-client/src/app/shared/components/data-table/constants/data-table.constants.ts",
+          "hash": "8942625937702231829"
         },
         {
-          "file": "apps/web-client/src/app/shared/components/data-table/data-table.component.ts",
-          "hash": "175666539395134306"
+          "file": "apps/web-client/src/app/shared/components/data-table/core/data-table.component.html",
+          "hash": "3338914440424148624"
         },
         {
-          "file": "apps/web-client/src/app/shared/components/data-table/data-table.models.ts",
-          "hash": "11186804057678816669"
+          "file": "apps/web-client/src/app/shared/components/data-table/core/data-table.component.scss",
+          "hash": "12406569876638004293"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/core/data-table.component.ts",
+          "hash": "2031303758499636358"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/index.ts",
+          "hash": "800092902889340438"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/pipes/cell-display.pipe.ts",
+          "hash": "848834644003917402"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/types/data-table.types.ts",
+          "hash": "8168573675018934566"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/utils/export.util.ts",
+          "hash": "16901920088564585282"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/utils/pipeline.util.ts",
+          "hash": "4036308824738874505"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/utils/row.util.ts",
+          "hash": "11610200556055961038"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-table/utils/validation.util.ts",
+          "hash": "17242358556501335302"
         },
         {
           "file": "apps/web-client/src/app/shared/components/loader/loader.component.html",
@@ -712,7 +824,7 @@
         },
         {
           "file": "apps/web-client/src/app/shared/shared.module.ts",
-          "hash": "5916788493637458731"
+          "hash": "12240285453780090230"
         },
         {
           "file": "apps/web-client/src/app/store/auth/auth.actions.ts",
@@ -805,86 +917,6 @@
         {
           "file": "apps/web-client/tsconfig.json",
           "hash": "13197230760538749365"
-        }
-      ],
-      "web-support": [
-        {
-          "file": "apps/web-support/eslint.config.mjs",
-          "hash": "4022437926435226564"
-        },
-        {
-          "file": "apps/web-support/project.json",
-          "hash": "772572301203323809"
-        },
-        {
-          "file": "apps/web-support/public/favicon.ico",
-          "hash": "9303420814833116677"
-        },
-        {
-          "file": "apps/web-support/src/app/app.config.ts",
-          "hash": "12279013514839509586"
-        },
-        {
-          "file": "apps/web-support/src/app/app.css",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "apps/web-support/src/app/app.html",
-          "hash": "1889378473367225142"
-        },
-        {
-          "file": "apps/web-support/src/app/app.routes.ts",
-          "hash": "12790378059371385261"
-        },
-        {
-          "file": "apps/web-support/src/app/app.ts",
-          "hash": "1320985325496550370"
-        },
-        {
-          "file": "apps/web-support/src/app/nx-welcome.ts",
-          "hash": "3428749500432037933"
-        },
-        {
-          "file": "apps/web-support/src/index.html",
-          "hash": "13933110631827457213"
-        },
-        {
-          "file": "apps/web-support/src/main.ts",
-          "hash": "17436527127367840298"
-        },
-        {
-          "file": "apps/web-support/src/styles.css",
-          "hash": "2917954890128038984"
-        },
-        {
-          "file": "apps/web-support/tsconfig.app.json",
-          "hash": "1904063451971987368"
-        },
-        {
-          "file": "apps/web-support/tsconfig.json",
-          "hash": "13197230760538749365"
-        }
-      ],
-      "shared-ui": [
-        {
-          "file": "libs/shared-ui/project.json",
-          "hash": "1389868326933519382"
-        },
-        {
-          "file": "libs/shared-ui/src/lib/components/index.ts",
-          "hash": "6752633469762681791"
-        },
-        {
-          "file": "libs/shared-ui/src/lib/directives/index.ts",
-          "hash": "6752633469762681791"
-        },
-        {
-          "file": "libs/shared-ui/src/lib/index.ts",
-          "hash": "13990513168269067474"
-        },
-        {
-          "file": "libs/shared-ui/src/lib/pipes/index.ts",
-          "hash": "6752633469762681791"
         }
       ]
     },

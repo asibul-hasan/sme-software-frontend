@@ -1,7 +1,13 @@
+<!--
+  DATA-TABLE LIBRARY  ·  Template
+  New features: toast, revert, validation errors, progress/rating/avatar/link
+  cell types, pending-changes badge, striped rows, custom badge colors
+-->
 <div
   class="erp-table-host"
   [class.is-fullscreen]="isFullscreen"
-  [class]="densityClass"
+  [class.etbl-striped]="config.stripedRows"
+  [ngClass]="densityClass"
   (click)="$event.stopPropagation()"
 >
   <!-- ══ TOOLBAR ══════════════════════════════════════════════════ -->
@@ -24,6 +30,7 @@
           <i class="etbl-icon">close</i>
         </button>
       </div>
+
       <span class="etbl-result-count">
         {{ filteredData.length }} record{{
           filteredData.length !== 1 ? 's' : ''
@@ -34,6 +41,23 @@
             Clear filters
           </button>
         </ng-container>
+      </span>
+
+      <!-- Pending changes badge -->
+      <span
+        class="etbl-changes-badge"
+        *ngIf="pendingChangesCount > 0"
+        matTooltip="Unsaved changes"
+      >
+        <i class="etbl-icon">edit_note</i>
+        {{ pendingChangesCount }} unsaved
+        <button
+          class="etbl-revert-all-btn"
+          (click)="revertAll()"
+          matTooltip="Revert all changes"
+        >
+          <i class="etbl-icon">undo</i>
+        </button>
       </span>
     </div>
 
@@ -62,7 +86,7 @@
         <i class="etbl-icon">filter_list</i>
       </button>
 
-      <!-- Column visibility dropdown -->
+      <!-- Column visibility -->
       <div class="etbl-dd-wrap" *ngIf="config.allowColumnVisibility">
         <button
           class="etbl-btn"
@@ -101,15 +125,18 @@
         <i class="etbl-icon">{{ densityIcon }}</i>
       </button>
 
-      <!-- Export dropdown -->
+      <!-- Export -->
       <div class="etbl-dd-wrap" *ngIf="config.allowExport">
         <button
           class="etbl-btn"
           [class.etbl-btn-active]="openDropdown === 'export'"
+          [disabled]="loadingExport"
           (click)="toggleDropdown('export', $event)"
           matTooltip="Export"
         >
-          <i class="etbl-icon">download</i>
+          <i class="etbl-icon">{{
+            loadingExport ? 'hourglass_empty' : 'download'
+          }}</i>
         </button>
         <div
           class="etbl-dd etbl-dd-right"
@@ -117,14 +144,14 @@
           (click)="$event.stopPropagation()"
         >
           <p class="etbl-dd-title">Export Data</p>
-          <button class="etbl-dd-item" (click)="exportCSV()">
+          <button class="etbl-dd-item" (click)="runExport('csv')">
             <i class="etbl-icon">description</i
             ><span>CSV — Comma-separated</span>
           </button>
-          <button class="etbl-dd-item" (click)="exportXLSX()">
+          <button class="etbl-dd-item" (click)="runExport('xlsx')">
             <i class="etbl-icon">grid_on</i><span>XLSX — Excel Workbook</span>
           </button>
-          <button class="etbl-dd-item" (click)="exportPDF()">
+          <button class="etbl-dd-item" (click)="runExport('pdf')">
             <i class="etbl-icon">picture_as_pdf</i
             ><span>PDF — Printable Report</span>
           </button>
@@ -132,14 +159,14 @@
             <div class="etbl-dd-divider"></div>
             <button
               class="etbl-dd-item etbl-dd-item-sel"
-              (click)="exportCSV(true)"
+              (click)="runExport('csv', true)"
             >
               <i class="etbl-icon">checklist</i>
               <span>CSV — Selected ({{ selection.selected.length }})</span>
             </button>
             <button
               class="etbl-dd-item etbl-dd-item-sel"
-              (click)="exportPDF(true)"
+              (click)="runExport('pdf', true)"
             >
               <i class="etbl-icon">checklist</i>
               <span>PDF — Selected ({{ selection.selected.length }})</span>
@@ -170,7 +197,7 @@
   </div>
 
   <!-- ══ TABLE ═════════════════════════════════════════════════════ -->
-  <div class="etbl-scroll-wrap">
+  <div class="etbl-scroll-wrap" [style.max-height]="config.height">
     <table class="etbl-table">
       <colgroup>
         <col *ngIf="config.showRowNumbers" style="width: 48px" />
@@ -178,9 +205,10 @@
         <col
           *ngFor="let col of displayColumns"
           [style.width]="col.width || 'auto'"
-          [style.min-width]="col.minWidth || '100px'"
+          [style.min-width]="col.minWidth || '80px'"
+          [style.max-width]="col.maxWidth"
         />
-        <col *ngIf="config.allowDelete" style="width: 80px" />
+        <col *ngIf="config.allowDelete" style="width: 90px" />
       </colgroup>
 
       <!-- THEAD -->
@@ -201,11 +229,12 @@
             *ngFor="let col of displayColumns; trackBy: trackByKey"
             [class.etbl-th-sortable]="col.sortable !== false"
             [class.etbl-th-asc]="
-              state.sortColumn === col.key && state.sortDirection === 'asc'
+              state.sort.column === col.key && state.sort.direction === 'asc'
             "
             [class.etbl-th-desc]="
-              state.sortColumn === col.key && state.sortDirection === 'desc'
+              state.sort.column === col.key && state.sort.direction === 'desc'
             "
+            [class.etbl-th-filtered]="state.columnFilters[col.key]"
             (click)="sort(col)"
           >
             <div
@@ -272,10 +301,12 @@
           [class.etbl-row-editing]="isRowEditing(row['_rowId']!)"
           (click)="onRowClick(row)"
         >
+          <!-- Row number -->
           <td class="etbl-td etbl-td-num" *ngIf="config.showRowNumbers">
             {{ startRow + i }}
           </td>
 
+          <!-- Checkbox -->
           <td
             class="etbl-td etbl-td-check"
             *ngIf="config.allowRowSelection"
@@ -296,9 +327,18 @@
             [class.etbl-td-right]="col.align === 'right'"
             [class.etbl-td-center]="col.align === 'center'"
             [class.etbl-td-editable]="col.editable"
+            [class.etbl-td-invalid]="isCellInvalid(row['_rowId']!, col.key)"
+            [ngClass]="col.cellClass ? col.cellClass(row) : ''"
             (click)="onCellClick(row, col); $event.stopPropagation()"
+            [matTooltip]="
+              isCellInvalid(row['_rowId']!, col.key)
+                ? getCellError(row['_rowId']!, col.key)!
+                : col.tooltip
+                  ? col.tooltip(row)
+                  : ''
+            "
           >
-            <!-- EDIT MODE: entire row is editing -->
+            <!-- ── EDIT MODE ── -->
             <ng-container
               *ngIf="
                 isRowEditing(row['_rowId']!) && col.editable;
@@ -315,8 +355,10 @@
                   [value]="row[col.key] ?? ''"
                   (change)="onCellEdit(row, col, $any($event.target).value)"
                   (keydown)="onCellKeydown($event, row, col)"
+                  [class.etbl-input-invalid]="
+                    isCellInvalid(row['_rowId']!, col.key)
+                  "
                 />
-
                 <input
                   *ngSwitchCase="'number'"
                   class="etbl-cell-input etbl-cell-num"
@@ -326,8 +368,33 @@
                   [value]="row[col.key] ?? ''"
                   (change)="onCellEdit(row, col, +$any($event.target).value)"
                   (keydown)="onCellKeydown($event, row, col)"
+                  [class.etbl-input-invalid]="
+                    isCellInvalid(row['_rowId']!, col.key)
+                  "
                 />
-
+                <input
+                  *ngSwitchCase="'currency'"
+                  class="etbl-cell-input etbl-cell-num"
+                  type="number"
+                  step="0.01"
+                  [attr.data-row]="row['_rowId']"
+                  [attr.data-col]="col.key"
+                  [value]="row[col.key] ?? ''"
+                  (change)="onCellEdit(row, col, +$any($event.target).value)"
+                  (keydown)="onCellKeydown($event, row, col)"
+                />
+                <input
+                  *ngSwitchCase="'percentage'"
+                  class="etbl-cell-input etbl-cell-num"
+                  type="number"
+                  min="0"
+                  max="100"
+                  [attr.data-row]="row['_rowId']"
+                  [attr.data-col]="col.key"
+                  [value]="row[col.key] ?? ''"
+                  (change)="onCellEdit(row, col, +$any($event.target).value)"
+                  (keydown)="onCellKeydown($event, row, col)"
+                />
                 <input
                   *ngSwitchCase="'date'"
                   class="etbl-cell-input"
@@ -338,7 +405,6 @@
                   (change)="onCellEdit(row, col, $any($event.target).value)"
                   (keydown)="onCellKeydown($event, row, col)"
                 />
-
                 <select
                   *ngSwitchCase="'select'"
                   class="etbl-cell-select"
@@ -352,7 +418,6 @@
                     {{ opt.label }}
                   </option>
                 </select>
-
                 <input
                   *ngSwitchDefault
                   class="etbl-cell-input"
@@ -365,9 +430,10 @@
               </ng-container>
             </ng-container>
 
-            <!-- VIEW MODE -->
+            <!-- ── VIEW MODE ── -->
             <ng-template #viewCell>
               <ng-container [ngSwitch]="col.type">
+                <!-- Boolean -->
                 <span
                   *ngSwitchCase="'boolean'"
                   class="etbl-bool"
@@ -377,31 +443,127 @@
                     row[col.key] ? 'check_circle' : 'cancel'
                   }}</i>
                 </span>
+
+                <!-- Select / Badge -->
                 <span
                   *ngSwitchCase="'select'"
                   class="etbl-badge"
                   [class.etbl-badge-active]="row[col.key] === 'active'"
                   [class.etbl-badge-inactive]="row[col.key] === 'inactive'"
+                  [style.background-color]="
+                    getOptionColor(col, row[col.key])
+                      ? getOptionColor(col, row[col.key]) + '22'
+                      : null
+                  "
+                  [style.color]="getOptionColor(col, row[col.key])"
+                  [style.border-color]="
+                    getOptionColor(col, row[col.key])
+                      ? getOptionColor(col, row[col.key]) + '55'
+                      : null
+                  "
                 >
                   {{ getOptionLabel(col, row[col.key]) }}
                 </span>
+
+                <!-- Badge type (explicit) -->
                 <span
-                  *ngSwitchDefault
-                  [matTooltip]="col.tooltip ? col.tooltip(row) : ''"
+                  *ngSwitchCase="'badge'"
+                  class="etbl-badge"
+                  [style.background-color]="
+                    getOptionColor(col, row[col.key])
+                      ? getOptionColor(col, row[col.key]) + '22'
+                      : null
+                  "
+                  [style.color]="getOptionColor(col, row[col.key])"
                 >
-                  {{
-                    col.format
-                      ? col.format(row[col.key], row)
-                      : (row[col.key] ?? '—')
-                  }}
+                  {{ row | cellDisplay: col }}
                 </span>
+
+                <!-- Progress bar -->
+                <div *ngSwitchCase="'progress'" class="etbl-progress-wrap">
+                  <div
+                    class="etbl-progress-bar"
+                    [style.width.%]="row[col.key] || 0"
+                    [class.etbl-progress-low]="row[col.key] < 30"
+                    [class.etbl-progress-mid]="
+                      row[col.key] >= 30 && row[col.key] < 70
+                    "
+                    [class.etbl-progress-high]="row[col.key] >= 70"
+                  ></div>
+                  <span class="etbl-progress-label"
+                    >{{ row[col.key] || 0 }}%</span
+                  >
+                </div>
+
+                <!-- Rating stars -->
+                <div *ngSwitchCase="'rating'" class="etbl-rating">
+                  <i
+                    class="etbl-icon etbl-star"
+                    *ngFor="let s of [1, 2, 3, 4, 5]"
+                    [class.etbl-star-filled]="s <= row[col.key]"
+                  >
+                    {{ s <= row[col.key] ? 'star' : 'star_border' }}
+                  </i>
+                </div>
+
+                <!-- Avatar -->
+                <div *ngSwitchCase="'avatar'" class="etbl-avatar-cell">
+                  <div
+                    class="etbl-avatar"
+                    [style.background-color]="row[col.key]?.color || null"
+                  >
+                    <img
+                      *ngIf="row[col.key]?.src"
+                      [src]="row[col.key].src"
+                      [alt]="row[col.key]?.name"
+                    />
+                    <span *ngIf="!row[col.key]?.src">{{
+                      row[col.key]?.name || row[col.key] || '?' | slice: 0 : 2
+                    }}</span>
+                  </div>
+                  <span class="etbl-avatar-name">{{
+                    row[col.key]?.name || row[col.key]
+                  }}</span>
+                </div>
+
+                <!-- Link -->
+                <a
+                  *ngSwitchCase="'link'"
+                  class="etbl-link"
+                  [href]="row[col.key]?.url || row[col.key]"
+                  target="_blank"
+                  (click)="$event.stopPropagation()"
+                >
+                  <i class="etbl-icon" style="font-size: 13px">open_in_new</i>
+                  {{ row[col.key]?.label || row[col.key] }}
+                </a>
+
+                <!-- Email -->
+                <a
+                  *ngSwitchCase="'email'"
+                  class="etbl-link etbl-link-email"
+                  [href]="'mailto:' + row[col.key]"
+                  (click)="$event.stopPropagation()"
+                  >{{ row[col.key] }}</a
+                >
+
+                <!-- Default -->
+                <span *ngSwitchDefault>{{ row | cellDisplay: col }}</span>
               </ng-container>
-              <!-- pencil hint on row hover, for editable cells -->
+
+              <!-- Edit hint -->
               <i class="etbl-edit-hint etbl-icon" *ngIf="col.editable">edit</i>
+
+              <!-- Validation error indicator -->
+              <i
+                class="etbl-icon etbl-invalid-icon"
+                *ngIf="isCellInvalid(row['_rowId']!, col.key)"
+                >error_outline</i
+              >
             </ng-template>
           </td>
 
-          <!-- Actions -->
+          <!-- Actions column -->
           <td
             class="etbl-td etbl-td-actions"
             *ngIf="config.allowDelete"
@@ -410,8 +572,17 @@
             <div class="etbl-row-actions">
               <button
                 class="etbl-act-btn"
+                matTooltip="Revert"
+                *ngIf="row['sqlState'] !== 0 && row['_original']"
+                (click)="revertRowAction(row)"
+              >
+                <i class="etbl-icon">undo</i>
+              </button>
+              <button
+                class="etbl-act-btn"
                 matTooltip="Duplicate"
-                (click)="duplicateRow(row)"
+                *ngIf="config.allowDuplicate !== false"
+                (click)="duplicateRowAction(row)"
               >
                 <i class="etbl-icon">content_copy</i>
               </button>
@@ -438,8 +609,10 @@
             "
           >
             <div class="etbl-empty-inner">
-              <i class="etbl-icon etbl-empty-icon">inbox</i>
-              <p>No records found</p>
+              <i class="etbl-icon etbl-empty-icon">{{
+                config.emptyIcon || 'inbox'
+              }}</i>
+              <p>{{ config.emptyMessage || 'No records found' }}</p>
               <span *ngIf="hasActiveFilters()">
                 Try adjusting your search or filters.
                 <button class="etbl-text-btn" (click)="clearAllFilters()">
@@ -482,36 +655,36 @@
     <div class="etbl-pagination-center">
       <button
         class="etbl-page-btn"
-        [disabled]="state.page === 1"
+        [disabled]="state.pagination.page === 1"
         (click)="goToPage(1)"
       >
         <i class="etbl-icon">first_page</i>
       </button>
       <button
         class="etbl-page-btn"
-        [disabled]="state.page === 1"
-        (click)="goToPage(state.page - 1)"
+        [disabled]="state.pagination.page === 1"
+        (click)="goToPage(state.pagination.page - 1)"
       >
         <i class="etbl-icon">chevron_left</i>
       </button>
       <button
         class="etbl-page-btn"
         *ngFor="let p of pageNumbers"
-        [class.active]="p === state.page"
+        [class.active]="p === state.pagination.page"
         (click)="goToPage(p)"
       >
         {{ p }}
       </button>
       <button
         class="etbl-page-btn"
-        [disabled]="state.page === totalPages"
-        (click)="goToPage(state.page + 1)"
+        [disabled]="state.pagination.page === totalPages"
+        (click)="goToPage(state.pagination.page + 1)"
       >
         <i class="etbl-icon">chevron_right</i>
       </button>
       <button
         class="etbl-page-btn"
-        [disabled]="state.page === totalPages"
+        [disabled]="state.pagination.page === totalPages"
         (click)="goToPage(totalPages)"
       >
         <i class="etbl-icon">last_page</i>
@@ -521,16 +694,17 @@
       <span class="etbl-pagesize-label">Rows per page:</span>
       <select
         class="etbl-pagesize-select"
-        [value]="state.pageSize"
+        [value]="state.pagination.pageSize"
         (change)="changePageSize(+$any($event.target).value)"
       >
-        <option
-          *ngFor="let s of config.pageSizeOptions || [10, 25, 50, 100]"
-          [value]="s"
-        >
-          {{ s }}
-        </option>
+        <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
       </select>
     </div>
+  </div>
+
+  <!-- ══ TOAST ════════════════════════════════════════════════════ -->
+  <div class="etbl-toast" [class.etbl-toast-visible]="toastMessage">
+    <i class="etbl-icon">check_circle</i>
+    {{ toastMessage }}
   </div>
 </div>

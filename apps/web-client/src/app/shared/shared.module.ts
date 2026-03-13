@@ -26,7 +26,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import { DataTableComponent } from './components/data-table/data-table.component';
+import { DataTableComponent } from 'apps/web-client/src/app/shared/components/data-table';
 
 const MODULES = [
   CommonModule,
@@ -54,11 +54,11 @@ const MODULES = [
   MatTooltipModule,
   MatBadgeModule,
   MatProgressSpinnerModule,
-  MatCheckboxModule
+  MatCheckboxModule,
 ];
 
 @NgModule({
   imports: [...MODULES, DataTableComponent],
-  exports: [...MODULES, DataTableComponent]
+  exports: [...MODULES, DataTableComponent],
 })
 export class SharedModule {}

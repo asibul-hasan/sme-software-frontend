@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
-// ERP DATA TABLE  —  Global Stylesheet
-// ag-grid inspired: stable widths, row-level edit, proper dropdowns
+//  DATA-TABLE LIBRARY  ·  Stylesheet
+//  Additions: toast, validation, progress, rating, avatar, link,
+//             striped rows, changes badge, custom badge colors
 // ═══════════════════════════════════════════════════════════════════
 
 .erp-table-host {
@@ -10,6 +11,10 @@
   background: var(--card-bg);
   font-size: 13px;
   color: var(--text-primary);
+  position: relative; // for toast positioning
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
 
   &.is-fullscreen {
     position: fixed;
@@ -20,7 +25,7 @@
   }
 }
 
-// ── Density variants ──────────────────────────────────────────────
+// ── Density ───────────────────────────────────────────────────────
 .density-compact .etbl-td,
 .density-compact .etbl-th {
   padding-top: 5px;
@@ -35,15 +40,19 @@
 }
 .density-comfortable .etbl-td,
 .density-comfortable .etbl-th {
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: 14px;
+  padding-bottom: 14px;
   font-size: 13.5px;
 }
 
-// ══════════════════════════════════════════════════════════════════
-// TOOLBAR
-// ══════════════════════════════════════════════════════════════════
+// ── Striped rows ──────────────────────────────────────────────────
+.etbl-striped .etbl-row:nth-child(even) {
+  background: rgba(128, 128, 128, 0.03);
+}
 
+// ══════════════════════════════════════════════════════════════════
+//  TOOLBAR
+// ══════════════════════════════════════════════════════════════════
 .etbl-toolbar {
   display: flex;
   align-items: center;
@@ -52,7 +61,7 @@
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   gap: 12px;
-  flex-wrap: nowrap; // NEVER wrap — keeps toolbar on one line
+  flex-wrap: nowrap;
   min-height: 52px;
 }
 
@@ -62,13 +71,49 @@
   gap: 10px;
   flex-shrink: 1;
   min-width: 0;
+  flex-wrap: wrap;
 }
-
 .etbl-toolbar-right {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+// ── Changes badge ─────────────────────────────────────────────────
+.etbl-changes-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+
+  .etbl-icon {
+    font-size: 15px;
+  }
+}
+
+.etbl-revert-all-btn {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  cursor: pointer;
+  color: #d97706;
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.7;
+  &:hover {
+    opacity: 1;
+  }
+  .etbl-icon {
+    font-size: 14px;
+  }
 }
 
 // ── Search ────────────────────────────────────────────────────────
@@ -195,13 +240,17 @@
   &:active {
     transform: scale(0.96);
   }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 
   &.etbl-btn-active {
     background: rgba(13, 110, 253, 0.08);
     border-color: rgba(13, 110, 253, 0.3);
     color: var(--sidebar-active, #0d6efd);
   }
-
   &.etbl-btn-primary {
     background: var(--sidebar-active, #0d6efd);
     color: #fff;
@@ -211,7 +260,6 @@
       background: rgba(13, 110, 253, 0.85);
     }
   }
-
   &.etbl-btn-danger {
     background: rgba(239, 68, 68, 0.08);
     color: #ef4444;
@@ -250,11 +298,11 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   z-index: 999;
   padding: 6px 0;
-  display: none; // hidden by default
+  display: none;
 
   &.etbl-dd-open {
     display: block;
-  } // shown when open
+  }
   &.etbl-dd-right {
     left: auto;
     right: 0;
@@ -299,7 +347,6 @@
   &:hover {
     background: var(--bg-secondary);
   }
-
   &.etbl-dd-item-sel {
     color: var(--sidebar-active, #0d6efd);
   }
@@ -322,9 +369,8 @@
 }
 
 // ══════════════════════════════════════════════════════════════════
-// TABLE CORE
+//  TABLE CORE
 // ══════════════════════════════════════════════════════════════════
-
 .etbl-scroll-wrap {
   width: 100%;
   overflow-x: auto;
@@ -342,7 +388,7 @@
 .etbl-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; // ★ CRITICAL — prevents column width jumping
+  table-layout: fixed; // prevents column jumping
 }
 
 // ── Header ────────────────────────────────────────────────────────
@@ -371,7 +417,9 @@
     color: var(--sidebar-active, #0d6efd);
     opacity: 1;
   }
-
+  &.etbl-th-filtered {
+    color: var(--sidebar-active, #0d6efd);
+  }
   &.etbl-th-num {
     width: 48px;
     text-align: center;
@@ -381,7 +429,7 @@
     text-align: center;
   }
   &.etbl-th-actions {
-    width: 80px;
+    width: 90px;
     text-align: center;
   }
 }
@@ -391,11 +439,9 @@
   align-items: center;
   gap: 4px;
 }
-
 .etbl-th-text {
   flex: 1;
 }
-
 .etbl-sort-icon {
   font-size: 15px !important;
   opacity: 0.35;
@@ -406,7 +452,6 @@
 .etbl-filter-row {
   background: var(--bg-primary);
 }
-
 .etbl-td-filter {
   padding: 4px 6px;
   border-bottom: 1px solid var(--border-color);
@@ -454,28 +499,22 @@
 .etbl-row {
   transition: background-color 0.1s;
   cursor: pointer;
-
   &:hover {
     background: rgba(128, 128, 128, 0.04);
   }
 
-  // Persistent selection (single row, click to select)
   &.etbl-row-selected {
     background: rgba(13, 110, 253, 0.06) !important;
     .etbl-td {
       border-bottom-color: rgba(13, 110, 253, 0.12);
     }
   }
-
-  // Row in full edit mode
   &.etbl-row-editing {
     background: rgba(13, 110, 253, 0.04) !important;
     .etbl-td {
       border-bottom-color: rgba(13, 110, 253, 0.2);
     }
   }
-
-  // Dirty state indicators (left border via box-shadow on first td)
   &.row-insert > .etbl-td:first-child {
     box-shadow: inset 3px 0 0 #10b981;
   }
@@ -483,7 +522,7 @@
     box-shadow: inset 3px 0 0 #f59e0b;
   }
   &.row-delete {
-    opacity: 0.45;
+    opacity: 0.4;
     pointer-events: none;
   }
 }
@@ -494,10 +533,10 @@
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
   vertical-align: middle;
-  overflow: hidden; // ★ never expand the column
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 0; // works with table-layout:fixed to clip overflow
+  max-width: 0; // required for table-layout:fixed clipping
 
   &.etbl-td-right {
     text-align: right;
@@ -517,24 +556,27 @@
   }
   &.etbl-td-actions {
     text-align: center;
-    width: 80px;
+    width: 90px;
     padding: 4px 8px;
   }
-
-  // Show pencil hint only on editable cells
   &.etbl-td-editable:hover .etbl-edit-hint {
     opacity: 0.4;
   }
+
+  // Validation error highlight
+  &.etbl-td-invalid {
+    background: rgba(239, 68, 68, 0.04) !important;
+    .etbl-invalid-icon {
+      display: inline-block;
+    }
+  }
 }
 
-// ── Inline edit inputs ────────────────────────────────────────────
-// ★ KEY: inputs must NOT change the cell height or width
-
+// ── Edit inputs ───────────────────────────────────────────────────
 .etbl-cell-input,
 .etbl-cell-select {
-  // Fill cell exactly — no border-box tricks needed because cell has fixed width
   width: 100%;
-  height: 28px; // slightly shorter than row to show context
+  height: 28px;
   padding: 0 8px;
   border: 1px solid var(--sidebar-active, #0d6efd);
   border-radius: 4px;
@@ -545,8 +587,12 @@
   box-sizing: border-box;
   outline: none;
   box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
-  // No margin, no extra padding that could grow the row
   display: block;
+
+  &.etbl-input-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+  }
 }
 
 .etbl-cell-select {
@@ -569,7 +615,7 @@ html[data-theme='dark'] .etbl-cell-select {
   text-align: right;
 }
 
-// ── Edit hint pencil ──────────────────────────────────────────────
+// ── Edit hint / validation icon ───────────────────────────────────
 .etbl-edit-hint {
   font-size: 13px !important;
   color: var(--text-secondary);
@@ -580,7 +626,15 @@ html[data-theme='dark'] .etbl-cell-select {
   flex-shrink: 0;
 }
 
-// ── Status badges ─────────────────────────────────────────────────
+.etbl-invalid-icon {
+  font-size: 14px !important;
+  color: #ef4444;
+  margin-left: 4px;
+  vertical-align: middle;
+  display: none;
+}
+
+// ── Badges ────────────────────────────────────────────────────────
 .etbl-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -603,6 +657,7 @@ html[data-theme='dark'] .etbl-cell-select {
   }
 }
 
+// ── Boolean ───────────────────────────────────────────────────────
 .etbl-bool {
   display: inline-flex;
   align-items: center;
@@ -615,6 +670,114 @@ html[data-theme='dark'] .etbl-cell-select {
   &.etbl-bool-true {
     color: #10b981;
     opacity: 1;
+  }
+}
+
+// ── Progress bar ──────────────────────────────────────────────────
+.etbl-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+  max-width: 140px;
+}
+
+.etbl-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #10b981;
+  flex: 0 0 auto;
+  min-width: 4px;
+  max-width: 100px;
+  width: 60px; // will be overridden by style binding
+  transition: width 0.3s;
+
+  &.etbl-progress-low {
+    background: #ef4444;
+  }
+  &.etbl-progress-mid {
+    background: #f59e0b;
+  }
+  &.etbl-progress-high {
+    background: #10b981;
+  }
+}
+
+.etbl-progress-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+// ── Rating ────────────────────────────────────────────────────────
+.etbl-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.etbl-star {
+  font-size: 16px !important;
+  color: var(--border-color);
+  &.etbl-star-filled {
+    color: #f59e0b;
+  }
+}
+
+// ── Avatar ────────────────────────────────────────────────────────
+.etbl-avatar-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.etbl-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(13, 110, 253, 0.15);
+  color: var(--sidebar-active, #0d6efd);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-transform: uppercase;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.etbl-avatar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+
+// ── Link ──────────────────────────────────────────────────────────
+.etbl-link {
+  color: var(--sidebar-active, #0d6efd);
+  text-decoration: none;
+  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.etbl-link-email {
+  color: var(--text-secondary);
+  &:hover {
+    color: var(--sidebar-active, #0d6efd);
   }
 }
 
@@ -701,22 +864,19 @@ html[data-theme='dark'] .etbl-cell-select {
 .etbl-summary-row {
   background: var(--bg-secondary);
 }
-
 .etbl-td-summary {
   padding: 10px 12px;
   border-top: 2px solid var(--border-color);
   font-weight: 600;
   font-size: 12.5px;
 }
-
 .etbl-summary-val {
   color: var(--text-primary);
 }
 
 // ══════════════════════════════════════════════════════════════════
-// PAGINATION
+//  PAGINATION
 // ══════════════════════════════════════════════════════════════════
-
 .etbl-pagination {
   display: flex;
   align-items: center;
@@ -807,7 +967,43 @@ html[data-theme='dark'] .etbl-pagesize-select {
   }
 }
 
-// ── Material Icon helper ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════════
+.etbl-toast {
+  position: absolute;
+  bottom: 56px; // just above pagination
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--text-primary);
+  color: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  white-space: nowrap;
+  z-index: 1001;
+
+  .etbl-icon {
+    font-size: 15px;
+    color: #10b981;
+  }
+
+  &.etbl-toast-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+// ── Material Icons helper ─────────────────────────────────────────
 .etbl-icon {
   font-family: 'Material Icons';
   font-weight: normal;

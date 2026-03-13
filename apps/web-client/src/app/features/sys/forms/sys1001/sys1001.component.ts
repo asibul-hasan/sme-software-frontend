@@ -12,8 +12,8 @@ import {
   RowData,
   SqlState,
   TableConfig,
-} from 'apps/web-client/src/app/shared/components/data-table/data-table.models';
-import { DataTableComponent } from 'apps/web-client/src/app/shared/components/data-table/data-table.component';
+  DataTableComponent,
+} from 'apps/web-client/src/app/shared/components/data-table';
 
 export interface BranchRow {
   branchName: string;
@@ -70,6 +70,8 @@ export class Sys1001Component implements OnInit {
     allowDelete: true,
     allowExport: true,
     allowColumnVisibility: true,
+    height: '400px',
+    stripedRows: true,
     allowRowSelection: false,
     pageSizeOptions: [5, 10, 25],
     hideAddButton: true,
@@ -93,8 +95,8 @@ export class Sys1001Component implements OnInit {
       type: 'select',
       editable: true,
       options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Inactive', value: 'inactive' },
+        { label: 'Active', value: 'active', color: '#10b981' },
+        { label: 'Inactive', value: 'inactive', color: '#ef4444' },
       ],
     },
   ];
