@@ -7,8 +7,7 @@
       (click)="onToggleSidebar()"
       title="Toggle Sidebar"
     >
-      <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-        >menu</mat-icon
+      <mat-icon>menu</mat-icon
       >
     </button>
 
@@ -48,8 +47,7 @@
       class="top-btn d-none d-lg-flex align-items-center justify-content-center"
       title="Quick Actions"
     >
-      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
-        >bolt</mat-icon
+      <mat-icon>bolt</mat-icon
       >
     </button>
 
@@ -59,50 +57,31 @@
       title="Toggle Fullscreen"
       (click)="onToggleFullScreen()"
     >
-      <mat-icon style="font-size: 17px; width: 17px; height: 17px">{{
+      <mat-icon>{{
         isFullScreen() ? 'fullscreen_exit' : 'fullscreen'
       }}</mat-icon>
     </button>
 
     <!-- Branch switcher -->
     <div
-      class="user-card d-flex align-items-center justify-content-between gap-2"
+      class="user-card branch-sw d-flex align-items-center justify-content-between gap-1"
       [matMenuTriggerFor]="branchMenu"
       title="Switch Branch"
-      style="height: 32px; width: 150px"
     >
-      <div class="d-flex align-items-center gap-2 overflow-hidden">
-        <mat-icon
-          style="
-            font-size: 14px;
-            width: 14px;
-            height: 14px;
-            color: var(--indigo);
-            flex-shrink: 0;
-          "
-          >store</mat-icon
-        >
-        <div class="user-info d-none d-md-block text-truncate">
-          <div class="user-name text-truncate" style="font-size: 11px">
+      <div class="d-flex align-items-center gap-1 overflow-hidden" style="min-width: 0;">
+        <mat-icon class="branch-icon">store</mat-icon>
+        <div class="user-info text-truncate">
+          <div class="user-name text-truncate">
             {{ currentBranchName() }}
           </div>
         </div>
       </div>
-      <mat-icon
-        style="
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-          color: var(--text-3);
-          margin-left: 2px;
-          flex-shrink: 0;
-        "
-      >
+      <mat-icon class="chevron-icon">
         expand_more
       </mat-icon>
     </div>
 
-    <mat-menu #branchMenu="matMenu">
+    <mat-menu #branchMenu="matMenu" class="custom-mat-menu">
       <button
         mat-menu-item
         *ngFor="let branch of branches()"
@@ -122,8 +101,7 @@
       title="Notifications"
       [matMenuTriggerFor]="notifMenu"
     >
-      <mat-icon style="font-size: 17px; width: 17px; height: 17px"
-        >notifications</mat-icon
+      <mat-icon>notifications</mat-icon
       >
       <span class="notif-badge" *ngIf="notificationCount() > 0"></span>
     </button>
@@ -134,7 +112,7 @@
       title="Toggle Theme"
       (click)="onToggleTheme()"
     >
-      <mat-icon style="font-size: 17px; width: 17px; height: 17px">
+      <mat-icon>
         {{ isDark() ? 'light_mode' : 'dark_mode' }}
       </mat-icon>
     </button>
@@ -149,15 +127,7 @@
         <div class="user-name">{{ userName() }}</div>
         <div class="user-role">{{ userRole() }}</div>
       </div>
-      <mat-icon
-        style="
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-          color: var(--text-3);
-          margin-left: 2px;
-        "
-      >
+      <mat-icon class="chevron-icon">
         expand_more
       </mat-icon>
     </div>
@@ -243,15 +213,7 @@
         [class.active]="activeProfileTab() === 'profile'"
         (click)="activeProfileTab.set('profile')"
       >
-        <mat-icon
-          style="
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            margin-right: 4px;
-            vertical-align: middle;
-          "
-          >person_outline</mat-icon
+        <mat-icon class="tab-icon">person_outline</mat-icon
         >
         Profile
       </div>
@@ -260,21 +222,13 @@
         [class.active]="activeProfileTab() === 'setting'"
         (click)="activeProfileTab.set('setting')"
       >
-        <mat-icon
-          style="
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            margin-right: 4px;
-            vertical-align: middle;
-          "
-          >settings</mat-icon
+        <mat-icon class="tab-icon">settings</mat-icon
         >
         Setting
       </div>
     </div>
 
-    <div class="profile-menu-list pb-2" style="font-size: 16px">
+    <div class="profile-menu-list pb-2">
       <!-- These only show if profile tab is selected, as per typical design, or we just render them statically -->
       <ng-container *ngIf="activeProfileTab() === 'profile'">
         <button mat-menu-item class="profile-menu-item">
