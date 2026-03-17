@@ -1,21 +1,21 @@
 {
   "run": {
-    "command": "nx lint web-client",
-    "startTime": "2026-03-08T15:53:21.366Z",
-    "endTime": "2026-03-08T15:54:58.830Z",
+    "command": "nx build web-client",
+    "startTime": "2026-03-16T07:41:46.325Z",
+    "endTime": "2026-03-16T07:42:15.063Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "web-client:lint",
-      "target": "lint",
+      "taskId": "web-client:build:production",
+      "target": "build",
       "projectName": "web-client",
-      "hash": "8358183471885525969",
-      "startTime": "2026-03-08T15:53:21.431Z",
-      "endTime": "2026-03-08T15:54:58.797Z",
+      "hash": "2728576388878435346",
+      "startTime": "2026-03-16T07:41:46.352Z",
+      "endTime": "2026-03-16T07:42:14.240Z",
       "params": "",
       "cacheStatus": "cache-miss",
-      "status": 1
+      "status": 0
     }
   ]
 }

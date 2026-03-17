@@ -69,7 +69,7 @@
       class="user-card d-flex align-items-center justify-content-between gap-2"
       [matMenuTriggerFor]="branchMenu"
       title="Switch Branch"
-      style="height: 36px; width: 150px"
+      style="height: 32px; width: 150px"
     >
       <div class="d-flex align-items-center gap-2 overflow-hidden">
         <mat-icon
@@ -274,7 +274,7 @@
       </div>
     </div>
 
-    <div class="profile-menu-list pb-2">
+    <div class="profile-menu-list pb-2" style="font-size: 16px">
       <!-- These only show if profile tab is selected, as per typical design, or we just render them statically -->
       <ng-container *ngIf="activeProfileTab() === 'profile'">
         <button mat-menu-item class="profile-menu-item">

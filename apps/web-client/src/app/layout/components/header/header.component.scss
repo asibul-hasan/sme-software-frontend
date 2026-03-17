@@ -7,7 +7,7 @@
   right: 0;
   left: 230px;
   top: 0;
-  height: 64px;
+  height: 40px;
   background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -54,8 +54,8 @@
 
 /* ── Icon Buttons ── */
 .top-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   background: var(--glass);
   border: 1px solid var(--border);

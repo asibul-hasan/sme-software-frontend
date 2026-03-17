@@ -1,5 +1,19 @@
 <footer
   class="app-footer d-flex align-items-center justify-content-center justify-content-md-between px-3 px-md-4 gap-2"
+  style="
+    position: fixed;
+    right: 0;
+    left: 230px;
+    bottom: 0;
+    z-index: 100;
+    height: 24px;
+    background: var(--footer-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--text-3);
+  "
 >
   <div class="d-flex align-items-center gap-2">
     <span
@@ -7,11 +21,11 @@
       style="letter-spacing: -0.02em"
     >
       <span class="fs-6" style="color: var(--indigo)">A</span>
-      <span class="small text-light">IDLY</span>
-      <span class="small ms-1 text-secondary fw-normal">by</span>
+      <span class="small" style="color: var(--text-1)">IDLY</span>
+      <span class="small ms-1 fw-normal" style="color: var(--text-3)">by</span>
       <span class="small ms-1" style="color: var(--rose)">InfoaidTech</span>
     </span>
-    <span class="d-none d-md-inline text-secondary mx-1" style="font-size: 14px"
+    <span class="d-none d-md-inline mx-1" style="color: var(--text-4); font-size: 14px"
       >|</span
     >
     <span
@@ -30,33 +44,33 @@
   </div>
 
   <div class="flex-grow-1 text-center d-none d-md-block">
-    <span class="text-secondary" style="font-size: 11px">
+    <span style="color: var(--text-3); font-size: 11px">
       © {{ currentYear }} Infoaidtech. All rights reserved.
     </span>
   </div>
 
-  <div class="d-flex align-items-center gap-2 d-none d-md-flex text-light">
+  <div class="d-flex align-items-center gap-2 d-none d-md-flex">
     <span
       class="d-flex align-items-center gap-1 fw-medium"
-      style="font-size: 11px"
+      style="font-size: 11px; color: var(--text-2)"
     >
-      <span class="status-dot flex-shrink-0"></span>
+      <span class="status-dot flex-shrink-0" style="width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 6px var(--emerald);"></span>
       {{ 'allSystemsOperational' | translate }}
     </span>
-    <span class="text-secondary mx-1" style="font-size: 14px">|</span>
+    <span class="mx-1" style="color: var(--text-4); font-size: 14px">|</span>
     <a
-      class="text-decoration-none footer-link text-light"
-      style="font-size: 11px"
+      class="text-decoration-none footer-link"
+      style="font-size: 11px; color: var(--text-3);"
       href="#"
       (click)="onHelp($event)"
     >
       {{ 'help' | translate }}
     </a>
-    <span class="text-secondary mx-1" style="font-size: 14px">|</span>
+    <span class="mx-1" style="color: var(--text-4); font-size: 14px">|</span>
 
     <a
-      class="text-decoration-none footer-link text-light"
-      style="font-size: 11px"
+      class="text-decoration-none footer-link"
+      style="font-size: 11px; color: var(--text-3);"
       href="#"
       (click)="onPrivacy($event)"
     >
