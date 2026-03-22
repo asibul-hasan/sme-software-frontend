@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { SharedModule } from '../../../shared';
 
 @Component({
@@ -9,6 +9,11 @@ import { SharedModule } from '../../../shared';
   styleUrl: './footer.component.scss',
 })
 export class FooterComponent {
+  @Input() set sidebarCollapsed(val: boolean) {
+    this.isCollapsed.set(val);
+  }
+  
+  isCollapsed = signal(false);
   currentYear = new Date().getFullYear();
 
   onHelp(event: Event) {

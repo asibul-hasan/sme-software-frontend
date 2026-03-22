@@ -1,0 +1,584 @@
+<!-- ===================================================
+     PAGE: FORGOT PASSWORD
+     =================================================== -->
+<!-- ===================================================
+     PAGE: FORGOT PASSWORD
+     =================================================== -->
+<div id="pg-forgot" class="min-vh-100 d-flex">
+  <!-- LEFT -->
+  <div
+    class="d-none d-lg-flex flex-column justify-content-between p-5"
+    style="
+      width: 42%;
+      background: linear-gradient(155deg, #0c0c16 0%, #11111e 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+    "
+  >
+    <div class="d-flex align-items-center gap-2">
+      <div
+        class="rounded-3 d-flex align-items-center justify-content-center fw-bold"
+        style="
+          width: 40px;
+          height: 40px;
+          background: #ff2d6b;
+          box-shadow: 0 6px 20px rgba(255, 45, 107, 0.4);
+          font-size: 18px;
+        "
+      >
+        ⚡
+      </div>
+      <span class="fw-bold fs-5 text-white"
+        >Aidly<span style="color: #ff2d6b">ERP</span></span
+      >
+    </div>
+
+    <div>
+      <span
+        class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
+        style="
+          background: rgba(255, 45, 107, 0.12);
+          color: #ff2d6b;
+          border: 1px solid rgba(255, 45, 107, 0.3);
+          font-size: 10px;
+          letter-spacing: 0.1em;
+        "
+        >🔐 ACCOUNT RECOVERY</span
+      >
+      <h2
+        class="fw-bold text-white mb-3"
+        style="font-size: 2rem; line-height: 1.2"
+      >
+        Locked out?<br />
+        <span
+          style="
+            background: linear-gradient(135deg, #ff2d6b, #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          "
+          >We've got you.</span
+        >
+      </h2>
+      <p
+        class="text-secondary mb-4"
+        style="font-size: 13.5px; line-height: 1.75; max-width: 300px"
+      >
+        Reset your password in under 2 minutes via a secure 6-digit code sent to
+        your email.
+      </p>
+      <div class="d-flex flex-column gap-2">
+        <div
+          class="d-flex align-items-center gap-3 text-secondary"
+          style="font-size: 13px"
+        >
+          <div
+            class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+            style="
+              width: 28px;
+              height: 28px;
+              min-width: 28px;
+              background: rgba(255, 45, 107, 0.12);
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              color: #ff2d6b;
+              font-size: 12px;
+            "
+          >
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          Secure OTP via email
+        </div>
+        <div
+          class="d-flex align-items-center gap-3 text-secondary"
+          style="font-size: 13px"
+        >
+          <div
+            class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+            style="
+              width: 28px;
+              height: 28px;
+              min-width: 28px;
+              background: rgba(255, 45, 107, 0.12);
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              color: #ff2d6b;
+              font-size: 12px;
+            "
+          >
+            <i class="bi bi-clock-history"></i>
+          </div>
+          Code valid for 10 minutes
+        </div>
+        <div
+          class="d-flex align-items-center gap-3 text-secondary"
+          style="font-size: 13px"
+        >
+          <div
+            class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+            style="
+              width: 28px;
+              height: 28px;
+              min-width: 28px;
+              background: rgba(255, 45, 107, 0.12);
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              color: #ff2d6b;
+              font-size: 12px;
+            "
+          >
+            <i class="bi bi-telephone"></i>
+          </div>
+          Need help? Call +880-1XXX-XXXXXX
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="d-flex gap-4 pt-4"
+      style="border-top: 1px solid rgba(255, 255, 255, 0.07)"
+    >
+      <div>
+        <div class="fw-bold text-white" style="font-size: 1.5rem">🔒</div>
+        <div class="text-secondary" style="font-size: 10.5px">256-bit SSL</div>
+      </div>
+      <div>
+        <div class="fw-bold" style="color: #ff2d6b; font-size: 1.5rem">
+          24/7
+        </div>
+        <div class="text-secondary" style="font-size: 10.5px">Support</div>
+      </div>
+      <div>
+        <div class="fw-bold" style="color: #ff2d6b; font-size: 1.5rem">BD</div>
+        <div class="text-secondary" style="font-size: 10.5px">Local team</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div
+    class="flex-fill d-flex align-items-center justify-content-center p-4"
+    style="padding-top: 80px !important"
+  >
+    <div class="w-100" style="max-width: 420px">
+      <!-- Progress -->
+      <div class="d-flex align-items-center mb-4">
+        <div class="d-flex flex-column align-items-center">
+          <div
+            id="fc1"
+            class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+            [style.background]="currentStep >= 1 ? '#ff2d6b' : 'rgba(255, 255, 255, 0.08)'"
+            [style.color]="currentStep >= 1 ? '#fff' : '#888'"
+            style="
+              width: 34px;
+              height: 34px;
+              font-size: 13px;
+              box-shadow: 0 0 0 4px rgba(255, 45, 107, 0.2);
+            "
+          >
+            1
+          </div>
+          <small class="text-secondary mt-1 fw-semibold" style="font-size: 10px"
+            >Email</small
+          >
+        </div>
+        <div
+          class="flex-fill mx-2 mb-4"
+          id="fl1"
+          [style.background]="currentStep >= 2 ? '#ff2d6b' : 'rgba(255, 255, 255, 0.1)'"
+          style="
+            height: 2px;
+            transition: background 0.4s;
+          "
+        ></div>
+        <div class="d-flex flex-column align-items-center">
+          <div
+            id="fc2"
+            class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+            [style.background]="currentStep >= 2 ? '#ff2d6b' : 'rgba(255, 255, 255, 0.08)'"
+            [style.color]="currentStep >= 2 ? '#fff' : '#888'"
+            style="
+              width: 34px;
+              height: 34px;
+              font-size: 13px;
+            "
+          >
+            2
+          </div>
+          <small class="text-secondary mt-1 fw-semibold" style="font-size: 10px"
+            >Verify</small
+          >
+        </div>
+        <div
+          class="flex-fill mx-2 mb-4"
+          id="fl2"
+          [style.background]="currentStep >= 3 ? '#ff2d6b' : 'rgba(255, 255, 255, 0.1)'"
+          style="
+            height: 2px;
+            transition: background 0.4s;
+          "
+        ></div>
+        <div class="d-flex flex-column align-items-center">
+          <div
+            id="fc3"
+            class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+            [style.background]="currentStep >= 3 ? '#ff2d6b' : 'rgba(255, 255, 255, 0.08)'"
+            [style.color]="currentStep >= 3 ? '#fff' : '#888'"
+            style="
+              width: 34px;
+              height: 34px;
+              font-size: 13px;
+            "
+          >
+            3
+          </div>
+          <small class="text-secondary mt-1 fw-semibold" style="font-size: 10px"
+            >Reset</small
+          >
+        </div>
+      </div>
+
+      <form [formGroup]="forgotForm">
+        <!-- STEP 1 -->
+        <div *ngIf="currentStep === 1">
+          <a
+            routerLink="/auth/login"
+            class="d-inline-flex align-items-center gap-2 text-secondary text-decoration-none fw-semibold mb-4"
+            style="font-size: 13px"
+            ><i class="bi bi-arrow-left"></i> Back to Login</a
+          >
+          <span
+            class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
+            style="
+              background: rgba(255, 45, 107, 0.12);
+              color: #ff2d6b;
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              font-size: 10px;
+            "
+            >STEP 1 — EMAIL</span
+          >
+          <h1 class="fw-bold mb-1" style="font-size: 1.75rem">
+            Forgot your password?
+          </h1>
+          <p class="text-secondary mb-4" style="font-size: 14px">
+            Enter your registered email and we'll send a 6-digit code.
+          </p>
+
+          <div class="mb-2">
+            <label class="form-label fw-semibold" style="font-size: 12.5px"
+              >Registered Email</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary border-end-0"
+                ><i class="bi bi-envelope text-secondary"></i></span
+              ><input
+                type="email"
+                class="form-control bg-body-secondary border-start-0"
+                placeholder="you@company.com"
+                formControlName="email"
+              />
+            </div>
+            <small class="text-secondary"
+              >We'll send a one-time code to this address.</small
+            >
+          </div>
+
+          <button
+            class="btn w-100 fw-bold py-3 mt-3 mb-3"
+            type="button"
+            (click)="fSend()"
+            [disabled]="forgotForm.get('email')?.invalid"
+            style="
+              background: #ff2d6b;
+              color: #fff;
+              border: none;
+              font-size: 14.5px;
+              box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);
+            "
+          >
+            Send Verification Code <i class="bi bi-send ms-1"></i>
+          </button>
+          <p class="text-center text-secondary mb-0" style="font-size: 13.5px">
+            Remembered it?
+            <a
+              routerLink="/auth/login"
+              class="fw-bold text-decoration-none"
+              style="color: #ff2d6b"
+              >Sign in →</a
+            >
+          </p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngIf="currentStep === 2">
+          <a
+            href="#"
+            class="d-inline-flex align-items-center gap-2 text-secondary text-decoration-none fw-semibold mb-4"
+            style="font-size: 13px"
+            (click)="fBack(1); $event.preventDefault()"
+            ><i class="bi bi-arrow-left"></i> Back</a
+          >
+          <span
+            class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
+            style="
+              background: rgba(255, 45, 107, 0.12);
+              color: #ff2d6b;
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              font-size: 10px;
+            "
+            >STEP 2 — VERIFY OTP</span
+          >
+          <h1 class="fw-bold mb-1" style="font-size: 1.75rem">
+            Check your email
+          </h1>
+          <p class="text-secondary mb-3" style="font-size: 14px">
+            A 6-digit code was sent to
+            <strong id="fMailDisp" style="color: #ff2d6b">{{ emailDisplay }}</strong>. Expires in 10
+            mins.
+          </p>
+
+          <div
+            class="alert border rounded-3 d-flex align-items-center gap-2 mb-4"
+            style="
+              background: rgba(255, 45, 107, 0.08);
+              border-color: rgba(255, 45, 107, 0.3) !important;
+              color: #ff2d6b;
+              font-size: 13px;
+            "
+          >
+            <i class="bi bi-info-circle flex-shrink-0"></i> Demo mode: any 6
+            digits will work.
+          </div>
+
+          <div class="d-flex justify-content-center gap-2 mb-4">
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o1"
+              (input)="onOtpInput($event, 'o2', '')"
+              (keydown)="onOtpKeydown($event, 'o1', '')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o2"
+              (input)="onOtpInput($event, 'o3', 'o1')"
+              (keydown)="onOtpKeydown($event, 'o2', 'o1')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o3"
+              (input)="onOtpInput($event, 'o4', 'o2')"
+              (keydown)="onOtpKeydown($event, 'o3', 'o2')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o4"
+              (input)="onOtpInput($event, 'o5', 'o3')"
+              (keydown)="onOtpKeydown($event, 'o4', 'o3')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o5"
+              (input)="onOtpInput($event, 'o6', 'o4')"
+              (keydown)="onOtpKeydown($event, 'o5', 'o4')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+            <input
+              class="form-control text-center fw-bold bg-body-secondary"
+              maxlength="1"
+              id="o6"
+              (input)="onOtpInput($event, '', 'o5')"
+              (keydown)="onOtpKeydown($event, 'o6', 'o5')"
+              style="width: 50px; height: 56px; font-size: 1.4rem"
+            />
+          </div>
+
+          <button
+            class="btn w-100 fw-bold py-3 mb-3"
+            (click)="fVerify()"
+            style="
+              background: #ff2d6b;
+              color: #fff;
+              border: none;
+              font-size: 14.5px;
+              box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);
+            "
+          >
+            Verify Code <i class="bi bi-check-lg ms-1"></i>
+          </button>
+          <p class="text-center text-secondary mb-0" style="font-size: 13.5px">
+            Didn't receive it?
+            <a
+              href="#"
+              (click)="fSend(); $event.preventDefault()"
+              class="fw-bold text-decoration-none"
+              style="color: #ff2d6b"
+              >Resend code</a
+            >
+          </p>
+        </div>
+
+        <!-- STEP 3 -->
+        <div *ngIf="currentStep === 3">
+          <a
+            href="#"
+            class="d-inline-flex align-items-center gap-2 text-secondary text-decoration-none fw-semibold mb-4"
+            style="font-size: 13px"
+            (click)="fBack(2); $event.preventDefault()"
+            ><i class="bi bi-arrow-left"></i> Back</a
+          >
+          <span
+            class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
+            style="
+              background: rgba(255, 45, 107, 0.12);
+              color: #ff2d6b;
+              border: 1px solid rgba(255, 45, 107, 0.3);
+              font-size: 10px;
+            "
+            >STEP 3 — NEW PASSWORD</span
+          >
+          <h1 class="fw-bold mb-1" style="font-size: 1.75rem">
+            Set a new password
+          </h1>
+          <p class="text-secondary mb-4" style="font-size: 14px">
+            Choose a strong password you haven't used before.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size: 12.5px"
+              >New Password</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary border-end-0"
+                ><i class="bi bi-lock text-secondary"></i
+              ></span>
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                class="form-control bg-body-secondary border-start-0 border-end-0"
+                id="nPwd"
+                placeholder="Min. 8 characters"
+                formControlName="password"
+              />
+              <button
+                class="btn btn-outline-secondary border-start-0"
+                type="button"
+                (click)="showPassword = !showPassword"
+              >
+                <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size: 12.5px"
+              >Confirm New Password</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary border-end-0"
+                ><i class="bi bi-lock-fill text-secondary"></i
+              ></span>
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                class="form-control bg-body-secondary border-start-0 border-end-0"
+                id="nPwdC"
+                placeholder="Repeat new password"
+              />
+              <button
+                class="btn btn-outline-secondary border-start-0"
+                type="button"
+                (click)="showConfirmPassword = !showConfirmPassword"
+              >
+                <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <ul class="list-group mb-4">
+            <li
+              id="req8"
+              class="list-group-item bg-transparent d-flex align-items-center gap-2 text-secondary"
+              style="font-size: 12.5px"
+            >
+              <i class="bi bi-check-circle-fill text-success" *ngIf="(forgotForm.get('password')?.value?.length || 0) >= 8"></i>
+              <i class="bi bi-circle" *ngIf="(forgotForm.get('password')?.value?.length || 0) < 8"></i>
+              At least 8 characters
+            </li>
+            <li
+              id="reqUC"
+              class="list-group-item bg-transparent d-flex align-items-center gap-2 text-secondary"
+              style="font-size: 12.5px"
+            >
+              <i class="bi bi-circle"></i> One uppercase letter
+            </li>
+            <li
+              id="reqN"
+              class="list-group-item bg-transparent d-flex align-items-center gap-2 text-secondary"
+              style="font-size: 12.5px"
+            >
+              <i class="bi bi-circle"></i> One number
+            </li>
+          </ul>
+
+          <button
+            class="btn w-100 fw-bold py-3"
+            type="button"
+            (click)="fReset()"
+            [disabled]="forgotForm.get('password')?.invalid"
+            style="
+              background: #ff2d6b;
+              color: #fff;
+              border: none;
+              font-size: 14.5px;
+              box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);
+            "
+          >
+            Reset Password <i class="bi bi-shield-check ms-1"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- STEP 4: Done -->
+      <div *ngIf="currentStep === 4" class="text-center py-4">
+        <div
+          class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+          style="
+            width: 72px;
+            height: 72px;
+            background: rgba(16, 185, 129, 0.13);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            font-size: 26px;
+          "
+        >
+          🎉
+        </div>
+        <h2 class="fw-bold mb-2">Password Reset!</h2>
+        <p
+          class="text-secondary mb-4"
+          style="
+            font-size: 14px;
+            max-width: 340px;
+            margin: 0 auto 24px !important;
+          "
+        >
+          Your password has been updated. Sign in with your new credentials.
+        </p>
+        <button
+          class="btn fw-bold py-3 px-5"
+          routerLink="/auth/login"
+          style="
+            background: #ff2d6b;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);
+          "
+        >
+          Back to Login <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

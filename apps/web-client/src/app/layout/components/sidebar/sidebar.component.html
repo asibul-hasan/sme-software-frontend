@@ -4,7 +4,7 @@
 >
   <!-- Logo -->
   <div
-    class="sb-logo sb-logo-pulse d-flex align-items-center justify-content-start flex-shrink-0 overflow-hidden mb-3"
+    class="sb-logo sb-logo-pulse d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden mb-3"
     [routerLink]="['/']"
   >
     <span class="logo-main fw-black">A</span>
@@ -63,7 +63,7 @@
       <!-- MODULE -->
       <div class="sb-module w-100 d-flex flex-column align-items-center">
         <a
-          class="sb-item module-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
+          class="sb-item module-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
           (click)="module.expanded = !module.expanded"
           [class.expanded-item]="!isCollapsed()"
           [matTooltip]="module.formName | translate"
@@ -101,7 +101,7 @@
               <div class="line-sub-h" *ngIf="!isCollapsed()"></div>
 
               <a
-                class="sb-item submodule-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
+                class="sb-item submodule-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
                 (click)="sub.expanded = !sub.expanded"
                 [matTooltip]="sub.formName | translate"
                 matTooltipPosition="right"
@@ -138,7 +138,7 @@
                     <div class="line-form-h" *ngIf="!isCollapsed()"></div>
 
                     <a
-                      class="sb-item form-item d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
+                      class="sb-item form-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
                       [routerLink]="form.route"
                       routerLinkActive="active"
                       [routerLinkActiveOptions]="{ exact: false }"

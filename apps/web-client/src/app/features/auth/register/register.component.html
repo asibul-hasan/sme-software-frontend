@@ -1,0 +1,206 @@
+<!-- ===================================================
+     PAGE: REGISTER
+     =================================================== -->
+<div id="pg-register" class="min-vh-100 d-flex">
+
+  <!-- LEFT -->
+  <div class="d-none d-lg-flex flex-column justify-content-between p-5" style="width:42%;background:linear-gradient(155deg,#0c0c16 0%,#11111e 100%);border-right:1px solid rgba(255,255,255,.06);">
+    <div class="d-flex align-items-center gap-2">
+      <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:#ff2d6b;box-shadow:0 6px 20px rgba(255,45,107,.4);font-size:18px;">⚡</div>
+      <span class="fw-bold fs-5 text-white">Aidly<span style="color:#ff2d6b;">ERP</span></span>
+    </div>
+
+    <div>
+      <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-block" style="background:rgba(255,45,107,.12);color:#ff2d6b;border:1px solid rgba(255,45,107,.3);font-size:10px;letter-spacing:.1em;">🚀 GET STARTED FREE</span>
+      <h2 class="fw-bold text-white mb-3" style="font-size:2rem;line-height:1.2;">
+        Your business,<br/>
+        <span style="background:linear-gradient(135deg,#ff2d6b,#ff8c42);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">fully automated.</span>
+      </h2>
+      <p class="text-secondary mb-4" style="font-size:13.5px;line-height:1.75;max-width:300px;">Join hundreds of Bangladeshi businesses running smarter with AidlyERP.</p>
+
+      <div class="d-flex flex-column gap-2 mb-4">
+        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size:13px;"><div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width:28px;height:28px;min-width:28px;background:rgba(255,45,107,.12);border:1px solid rgba(255,45,107,.3);color:#ff2d6b;font-size:12px;"><i class="bi bi-check-circle"></i></div>Free demo — no credit card needed</div>
+        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size:13px;"><div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width:28px;height:28px;min-width:28px;background:rgba(255,45,107,.12);border:1px solid rgba(255,45,107,.3);color:#ff2d6b;font-size:12px;"><i class="bi bi-lightning-charge"></i></div>Go live in 2–4 weeks</div>
+        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size:13px;"><div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width:28px;height:28px;min-width:28px;background:rgba(255,45,107,.12);border:1px solid rgba(255,45,107,.3);color:#ff2d6b;font-size:12px;"><i class="bi bi-headset"></i></div>Onboarding support in Bengali</div>
+        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size:13px;"><div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width:28px;height:28px;min-width:28px;background:rgba(255,45,107,.12);border:1px solid rgba(255,45,107,.3);color:#ff2d6b;font-size:12px;"><i class="bi bi-graph-up"></i></div>Real-time reports from day one</div>
+      </div>
+
+      <div class="rounded-3 p-3" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
+        <div class="d-flex align-items-center gap-2 mb-2"><span style="font-size:20px;">💼</span><div><div class="fw-bold text-white" style="font-size:12.5px;">Starter Plan</div><div class="text-secondary" style="font-size:10.5px;">Most popular for new businesses</div></div></div>
+        <div class="fw-bold" style="font-size:1.9rem;color:#ff2d6b;line-height:1;">৳8,000<span class="text-secondary fw-normal" style="font-size:12.5px;">/month</span></div>
+        <div class="text-secondary mt-1" style="font-size:11px;">1 branch · 3 users · Phase 1 included</div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-4 pt-4" style="border-top:1px solid rgba(255,255,255,.07);">
+      <div><div class="fw-bold" style="color:#ff2d6b;font-size:1.5rem;">৳8k</div><div class="text-secondary" style="font-size:10.5px;">Starting price</div></div>
+      <div><div class="fw-bold" style="color:#ff2d6b;font-size:1.5rem;">5</div><div class="text-secondary" style="font-size:10.5px;">Phases</div></div>
+      <div><div class="fw-bold" style="color:#ff2d6b;font-size:1.5rem;">NBR</div><div class="text-secondary" style="font-size:10.5px;">VAT compliant</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="flex-fill d-flex align-items-start justify-content-center p-4 overflow-auto" style="padding-top:80px!important;">
+    <div class="w-100 py-2" style="max-width:440px;">
+
+      <!-- Progress -->
+      <div class="d-flex align-items-center mb-4">
+        <div class="d-flex flex-column align-items-center">
+            <div id="rc1" class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                 [style.background]="currentStep >= 1 ? '#ff2d6b' : 'rgba(255,255,255,.08)'"
+                 [style.color]="currentStep >= 1 ? '#fff' : '#888'"
+                 style="width:34px;height:34px;font-size:13px;box-shadow:0 0 0 4px rgba(255,45,107,.2);">1</div>
+            <small class="text-secondary mt-1 fw-semibold" style="font-size:10px;">Account</small>
+        </div>
+        <div class="flex-fill mx-2 mb-4" id="rl1" 
+             [style.background]="currentStep >= 2 ? '#ff2d6b' : 'rgba(255,255,255,.1)'"
+             style="height:2px;transition:background .4s;"></div>
+        <div class="d-flex flex-column align-items-center">
+            <div id="rc2" class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                 [style.background]="currentStep >= 2 ? '#ff2d6b' : 'rgba(255,255,255,.08)'"
+                 [style.color]="currentStep >= 2 ? '#fff' : '#888'"
+                 style="width:34px;height:34px;font-size:13px;">2</div>
+            <small class="text-secondary mt-1 fw-semibold" style="font-size:10px;">Business</small>
+        </div>
+        <div class="flex-fill mx-2 mb-4" id="rl2" 
+             [style.background]="currentStep >= 3 ? '#ff2d6b' : 'rgba(255,255,255,.1)'"
+             style="height:2px;transition:background .4s;"></div>
+        <div class="d-flex flex-column align-items-center">
+            <div id="rc3" class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                 [style.background]="currentStep >= 3 ? '#ff2d6b' : 'rgba(255,255,255,.08)'"
+                 [style.color]="currentStep >= 3 ? '#fff' : '#888'"
+                 style="width:34px;height:34px;font-size:13px;">3</div>
+            <small class="text-secondary mt-1 fw-semibold" style="font-size:10px;">Done</small>
+        </div>
+      </div>
+
+      <form [formGroup]="registerForm">
+        <!-- STEP 1 -->
+        <div *ngIf="currentStep === 1">
+          <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-block" style="background:rgba(255,45,107,.12);color:#ff2d6b;border:1px solid rgba(255,45,107,.3);font-size:10px;">STEP 1 OF 2</span>
+          <h1 class="fw-bold mb-1" style="font-size:1.7rem;">Create your account</h1>
+          <p class="text-secondary mb-4" style="font-size:14px;">Start with your personal login details.</p>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+                <label class="form-label fw-semibold" style="font-size:12.5px;">First Name</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-person text-secondary"></i></span>
+                    <input type="text" class="form-control bg-body-secondary border-start-0" placeholder="Rahim" formControlName="firstName"/>
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-semibold" style="font-size:12.5px;">Last Name</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-person text-secondary"></i></span>
+                    <input type="text" class="form-control bg-body-secondary border-start-0" placeholder="Ahmed" formControlName="lastName"/>
+                </div>
+            </div>
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size:12.5px;">Email Address</label>
+              <div class="input-group">
+                  <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-envelope text-secondary"></i></span>
+                  <input type="email" class="form-control bg-body-secondary border-start-0" placeholder="you@company.com" formControlName="email"/>
+              </div>
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size:12.5px;">Phone Number</label>
+              <div class="input-group">
+                  <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-phone text-secondary"></i></span>
+                  <input type="tel" class="form-control bg-body-secondary border-start-0" placeholder="+880 1XXX-XXXXXX" formControlName="phone"/>
+              </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12.5px;">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-lock text-secondary"></i></span>
+              <input [type]="showPassword ? 'text' : 'password'" class="form-control bg-body-secondary border-start-0 border-end-0" id="rPwd" placeholder="Min. 8 characters" formControlName="password"/>
+              <button class="btn btn-outline-secondary border-start-0" type="button" (click)="showPassword = !showPassword"><i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i></button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:12.5px;">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-lock-fill text-secondary"></i></span>
+              <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control bg-body-secondary border-start-0 border-end-0" id="rPwdC" placeholder="Repeat password" formControlName="confirmPassword"/>
+              <button class="btn btn-outline-secondary border-start-0" type="button" (click)="showConfirmPassword = !showConfirmPassword"><i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i></button>
+            </div>
+            <div *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched" class="mt-1"><small class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Passwords do not match</small></div>
+          </div>
+
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="rTerms"/>
+            <label class="form-check-label text-secondary" for="rTerms" style="font-size:13px;">I agree to the <a href="#" class="text-decoration-none" style="color:#ff2d6b;">Terms of Service</a> and <a href="#" class="text-decoration-none" style="color:#ff2d6b;">Privacy Policy</a></label>
+          </div>
+
+          <button class="btn w-100 fw-bold py-3 mb-3" (click)="nextStep()" [disabled]="registerForm.get('firstName')?.invalid || registerForm.get('lastName')?.invalid || registerForm.get('email')?.invalid || registerForm.get('phone')?.invalid || registerForm.get('password')?.invalid || registerForm.get('confirmPassword')?.invalid || registerForm.hasError('mismatch')" style="background:#ff2d6b;color:#fff;border:none;font-size:14.5px;box-shadow:0 4px 18px rgba(255,45,107,.4);">
+            Continue to Business Info <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+          <p class="text-center text-secondary mb-0" style="font-size:13.5px;">Already have an account? <a routerLink="/auth/login" class="fw-bold text-decoration-none" style="color:#ff2d6b;">Sign in →</a></p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngIf="currentStep === 2">
+          <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-block" style="background:rgba(255,45,107,.12);color:#ff2d6b;border:1px solid rgba(255,45,107,.3);font-size:10px;">STEP 2 OF 2</span>
+          <h1 class="fw-bold mb-1" style="font-size:1.7rem;">About your business</h1>
+          <p class="text-secondary mb-4" style="font-size:14px;">Help us customise AidlyERP for your needs.</p>
+
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:12.5px;">Business Name</label><div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-building text-secondary"></i></span><input type="text" class="form-control bg-body-secondary border-start-0" placeholder="Rahim Traders Ltd." formControlName="companyName"/></div></div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" style="font-size:12.5px;">Industry</label>
+              <div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-briefcase text-secondary"></i></span>
+                <select class="form-select bg-body-secondary border-start-0" formControlName="industry"><option value="">Select…</option><option>Retail / Supermarket</option><option>Pharmacy</option><option>Wholesale / Trading</option><option>Food &amp; Grocery</option><option>Light Manufacturing</option><option>Service Business</option></select>
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" style="font-size:12.5px;">Branches</label>
+              <div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-diagram-3 text-secondary"></i></span>
+                <select class="form-select bg-body-secondary border-start-0" formControlName="branches"><option>1 branch</option><option>2–5 branches</option><option>6–10 branches</option><option>10+ branches</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:12.5px;">Business Address</label><div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-geo-alt text-secondary"></i></span><input type="text" class="form-control bg-body-secondary border-start-0" placeholder="Dhaka, Bangladesh" formControlName="address"/></div></div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12.5px;">Preferred Plan</label>
+            <div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-box text-secondary"></i></span>
+              <select class="form-select bg-body-secondary border-start-0" formControlName="plan"><option>Starter — ৳8,000/month</option><option>Business — ৳18,000/month</option><option>Enterprise — Custom pricing</option></select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:12.5px;">How did you hear about us?</label>
+            <div class="input-group"><span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-chat-dots text-secondary"></i></span>
+              <select class="form-select bg-body-secondary border-start-0" formControlName="source"><option>Select…</option><option>Google Search</option><option>Facebook / Social Media</option><option>Referral from a friend</option><option>Trade fair / Event</option><option>Partner / Reseller</option></select>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary fw-bold py-3 px-3" (click)="prevStep()"><i class="bi bi-arrow-left"></i></button>
+            <button class="btn flex-fill fw-bold py-3 d-flex align-items-center justify-content-center gap-2" (click)="onSubmit()" [disabled]="registerForm.invalid || isLoading" style="background:#ff2d6b;color:#fff;border:none;font-size:14.5px;box-shadow:0 4px 18px rgba(255,45,107,.4);">
+                <span *ngIf="!isLoading">Create My Account</span>
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+                <i class="bi bi-check-lg" *ngIf="!isLoading"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- STEP 3: Success -->
+      <div *ngIf="currentStep === 3" class="text-center py-4">
+        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width:72px;height:72px;background:rgba(16,185,129,.13);border:2px solid rgba(16,185,129,.4);font-size:26px;">✅</div>
+        <h2 class="fw-bold mb-2">Account Created!</h2>
+        <p class="text-secondary mb-4" style="font-size:14px;max-width:340px;margin:0 auto 24px!important;">Welcome to AidlyERP. Our team will contact you within 24 hours to schedule your onboarding demo.</p>
+        <button class="btn fw-bold py-3 px-5" routerLink="/auth/login" style="background:#ff2d6b;color:#fff;border:none;box-shadow:0 4px 18px rgba(255,45,107,.4);">Go to Login <i class="bi bi-arrow-right ms-1"></i></button>
+        <p class="text-secondary mt-3 mb-0" style="font-size:13px;">Questions? <a href="mailto:hello@aidlyerp.com.bd" class="text-decoration-none" style="color:#ff2d6b;">hello@aidlyerp.com.bd</a></p>
+      </div>
+
+    </div>
+  </div>
+</div>

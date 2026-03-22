@@ -13,16 +13,17 @@ export const routes: Routes = [
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
-      // {
-      //     path: '',
-      //     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
-      // }
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+      },
     ],
   },
   {
     path: '',
     component: MainLayoutComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',

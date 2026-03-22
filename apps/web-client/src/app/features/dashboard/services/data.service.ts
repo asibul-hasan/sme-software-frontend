@@ -11,11 +11,5 @@ export class DashboardDataService {
 
   constructor(private http: HttpClient) { }
 
-  getStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/stats`);
-  }
-
-  getRecentActivities(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/activities`);
-  }
+  // Add module-specific API calls here
 }

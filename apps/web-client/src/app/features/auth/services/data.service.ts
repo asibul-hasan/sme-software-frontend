@@ -8,6 +8,25 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password?: string;
+  company_id: number;
+  phone?: string;
+  designation?: string;
+  branch_ids?: number[];
+}
+
+export interface RegisterCompanyRequest {
+  companyName: string;
+  companyShortName: string;
+  adminEmail: string;
+  password: string;
+  country: string;
+  baseCurrencyCode: string;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -34,6 +53,14 @@ export class AuthDataService {
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials);
+  }
+
+  register(userData: RegisterRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, userData);
+  }
+
+  registerCompany(data: RegisterCompanyRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register-company`, data);
   }
 
   getProfile(): Observable<any> {

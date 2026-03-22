@@ -11,19 +11,5 @@ export class ReportsDataService {
 
   constructor(private http: HttpClient) { }
 
-  getSalesReport(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/sales`, { params });
-  }
-
-  getInventoryReport(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/inventory`, { params });
-  }
-
-  getAttendanceReport(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/attendance`, { params });
-  }
-
-  getEmployeeReport(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/employee`, { params });
-  }
+  // Add module-specific API calls here
 }

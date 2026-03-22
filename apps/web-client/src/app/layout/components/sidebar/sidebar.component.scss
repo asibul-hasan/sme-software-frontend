@@ -16,7 +16,6 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--border);
-  padding: 10px 0 0 0;
   gap: 2px;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -73,10 +72,12 @@
   /* ── Logo ── */
   .sb-logo {
     width: 40px;
-    height: 40px;
+    height: 32px;
     background: var(--indigo-g);
     border-radius: 12px;
     color: var(--text);
+    margin: 4px 0;
+
     cursor: pointer;
     transition:
       width 0.3s,
@@ -90,12 +91,10 @@
 
   &:not(.collapsed) .sb-logo {
     width: calc(100% - 16px);
-    margin-left: 8px;
-    margin-right: 8px;
-    border-radius: 12px;
-    justify-content: flex-start;
+    margin: 4px 8px;
+    justify-content: flex-start !important;
     padding: 0 14px;
-    height: 44px;
+    height: 32px;
   }
 
   .logo-main {
@@ -266,11 +265,9 @@
 
   /* ── Menu Items ── */
   .sb-item {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
+    min-height: 40px;
+    border-radius: 6px;
     cursor: pointer;
-    justify-content: center;
     color: var(--text-2);
     transition: all 0.22s ease;
 
@@ -282,7 +279,6 @@
     &.active {
       background: rgba(var(--indigo-rgb), 0.2);
       color: var(--indigo);
-      box-shadow: 0 0 0 1px rgba(var(--indigo-rgb), 0.3);
 
       &::after {
         content: '';

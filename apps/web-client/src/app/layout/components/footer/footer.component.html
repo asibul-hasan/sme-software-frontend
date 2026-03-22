@@ -1,9 +1,9 @@
 <footer
   class="app-footer d-flex align-items-center justify-content-center justify-content-md-between px-3 px-md-4 gap-2"
+  [style.left.px]="isCollapsed() ? 72 : 230"
   style="
     position: fixed;
     right: 0;
-    left: 230px;
     bottom: 0;
     z-index: 100;
     height: 24px;

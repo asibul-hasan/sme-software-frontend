@@ -97,10 +97,11 @@
 
 /* ── User Card ── */
 .user-card {
+  height: 32px;
   background: var(--glass);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 5px 10px 5px 5px;
+  padding: 0 10px 0 5px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -112,9 +113,9 @@
 }
 
 .user-ava {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   background: var(--indigo-g);
   display: grid;
   place-items: center;

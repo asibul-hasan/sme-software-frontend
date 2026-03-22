@@ -1,9 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap, of, catchError } from 'rxjs';
-import { User, LoginRequest, LoginResponse, AuthDataService } from '../../features/auth/services/data.service';
+import { User, LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService } from '../../features/auth/services/data.service';
 import { PermissionService } from './permission.service';
 import { IPermissionConfig } from '../models/permission.model';
-
+import { StorageService } from './storage.service';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private user = signal<User | null>(null);
@@ -14,7 +14,8 @@ export class AuthService {
 
   constructor(
     private authDataService: AuthDataService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private storageService: StorageService
   ) {}
 
   initialize(): Observable<any> {
@@ -24,17 +25,17 @@ export class AuthService {
     }
 
     // Try to load state from LocalStorage first to avoid API calls on refresh
-    const cachedUser = localStorage.getItem(this.USER_KEY);
-    const cachedPerms = localStorage.getItem(this.PERM_KEY);
+    const cachedUser = this.storageService.getItem<User>(this.USER_KEY);
+    const cachedPerms = this.storageService.getItem<any>(this.PERM_KEY);
 
     if (cachedUser && cachedPerms) {
         try {
-            this.user.set(JSON.parse(cachedUser));
-            this.permissionService.setPermissions(JSON.parse(cachedPerms));
+            this.user.set(cachedUser);
+            this.permissionService.setPermissions(cachedPerms);
             // Optional: Verify token validity or refresh profile in background
             return of(true); 
         } catch (e) {
-            console.error('Error parsing cached auth data', e);
+            console.error('Error setting cached auth data', e);
             this.logout();
             return of(null);
         }
@@ -49,7 +50,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return this.storageService.getItem<string>(this.TOKEN_KEY);
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -60,23 +61,31 @@ export class AuthService {
     );
   }
 
+  register(userData: RegisterRequest): Observable<any> {
+    return this.authDataService.register(userData);
+  }
+
+  registerCompany(data: RegisterCompanyRequest): Observable<any> {
+    return this.authDataService.registerCompany(data);
+  }
+
   logout() {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem(this.PERM_KEY);
+    this.storageService.removeItem(this.TOKEN_KEY);
+    this.storageService.removeItem(this.USER_KEY);
+    this.storageService.removeItem(this.PERM_KEY);
     this.user.set(null);
     this.permissionService.clearPermissions();
   }
 
   private setSession(response: LoginResponse) {
-    localStorage.setItem(this.TOKEN_KEY, response.access_token);
+    this.storageService.setItem(this.TOKEN_KEY, response.access_token);
     
     // Store User
-    localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+    this.storageService.setItem(this.USER_KEY, response.user);
     this.user.set(response.user);
 
     // Store Permissions
-    localStorage.setItem(this.PERM_KEY, JSON.stringify(response.permissions));
+    this.storageService.setItem(this.PERM_KEY, response.permissions);
     this.permissionService.setPermissions(response.permissions);
   }
 
@@ -85,7 +94,7 @@ export class AuthService {
     return this.authDataService.getProfile().pipe(
       tap(user => {
           this.user.set(user);
-          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+          this.storageService.setItem(this.USER_KEY, user);
       }),
       catchError(() => {
         this.logout();
