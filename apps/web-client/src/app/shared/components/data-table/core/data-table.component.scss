@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
   gap: 12px;
   flex-wrap: nowrap;
@@ -373,7 +373,7 @@
 // ══════════════════════════════════════════════════════════════════
 .etbl-scroll-wrap {
   width: 100%;
-  overflow-x: auto;
+  overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
   &::-webkit-scrollbar {
@@ -386,23 +386,28 @@
 }
 
 .etbl-table {
-  width: 100%;
-  border-collapse: collapse;
+  min-width: 100%;
+  width: max-content;
+  border-collapse: separate; /* Required for sticky columns to work properly */
+  border-spacing: 0;
   table-layout: fixed; // prevents column jumping
 }
 
 // ── Header ────────────────────────────────────────────────────────
 .etbl-th {
+  position: relative; // added for resize handle positioning
   padding: 10px 12px;
   background: var(--bg-secondary);
   color: var(--text-secondary);
-  font-weight: 600;
-  font-size: 11.5px;
-  letter-spacing: 0.2px;
-  border-bottom: 2px solid var(--border-color);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
   user-select: none;
   overflow: hidden;
+
   text-overflow: ellipsis;
 
   &.etbl-th-sortable {
@@ -411,6 +416,10 @@
       color: var(--text-primary);
       background: var(--bg-primary);
     }
+  }
+  &.etbl-th-resizing {
+    background: var(--bg-primary);
+    color: var(--sidebar-active, #0d6efd);
   }
   &.etbl-th-asc .etbl-sort-icon,
   &.etbl-th-desc .etbl-sort-icon {
@@ -431,6 +440,25 @@
   &.etbl-th-actions {
     width: 90px;
     text-align: center;
+    // Pinned right styles are handled in the main STYLES section below
+  }
+}
+
+.etbl-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 10;
+  background-color: transparent;
+  transition: background-color 0.1s;
+
+  &:hover,
+  &:active {
+    background-color: var(--sidebar-active, #0d6efd);
+    opacity: 0.6;
   }
 }
 
@@ -558,7 +586,9 @@
     text-align: center;
     width: 90px;
     padding: 4px 8px;
+    // Pinned right styles are handled in the main STYLES section below
   }
+
   &.etbl-td-editable:hover .etbl-edit-hint {
     opacity: 0.4;
   }
@@ -576,9 +606,10 @@
 .etbl-cell-input,
 .etbl-cell-select {
   width: 100%;
+  min-width: 0; // Fixes browser default min widths making inputs overlap other columns
   height: 28px;
   padding: 0 8px;
-  border: 1px solid var(--sidebar-active, #0d6efd);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   background: var(--input-bg, var(--card-bg));
   color: var(--text-primary);
@@ -586,8 +617,12 @@
   font-size: inherit;
   box-sizing: border-box;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
   display: block;
+
+  &:focus {
+    border-color: var(--sidebar-active, #0d6efd);
+    // box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+  }
 
   &.etbl-input-invalid {
     border-color: #ef4444;
@@ -797,6 +832,145 @@ html[data-theme='dark'] .etbl-cell-select {
   opacity: 1;
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  STICKY AND PINNED STYLES
+//  Z-index ladder:
+//    body cells (default) → 1
+//    pinned-left cells    → 11
+//    pinned-right cells   → 12
+//    action cells         → 13
+//    regular sticky th    → 20
+//    corner th/td cells   → 30-35
+// ══════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════
+//  STICKY AND PINNED STYLES (v3 - User Defined Z-Indexes)
+//  Z-index ladder per user instruction:
+//    Table Row      → 0 (default)
+//    Fixed Column   → 5
+//    Header         → 10
+// ══════════════════════════════════════════════════════════════════
+
+// ── Sticky Header Base ─────────────────────────────────────────────
+.etbl-sticky-header th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: #f7f8fc !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+// ── Sticky Footer Base ─────────────────────────────────────────────
+.etbl-sticky-footer .etbl-summary-row td {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 10 !important;
+  background-color: var(--bg-secondary) !important;
+  border-top: 2px solid var(--border-color);
+}
+
+// ── Pinned Data Columns (Left/Right) ────────────────────────────────
+.etbl-pinned {
+  position: sticky !important;
+  z-index: 5 !important;
+  background-color: #ffffff !important;
+}
+
+// ── Pinned Header Corners (Sticky + Pinned) ─────────────────────────
+th.etbl-pinned {
+  z-index: 15 !important; // Must be higher than header (10) and pinned (5)
+  background-color: #f7f8fc !important;
+}
+
+.etbl-sticky-header th.etbl-pinned,
+.etbl-sticky-footer td.etbl-pinned {
+  z-index: 20 !important; // Absolute top corners
+}
+
+// ── Actions Column (Always Sticky Right) ───────────────────────────
+.etbl-th-actions,
+.etbl-td-actions,
+.etbl-td-summary-actions {
+  position: sticky !important;
+  right: 0 !important;
+}
+
+.etbl-th-actions {
+  z-index: 20 !important; // Header Corner
+  background-color: #f7f8fc !important;
+  box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+.etbl-td-actions {
+  z-index: 5 !important;
+  background-color: #ffffff !important;
+  box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.08);
+}
+
+.etbl-td-summary-actions {
+  z-index: 20 !important;
+  background-color: var(
+    --bg-secondary
+  ) !important; // Match summary row grey background
+  box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+// ── State Backgrounds for Pinned Columns ────────────────────────────
+.etbl-row:hover .etbl-pinned,
+.etbl-row:hover .etbl-td-actions,
+.etbl-table.etbl-has-pinned-left .etbl-row:hover .etbl-td-num,
+.etbl-table.etbl-has-pinned-left .etbl-row:hover .etbl-td-check {
+  background-color: #f9fafb !important;
+}
+
+.etbl-row-selected .etbl-pinned,
+.etbl-row-selected .etbl-td-actions,
+.etbl-table.etbl-has-pinned-left .etbl-row-selected .etbl-td-num,
+.etbl-table.etbl-has-pinned-left .etbl-row-selected .etbl-td-check {
+  background-color: #f0f7ff !important;
+}
+
+.etbl-row-editing .etbl-pinned,
+.etbl-row-editing .etbl-td-actions,
+.etbl-table.etbl-has-pinned-left .etbl-row-editing .etbl-td-num,
+.etbl-table.etbl-has-pinned-left .etbl-row-editing .etbl-td-check {
+  background-color: #eff6ff !important;
+}
+
+// ── Column Pinning (Row Numbers / Checkboxes) ───────────────────────
+.etbl-table.etbl-has-pinned-left {
+  .etbl-th-num,
+  .etbl-td-num,
+  .etbl-td-summary-num {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 5 !important;
+  }
+  .etbl-th-check,
+  .etbl-td-check,
+  .etbl-td-summary-check {
+    position: sticky !important;
+    left: 48px !important;
+    z-index: 5 !important;
+  }
+  .etbl-th-num,
+  .etbl-th-check {
+    background-color: #f7f8fc !important;
+    z-index: 15 !important;
+  }
+  .etbl-td-num,
+  .etbl-td-check {
+    background-color: #ffffff !important;
+    box-shadow: 4px 0 8px -2px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.etbl-summary-text {
+  font-weight: 600;
+  display: block;
+  white-space: nowrap;
+}
+
 .etbl-act-btn {
   display: inline-flex;
   align-items: center;
@@ -865,7 +1039,7 @@ html[data-theme='dark'] .etbl-cell-select {
   background: var(--bg-secondary);
 }
 .etbl-td-summary {
-  padding: 10px 12px;
+  padding: 2px 12px;
   border-top: 2px solid var(--border-color);
   font-weight: 600;
   font-size: 12.5px;
@@ -882,7 +1056,7 @@ html[data-theme='dark'] .etbl-cell-select {
   align-items: center;
   justify-content: space-between;
   padding: 9px 14px;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   border-top: 1px solid var(--border-color);
   font-size: 12px;
   color: var(--text-secondary);
@@ -1017,4 +1191,13 @@ html[data-theme='dark'] .etbl-pagesize-select {
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
+}
+// End of sticky/pinned styles rewritten above
+
+.etbl-act-view {
+  color: #64748b;
+  &:hover {
+    color: #4f46e5 !important;
+    background: rgba(79, 70, 229, 0.08) !important;
+  }
 }

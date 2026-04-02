@@ -18,7 +18,7 @@
         <i class="etbl-icon">search</i>
         <input
           class="etbl-search-input"
-          placeholder="Search all columns…"
+          [placeholder]="'search' | translate"
           [value]="state.globalFilter"
           (input)="onGlobalFilter($event)"
         />
@@ -32,13 +32,16 @@
       </div>
 
       <span class="etbl-result-count">
-        {{ filteredData.length }} record{{
-          filteredData.length !== 1 ? 's' : ''
-        }}
+        <ng-container *ngIf="filteredData.length === 1">
+          1 {{ 'record' | translate }}
+        </ng-container>
+        <ng-container *ngIf="filteredData.length !== 1">
+          {{ filteredData.length }} {{ 'records' | translate }}
+        </ng-container>
         <ng-container *ngIf="hasActiveFilters()">
           <span class="etbl-filter-dot"></span>
           <button class="etbl-text-btn" (click)="clearAllFilters()">
-            Clear filters
+            {{ 'clearFilters' | translate }}
           </button>
         </ng-container>
       </span>
@@ -47,14 +50,14 @@
       <span
         class="etbl-changes-badge"
         *ngIf="pendingChangesCount > 0"
-        matTooltip="Unsaved changes"
+        [matTooltip]="'unsavedChanges' | translate"
       >
         <i class="etbl-icon">edit_note</i>
-        {{ pendingChangesCount }} unsaved
+        {{ pendingChangesCount }} {{ 'unsaved' | translate }}
         <button
           class="etbl-revert-all-btn"
           (click)="revertAll()"
-          matTooltip="Revert all changes"
+          [matTooltip]="'revertAllChanges' | translate"
         >
           <i class="etbl-icon">undo</i>
         </button>
@@ -64,14 +67,14 @@
     <!-- Right -->
     <div class="etbl-toolbar-right">
       <span class="etbl-sel-badge" *ngIf="selection.selected.length">
-        {{ selection.selected.length }} selected
+        {{ selection.selected.length }} {{ 'selected' | translate }}
       </span>
 
       <button
         class="etbl-btn etbl-btn-danger"
         *ngIf="config.allowDelete && selection.selected.length"
         (click)="deleteSelected()"
-        matTooltip="Delete selected"
+        [matTooltip]="'deleteSelected' | translate"
       >
         <i class="etbl-icon">delete_sweep</i>
       </button>
@@ -81,46 +84,15 @@
         [class.etbl-btn-active]="columnFilterRow"
         *ngIf="config.allowColumnFilter !== false"
         (click)="toggleColumnFilters()"
-        matTooltip="Column filters"
+        [matTooltip]="'columnFilters' | translate"
       >
         <i class="etbl-icon">filter_list</i>
       </button>
 
-      <!-- Column visibility -->
-      <div class="etbl-dd-wrap" *ngIf="config.allowColumnVisibility">
-        <button
-          class="etbl-btn"
-          [class.etbl-btn-active]="openDropdown === 'columns'"
-          (click)="toggleDropdown('columns', $event)"
-          matTooltip="Columns"
-        >
-          <i class="etbl-icon">view_column</i>
-        </button>
-        <div
-          class="etbl-dd"
-          [class.etbl-dd-open]="openDropdown === 'columns'"
-          (click)="$event.stopPropagation()"
-        >
-          <p class="etbl-dd-title">Show / Hide Columns</p>
-          <label
-            class="etbl-col-toggle"
-            *ngFor="let col of columns; trackBy: trackByKey"
-          >
-            <input
-              type="checkbox"
-              [checked]="!col.hidden"
-              [disabled]="!!col.required"
-              (change)="toggleColumnVisibility(col)"
-            />
-            <span>{{ col.header }}</span>
-          </label>
-        </div>
-      </div>
-
       <button
         class="etbl-btn"
         (click)="cycleDensity()"
-        matTooltip="Row density"
+        [matTooltip]="'rowDensity' | translate"
       >
         <i class="etbl-icon">{{ densityIcon }}</i>
       </button>
@@ -132,7 +104,7 @@
           [class.etbl-btn-active]="openDropdown === 'export'"
           [disabled]="loadingExport"
           (click)="toggleDropdown('export', $event)"
-          matTooltip="Export"
+          [matTooltip]="'export' | translate"
         >
           <i class="etbl-icon">{{
             loadingExport ? 'hourglass_empty' : 'download'
@@ -143,17 +115,18 @@
           [class.etbl-dd-open]="openDropdown === 'export'"
           (click)="$event.stopPropagation()"
         >
-          <p class="etbl-dd-title">Export Data</p>
+          <p class="etbl-dd-title">{{ 'exportData' | translate }}</p>
           <button class="etbl-dd-item" (click)="runExport('csv')">
             <i class="etbl-icon">description</i
-            ><span>CSV — Comma-separated</span>
+            ><span>{{ 'csvCommaSeparated' | translate }}</span>
           </button>
           <button class="etbl-dd-item" (click)="runExport('xlsx')">
-            <i class="etbl-icon">grid_on</i><span>XLSX — Excel Workbook</span>
+            <i class="etbl-icon">grid_on</i
+            ><span>{{ 'xlsxExcelWorkbook' | translate }}</span>
           </button>
           <button class="etbl-dd-item" (click)="runExport('pdf')">
             <i class="etbl-icon">picture_as_pdf</i
-            ><span>PDF — Printable Report</span>
+            ><span>{{ 'pdfPrintableReport' | translate }}</span>
           </button>
           <ng-container *ngIf="selection.selected.length">
             <div class="etbl-dd-divider"></div>
@@ -162,14 +135,22 @@
               (click)="runExport('csv', true)"
             >
               <i class="etbl-icon">checklist</i>
-              <span>CSV — Selected ({{ selection.selected.length }})</span>
+              <span
+                >{{ 'csvSelected' | translate }} ({{
+                  selection.selected.length
+                }})</span
+              >
             </button>
             <button
               class="etbl-dd-item etbl-dd-item-sel"
               (click)="runExport('pdf', true)"
             >
               <i class="etbl-icon">checklist</i>
-              <span>PDF — Selected ({{ selection.selected.length }})</span>
+              <span
+                >{{ 'pdfSelected' | translate }} ({{
+                  selection.selected.length
+                }})</span
+              >
             </button>
           </ng-container>
         </div>
@@ -179,7 +160,9 @@
         class="etbl-btn"
         *ngIf="config.allowFullscreen"
         (click)="toggleFullscreen()"
-        [matTooltip]="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'"
+        [matTooltip]="
+          (isFullscreen ? 'exitFullscreen' : 'fullscreen') | translate
+        "
       >
         <i class="etbl-icon">{{
           isFullscreen ? 'fullscreen_exit' : 'fullscreen'
@@ -191,24 +174,36 @@
         *ngIf="config.allowAdd && !config.hideAddButton"
         (click)="addRow()"
       >
-        <i class="etbl-icon">add</i> Add Row
+        <i class="etbl-icon">add</i> {{ 'addRow' | translate }}
       </button>
     </div>
   </div>
 
   <!-- ══ TABLE ═════════════════════════════════════════════════════ -->
-  <div class="etbl-scroll-wrap" [style.max-height]="config.height">
-    <table class="etbl-table">
+  <div class="etbl-scroll-wrap" [style.height]="config.height">
+    <table
+      class="etbl-table"
+      [class.etbl-sticky-header]="config.stickyHeader !== false"
+      [class.etbl-sticky-footer]="config.showFooterSummary"
+      [class.etbl-has-pinned-left]="hasPinnedLeft"
+      [class.etbl-has-pinned-right]="hasPinnedRight"
+    >
       <colgroup>
-        <col *ngIf="config.showRowNumbers" style="width: 48px" />
-        <col *ngIf="config.allowRowSelection" style="width: 40px" />
+        <col
+          *ngIf="config.showRowNumbers"
+          style="width: 48px; min-width: 48px"
+        />
+        <col
+          *ngIf="config.allowRowSelection"
+          style="width: 40px; min-width: 40px"
+        />
         <col
           *ngFor="let col of displayColumns"
           [style.width]="col.width || 'auto'"
-          [style.min-width]="col.minWidth || '80px'"
+          [style.min-width]="col.minWidth || col.width || '80px'"
           [style.max-width]="col.maxWidth"
         />
-        <col *ngIf="config.allowDelete" style="width: 90px" />
+        <col *ngIf="config.allowDelete" style="width: 90px; min-width: 90px" />
       </colgroup>
 
       <!-- THEAD -->
@@ -235,6 +230,11 @@
               state.sort.column === col.key && state.sort.direction === 'desc'
             "
             [class.etbl-th-filtered]="state.columnFilters[col.key]"
+            [class.etbl-th-resizing]="col === resizingColumn"
+            [class.etbl-pinned]="col.pinned"
+            [class.etbl-pinned-left]="col.pinned === 'left'"
+            [class.etbl-pinned-right]="col.pinned === 'right'"
+            [ngStyle]="getPinnedStyles(col)"
             (click)="sort(col)"
           >
             <div
@@ -247,16 +247,24 @@
                     : 'flex-start'
               "
             >
-              <span class="etbl-th-text">{{ col.header }}</span>
+              <span class="etbl-th-text">{{ col.header | translate }}</span>
               <i
                 class="etbl-icon etbl-sort-icon"
                 *ngIf="col.sortable !== false"
                 >{{ sortIcon(col) }}</i
               >
             </div>
+
+            <!-- Column Resize Handle -->
+            <div
+              class="etbl-resize-handle"
+              *ngIf="config.allowColumnResize !== false"
+              (mousedown)="onResizeStart($event, col)"
+              (click)="$event.stopPropagation()"
+            ></div>
           </th>
           <th class="etbl-th etbl-th-actions" *ngIf="config.allowDelete">
-            Actions
+            {{ 'actions' | translate }}
           </th>
         </tr>
 
@@ -274,7 +282,7 @@
             <div class="etbl-col-filter-wrap">
               <input
                 class="etbl-col-filter"
-                [placeholder]="col.header"
+                [placeholder]="col.header | translate"
                 [value]="state.columnFilters[col.key] || ''"
                 (input)="onColumnFilter(col.key, $event)"
               />
@@ -294,22 +302,30 @@
       <!-- TBODY -->
       <tbody>
         <tr
+          *ngFor="let row of pagedData; trackBy: trackByRowId"
           class="etbl-row"
-          *ngFor="let row of pagedData; let i = index; trackBy: trackById"
-          [class]="rowStateClass(row)"
           [class.etbl-row-selected]="isRowSelected(row['_rowId']!)"
           [class.etbl-row-editing]="isRowEditing(row['_rowId']!)"
+          [class.row-insert]="row['sqlState'] === SqlState.INSERT"
+          [class.row-update]="row['sqlState'] === SqlState.UPDATE"
+          [class.row-delete]="row['sqlState'] === SqlState.DELETE"
           (click)="onRowClick(row)"
+          [attr.data-id]="row['_rowId']"
         >
           <!-- Row number -->
-          <td class="etbl-td etbl-td-num" *ngIf="config.showRowNumbers">
-            {{ startRow + i }}
+          <td
+            class="etbl-td etbl-td-num"
+            *ngIf="config.showRowNumbers"
+            [style.background-color]="getStickyBg(row)"
+          >
+            {{ row['_index'] }}
           </td>
 
           <!-- Checkbox -->
           <td
             class="etbl-td etbl-td-check"
             *ngIf="config.allowRowSelection"
+            [style.background-color]="getStickyBg(row)"
             (click)="$event.stopPropagation()"
           >
             <input
@@ -329,6 +345,10 @@
             [class.etbl-td-editable]="col.editable"
             [class.etbl-td-invalid]="isCellInvalid(row['_rowId']!, col.key)"
             [ngClass]="col.cellClass ? col.cellClass(row) : ''"
+            [class.etbl-pinned]="col.pinned"
+            [class.etbl-pinned-left]="col.pinned === 'left'"
+            [class.etbl-pinned-right]="col.pinned === 'right'"
+            [ngStyle]="getPinnedStyles(col)"
             (click)="onCellClick(row, col); $event.stopPropagation()"
             [matTooltip]="
               isCellInvalid(row['_rowId']!, col.key)
@@ -415,7 +435,7 @@
                   (keydown)="onCellKeydown($event, row, col)"
                 >
                   <option *ngFor="let opt of col.options" [value]="opt.value">
-                    {{ opt.label }}
+                    {{ opt.label | translate }}
                   </option>
                 </select>
                 <input
@@ -462,7 +482,7 @@
                       : null
                   "
                 >
-                  {{ getOptionLabel(col, row[col.key]) }}
+                  {{ getOptionLabel(col, row[col.key]) | translate }}
                 </span>
 
                 <!-- Badge type (explicit) -->
@@ -476,7 +496,7 @@
                   "
                   [style.color]="getOptionColor(col, row[col.key])"
                 >
-                  {{ row | cellDisplay: col }}
+                  {{ row | cellDisplay: col | translate }}
                 </span>
 
                 <!-- Progress bar -->
@@ -548,7 +568,9 @@
                 >
 
                 <!-- Default -->
-                <span *ngSwitchDefault>{{ row | cellDisplay: col }}</span>
+                <span *ngSwitchDefault>{{
+                  row | cellDisplay: col | translate
+                }}</span>
               </ng-container>
 
               <!-- Edit hint -->
@@ -571,8 +593,15 @@
           >
             <div class="etbl-row-actions">
               <button
+                class="etbl-act-btn etbl-act-view"
+                [matTooltip]="'viewDetails' | translate"
+                (click)="viewRowAction(row); $event.stopPropagation()"
+              >
+                <i class="etbl-icon">visibility</i>
+              </button>
+              <button
                 class="etbl-act-btn"
-                matTooltip="Revert"
+                [matTooltip]="'revert' | translate"
                 *ngIf="row['sqlState'] !== 0 && row['_original']"
                 (click)="revertRowAction(row)"
               >
@@ -580,7 +609,7 @@
               </button>
               <button
                 class="etbl-act-btn"
-                matTooltip="Duplicate"
+                [matTooltip]="'duplicate' | translate"
                 *ngIf="config.allowDuplicate !== false"
                 (click)="duplicateRowAction(row)"
               >
@@ -588,7 +617,7 @@
               </button>
               <button
                 class="etbl-act-btn etbl-act-del"
-                matTooltip="Delete"
+                [matTooltip]="'delete' | translate"
                 (click)="deleteRow(row)"
               >
                 <i class="etbl-icon">delete_outline</i>
@@ -612,33 +641,76 @@
               <i class="etbl-icon etbl-empty-icon">{{
                 config.emptyIcon || 'inbox'
               }}</i>
-              <p>{{ config.emptyMessage || 'No records found' }}</p>
+              <p>{{ config.emptyMessage || 'noRecordsFound' | translate }}</p>
               <span *ngIf="hasActiveFilters()">
-                Try adjusting your search or filters.
+                {{ 'tryAdjustingFilters' | translate }}
                 <button class="etbl-text-btn" (click)="clearAllFilters()">
-                  Clear filters
+                  {{ 'clearFilters' | translate }}
                 </button>
               </span>
             </div>
           </td>
+        </tr>
+        <!-- Spacer row for sticky footer overlap prevention -->
+        <tr
+          *ngIf="config.showFooterSummary"
+          style="height: 36px; border: none; pointer-events: none"
+        >
+          <td [attr.colspan]="100" style="border: none; padding: 0"></td>
         </tr>
       </tbody>
 
       <!-- Summary footer -->
       <tfoot *ngIf="config.showFooterSummary && filteredData.length > 0">
         <tr class="etbl-summary-row">
-          <td *ngIf="config.showRowNumbers" class="etbl-td-summary"></td>
-          <td *ngIf="config.allowRowSelection" class="etbl-td-summary"></td>
+          <td
+            *ngIf="config.showRowNumbers"
+            class="etbl-td-summary etbl-td-summary-num"
+            [style.background-color]="getStickyBg()"
+          >
+            <span class="etbl-summary-text">{{ 'total' | translate }}</span>
+          </td>
+          <td
+            *ngIf="config.allowRowSelection"
+            class="etbl-td-summary etbl-td-summary-check"
+            [style.background-color]="getStickyBg()"
+          ></td>
           <td
             class="etbl-td-summary"
-            *ngFor="let col of displayColumns; trackBy: trackByKey"
+            *ngFor="
+              let col of displayColumns;
+              let first = first;
+              trackBy: trackByKey
+            "
             [class.etbl-td-right]="col.align === 'right'"
+            [class.etbl-pinned]="col.pinned"
+            [class.etbl-pinned-left]="col.pinned === 'left'"
+            [class.etbl-pinned-right]="col.pinned === 'right'"
+            [ngStyle]="getPinnedStyles(col)"
+            [style.background-color]="getStickyBg()"
           >
+            <!-- Show total label in first data col if row numbers are hidden AND no footerText exists -->
+            <span
+              *ngIf="first && !config.showRowNumbers && !col.footerText"
+              class="etbl-summary-text"
+              style="margin-right: 8px"
+            >
+              {{ 'total' | translate }}
+            </span>
             <span *ngIf="summaryRow[col.key]" class="etbl-summary-val"
               >Σ {{ summaryRow[col.key] }}</span
             >
+            <span
+              *ngIf="col.footerText && !summaryRow[col.key]"
+              class="etbl-summary-text"
+              >{{ col.footerText | translate }}</span
+            >
           </td>
-          <td *ngIf="config.allowDelete" class="etbl-td-summary"></td>
+          <td
+            *ngIf="config.allowDelete"
+            class="etbl-td-summary etbl-td-summary-actions"
+            [style.background-color]="getStickyBg()"
+          ></td>
         </tr>
       </tfoot>
     </table>
@@ -648,7 +720,8 @@
   <div class="etbl-pagination">
     <div class="etbl-pagination-left">
       <span class="etbl-page-info">
-        Showing <strong>{{ startRow }}–{{ endRow }}</strong> of
+        {{ 'showing' | translate }}
+        <strong>{{ startRow }}–{{ endRow }}</strong> {{ 'of' | translate }}
         <strong>{{ filteredData.length }}</strong>
       </span>
     </div>
@@ -657,6 +730,7 @@
         class="etbl-page-btn"
         [disabled]="state.pagination.page === 1"
         (click)="goToPage(1)"
+        [matTooltip]="'firstPage' | translate"
       >
         <i class="etbl-icon">first_page</i>
       </button>
@@ -664,6 +738,7 @@
         class="etbl-page-btn"
         [disabled]="state.pagination.page === 1"
         (click)="goToPage(state.pagination.page - 1)"
+        [matTooltip]="'previousPage' | translate"
       >
         <i class="etbl-icon">chevron_left</i>
       </button>
@@ -679,6 +754,7 @@
         class="etbl-page-btn"
         [disabled]="state.pagination.page === totalPages"
         (click)="goToPage(state.pagination.page + 1)"
+        [matTooltip]="'nextPage' | translate"
       >
         <i class="etbl-icon">chevron_right</i>
       </button>
@@ -686,12 +762,13 @@
         class="etbl-page-btn"
         [disabled]="state.pagination.page === totalPages"
         (click)="goToPage(totalPages)"
+        [matTooltip]="'lastPage' | translate"
       >
         <i class="etbl-icon">last_page</i>
       </button>
     </div>
     <div class="etbl-pagination-right">
-      <span class="etbl-pagesize-label">Rows per page:</span>
+      <span class="etbl-pagesize-label">{{ 'rowsPerPage' | translate }}:</span>
       <select
         class="etbl-pagesize-select"
         [value]="state.pagination.pageSize"
@@ -705,6 +782,105 @@
   <!-- ══ TOAST ════════════════════════════════════════════════════ -->
   <div class="etbl-toast" [class.etbl-toast-visible]="toastMessage">
     <i class="etbl-icon">check_circle</i>
-    {{ toastMessage }}
+    {{ toastMessage | translate }}
+  </div>
+</div>
+<div
+  class="modal fade show d-block"
+  *ngIf="viewingRow"
+  tabindex="-1"
+  (click)="closeViewAction()"
+  style="
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 1055;
+  "
+>
+  <div
+    class="modal-dialog modal-lg modal-dialog-centered"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-bottom py-3 px-4">
+        <h5
+          class="modal-title d-flex align-items-center gap-2 fw-bold"
+          style="color: #1e293b; font-size: 16px"
+        >
+          <mat-icon class="text-primary">visibility</mat-icon>
+          {{ 'details' | translate }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close shadow-none"
+          (click)="closeViewAction()"
+        ></button>
+      </div>
+
+      <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto">
+        <div class="row g-4">
+          <ng-container *ngFor="let col of columns; trackBy: trackByKey">
+            <div class="col-md-4" *ngIf="col.type !== 'action' && !col.hidden">
+              <div class="field-group">
+                <label class="field-label" [class.required]="col.required">
+                  {{ col.header | translate }}
+                </label>
+
+                <div class="field-wrap">
+                  <mat-icon *ngIf="col.icon" class="field-icon">{{
+                    col.icon
+                  }}</mat-icon>
+
+                  <div
+                    class="field-input field-readonly d-flex align-items-center text-truncate"
+                    [class.field-input--icon]="col.icon"
+                    style="font-size: 13.5px; opacity: 1"
+                  >
+                    <!-- Badge Type -->
+                    <span
+                      *ngIf="col.type === 'badge'"
+                      class="badge rounded-pill"
+                      [ngStyle]="
+                        getOptionColor(col, viewingRow[col.key])
+                          ? {
+                              'background-color':
+                                getOptionColor(col, viewingRow[col.key]) + '15',
+                              color: getOptionColor(col, viewingRow[col.key]),
+                            }
+                          : { 'background-color': '#f1f5f9', color: '#64748b' }
+                      "
+                    >
+                      {{ viewingRow | cellDisplay: col }}
+                    </span>
+
+                    <!-- Boolean Type -->
+                    <span
+                      *ngIf="col.type === 'boolean'"
+                      class="d-flex align-items-center gap-1"
+                    >
+                      <mat-icon
+                        [style.color]="
+                          viewingRow[col.key] ? '#10b981' : '#ef4444'
+                        "
+                        style="font-size: 18px; width: 18px; height: 18px"
+                      >
+                        {{ viewingRow[col.key] ? 'check_circle' : 'cancel' }}
+                      </mat-icon>
+                      {{ viewingRow[col.key] ? 'Yes' : 'No' }}
+                    </span>
+
+                    <!-- Other Types -->
+                    <span
+                      *ngIf="col.type !== 'badge' && col.type !== 'boolean'"
+                    >
+                      {{ viewingRow | cellDisplay: col || '—' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

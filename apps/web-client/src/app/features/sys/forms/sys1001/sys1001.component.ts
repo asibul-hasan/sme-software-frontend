@@ -70,11 +70,14 @@ export class Sys1001Component implements OnInit {
     allowDelete: true,
     allowExport: true,
     allowColumnVisibility: true,
-    height: '400px',
+    allowColumnResize: true,
+    height: '200px', // or e.g. 'calc(100vh - 450px)' if fully dynamic based on form
     stripedRows: true,
     allowRowSelection: false,
-    pageSizeOptions: [5, 10, 25],
+    pageSizeOptions: [10, 25],
     hideAddButton: true,
+    stickyHeader: true,
+    showFooterSummary: true,
   };
 
   tableColumns: ColumnDef[] = [
@@ -82,18 +85,49 @@ export class Sys1001Component implements OnInit {
       key: 'branchName',
       header: 'Branch Name',
       type: 'text',
-      editable: false,
+      editable: true,
       required: true,
+      width: '190px',
+      pinned: 'left',
+      footerText: 'Total Branches',
+      // No width specified - takes remaining space
     },
-    { key: 'branchCode', header: 'Branch Code', type: 'text', editable: true },
-    { key: 'location', header: 'Location', type: 'text', editable: true },
-    { key: 'phone', header: 'Phone Number', type: 'text', editable: true },
-    { key: 'manager', header: 'Manager', type: 'text', editable: true },
+    {
+      key: 'branchCode',
+      header: 'Branch Code',
+      type: 'text',
+      editable: true,
+      width: '120px',
+      summarize: 'count', // automatically counts non-empty rows
+    },
+    {
+      key: 'location',
+      header: 'Location',
+      type: 'text',
+      editable: true,
+      width: '120px',
+    },
+    {
+      key: 'phone',
+      header: 'Phone Number',
+      type: 'text',
+      editable: true,
+      width: '2120px',
+    },
+    {
+      key: 'manager',
+      header: 'Manager',
+      type: 'text',
+      editable: true,
+      width: '120px',
+    },
     {
       key: 'status',
       header: 'Status',
       type: 'select',
       editable: true,
+      width: '120px',
+      pinned: 'right',
       options: [
         { label: 'Active', value: 'active', color: '#10b981' },
         { label: 'Inactive', value: 'inactive', color: '#ef4444' },
@@ -130,7 +164,7 @@ export class Sys1001Component implements OnInit {
       vendorType: new FormControl(''),
       regNo: new FormControl(''),
       regDate: new FormControl(''),
-
+      countryCode: new FormControl(''),
       fiscalYear: new FormControl(''),
     });
 

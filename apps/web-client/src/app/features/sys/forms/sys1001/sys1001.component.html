@@ -9,7 +9,7 @@
   <!-- ── PAGE CARD HEADER (FIXED) ─────────────────────── -->
   <div class="page-card-header">
     <div class="d-flex flex-column">
-      <nav class="page-breadcrumb" aria-label="Breadcrumb">
+      <!-- <nav class="page-breadcrumb" aria-label="Breadcrumb">
         <span class="breadcrumb-item">System</span>
         <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
         <span class="breadcrumb-item">Master Setup</span>
@@ -17,15 +17,15 @@
         <span class="breadcrumb-item breadcrumb-item--active"
           >Company &amp; Branch</span
         >
-      </nav>
+      </nav> -->
       <h2 class="page-card-title">{{ 'companyAndBranchSetup' | translate }}</h2>
     </div>
 
     <div class="d-flex align-items-center gap-3 ms-auto">
-      <div class="record-status">
+      <!-- <div class="record-status">
         <span class="record-status-dot record-status-dot--saved"></span>
         <span class="record-status-label">Saved</span>
-      </div>
+      </div> -->
       <div class="btn-action-group">
         <button
           class="btn-action btn-new"
@@ -67,11 +67,11 @@
   <div class="page-card-body">
     <!-- ── CARD: Company Information ─────────────────── -->
     <div class="card">
-      <div class="card-header">
-        <span class="card-header__title">{{
+      <!-- <div class="card-header"> -->
+      <!-- <span class="card-header__title">{{
           'companyInformation' | translate
-        }}</span>
-      </div>
+        }}</span> -->
+      <!-- </div> -->
       <div class="card-body">
         <form [formGroup]="formdata" autocomplete="off">
           <div class="row g-3">
@@ -123,17 +123,26 @@
 
             <div class="col-md-4">
               <div class="field-group">
-                <label class="field-label required" for="companyPhone">{{
-                  'phoneNumber' | translate
-                }}</label>
+                <label class="field-label required" for="companyPhone">
+                  {{ 'phoneNumber' | translate }}
+                </label>
                 <div class="field-wrap">
-                  <mat-icon class="field-icon">phone</mat-icon>
+                  <select
+                    id="countryCode"
+                    class="field-select"
+                    formControlName="countryCode"
+                    style="width: 100px; flex-shrink: 0;"
+                  >
+                    <option value="">+1 (USA)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+880">+880 (BD)</option>
+                  </select>
                   <input
                     id="companyPhone"
                     type="tel"
                     formControlName="companyPhone"
-                    class="field-input field-input--icon"
-                    placeholder="+1 (555) 000-0000"
+                    class="field-input"
+                    placeholder="(555) 000-0000"
                   />
                 </div>
               </div>

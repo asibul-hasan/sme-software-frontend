@@ -73,6 +73,8 @@ export interface ColumnDef {
   action?: (row: RowData) => void;
   tooltip?: (row: RowData) => string;
   summarize?: 'sum' | 'avg' | 'min' | 'max' | 'count' | false;
+  footerText?: string; // custom text for footer cell
+  icon?: string; // material icon for the field (e.g. 'business', 'email', 'phone')
   // For 'progress' type: value 0-100
   // For 'rating' type:   value 0-5
   // For 'link' type:     { label: string, url: string } or plain string url

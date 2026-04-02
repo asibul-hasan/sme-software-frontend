@@ -4,7 +4,7 @@
 >
   <!-- Logo -->
   <div
-    class="sb-logo sb-logo-pulse d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden mb-3"
+    class="sb-logo d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden mb-3"
     [routerLink]="['/']"
   >
     <span class="logo-main fw-black">A</span>
@@ -24,7 +24,9 @@
     *ngIf="!isCollapsed()"
   >
     <div class="search-input-wrapper position-relative flex-grow-1">
-      <mat-icon class="search-icon position-absolute">search</mat-icon>
+      <mat-icon class="search-icon position-absolute">
+        {{ 'search' | translate }}
+      </mat-icon>
       <input
         type="text"
         class="form-control sb-search-input"
@@ -39,7 +41,9 @@
         *ngIf="searchTerm()"
         (click)="searchTerm.set('')"
       >
-        <mat-icon>close</mat-icon>
+        <mat-icon>
+          {{ 'close' | translate }}
+        </mat-icon>
       </button>
     </div>
 
@@ -93,12 +97,11 @@
               style="gap: 2px"
             >
               <!-- Tree Lines for Submodule -->
-              <div class="line-sub-v-top" *ngIf="!isCollapsed()"></div>
+              <div class="line-sub-connect" *ngIf="!isCollapsed()"></div>
               <div
                 class="line-sub-v-bottom"
                 *ngIf="!isCollapsed() && !isLastSub"
               ></div>
-              <div class="line-sub-h" *ngIf="!isCollapsed()"></div>
 
               <a
                 class="sb-item submodule-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
@@ -130,12 +133,11 @@
                     style="gap: 2px"
                   >
                     <!-- Tree Lines for Forms -->
-                    <div class="line-form-v-top" *ngIf="!isCollapsed()"></div>
+                    <div class="line-form-connect" *ngIf="!isCollapsed()"></div>
                     <div
                       class="line-form-v-bottom"
                       *ngIf="!isCollapsed() && !isLastForm"
                     ></div>
-                    <div class="line-form-h" *ngIf="!isCollapsed()"></div>
 
                     <a
                       class="sb-item form-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"

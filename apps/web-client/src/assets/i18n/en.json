@@ -5,33 +5,26 @@
   "employee": "Employee",
   "attendance": "Attendance",
   "leave": "Leave",
-
   "inventory": "Inventory",
   "product": "Product",
   "category": "Category",
   "stock": "Stock",
-
   "sales": "Sales",
   "invoice": "Invoice",
   "customer": "Customer",
-
   "settings": "Settings",
   "company": "Company",
   "branch": "Branch",
   "users": "Users",
   "designation": "Designation",
-
   "auth": "Authentication",
   "login": "Login",
-
   "reports": "Reports",
-
   "name": "Name",
   "email": "Email",
   "password": "Password",
   "phone": "Phone",
   "address": "Address",
-
   "rememberMe": "Remember Me",
   "signIn": "Sign In",
   "signUp": "Sign Up",
@@ -62,76 +55,56 @@
   "purchaseInvoice": "Purchase Invoice",
   "purchaseReturn": "Purchase Return",
   "supplierPayment": "Supplier Payment",
-
   "chartOfAccountsSetup": "Chart of Accounts Setup",
   "accountHeadMapping": "Account Head Mapping",
   "openingBalanceEntry": "Opening Balance Entry",
-
   "cashVoucher": "Cash Voucher",
   "bankVoucher": "Bank Voucher",
   "journalVoucher": "Journal Voucher",
   "contraVoucher": "Contra Voucher",
-
   "expenseCategory": "Expense Category",
   "expenseEntry": "Expense Entry",
-
   "warehouseSetup": "Warehouse Setup",
   "rackOrShelfSetup": "Rack / Shelf Setup",
   "stockTransfer": "Stock Transfer",
   "batchAndExpiryManagement": "Batch & Expiry Management",
   "reorderLevelSetup": "Reorder Level Setup",
-
   "branchWiseLedger": "Branch-wise Ledger",
   "interBranchTransfer": "Inter-Branch Transfer",
   "consolidatedReportSetup": "Consolidated Report Setup",
-
   "employeeManagement": "Employee Management",
   "departmentAndDesignationSetup": "Department & Designation Setup",
   "shiftSetup": "Shift Setup",
-
   "manualAttendance": "Manual Attendance",
   "deviceSyncAttendance": "Device Sync Attendance",
   "attendanceAdjustment": "Attendance Adjustment",
-
   "salaryStructureSetup": "Salary Structure Setup",
   "salaryProcessing": "Salary Processing",
   "salarySheet": "Salary Sheet",
   "payslipGenerator": "Payslip Generator",
-
   "salesReportsDashboard": "Sales Reports Dashboard",
   "inventoryReports": "Inventory Reports",
   "financialStatements": "Financial Statements",
-
   "companyConfiguration": "Company Configuration",
   "userAndSecurity": "User & Security",
   "menuBuilder": "Menu Builder",
-
   "productManagement": "Product Management",
   "stockInitialization": "Stock Initialization",
-
   "pos": "Point of Sale (POS)",
-
   "supplier": "Supplier",
   "purchaseWorkflow": "Purchase Workflow",
-
   "chartOfAccounts": "Chart of Accounts",
   "voucherSystem": "Voucher System",
-
   "expense": "Expense",
-
   "warehouse": "Warehouse",
   "batchControl": "Batch Control",
   "reorderControl": "Reorder Control",
-
   "branchFinance": "Branch Finance",
-
   "employeeSetup": "Employee Setup",
   "payroll": "Payroll",
-
   "salesReports": "Sales Reports",
   "reporting": "Reporting",
   "financialReports": "Financial Reports",
-
   "systemAdministration": "System Administration",
   "systemConfiguration": "System Configuration",
   "inventoryManagement": "Inventory Management",
@@ -148,5 +121,53 @@
   "procurementManagement": "Procurement Management",
   "salesAndPos": "Sales & POS",
   "help": "Help",
-  "privacy": "Privacy"
+  "privacy": "Privacy",
+  "search": "Search...",
+  "record": "Record",
+  "records": "Records",
+  "clearFilters": "Clear filters",
+  "unsavedChanges": "Unsaved changes",
+  "unsaved": "unsaved",
+  "revertAllChanges": "Revert all changes",
+  "selected": "selected",
+  "deleteSelected": "Delete selected",
+  "columnFilters": "Column filters",
+  "rowDensity": "Row density",
+  "export": "Export",
+  "exportData": "Export Data",
+  "csvCommaSeparated": "CSV — Comma-separated",
+  "xlsxExcelWorkbook": "XLSX — Excel Workbook",
+  "pdfPrintableReport": "PDF — Printable Report",
+  "csvSelected": "CSV — Selected",
+  "pdfSelected": "PDF — Selected",
+  "exitFullscreen": "Exit fullscreen",
+  "fullscreen": "Fullscreen",
+  "addRow": "Add Row",
+  "actions": "Actions",
+  "viewDetails": "View Details",
+  "revert": "Revert",
+  "duplicate": "Duplicate",
+  "delete": "Delete",
+  "noRecordsFound": "No records found",
+  "tryAdjustingFilters": "Try adjusting your search or filters.",
+  "showing": "Showing",
+  "of": "of",
+  "rowsPerPage": "Rows per page",
+  "details": "Details",
+  "close": "Close",
+  "previousPage": "Previous Page",
+  "nextPage": "Next Page",
+  "firstPage": "First Page",
+  "lastPage": "Last Page",
+  "newRowAdded": "New row added",
+  "rowDeleted": "Row deleted",
+  "rowDuplicated": "Row duplicated",
+  "rowReverted": "Row reverted",
+  "allChangesReverted": "All changes reverted",
+  "saveSuccess": "Saved successfully",
+  "saveError": "Failed to save",
+  "deleteSuccess": "Deleted successfully",
+  "deleteError": "Failed to delete",
+  "updateSuccess": "Updated successfully",
+  "updateError": "Failed to update"
 }

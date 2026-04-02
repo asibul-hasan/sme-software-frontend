@@ -17,7 +17,9 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslateModule } from '@ngx-translate/core';
 import { SelectionModel } from '@angular/cdk/collections';
 
 import {
@@ -51,7 +53,13 @@ import {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, CellDisplayPipe],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatTooltipModule,
+    TranslateModule,
+    CellDisplayPipe,
+  ],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,13 +75,17 @@ export class DataTableComponent implements OnInit, OnChanges {
   @Output() rowEvent = new EventEmitter<RowEvent>();
   @Output() selectionChange = new EventEmitter<RowData[]>();
 
+  // ── View Modal state ─────────────────────────────────────────────
+  viewingRow: RowData | null = null;
+
   // ── Internal rows ────────────────────────────────────────────────
   private _rows: RowData[] = [];
 
   // ── Pipeline results ─────────────────────────────────────────────
   filteredData: RowData[] = [];
   pagedData: RowData[] = [];
-  summaryRow: Record<string, string> = {};
+  summaryRow: Record<string, any> = {};
+  readonly SqlState = SqlState;
 
   // ── Row edit & selection ─────────────────────────────────────────
   editingRowId: string | null = null;
@@ -99,6 +111,11 @@ export class DataTableComponent implements OnInit, OnChanges {
   loadingExport = false;
   toastMessage: string | null = null;
   private toastTimer: any;
+
+  // ── Resize state ──────────────────────────────────────────────────
+  resizingColumn: ColumnDef | null = null;
+  startX: number = 0;
+  startWidth: number = 0;
 
   // ── Computed ──────────────────────────────────────────────────────
   get displayColumns(): ColumnDef[] {
@@ -155,6 +172,14 @@ export class DataTableComponent implements OnInit, OnChanges {
   get pendingChangesCount(): number {
     return this._rows.filter((r) => r['sqlState'] !== SqlState.UNCHANGED)
       .length;
+  }
+
+  get hasPinnedLeft(): boolean {
+    return this.displayColumns.some(c => c.pinned === 'left');
+  }
+  
+  get hasPinnedRight(): boolean {
+    return this.displayColumns.some(c => c.pinned === 'right');
   }
 
   constructor(private cdr: ChangeDetectorRef) {}
@@ -225,6 +250,23 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.selectedRowId = row['_rowId']!;
     if (this.editingRowId !== row['_rowId']) this.editingRowId = null;
     this.cdr.markForCheck();
+  }
+
+  getStickyBg(row?: RowData): string {
+    if (!row) return '#f7f8fc'; // Opaque theme equivalent of var(--bg-secondary)
+    
+    const id = row['_rowId']!;
+    if (this.isRowEditing(id)) return '#eff6ff';
+    if (this.isRowSelected(id)) return '#f0f7ff';
+    if (row['sqlState'] === SqlState.INSERT) return '#f0fdf4';
+    if (row['sqlState'] === SqlState.UPDATE) return '#fffbeb';
+    if (this.config?.stripedRows && row['_index'] % 2 === 0) return '#f9fafb';
+    
+    return '#ffffff';
+  }
+
+  trackByRowId(index: number, row: RowData): string | number {
+    return row['_rowId'] || index;
   }
 
   onCellClick(row: RowData, col: ColumnDef): void {
@@ -325,7 +367,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     );
     this.rowEvent.emit({ type: 'add', row });
     this.emitDataChange();
-    this.showToast('New row added');
+    this.showToast('newRowAdded');
   }
 
   deleteRow(row: RowData): void {
@@ -336,7 +378,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.apply();
     this.rowEvent.emit({ type: 'delete', row });
     this.emitDataChange();
-    this.showToast('Row deleted');
+    this.showToast('rowDeleted');
   }
 
   duplicateRowAction(row: RowData): void {
@@ -346,7 +388,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.apply();
     this.rowEvent.emit({ type: 'duplicate', row: dup });
     this.emitDataChange();
-    this.showToast('Row duplicated');
+    this.showToast('rowDuplicated');
   }
 
   revertRowAction(row: RowData): void {
@@ -355,7 +397,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.apply();
     this.rowEvent.emit({ type: 'revert', row });
     this.emitDataChange();
-    this.showToast('Row reverted');
+    this.showToast('rowReverted');
   }
 
   deleteSelected(): void {
@@ -380,7 +422,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.validationMap = {};
     this.apply();
     this.emitDataChange();
-    this.showToast('All changes reverted');
+    this.showToast('allChangesReverted');
   }
 
   // ══════════════════════════════════════════════════════════════════
@@ -597,12 +639,90 @@ export class DataTableComponent implements OnInit, OnChanges {
     if (this.openDropdown) {
       this.openDropdown = null;
     }
+    if (this.viewingRow) {
+      this.viewingRow = null;
+    }
     this.cdr.markForCheck();
   }
 
+  // ── View Actions ──────────────────────────────────────────────────
+  viewRowAction(row: RowData): void {
+    this.viewingRow = { ...row };
+    this.cdr.markForCheck();
+  }
+
+  closeViewAction(): void {
+    this.viewingRow = null;
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    if (this.resizingColumn) {
+      const diff = event.pageX - this.startX;
+      let newWidth = Math.max(50, this.startWidth + diff);
+      this.resizingColumn.width = `${newWidth}px`;
+      
+      // We must mark For Check to update the col width in HTML
+      this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onMouseUp(): void {
+    if (this.resizingColumn) {
+      this.resizingColumn = null;
+      this.cdr.markForCheck();
+      
+      // Optionally emit a config change event so the parent can save column widths
+      // this.configChange.emit(this.columns);
+    }
+  }
+
   // ══════════════════════════════════════════════════════════════════
-  //  HELPERS & TRACKBY
+  //  COLUMN RESIZE ACTIONS
   // ══════════════════════════════════════════════════════════════════
+  onResizeStart(event: MouseEvent, col: ColumnDef): void {
+    if (this.config.allowColumnResize === false) return;
+    
+    event.stopPropagation();
+    event.preventDefault();
+    this.resizingColumn = col;
+    this.startX = event.pageX;
+
+    // Get the current width from the DOM element instead of assuming
+    const th = (event.target as HTMLElement).closest('th');
+    this.startWidth = th ? th.offsetWidth : 100;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  PINNED SETTINGS & TRACKBY
+  // ══════════════════════════════════════════════════════════════════
+  getPinnedStyles(col: ColumnDef): any {
+    if (!col.pinned) return null;
+    const style: any = {};
+    if (col.pinned === 'left') {
+      let left = 0;
+      if (this.config.showRowNumbers) left += 48;
+      if (this.config.allowRowSelection) left += 40;
+      for (const c of this.displayColumns) {
+        if (c.key === col.key) break;
+        if (c.pinned === 'left') left += parseInt(c.width || '100', 10);
+      }
+      style['left'] = `${left}px`;
+    } else if (col.pinned === 'right') {
+      let right = 0;
+      if (this.config.allowDelete) right += 90;
+      const rev = [...this.displayColumns].reverse();
+      for (const c of rev) {
+        if (c.key === col.key) break;
+        if (c.pinned === 'right') right += parseInt(c.width || '100', 10);
+      }
+      style['right'] = `${right}px`;
+    }
+    return style;
+  }
+
   rowStateClass(row: RowData): string {
     const base = ['etbl-row'];
     switch (row['sqlState']) {

@@ -248,11 +248,14 @@
   }
 
   &:not(.collapsed) {
+    .module-item {
+      padding-left: 14px !important;
+    }
     .submodule-item {
-      padding-left: 18px !important;
+      padding-left: 36px !important;
     }
     .form-item {
-      padding-left: 30px !important;
+      padding-left: 58px !important;
     }
     .expand-icon {
       margin-left: auto;
@@ -382,51 +385,48 @@
   }
 
   /* ── SIDEBAR TREE LINES ── */
-  .line-sub-v-top,
+  .line-sub-connect,
+  .line-form-connect {
+    position: absolute;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom-left-radius: 8px;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
   .line-sub-v-bottom,
-  .line-form-v-top,
   .line-form-v-bottom {
     position: absolute;
-    border-left: 2px solid rgba(var(--indigo-rgb), 0.35);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 0;
-  }
-  .line-sub-h,
-  .line-form-h {
-    position: absolute;
-    border-top: 2px solid rgba(var(--indigo-rgb), 0.35);
-    z-index: 0;
+    pointer-events: none;
   }
 
-  .line-sub-v-top {
-    left: 20px;
+  /* Drop from Module (icon center ~24px) -> Submodule (starts 36px) */
+  .line-sub-connect {
+    left: 24px;
     top: -2px;
-    height: 24px;
+    height: 22px;
+    width: 12px;
   }
   .line-sub-v-bottom {
-    left: 20px;
-    top: 22px;
+    left: 24px;
+    top: 20px;
     bottom: -2px;
-  }
-  .line-sub-h {
-    left: 20px;
-    top: 22px;
-    width: 10px;
   }
 
-  .line-form-v-top {
-    left: 36px;
+  /* Drop from Submodule (icon center ~46px) -> Form (starts 58px) */
+  .line-form-connect {
+    left: 46px;
     top: -2px;
-    height: 24px;
+    height: 22px;
+    width: 12px;
   }
   .line-form-v-bottom {
-    left: 36px;
-    top: 22px;
+    left: 46px;
+    top: 20px;
     bottom: -2px;
-  }
-  .line-form-h {
-    left: 36px;
-    top: 22px;
-    width: 8px;
   }
 }
 
