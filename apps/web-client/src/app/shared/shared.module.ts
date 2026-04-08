@@ -25,6 +25,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { DataTableComponent } from 'apps/web-client/src/app/shared/components/data-table';
 
@@ -34,6 +36,7 @@ const MODULES = [
   ReactiveFormsModule,
   RouterModule,
   TranslateModule,
+  NgSelectModule,
   // Material
   MatButtonModule,
   MatCardModule,
@@ -55,6 +58,7 @@ const MODULES = [
   MatBadgeModule,
   MatProgressSpinnerModule,
   MatCheckboxModule,
+  MatRadioModule,
 ];
 
 @NgModule({

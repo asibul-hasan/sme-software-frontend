@@ -87,8 +87,45 @@ export class SidebarComponent {
     private service: MenuService,
   ) {
     const builtMap = this.service.buildMenu(this.service.menu);
-    localStorage.setItem('menu', JSON.stringify(builtMap));
-    this.menuItems.set(JSON.parse(localStorage.getItem('menu') || '[]'));
+    // Restore expanded structures from localStorage
+    const savedStr = localStorage.getItem('sme_sidebar_expanded');
+    if (savedStr) {
+      try {
+        const expandedIds = new Set<string>(JSON.parse(savedStr));
+        this.restoreExpandedState(builtMap, expandedIds);
+      } catch (e) {
+        console.error('Failed to parse sidebar state', e);
+      }
+    }
+    this.menuItems.set(builtMap);
+  }
+
+  public toggleNode(node: MenuItem, event: Event) {
+    event.stopPropagation();
+    node.expanded = !node.expanded;
+    this.saveExpandedState();
+  }
+
+  private saveExpandedState(nodes?: MenuItem[]) {
+    if (!nodes) nodes = this.menuItems();
+    const expandedIds = new Set<string>();
+    const extract = (items: MenuItem[]) => {
+      for (const item of items) {
+        if (item.expanded && item.formName) expandedIds.add(item.formName);
+        if (item.children) extract(item.children);
+      }
+    };
+    extract(nodes);
+    localStorage.setItem('sme_sidebar_expanded', JSON.stringify(Array.from(expandedIds)));
+  }
+
+  private restoreExpandedState(nodes: MenuItem[], expandedIds: Set<string>) {
+    for (const node of nodes) {
+      if (node.formName && expandedIds.has(node.formName)) {
+        node.expanded = true;
+      }
+      if (node.children) this.restoreExpandedState(node.children, expandedIds);
+    }
   }
 
   toggleSidebar() {
@@ -112,6 +149,7 @@ export class SidebarComponent {
     const items = [...this.menuItems()];
     toggleNodes(items);
     this.menuItems.set(items);
+    this.saveExpandedState(items);
 
     // If collapsing, also clear search
     if (!newState) {

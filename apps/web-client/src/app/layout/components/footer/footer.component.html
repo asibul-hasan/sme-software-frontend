@@ -1,19 +1,6 @@
 <footer
   class="app-footer d-flex align-items-center justify-content-center justify-content-md-between px-3 px-md-4 gap-2"
-  [style.left.px]="isCollapsed() ? 72 : 230"
-  style="
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-    height: 24px;
-    background: var(--footer-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    font-size: 11.5px;
-    color: var(--text-3);
-  "
+  [class.collapsed]="isCollapsed()"
 >
   <div class="d-flex align-items-center gap-2">
     <span
@@ -21,8 +8,8 @@
       style="letter-spacing: -0.02em"
     >
       <span class="fs-6" style="color: var(--indigo)">A</span>
-      <span class="small" style="color: var(--text-1)">IDLY</span>
-      <span class="small ms-1 fw-normal" style="color: var(--text-3)">by</span>
+      <span class="small" style="color: white">IDLY</span>
+      <span class="small ms-1 fw-normal" style="color: var(--sidebar-text)">by</span>
       <span class="small ms-1" style="color: var(--rose)">InfoaidTech</span>
     </span>
     <span class="d-none d-md-inline mx-1" style="color: var(--text-4); font-size: 14px"

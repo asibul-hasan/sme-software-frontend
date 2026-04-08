@@ -9,7 +9,7 @@ export class MenuService {
     {
       formId: 'SYS_1001',
       type: 'form',
-      formName: 'Company & Branch Setup',
+      formName: 'Company Setup',
       icon: 'corporate_fare',
       module: 'System Administration',
       code: 'SYS',
@@ -20,6 +20,17 @@ export class MenuService {
     {
       formId: 'SYS_1002',
       type: 'form',
+      formName: 'Branch Setup',
+      icon: 'store',
+      module: 'System Administration',
+      code: 'SYS',
+      submodule: 'Company Configuration',
+      moduleIcon: 'admin_panel_settings',
+      submoduleIcon: 'business',
+    },
+    {
+      formId: 'SYS_1003',
+      type: 'form',
       formName: 'Financial Year Setup',
       icon: 'calendar_today',
       module: 'System Administration',
@@ -29,7 +40,7 @@ export class MenuService {
       submoduleIcon: 'business',
     },
     {
-      formId: 'SYS_1003',
+      formId: 'SYS_1004',
       type: 'form',
       formName: 'Currency Setup',
       icon: 'payments',
@@ -40,7 +51,7 @@ export class MenuService {
       submoduleIcon: 'business',
     },
     {
-      formId: 'SYS_1004',
+      formId: 'SYS_1005',
       type: 'form',
       formName: 'VAT / Tax Setup',
       icon: 'request_quote',

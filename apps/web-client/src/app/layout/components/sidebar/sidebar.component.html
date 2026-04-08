@@ -25,7 +25,7 @@
   >
     <div class="search-input-wrapper position-relative flex-grow-1">
       <mat-icon class="search-icon position-absolute">
-        {{ 'search' | translate }}
+        search
       </mat-icon>
       <input
         type="text"
@@ -42,7 +42,7 @@
         (click)="searchTerm.set('')"
       >
         <mat-icon>
-          {{ 'close' | translate }}
+          close
         </mat-icon>
       </button>
     </div>
@@ -68,7 +68,7 @@
       <div class="sb-module w-100 d-flex flex-column align-items-center">
         <a
           class="sb-item module-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden"
-          (click)="module.expanded = !module.expanded"
+          (click)="toggleNode(module, $event)"
           [class.expanded-item]="!isCollapsed()"
           [matTooltip]="module.formName | translate"
           matTooltipPosition="right"
@@ -105,7 +105,7 @@
 
               <a
                 class="sb-item submodule-item px-2 w-100 d-flex align-items-center flex-shrink-0 text-decoration-none position-relative text-nowrap overflow-hidden z-1"
-                (click)="sub.expanded = !sub.expanded"
+                (click)="toggleNode(sub, $event)"
                 [matTooltip]="sub.formName | translate"
                 matTooltipPosition="right"
               >

@@ -1,364 +1,321 @@
-<!-- ═══════════════════════════════════════════════════════
-     PAGE CARD
-     page-card-header : fixed (breadcrumb + title + buttons)
-     page-card-body   : scrollable
-       └── card       : company info  (card-header + card-body)
-       └── card       : branch setup  (card-header + card-body)
-════════════════════════════════════════════════════════ -->
-<div class="page-card">
-  <!-- ── PAGE CARD HEADER (FIXED) ─────────────────────── -->
-  <div class="page-card-header">
-    <div class="d-flex flex-column">
-      <!-- <nav class="page-breadcrumb" aria-label="Breadcrumb">
-        <span class="breadcrumb-item">System</span>
-        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
-        <span class="breadcrumb-item">Master Setup</span>
-        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
-        <span class="breadcrumb-item breadcrumb-item--active"
-          >Company &amp; Branch</span
-        >
-      </nav> -->
-      <h2 class="page-card-title">{{ 'companyAndBranchSetup' | translate }}</h2>
+<div class="page-card d-flex flex-column" style="overflow: hidden">
+  <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
+  <div
+    class="page-card-header d-flex flex-column flex-md-row justify-content-between p-3 border-bottom flex-shrink-0"
+    style="
+      background: var(--card-bg);
+      min-height: 80px;
+    "
+  >
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon-box shadow-sm">
+        <mat-icon>domain</mat-icon>
+      </div>
+      <div>
+        <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
+          Company Setup
+        </h2>
+        <p class="m-0 small mt-1 opacity-75">
+          Configure primary organizational identity & settings
+        </p>
+      </div>
     </div>
 
-    <div class="d-flex align-items-center gap-3 ms-auto">
-      <!-- <div class="record-status">
-        <span class="record-status-dot record-status-dot--saved"></span>
-        <span class="record-status-label">Saved</span>
-      </div> -->
-      <div class="btn-action-group">
-        <button
-          class="btn-action btn-new"
-          matTooltip="New (Ctrl+N)"
-          (click)="onNew()"
-        >
-          <mat-icon>add_circle_outline</mat-icon>
-          <span class="btn-action-label">New</span>
-        </button>
-        <button
-          class="btn-action btn-save"
-          matTooltip="Save (Ctrl+S)"
-          (click)="onSave()"
-        >
-          <mat-icon>save</mat-icon>
-          <span class="btn-action-label">Save</span>
-        </button>
-        <button
-          class="btn-action btn-reset"
-          matTooltip="Reset"
-          (click)="onReset()"
-        >
-          <mat-icon>restart_alt</mat-icon>
-          <span class="btn-action-label">Reset</span>
-        </button>
-        <button
-          class="btn-action btn-delete"
-          matTooltip="Delete (Ctrl+D)"
-          (click)="onDelete()"
-        >
-          <mat-icon>delete_outline</mat-icon>
-          <span class="btn-action-label">Delete</span>
-        </button>
-      </div>
+    <!-- Action Buttons using standard btn-action-group -->
+    <div class="btn-action-group mt-3 mt-md-0 d-flex gap-2">
+      <button
+        class="btn-action btn-save"
+        (click)="onSave()"
+        matTooltip="Save Record (Ctrl+S)"
+      >
+        <mat-icon>done_all</mat-icon>
+        <span class="btn-action-label">Save</span>
+      </button>
+      <button
+        class="btn-action btn-new"
+        (click)="onNew()"
+        matTooltip="New Record (Ctrl+N)"
+      >
+        <mat-icon>add</mat-icon>
+        <span class="btn-action-label">New</span>
+      </button>
+      <button
+        class="btn-action btn-reset"
+        (click)="onReset()"
+        matTooltip="Reset Form"
+      >
+        <mat-icon>refresh</mat-icon>
+        <span class="btn-action-label">Reset</span>
+      </button>
     </div>
   </div>
 
-  <!-- ── PAGE CARD BODY (SCROLLABLE) ──────────────────── -->
-  <div class="page-card-body">
-    <!-- ── CARD: Company Information ─────────────────── -->
-    <div class="card">
-      <!-- <div class="card-header"> -->
-      <!-- <span class="card-header__title">{{
-          'companyInformation' | translate
-        }}</span> -->
-      <!-- </div> -->
-      <div class="card-body">
-        <form [formGroup]="formdata" autocomplete="off">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label required" for="companyName">{{
-                  'companyName' | translate
-                }}</label>
-                <div class="field-wrap">
-                  <mat-icon class="field-icon">business</mat-icon>
-                  <input
-                    id="companyName"
-                    type="text"
-                    formControlName="companyName"
-                    class="field-input field-input--icon"
-                    placeholder="e.g. Acme Global Holdings Ltd."
-                  />
-                </div>
-                <!-- <span
-                  class="field-error"
-                  *ngIf="
-                    formdata.get('companyName')?.invalid &&
-                    formdata.get('companyName')?.touched
-                  "
-                >
-                  Company name is required
-                </span> -->
+  <!-- ── CARD BODY ──────────────────── -->
+  <div class="page-card-body p-3 flex-grow-1" style="overflow-y: auto;">
+    <div class="card--main">
+      <form [formGroup]="formdata" autocomplete="off">
+        <div class="row row-group">
+          <!-- Corporate Identity -->
+          <div class="col-xl-8 col-lg-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0">
+                  <mat-icon class="me-2 align-middle">badge</mat-icon>
+                  Corporate Identity
+                </h4>
               </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label required" for="vendorType"
-                  >Vendor Type</label
-                >
-                <select
-                  id="vendorType"
-                  class="field-select"
-                  formControlName="vendorType"
-                >
-                  <option value="">— Select vendor type —</option>
-                  <option value="supplier">Supplier</option>
-                  <option value="contractor">Contractor</option>
-                  <option value="service">Service Provider</option>
-                  <option value="distributor">Distributor</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label required" for="companyPhone">
-                  {{ 'phoneNumber' | translate }}
-                </label>
-                <div class="field-wrap">
-                  <select
-                    id="countryCode"
-                    class="field-select"
-                    formControlName="countryCode"
-                    style="width: 100px; flex-shrink: 0;"
-                  >
-                    <option value="">+1 (USA)</option>
-                    <option value="+44">+44 (UK)</option>
-                    <option value="+880">+880 (BD)</option>
-                  </select>
-                  <input
-                    id="companyPhone"
-                    type="tel"
-                    formControlName="companyPhone"
-                    class="field-input"
-                    placeholder="(555) 000-0000"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="systemId">System ID</label>
-                <input
-                  id="systemId"
-                  type="text"
-                  formControlName="systemId"
-                  class="field-input field-readonly"
-                  readonly
-                  placeholder="Auto-generated"
-                />
-                <!-- <span class="field-helper">Auto-assigned on save</span> -->
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="companyEmail"
-                  >Email Address</label
-                >
-                <div class="field-wrap">
-                  <mat-icon class="field-icon">mail_outline</mat-icon>
-                  <input
-                    id="companyEmail"
-                    type="email"
-                    formControlName="companyEmail"
-                    class="field-input field-input--icon"
-                    placeholder="contact@company.com"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="companyWebsite">Website</label>
-                <div class="field-wrap">
-                  <mat-icon class="field-icon">language</mat-icon>
-                  <input
-                    id="companyWebsite"
-                    type="url"
-                    formControlName="companyWebsite"
-                    class="field-input field-input--icon"
-                    placeholder="https://www.company.com"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="regNo">Registration No.</label>
-                <input
-                  id="regNo"
-                  type="text"
-                  formControlName="regNo"
-                  class="field-input"
-                  placeholder="e.g. REG-2024-00421"
-                />
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="fiscalYear"
-                  >Fiscal Year End</label
-                >
-                <select
-                  id="fiscalYear"
-                  class="field-select"
-                  formControlName="fiscalYear"
-                >
-                  <option value="">— Select month —</option>
-                  <option value="03">March</option>
-                  <option value="06">June</option>
-                  <option value="09">September</option>
-                  <option value="12">December</option>
-                </select>
-                <!-- <span class="field-helper">End month of fiscal year</span> -->
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label" for="companyAddress"
-                  >Registered Address</label
-                >
-                <textarea
-                  id="companyAddress"
-                  formControlName="companyAddress"
-                  class="field-textarea"
-                  rows="1"
-                  placeholder="Street address, city, state, country…"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="field-group">
-                <label class="field-label required">Company Status</label>
-                <fieldset
-                  class="radio-group inline"
-                  style="border: none; padding: 0; margin: 0"
-                >
-                  <legend class="sr-only">Company Status</legend>
-                  <label class="radio-item">
-                    <input
-                      type="radio"
-                      name="companyStatus"
-                      value="active"
-                      [checked]="true"
-                    />
-                    <div class="rb-label">Active</div>
-                  </label>
-                  <label class="radio-item">
-                    <input type="radio" name="companyStatus" value="inactive" />
-                    <div class="rb-label">Inactive</div>
-                  </label>
-                  <label class="radio-item">
-                    <input
-                      type="radio"
-                      name="companyStatus"
-                      value="suspended"
-                    />
-                    <div class="rb-label">Suspended</div>
-                  </label>
-                </fieldset>
-              </div>
-            </div>
-
-            <div class="col-md-8">
-              <div class="field-group">
-                <label class="field-label">Notification Preferences</label>
-                <div class="checkbox-group d-flex flex-row gap-3">
-                  <label class="checkbox-item">
-                    <input type="checkbox" [checked]="true" />
-                    <div>
-                      <div class="cb-label">Enable Notifications</div>
-                      <div class="cb-sub">Receive email alerts</div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-12">
+                    <div class="field-group">
+                      <label class="field-label required" for="companyName">Company Legal Name</label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        formControlName="companyName"
+                        class="form-control"
+                        placeholder="e.g. Acme Global Holdings Ltd."
+                      />
                     </div>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" />
-                    <div>
-                      <div class="cb-label">Two-Factor Auth</div>
-                      <div class="cb-sub">Requires SMS verification</div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label" for="systemId">System ID</label>
+                      <input
+                        type="text"
+                        id="systemId"
+                        formControlName="systemId"
+                        class="form-control"
+                        readonly
+                        placeholder="Auto-generated"
+                      />
                     </div>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" />
-                    <div>
-                      <div class="cb-label">Audit Logging</div>
-                      <div class="cb-sub">Track all record changes</div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label" for="regNo">Registration No.</label>
+                      <input
+                        type="text"
+                        id="regNo"
+                        formControlName="regNo"
+                        class="form-control"
+                        placeholder="e.g. REG-2024-00421"
+                      />
                     </div>
-                  </label>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label required" for="vendorType">Vendor Type</label>
+                      <select
+                        id="vendorType"
+                        formControlName="vendorType"
+                        class="form-select"
+                      >
+                        <option value="">— Select vendor type —</option>
+                        <option value="supplier">Supplier</option>
+                        <option value="contractor">Contractor</option>
+                        <option value="service">Service Provider</option>
+                        <option value="distributor">Distributor</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
-    <!-- /card: company information -->
-    <!-- Branch Code / ID
 
-Branch Address
+          <!-- State & Operations -->
+          <div class="col-xl-4 col-lg-12">
+            <div class="form-section-card card h-100">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0">
+                  <mat-icon class="me-2 align-middle">bolt</mat-icon>
+                  Operations Hub
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-12">
+                    <div class="field-group">
+                      <label class="field-label d-block text-uppercase fw-bold opacity-75" style="font-size: 11px">Current Operation Status</label>
+                      <select formControlName="companyStatus" class="form-select mt-1">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    </div>
+                  </div>
 
-City / Region
+                  <div class="col-12">
+                    <div class="field-group">
+                      <label class="field-label required" for="fiscalYear">Fiscal Year End</label>
+                      <select
+                        id="fiscalYear"
+                        formControlName="fiscalYear"
+                        class="form-select"
+                      >
+                        <option value="">— Select month —</option>
+                        <option value="03">March</option>
+                        <option value="06">June</option>
+                        <option value="09">September</option>
+                        <option value="12">December</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-Contact Number & Email
+          <!-- Communications Hub -->
+          <div class="col-xl-6 col-lg-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0">
+                  <mat-icon class="me-2 align-middle">perm_contact_calendar</mat-icon>
+                  Communications
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label required" for="companyPhone">Phone Number</label>
+                      <div class="d-flex w-100">
+                        <select
+                          id="countryCode"
+                          formControlName="countryCode"
+                          class="form-select w-auto rounded-end-0"
+                        >
+                          <option value="">+1</option>
+                          <option value="+44">+44</option>
+                          <option value="+880">+880</option>
+                        </select>
+                        <input
+                          type="tel"
+                          id="companyPhone"
+                          formControlName="companyPhone"
+                          class="form-control rounded-start-0"
+                          placeholder="(555) 000-0000"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-Branch Manager
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="companyEmail">Email Address</label>
+                      <input
+                        type="email"
+                        id="companyEmail"
+                        formControlName="companyEmail"
+                        class="form-control"
+                        placeholder="contact@company.com"
+                      />
+                    </div>
+                  </div>
 
-Opening Date
+                  <div class="col-md-12">
+                    <div class="field-group">
+                      <label class="field-label" for="companyWebsite">Company Website</label>
+                      <input
+                        type="url"
+                        id="companyWebsite"
+                        formControlName="companyWebsite"
+                        class="form-control"
+                        placeholder="https://www.company.com"
+                      />
+                    </div>
+                  </div>
 
-Tax Registration (if applicable) -->
-    <!-- ── CARD: Branch Setup ─────────────────────────── -->
-    <div class="card">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <span class="card-header__title">Branch Setup</span>
-        <div class="d-flex card-header__action">
-          <button
-            class="btn-icon-action"
-            matTooltip="Add Branch"
-            (click)="onAddBranch()"
-          >
-            <mat-icon>add</mat-icon>
-          </button>
-          <button
-            class="btn-icon-action"
-            matTooltip="Refresh"
-            (click)="onRefreshBranch()"
-          >
-            <mat-icon>refresh</mat-icon>
-          </button>
+                  <div class="col-md-12">
+                    <div class="field-group mb-0">
+                      <label class="field-label required" for="companyAddress">Registered Address</label>
+                      <textarea
+                        id="companyAddress"
+                        formControlName="companyAddress"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Street address, city, state, country…"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security & Alerts (Two Rows Layout) -->
+          <div class="col-xl-6 col-lg-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0">
+                  <mat-icon class="me-2 align-middle">security</mat-icon>
+                  Security & Alerts
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-6">
+                    <div
+                      class="border rounded-2 p-3 h-100 d-flex align-items-center"
+                      style="border-color: var(--border-color) !important"
+                    >
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="true"
+                        class="w-100"
+                      >
+                        <div class="fw-bold lh-sm text-wrap ms-1">
+                          Enable Notifications
+                        </div>
+                        <div class="small lh-1 mt-1 text-wrap ms-1 opacity-75">
+                          Receive system emails
+                        </div>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div
+                      class="border rounded-2 p-3 h-100 d-flex align-items-center"
+                      style="border-color: var(--border-color) !important"
+                    >
+                      <mat-checkbox color="primary" class="w-100">
+                        <div class="fw-bold lh-sm text-wrap ms-1">
+                          Two-Factor Auth
+                        </div>
+                        <div class="small lh-1 mt-1 text-wrap ms-1 opacity-75">
+                          SMS verification toggle
+                        </div>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div
+                      class="border rounded-2 p-3 h-100 d-flex align-items-center"
+                      style="border-color: var(--border-color) !important"
+                    >
+                      <mat-checkbox color="primary" class="w-100">
+                        <div class="fw-bold lh-sm text-wrap ms-1">
+                          Audit Logging
+                        </div>
+                        <div class="small lh-1 mt-1 text-wrap ms-1 opacity-75">
+                          Track record changes
+                        </div>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card-body p-0">
-        <app-data-table
-          [config]="tableConfig"
-          [columns]="tableColumns"
-          [data]="tableData"
-          (dataChange)="onTableDataChange($event)"
-        >
-        </app-data-table>
-      </div>
+      </form>
     </div>
-    <!-- /card: branch setup -->
   </div>
-  <!-- /page-card-body -->
 </div>
-<!-- /page-card -->

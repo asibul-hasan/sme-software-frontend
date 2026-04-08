@@ -5,137 +5,19 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { SharedModule } from 'apps/web-client/src/app/shared';
+import { SharedModule } from '../../../../shared';
 import { ToastrService } from 'ngx-toastr';
-import {
-  ColumnDef,
-  RowData,
-  SqlState,
-  TableConfig,
-  DataTableComponent,
-} from 'apps/web-client/src/app/shared/components/data-table';
-
-export interface BranchRow {
-  branchName: string;
-  branchCode: string;
-  location: string;
-  phone: string;
-  manager: string;
-  status: 'active' | 'inactive';
-}
+// Removed BranchRow interface
 
 @Component({
   selector: 'app-sys1001',
   standalone: true,
   imports: [SharedModule],
   templateUrl: './sys1001.component.html',
-  // styleUrls:   ['./sys1001.component.scss'],
+  styleUrls: ['./sys1001.component.scss'],
 })
 export class Sys1001Component implements OnInit {
-  @ViewChild(DataTableComponent) dataTable!: DataTableComponent;
   formdata: FormGroup = new FormGroup({});
-
-  // ── Branch state ────────────────────────────────────────────────────
-  branches: BranchRow[] = [
-    {
-      branchName: 'Head Office',
-      branchCode: 'BR-01',
-      location: 'New York, USA',
-      phone: '+1 212 555 0100',
-      manager: 'Alice Johnson',
-      status: 'active',
-    },
-    {
-      branchName: 'West Coast Hub',
-      branchCode: 'BR-02',
-      location: 'Los Angeles, USA',
-      phone: '+1 310 555 0188',
-      manager: 'Bob Martinez',
-      status: 'active',
-    },
-    {
-      branchName: 'EU Operations',
-      branchCode: 'BR-03',
-      location: 'Berlin, Germany',
-      phone: '+49 30 555 0199',
-      manager: 'Clara Müller',
-      status: 'inactive',
-    },
-  ];
-
-  // ── Table config ───────────────────────────────────────────────────
-  tableConfig: TableConfig = {
-    uniqueId: 'branch-table-sys1001',
-    allowAdd: true,
-    allowDelete: true,
-    allowExport: true,
-    allowColumnVisibility: true,
-    allowColumnResize: true,
-    height: '200px', // or e.g. 'calc(100vh - 450px)' if fully dynamic based on form
-    stripedRows: true,
-    allowRowSelection: false,
-    pageSizeOptions: [10, 25],
-    hideAddButton: true,
-    stickyHeader: true,
-    showFooterSummary: true,
-  };
-
-  tableColumns: ColumnDef[] = [
-    {
-      key: 'branchName',
-      header: 'Branch Name',
-      type: 'text',
-      editable: true,
-      required: true,
-      width: '190px',
-      pinned: 'left',
-      footerText: 'Total Branches',
-      // No width specified - takes remaining space
-    },
-    {
-      key: 'branchCode',
-      header: 'Branch Code',
-      type: 'text',
-      editable: true,
-      width: '120px',
-      summarize: 'count', // automatically counts non-empty rows
-    },
-    {
-      key: 'location',
-      header: 'Location',
-      type: 'text',
-      editable: true,
-      width: '120px',
-    },
-    {
-      key: 'phone',
-      header: 'Phone Number',
-      type: 'text',
-      editable: true,
-      width: '2120px',
-    },
-    {
-      key: 'manager',
-      header: 'Manager',
-      type: 'text',
-      editable: true,
-      width: '120px',
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      type: 'select',
-      editable: true,
-      width: '120px',
-      pinned: 'right',
-      options: [
-        { label: 'Active', value: 'active', color: '#10b981' },
-        { label: 'Inactive', value: 'inactive', color: '#ef4444' },
-      ],
-    },
-  ];
-
-  tableData: RowData[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -166,13 +48,8 @@ export class Sys1001Component implements OnInit {
       regDate: new FormControl(''),
       countryCode: new FormControl(''),
       fiscalYear: new FormControl(''),
+      companyStatus: new FormControl('active'),
     });
-
-    // Populate initial table data
-    this.tableData = this.branches.map((b) => ({
-      ...b,
-      sqlState: SqlState.UNCHANGED,
-    }));
   }
 
   // ── Company actions ─────────────────────────────────────────────────
@@ -189,25 +66,5 @@ export class Sys1001Component implements OnInit {
   }
   onDelete(): void {
     this.toastr.warning('Action: DELETE');
-  }
-
-  // ── Branch Table Event ──────────────────────────────────────────────
-  onTableDataChange(latestData: RowData[]): void {
-    this.tableData = latestData;
-    // this.toastr.info('Branch details updated.');
-  }
-
-  onAddBranch(): void {
-    // Rely on the data-table component's internal addRow()
-    // which handles the edit mode and focus correctly.
-    this.dataTable.addRow();
-  }
-
-  onRefreshBranch(): void {
-    this.tableData = this.branches.map((b) => ({
-      ...b,
-      sqlState: SqlState.UNCHANGED,
-    }));
-    this.toastr.info('Branch list refreshed.');
   }
 }

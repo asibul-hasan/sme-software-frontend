@@ -84,13 +84,18 @@ export class MainLayoutComponent implements OnInit {
         if (isHandset || isTablet) {
           this.sidebarCollapsed.set(true); // Mobile sidebar is closed by default
         } else {
-          this.sidebarCollapsed.set(false);
+          const saved = localStorage.getItem('sme_sidebar_collapsed');
+          this.sidebarCollapsed.set(saved !== null ? saved === 'true' : false);
         }
       });
   }
 
   toggleSidebar() {
-    this.sidebarCollapsed.update((v) => !v);
+    this.sidebarCollapsed.update((v) => {
+      const newState = !v;
+      localStorage.setItem('sme_sidebar_collapsed', String(newState));
+      return newState;
+    });
   }
 
   onThemeToggle(isDark: boolean) {
