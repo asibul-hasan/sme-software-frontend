@@ -108,7 +108,10 @@
               </span>
             </div>
             <p class="mb-1 small fw-semibold">
-              {{ branch.branchCode }} • {{ branch.managerName }}
+              {{ branch.branchCode }} • {{ branch.companyName }}
+            </p>
+            <p class="mb-1 small opacity-75">
+              Managed by {{ branch.managerName }}
             </p>
             <small class="d-flex align-items-center">
               <mat-icon
@@ -208,6 +211,24 @@
                             class="form-control text-uppercase"
                             placeholder="e.g. BR-001"
                           />
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="field-group">
+                          <label class="field-label required" for="companyId"
+                            >Company</label
+                          >
+                          <ng-select
+                            [items]="companies()"
+                            bindLabel="companyName"
+                            bindValue="id"
+                            formControlName="companyId"
+                            [searchable]="true"
+                            placeholder="Select company"
+                            class="custom-ng-select"
+                          >
+                          </ng-select>
                         </div>
                       </div>
 

@@ -19,10 +19,16 @@ export class Sys1002Component implements OnInit {
   formdata!: FormGroup;
   
   // Mock data for multiple branches
+  companies = signal<any[]>([
+    { id: 1, companyName: 'Acme Global Holdings Ltd.' },
+    { id: 2, companyName: 'Nova Distribution Pvt. Ltd.' },
+    { id: 3, companyName: 'Pacific Trade Partners' },
+  ]);
+
   branches = signal<any[]>([
-    { id: 1, branchName: 'Downtown HQ', branchCode: 'HQ-001', branchType: 'headquarters', managerName: 'Alice Smith', phone: '(555) 123-4567', email: 'hq@company.com', address: '100 Main St, Cityville', status: 'active' },
-    { id: 2, branchName: 'Northside Local', branchCode: 'LOC-102', branchType: 'local', managerName: 'Bob Johnson', phone: '(555) 987-6543', email: 'north@company.com', address: '200 North Ave, Cityville', status: 'active' },
-    { id: 3, branchName: 'East Kiosk', branchCode: 'KSK-304', branchType: 'kiosk', managerName: 'Carol Davis', phone: '(555) 555-1212', email: 'east@company.com', address: 'Inside East Mall', status: 'inactive' }
+    { id: 1, companyId: 1, companyName: 'Acme Global Holdings Ltd.', branchName: 'Downtown HQ', branchCode: 'HQ-001', branchType: 'headquarters', managerName: 'Alice Smith', phone: '(555) 123-4567', email: 'hq@company.com', address: '100 Main St, Cityville', status: 'active' },
+    { id: 2, companyId: 2, companyName: 'Nova Distribution Pvt. Ltd.', branchName: 'Northside Local', branchCode: 'LOC-102', branchType: 'local', managerName: 'Bob Johnson', phone: '(555) 987-6543', email: 'north@company.com', address: '200 North Ave, Cityville', status: 'active' },
+    { id: 3, companyId: 3, companyName: 'Pacific Trade Partners', branchName: 'East Kiosk', branchCode: 'KSK-304', branchType: 'kiosk', managerName: 'Carol Davis', phone: '(555) 555-1212', email: 'east@company.com', address: 'Inside East Mall', status: 'inactive' }
   ]);
 
   searchTerm = signal('');
@@ -44,6 +50,7 @@ export class Sys1002Component implements OnInit {
 
   ngOnInit(): void {
     this.formdata = this.fb.group({
+      companyId: ['', Validators.required],
       branchName: ['', Validators.required],
       branchCode: [''],
       branchType: [''],
@@ -57,7 +64,17 @@ export class Sys1002Component implements OnInit {
 
   selectBranch(branch: any) {
     this.selectedBranchId = branch.id;
-    this.formdata.patchValue(branch);
+    this.formdata.patchValue({
+      companyId: branch.companyId,
+      branchName: branch.branchName,
+      branchCode: branch.branchCode,
+      branchType: branch.branchType,
+      managerName: branch.managerName,
+      phone: branch.phone,
+      email: branch.email,
+      address: branch.address,
+      status: branch.status,
+    });
   }
 
   onSave() {
@@ -67,15 +84,27 @@ export class Sys1002Component implements OnInit {
 
   onNew() {
     this.selectedBranchId = null;
-    this.formdata.reset({ status: 'active' });
+    this.formdata.reset({ companyId: '', status: 'active' });
   }
 
   onReset() {
     if (this.selectedBranchId) {
       const b = this.branches().find(x => x.id === this.selectedBranchId);
-      this.formdata.patchValue(b);
+      if (b) {
+        this.formdata.patchValue({
+          companyId: b.companyId,
+          branchName: b.branchName,
+          branchCode: b.branchCode,
+          branchType: b.branchType,
+          managerName: b.managerName,
+          phone: b.phone,
+          email: b.email,
+          address: b.address,
+          status: b.status,
+        });
+      }
     } else {
-      this.formdata.reset({ status: 'active' });
+      this.formdata.reset({ companyId: '', status: 'active' });
     }
   }
 }
