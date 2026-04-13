@@ -2,6 +2,7 @@
   <!-- ── CARD HEADER ─────────────────────── -->
   <div
     class="page-card-header d-flex flex-column flex-md-row justify-content-between p-3 border-bottom flex-shrink-0"
+    style="background: var(--card-bg); min-height: 80px"
   >
     <div class="d-flex align-items-center gap-3">
       <div class="header-icon-box shadow-sm">
@@ -154,8 +155,8 @@
                 <div class="form-section-card card">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">info</mat-icon>General
-                      Details
+                      <mat-icon class="me-2 align-middle">info</mat-icon>
+                      Currency Details
                     </h4>
                   </div>
                   <div class="card-body">
@@ -234,17 +235,23 @@
                 <div class="form-section-card card h-100">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">settings</mat-icon
-                      >Preferences
+                      <mat-icon class="me-2 align-middle">settings</mat-icon>
+                      Status Control
                     </h4>
                   </div>
                   <div class="card-body">
                     <div class="field-group mb-3">
                       <label class="field-label">Usage Status</label>
-                      <select formControlName="status" class="form-select">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                      <ng-select
+                        id="status"
+                        formControlName="status"
+                        class="custom-ng-select"
+                        [searchable]="true"
+                        [clearable]="false"
+                      >
+                        <ng-option value="active">Active</ng-option>
+                        <ng-option value="inactive">Inactive</ng-option>
+                      </ng-select>
                     </div>
                     <div class="border rounded-2 p-3">
                       <mat-checkbox formControlName="isLocal" color="primary">

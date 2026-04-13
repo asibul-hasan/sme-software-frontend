@@ -2,6 +2,7 @@
   <!-- ── CARD HEADER ─────────────────────── -->
   <div
     class="page-card-header d-flex flex-column flex-md-row justify-content-between p-3 border-bottom flex-shrink-0"
+    style="background: var(--card-bg); min-height: 80px"
   >
     <div class="d-flex align-items-center gap-3">
       <div class="header-icon-box shadow-sm">
@@ -152,8 +153,8 @@
                 <div class="form-section-card card">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">gavel</mat-icon>Tax
-                      Details
+                      <mat-icon class="me-2 align-middle">info</mat-icon>
+                      Tax Rule Details
                     </h4>
                   </div>
                   <div class="card-body">
@@ -205,13 +206,17 @@
                       <div class="col-md-6">
                         <div class="field-group">
                           <label class="field-label required">Tax Type</label>
-                          <select formControlName="taxType" class="form-select">
-                            <option value="vat">VAT (Value Added Tax)</option>
-                            <option value="sales_tax">Sales Tax</option>
-                            <option value="gst">
-                              GST (Goods & Services Tax)
-                            </option>
-                          </select>
+                          <ng-select
+                            id="taxType"
+                            formControlName="taxType"
+                            class="custom-ng-select"
+                            [searchable]="true"
+                            [clearable]="false"
+                          >
+                            <ng-option value="vat">VAT (Value Added Tax)</ng-option>
+                            <ng-option value="sales_tax">Sales Tax</ng-option>
+                            <ng-option value="gst">GST (Goods & Services Tax)</ng-option>
+                          </ng-select>
                         </div>
                       </div>
                     </div>
@@ -223,17 +228,23 @@
                 <div class="form-section-card card h-100">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">verified</mat-icon
-                      >Compliance
+                      <mat-icon class="me-2 align-middle">settings</mat-icon>
+                      Compliance & Status
                     </h4>
                   </div>
                   <div class="card-body">
                     <div class="field-group mb-3">
                       <label class="field-label">Status</label>
-                      <select formControlName="status" class="form-select">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                      <ng-select
+                        id="status"
+                        formControlName="status"
+                        class="custom-ng-select"
+                        [searchable]="true"
+                        [clearable]="false"
+                      >
+                        <ng-option value="active">Active</ng-option>
+                        <ng-option value="inactive">Inactive</ng-option>
+                      </ng-select>
                     </div>
                     <div class="border rounded-2 p-3">
                       <mat-checkbox formControlName="isDefault" color="primary">

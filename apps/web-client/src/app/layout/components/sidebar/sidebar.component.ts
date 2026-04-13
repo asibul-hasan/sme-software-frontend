@@ -116,7 +116,10 @@ export class SidebarComponent {
       }
     };
     extract(nodes);
-    localStorage.setItem('sme_sidebar_expanded', JSON.stringify(Array.from(expandedIds)));
+    localStorage.setItem(
+      'sme_sidebar_expanded',
+      JSON.stringify(Array.from(expandedIds)),
+    );
   }
 
   private restoreExpandedState(nodes: MenuItem[], expandedIds: Set<string>) {

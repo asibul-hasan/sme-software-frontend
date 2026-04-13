@@ -28,8 +28,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import { DataTableComponent } from 'apps/web-client/src/app/shared/components/data-table';
-
 const MODULES = [
   CommonModule,
   FormsModule,
@@ -62,7 +60,7 @@ const MODULES = [
 ];
 
 @NgModule({
-  imports: [...MODULES, DataTableComponent],
-  exports: [...MODULES, DataTableComponent],
+  imports: [MODULES],
+  exports: [MODULES],
 })
 export class SharedModule {}

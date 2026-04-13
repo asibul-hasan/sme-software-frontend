@@ -123,7 +123,10 @@
             </small>
           </button>
 
-          <div *ngIf="filteredBranches().length === 0" class="p-4 text-center opacity-75">
+          <div
+            *ngIf="filteredBranches().length === 0"
+            class="p-4 text-center opacity-75"
+          >
             <mat-icon
               class="opacity-50 mb-2"
               style="font-size: 32px; height: 32px; width: 32px"
@@ -140,9 +143,9 @@
       class="col-12 col-md-8 col-xl-9 h-100 d-flex flex-column"
       style="overflow: hidden"
     >
-      <div class="page-card-body p-3 flex-grow-1" style="overflow-y: auto">
+      <div class="page-card-body flex-grow-1" style="overflow-y: auto">
         <div class="card--main">
-          <div
+          <!-- <div
             class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom"
           >
             <h4 class="m-0 fw-bold d-flex align-items-center">
@@ -167,7 +170,7 @@
               >
               Deselect
             </button>
-          </div>
+          </div> -->
 
           <form [formGroup]="formdata" autocomplete="off">
             <div class="row row-group">
@@ -176,9 +179,7 @@
                 <div class="form-section-card card">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle"
-                        >badge</mat-icon
-                      >
+                      <mat-icon class="me-2 align-middle">info</mat-icon>
                       Branch Information
                     </h4>
                   </div>
@@ -225,7 +226,6 @@
                             bindValue="id"
                             formControlName="companyId"
                             [searchable]="true"
-                            placeholder="Select company"
                             class="custom-ng-select"
                           >
                           </ng-select>
@@ -237,17 +237,25 @@
                           <label class="field-label required" for="branchType"
                             >Branch Type</label
                           >
-                          <select
+                          <ng-select
                             id="branchType"
                             formControlName="branchType"
-                            class="form-select"
+                            class="custom-ng-select"
+                            [searchable]="true"
+                            [clearable]="true"
                           >
-                            <option value="">— Select branch type —</option>
-                            <option value="headquarters">Headquarters</option>
-                            <option value="regional">Regional Office</option>
-                            <option value="local">Local Branch</option>
-                            <option value="kiosk">Kiosk</option>
-                          </select>
+                            <ng-option value="null"
+                              >— Select branch type —</ng-option
+                            >
+                            <ng-option value="headquarters"
+                              >Headquarters</ng-option
+                            >
+                            <ng-option value="regional"
+                              >Regional Office</ng-option
+                            >
+                            <ng-option value="local">Local Branch</ng-option>
+                            <ng-option value="kiosk">Kiosk</ng-option>
+                          </ng-select>
                         </div>
                       </div>
 
@@ -275,9 +283,7 @@
                 <div class="form-section-card card h-100">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle"
-                        >badge</mat-icon
-                      >
+                      <mat-icon class="me-2 align-middle">settings</mat-icon>
                       Status Control
                     </h4>
                   </div>
@@ -290,16 +296,16 @@
                             style="font-size: 11px"
                             >Current Operation Status</label
                           >
-                          <select
+                          <ng-select
                             formControlName="status"
-                            class="form-select mt-1"
+                            class="custom-ng-select mt-1"
+                            [searchable]="true"
+                            [clearable]="false"
                           >
-                            <option value="active">Active Location</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="suspended">
-                              Temporarily Suspended
-                            </option>
-                          </select>
+                            <ng-option value="active">Active Location</ng-option>
+                            <ng-option value="inactive">Inactive</ng-option>
+                            <ng-option value="suspended">Temporarily Suspended</ng-option>
+                          </ng-select>
                         </div>
                       </div>
                     </div>
@@ -312,9 +318,8 @@
                 <div class="form-section-card card">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle"
-                        >badge</mat-icon
-                      >Location & Support Contact
+                      <mat-icon class="me-2 align-middle">contact_support</mat-icon>
+                      Location & Support Contact
                     </h4>
                   </div>
                   <div class="card-body">

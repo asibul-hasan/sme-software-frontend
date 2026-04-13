@@ -2,6 +2,7 @@
   <!-- ── CARD HEADER ─────────────────────── -->
   <div
     class="page-card-header d-flex flex-column flex-md-row justify-content-between p-3 border-bottom flex-shrink-0"
+    style="background: var(--card-bg); min-height: 80px"
   >
     <div class="d-flex align-items-center gap-3">
       <div class="header-icon-box shadow-sm">
@@ -127,9 +128,9 @@
       class="col-12 col-md-8 col-xl-9 h-100 d-flex flex-column"
       style="overflow: hidden"
     >
-      <div class="page-card-body p-3 flex-grow-1" style="overflow-y: auto">
+      <div class="page-card-body flex-grow-1" style="overflow-y: auto">
         <div class="card--main">
-          <div
+          <!-- <div
             class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom"
           >
             <h4 class="m-0 fw-bold d-flex align-items-center">
@@ -142,7 +143,7 @@
                   : 'New Financial Period'
               }}
             </h4>
-          </div>
+          </div> -->
 
           <form [formGroup]="formdata" autocomplete="off">
             <div class="row row-group">
@@ -150,8 +151,8 @@
                 <div class="form-section-card card">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">date_range</mat-icon
-                      >Period Settings
+                      <mat-icon class="me-2 align-middle">info</mat-icon>
+                      Period Settings
                     </h4>
                   </div>
                   <div class="card-body">
@@ -190,21 +191,39 @@
                       <div class="col-md-6">
                         <div class="field-group">
                           <label class="field-label required">Start Date</label>
-                          <input
-                            type="date"
-                            formControlName="startDate"
-                            class="form-control"
-                          />
+                          <div class="datepicker-wrapper">
+                            <input
+                              matInput
+                              [matDatepicker]="startPicker"
+                              formControlName="startDate"
+                              class="form-control"
+                              placeholder="MM/DD/YYYY"
+                              (click)="startPicker.open()"
+                            />
+                            <mat-datepicker-toggle matSuffix [for]="startPicker">
+                              <mat-icon matDatepickerToggleIcon>event</mat-icon>
+                            </mat-datepicker-toggle>
+                            <mat-datepicker #startPicker></mat-datepicker>
+                          </div>
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="field-group">
                           <label class="field-label required">End Date</label>
-                          <input
-                            type="date"
-                            formControlName="endDate"
-                            class="form-control"
-                          />
+                          <div class="datepicker-wrapper">
+                            <input
+                              matInput
+                              [matDatepicker]="endPicker"
+                              formControlName="endDate"
+                              class="form-control"
+                              placeholder="MM/DD/YYYY"
+                              (click)="endPicker.open()"
+                            />
+                            <mat-datepicker-toggle matSuffix [for]="endPicker">
+                              <mat-icon matDatepickerToggleIcon>event</mat-icon>
+                            </mat-datepicker-toggle>
+                            <mat-datepicker #endPicker></mat-datepicker>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -216,18 +235,24 @@
                 <div class="form-section-card card h-100">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">toggle_on</mat-icon
-                      >Status
+                      <mat-icon class="me-2 align-middle">settings</mat-icon>
+                      Status Control
                     </h4>
                   </div>
                   <div class="card-body">
                     <div class="field-group mb-3">
                       <label class="field-label">Accounting Status</label>
-                      <select formControlName="status" class="form-select">
-                        <option value="active">Active (Open)</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="closed">Permanently Closed</option>
-                      </select>
+                      <ng-select
+                        id="status"
+                        formControlName="status"
+                        class="custom-ng-select"
+                        [searchable]="true"
+                        [clearable]="true"
+                      >
+                        <ng-option value="active">Active (Open)</ng-option>
+                        <ng-option value="inactive">Inactive</ng-option>
+                        <ng-option value="closed">Permanently Closed</ng-option>
+                      </ng-select>
                     </div>
                     <div class="border rounded-2 p-3">
                       <mat-checkbox formControlName="isDefault" color="primary">
