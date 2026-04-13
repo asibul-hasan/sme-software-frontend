@@ -6,6 +6,22 @@
   "fileMap": {
     "nonProjectFiles": [
       {
+        "file": "tsconfig.base.json",
+        "hash": "12471885200579325840"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "6820402234827505055"
+      },
+      {
+        "file": "AI_INSTRUCTIONS.md",
+        "hash": "7145469653950562665"
+      },
+      {
+        "file": "nx.json",
+        "hash": "9648514650165378930"
+      },
+      {
         "file": ".gitignore",
         "hash": "11751663399876450553"
       },
@@ -14,48 +30,32 @@
         "hash": "5839997762649794868"
       },
       {
-        "file": ".vscode/extensions.json",
-        "hash": "4305574964819615641"
-      },
-      {
-        "file": "package.json",
-        "hash": "17525098963946000160"
-      },
-      {
-        "file": "db.md",
-        "hash": "17786456305232670079"
-      },
-      {
         "file": ".vscode/settings.json",
         "hash": "1389868326933519382"
-      },
-      {
-        "file": "nx.json",
-        "hash": "9648514650165378930"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "12269743867629339573"
-      },
-      {
-        "file": "eslint.config.mjs",
-        "hash": "1750064783103198479"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "6820402234827505055"
       },
       {
         "file": ".editorconfig",
         "hash": "11532813898455409296"
       },
       {
-        "file": "tsconfig.base.json",
-        "hash": "12471885200579325840"
+        "file": ".prettierignore",
+        "hash": "12269743867629339573"
       },
       {
-        "file": "AI_INSTRUCTIONS.md",
-        "hash": "7145469653950562665"
+        "file": ".vscode/extensions.json",
+        "hash": "4305574964819615641"
+      },
+      {
+        "file": "db.md",
+        "hash": "17786456305232670079"
+      },
+      {
+        "file": "package.json",
+        "hash": "17525098963946000160"
+      },
+      {
+        "file": "eslint.config.mjs",
+        "hash": "1750064783103198479"
       }
     ],
     "projectFileMap": {
@@ -526,7 +526,7 @@
         },
         {
           "file": "apps/web-client/src/app/layout/components/header/header.component.scss",
-          "hash": "13400622239964083762"
+          "hash": "17814380578027604648"
         },
         {
           "file": "apps/web-client/src/app/layout/components/header/header.component.ts",

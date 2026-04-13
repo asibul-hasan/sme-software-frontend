@@ -775,6 +775,11 @@ select option,
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--emerald); }
+  50% { opacity: 0.6; transform: scale(1.1); box-shadow: 0 0 12px var(--emerald); }
+}
+
 /* ── Mobile Responsive Overrides (Using Bootstrap Breakpoints) ── */
 
 @media (max-width: 991.98px) {
