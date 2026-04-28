@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface LoginRequest {
-  email: string;
+  company_no: number;
+  branch_no: number;
+  user_name: string;
   password: string;
 }
 
@@ -41,6 +43,7 @@ export interface LoginResponse {
   access_token: string;
   user: User;
   permissions: any; // IPermissionConfig
+  menu?: any[];
 }
 
 @Injectable({
@@ -69,5 +72,17 @@ export class AuthDataService {
 
   getPermissions(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/permissions`);
+  }
+
+  getCompaniesByUserName(userName: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/companies`, { user_name: userName });
+  }
+
+  getBranchesByUserName(userName: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/branches`, { user_name: userName });
+  }
+
+  checkFormPermission(formId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/permissions/check`, { formId });
   }
 }

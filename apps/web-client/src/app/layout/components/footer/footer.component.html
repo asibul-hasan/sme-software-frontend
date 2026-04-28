@@ -10,37 +10,27 @@
       <span class="brand-partner ms-1">InfoaidTech</span>
     </span>
     <span class="footer-sep d-none d-md-inline">|</span>
-    <span class="version-chip d-none d-md-inline">
-      ERP v2025.1
-    </span>
+    <span class="version-chip d-none d-md-inline"> ERP v2025.1 </span>
   </div>
 
   <div class="footer-copyright flex-grow-1 text-center d-none d-md-block">
-    <span>
-      © {{ currentYear }} Infoaidtech. All rights reserved.
-    </span>
+    <span> © {{ currentYear }} Infoaidtech. All rights reserved. </span>
   </div>
 
-  <div class="footer-status-area d-flex align-items-center gap-2 d-none d-md-flex">
+  <div
+    class="footer-status-area d-flex align-items-center gap-2 d-none d-md-flex"
+  >
     <span class="status-indicator d-flex align-items-center gap-1 fw-medium">
       <span class="status-dot flex-shrink-0"></span>
       {{ 'allSystemsOperational' | translate }}
     </span>
     <span class="footer-sep">|</span>
-    <a
-      class="footer-link"
-      href="#"
-      (click)="onHelp($event)"
-    >
+    <a class="footer-link" href="#" (click)="onHelp($event)">
       {{ 'help' | translate }}
     </a>
     <span class="footer-sep">|</span>
 
-    <a
-      class="footer-link"
-      href="#"
-      (click)="onPrivacy($event)"
-    >
+    <a class="footer-link" href="#" (click)="onPrivacy($event)">
       {{ 'privacy' | translate }}
     </a>
   </div>

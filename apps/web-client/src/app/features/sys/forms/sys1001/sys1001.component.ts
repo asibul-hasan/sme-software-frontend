@@ -1,133 +1,118 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from '../../../../shared';
 import { ToastrService } from 'ngx-toastr';
-
-interface CompanyRow {
-  id: number;
-  companyName: string;
-  companySuffix: string;
-  systemId: string;
-  vendorType: string;
-  regNo: string;
-  regDate: string;
-  countryCode: string;
-  companyPhone: string;
-  companyEmail: string;
-  companyWebsite: string;
-  companyLogo: string;
-  companyAddress: string;
-  fiscalYear: string;
-  companyStatus: string;
-}
+import { FormPermissionService } from '../../../../core/services/form-permission.service';
+import { CompanyService } from '../../services/company.service';
+import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-sys1001',
   standalone: true,
-  imports: [SharedModule],
+  imports: [SharedModule, HasPermissionDirective],
   templateUrl: './sys1001.component.html',
   styleUrls: ['./sys1001.component.scss'],
 })
 export class Sys1001Component implements OnInit {
   formdata!: FormGroup;
+  isLoading = signal(true);
+  isSaving = signal(false);
+  
+  currentCompanyNo: number | null = null;
+  lastUpdated = signal<string | null>(null);
 
-  companies = signal<CompanyRow[]>([
-    {
-      id: 1,
-      companyName: 'Acme Global Holdings Ltd.',
-      companySuffix: 'AGH',
-      systemId: 'COMP-001',
-      vendorType: 'Holding',
-      regNo: 'RG-2024-001',
-      regDate: '2024-01-10',
-      countryCode: '+1',
-      companyPhone: '(555) 123-4567',
-      companyEmail: 'info@acmeglobal.com',
-      companyWebsite: 'https://www.acmeglobal.com',
-      companyLogo: '',
-      companyAddress: '500 Innovation Drive, Suite 120, Business City',
-      fiscalYear: '12',
-      companyStatus: 'active',
-    },
-    {
-      id: 2,
-      companyName: 'Nova Distribution Pvt. Ltd.',
-      companySuffix: 'NDPL',
-      systemId: 'COMP-002',
-      vendorType: 'Distributor',
-      regNo: 'RG-2025-010',
-      regDate: '2025-02-18',
-      countryCode: '+44',
-      companyPhone: '+44 20 7946 0123',
-      companyEmail: 'contact@novadistribution.co.uk',
-      companyWebsite: 'https://www.novadistribution.co.uk',
-      companyLogo: '',
-      companyAddress: '44 Commerce Street, London',
-      fiscalYear: '03',
-      companyStatus: 'active',
-    },
-  ]);
-
-  searchTerm = signal('');
-  selectedCompanyId: number | null = null;
   logoPreview = signal('');
   isDragActive = signal(false);
   private readonly maxLogoSize = 2 * 1024 * 1024;
 
-  filteredCompanies = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const items = this.companies();
-    if (!term) {
-      return items;
-    }
-    return items.filter((company) =>
-      [company.companyName, company.companySuffix, company.systemId, company.regNo]
-        .join(' ')
-        .toLowerCase()
-        .includes(term)
-    );
-  });
-
-  constructor(private fb: FormBuilder, private toastr: ToastrService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private toastr: ToastrService,
+    public permissionService: FormPermissionService,
+    private companyService: CompanyService
+  ) {}
 
   ngOnInit(): void {
+    // 1. Initialize Form
+    this.initForm();
+
+    // 2. Load Permissions
+    this.permissionService.loadPermissions('SYS_1001').subscribe();
+
+    // 3. Load Company Data
+    this.loadInitialCompany();
+  }
+
+  private initForm(): void {
     this.formdata = this.fb.group({
-      companyName: ['', Validators.required],
-      companySuffix: [''],
-      systemId: [{ value: '', disabled: true }],
-      vendorType: ['', Validators.required],
-      regNo: [''],
-      regDate: [''],
-      countryCode: ['+1'],
-      companyPhone: ['', Validators.required],
-      companyEmail: ['', [Validators.email]],
-      companyWebsite: [''],
-      companyLogo: [''],
-      companyAddress: ['', Validators.required],
-      fiscalYear: ['', Validators.required],
-      companyStatus: ['active', Validators.required],
+      company_code: [{ value: '', disabled: true }],
+      company_name: ['', [Validators.required, Validators.maxLength(255)]],
+      company_name_local: [''],
+      company_type: [''], // Proprietorship / LLC / Partnership / Others
+      
+      // Tax & Legal
+      trade_license_no: [''],
+      vat_reg_no: [''],
+      tin_no: [''],
+      bin_no: [''],
+      
+      // Address & Contact
+      address_line1: [''],
+      city: [''],
+      country_code: ['BD'],
+      phone_primary: [''],
+      email_primary: ['', [Validators.email]],
+      website: [''],
+      logo_url: [''],
+      
+      // Preferences
+      base_currency_no: ['', Validators.required],
+      fiscal_year_start: ['', Validators.required],
+      decimal_places: [2, [Validators.required, Validators.min(0), Validators.max(4)]],
+      date_format: ['DD-MM-YYYY'],
+      time_zone: ['Asia/Dhaka'],
     });
   }
 
-  selectCompany(company: CompanyRow) {
-    this.selectedCompanyId = company.id;
-    this.formdata.patchValue({
-      companyName: company.companyName,
-      companySuffix: company.companySuffix,
-      systemId: company.systemId,
-      vendorType: company.vendorType,
-      regNo: company.regNo,
-      regDate: company.regDate,
-      countryCode: company.countryCode,
-      companyPhone: company.companyPhone,
-      companyEmail: company.companyEmail,
-      companyWebsite: company.companyWebsite,
-      companyLogo: company.companyLogo,
-      companyAddress: company.companyAddress,
-      fiscalYear: company.fiscalYear,
-      companyStatus: company.companyStatus,
+  private loadInitialCompany(): void {
+    this.isLoading.set(true);
+    // Fetch list of companies
+    this.companyService.listCompanies().subscribe({
+      next: (res) => {
+        if (res.success && res.data && res.data.length > 0) {
+          // Take the first company and load its details
+          const firstCompany = res.data[0];
+          this.loadCompanyDetails(firstCompany.companyNo || firstCompany.company_no);
+        } else {
+          this.isLoading.set(false);
+          this.toastr.warning('No company found to edit.');
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.toastr.error('Failed to load companies.');
+      }
     });
-    this.logoPreview.set(company.companyLogo || '');
+  }
+
+  private loadCompanyDetails(companyNo: number): void {
+    this.companyService.getCompanyDetails(companyNo).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.success && res.data) {
+          this.currentCompanyNo = res.data.companyNo || res.data.company_no;
+          this.formdata.patchValue(res.data);
+          if (res.data.logo_url) {
+            this.logoPreview.set(res.data.logo_url);
+          }
+          this.lastUpdated.set(new Date().toLocaleString());
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.toastr.error('Failed to load company details.');
+      }
+    });
   }
 
   onLogoSelected(event: Event): void {
@@ -162,7 +147,7 @@ export class Sys1001Component implements OnInit {
   }
 
   clearLogo(): void {
-    this.formdata.patchValue({ companyLogo: '' });
+    this.formdata.patchValue({ logo_url: '' });
     this.logoPreview.set('');
   }
 
@@ -179,7 +164,7 @@ export class Sys1001Component implements OnInit {
     const reader = new FileReader();
     reader.onload = () => {
       const value = reader.result as string;
-      this.formdata.patchValue({ companyLogo: value });
+      this.formdata.patchValue({ logo_url: value });
       this.logoPreview.set(value);
     };
     reader.readAsDataURL(file);
@@ -188,75 +173,32 @@ export class Sys1001Component implements OnInit {
   onSave(): void {
     if (this.formdata.invalid) {
       this.formdata.markAllAsTouched();
-      this.toastr.error('Please complete all required fields.');
+      this.toastr.error('Please complete all required fields correctly.');
       return;
     }
 
-    const { systemId, ...payload } = this.formdata.getRawValue() as Omit<CompanyRow, 'id'>;
-    if (this.selectedCompanyId) {
-      this.companies.update((list) =>
-        list.map((item) =>
-          item.id === this.selectedCompanyId
-            ? { ...item, ...payload }
-            : item
-        )
-      );
-      this.toastr.success('Company updated successfully.');
-    } else {
-      const nextId = Math.max(0, ...this.companies().map((item) => item.id)) + 1;
-      const newCompany: CompanyRow = {
-        id: nextId,
-        ...payload,
-        systemId: `COMP-${String(nextId).padStart(3, '0')}`,
-      };
-      this.companies.update((list) => [newCompany, ...list]);
-      this.selectedCompanyId = newCompany.id;
-      this.formdata.patchValue({ systemId: newCompany.systemId });
-      this.toastr.success('Company added successfully.');
-    }
-  }
+    this.isSaving.set(true);
+    // Merge disabled fields (like company_code) by using getRawValue
+    const payload = {
+      ...this.formdata.getRawValue(),
+      operation_flag: 'U', // Update
+      company_no: this.currentCompanyNo
+    };
 
-  onNew(): void {
-    this.selectedCompanyId = null;
-    this.formdata.reset({
-      companyName: '',
-      companySuffix: '',
-      systemId: '',
-      vendorType: '',
-      regNo: '',
-      regDate: '',
-      countryCode: '+1',
-      companyPhone: '',
-      companyEmail: '',
-      companyWebsite: '',
-      companyLogo: '',
-      companyAddress: '',
-      fiscalYear: '',
-      companyStatus: 'active',
-    });
-    this.logoPreview.set('');
-    this.toastr.info('Ready to register a new company.');
-  }
-
-  onReset(): void {
-    if (this.selectedCompanyId) {
-      const company = this.companies().find((item) => item.id === this.selectedCompanyId);
-      if (company) {
-        this.selectCompany(company);
-        this.toastr.info('Company details restored.');
-        return;
+    this.companyService.writeCompany(payload).subscribe({
+      next: (res) => {
+        this.isSaving.set(false);
+        if (res.success) {
+          this.toastr.success('Company settings updated successfully.');
+          this.lastUpdated.set(new Date().toLocaleString());
+        } else {
+          this.toastr.error(res.message || 'Failed to update company settings.');
+        }
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.toastr.error('An error occurred while saving.');
       }
-    }
-    this.onNew();
-  }
-
-  onDelete(): void {
-    if (!this.selectedCompanyId) {
-      this.toastr.warning('Select a company before deleting.');
-      return;
-    }
-    this.companies.update((list) => list.filter((item) => item.id !== this.selectedCompanyId));
-    this.onNew();
-    this.toastr.warning('Company removed from the list.');
+    });
   }
 }

@@ -252,10 +252,10 @@ select option,
 /* ----------------------------------------- */
 
 .main-content {
-  padding-top: calc(48px + 0.5rem);
-  padding-bottom: calc(40px + 0.5rem);
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  padding-top: 48px;
+  padding-bottom: 25px;
+  padding-left: 0;
+  padding-right: 0;
   margin-left: 250px;
   min-height: 100vh;
   z-index: 1;

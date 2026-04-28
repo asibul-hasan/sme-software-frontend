@@ -20,6 +20,7 @@ import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 
 export function HttpLoaderFactory() {
@@ -39,6 +40,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LoaderInterceptor,
       multi: true,
     },
     {

@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { HeaderComponent } from '../components/header/header.component';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
+import { GlobalLoaderComponent } from '../../shared/components/global-loader/global-loader.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -16,6 +17,7 @@ import { FooterComponent } from '../components/footer/footer.component';
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
+    GlobalLoaderComponent
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],

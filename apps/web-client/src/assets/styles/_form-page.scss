@@ -10,7 +10,7 @@
 .page-card {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 108px);
+  height: calc(100vh - 73px);
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -23,8 +23,9 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0px 20px;
+  // padding: 12px 20px;
   border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
   z-index: 10;
 }
 
@@ -39,14 +40,18 @@
 
 // ── Global Premium Header Styles ──
 .header-icon-box {
-  width: 48px;
-  height: 48px;
+  width: 30px;
+  height: 30px;
   border-radius: 14px;
   background: var(--indigo-g);
   color: white;
   display: grid;
   place-items: center;
-  mat-icon { font-size: 28px; width: 28px; height: 28px; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .gradient-text-header {
@@ -64,7 +69,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 
@@ -101,6 +106,7 @@
   margin-bottom: 0;
   background: var(--card-bg);
   border-radius: 10px;
+  margin-bottom: 5px;
 
   .card-header {
     padding: 0.5rem 0.75rem;
@@ -343,7 +349,6 @@
 
 .field-input,
 .field-select,
-
 .field-textarea {
   width: 100%;
   font-family: var(--font-family-base);
@@ -417,15 +422,67 @@
     background: var(--select-bg) !important;
     border-left: 4px solid var(--indigo) !important;
 
-    h6, h2, h3, h4, .fw-bold {
+    h6,
+    h2,
+    h3,
+    h4,
+    .fw-bold {
       color: var(--indigo) !important;
     }
 
-    p, small, span:not(.badge) {
+    p,
+    small,
+    span:not(.badge) {
       color: var(--select-text) !important;
       opacity: 0.9;
     }
   }
 }
 
+// ─────────────────────────────────────────────────────────────────
+// FORM INTERNAL LAYOUT CLASSES
+// ─────────────────────────────────────────────────────────────────
 
+.form-content-row {
+  overflow: hidden;
+  height: 100%;
+}
+
+.form-content-col {
+  overflow: hidden;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UPLOAD / DROPZONE ZONES
+// ─────────────────────────────────────────────────────────────────
+
+.logo-dropzone {
+  border: 2px dashed var(--border-color, #ccc);
+  cursor: pointer;
+  min-height: 200px;
+  transition: all 0.2s ease;
+
+  &.bg-light {
+    background-color: var(--bg-secondary) !important;
+    border-color: var(--indigo);
+  }
+}
+
+.logo-upload-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: var(--text-secondary, #888);
+}
+
+.logo-preview-img {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+.icon-small {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
