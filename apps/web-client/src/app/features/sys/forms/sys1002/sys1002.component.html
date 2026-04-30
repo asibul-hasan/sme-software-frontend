@@ -1,85 +1,91 @@
-<div class="page-card d-flex flex-column" style="overflow: hidden">
+<div class="page-card d-flex flex-column">
   <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
   <div
-    class="page-card-header d-flex flex-column flex-md-row justify-content-between p-3 border-bottom flex-shrink-0"
-    style="background: var(--card-bg); min-height: 80px"
+    class="page-card-header d-flex flex-column flex-md-row justify-content-between p-2 border-bottom flex-shrink-0"
   >
     <div class="d-flex align-items-center gap-3">
       <div class="header-icon-box shadow-sm">
-        <mat-icon>storefront</mat-icon>
+        <mat-icon>business</mat-icon>
       </div>
       <div>
         <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
-          Branch Setup
+          {{ 'branchSetup' | translate }}
         </h2>
         <p class="text-secondary m-0 small mt-1">
-          Manage your organizational locations and branch access
+          {{ 'Manage business locations, branch hierarchy, and office types' | translate }}
         </p>
       </div>
     </div>
 
-    <!-- Action Buttons using standard btn-action-group -->
-    <div class="btn-action-group mt-3 mt-md-0 d-flex gap-2">
+    <!-- Action Buttons -->
+    <div class="btn-action-group mt-md-0 d-flex gap-2">
       <button
         class="btn-action btn-save"
         (click)="onSave()"
-        matTooltip="Save Branch (Ctrl+S)"
+        [matTooltip]="'save' | translate"
       >
         <mat-icon>done_all</mat-icon>
-        <span class="btn-action-label">Save</span>
+        <span class="btn-action-label">{{ 'save' | translate }}</span>
       </button>
       <button
         class="btn-action btn-new"
         (click)="onNew()"
-        matTooltip="New Branch (Ctrl+N)"
+        [matTooltip]="'new' | translate"
       >
         <mat-icon>add</mat-icon>
-        <span class="btn-action-label">New</span>
+        <span class="btn-action-label">{{ 'new' | translate }}</span>
       </button>
       <button
         class="btn-action btn-reset"
         (click)="onReset()"
-        matTooltip="Reset Form"
+        [matTooltip]="'reset' | translate"
       >
         <mat-icon>refresh</mat-icon>
-        <span class="btn-action-label">Reset</span>
+        <span class="btn-action-label">{{ 'reset' | translate }}</span>
+      </button>
+
+      <button
+        *ngIf="selectedBranchNo()"
+        class="btn-action btn-delete"
+        (click)="onDelete()"
+        [matTooltip]="'delete' | translate"
+      >
+        <mat-icon>delete</mat-icon>
+        <span class="btn-action-label">{{ 'delete' | translate }}</span>
       </button>
     </div>
   </div>
 
-  <!-- ── SPLIT BODY (List on Left, Form on Right) ──────────────────── -->
-  <div class="row g-0 flex-grow-1" style="overflow: hidden; height: 100%">
+  <!-- ── SPLIT BODY ──────────────────── -->
+  <div class="row g-0 flex-grow-1 form-content-row">
     <!-- LEFT SIDEBAR: BRANCH LIST -->
     <div
-      class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column"
-      style="overflow: hidden"
+      class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
     >
       <div class="p-3 pb-2">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6
-            class="m-0 fw-bold text-uppercase opacity-75"
+            class="m-0 fw-bold text-uppercase opacity-75 small"
             style="letter-spacing: 0.5px"
           >
-            All Branches
+            {{ 'branchSetup' | translate }}
           </h6>
           <span class="badge rounded-pill text-bg-secondary"
-            >{{ filteredBranches().length }} Locations</span
+            >{{ filteredBranches().length }} {{ 'records' | translate }}</span
           >
         </div>
-
-        <!-- Search Field -->
         <div class="field-group mb-0">
           <input
             type="text"
             class="form-control"
-            placeholder="Search branches..."
+            [placeholder]="'search' | translate"
             [ngModel]="searchTerm()"
             (ngModelChange)="searchTerm.set($event)"
           />
         </div>
       </div>
 
-      <div class="p-3 pt-0 flex-grow-1" style="overflow-y: auto">
+      <div class="p-3 pt-0 flex-grow-1 overflow-auto">
         <div
           class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
         >
@@ -87,40 +93,33 @@
             *ngFor="let branch of filteredBranches()"
             type="button"
             class="list-group-item list-group-item-action p-3"
-            [class.active]="selectedBranchId === branch.id"
+            [class.active]="selectedBranchNo() === branch.branch_no"
             (click)="selectBranch(branch)"
           >
             <div
               class="d-flex w-100 justify-content-between align-items-center mb-1"
             >
-              <h6 class="mb-0 fw-bold">
-                {{ branch.branchName }}
-              </h6>
-              <span
-                class="badge"
-                [ngClass]="
-                  branch.status === 'active'
-                    ? 'bg-success bg-opacity-10 text-success border border-success'
-                    : 'bg-secondary bg-opacity-10 text-secondary border border-secondary'
-                "
+              <h6 class="mb-0 fw-bold">{{ branch.branch_code }}</h6>
+              <span *ngIf="branch.is_head_office" class="badge text-bg-primary"
+                >{{ 'isHeadOffice' | translate }}</span
               >
-                {{ branch.status | uppercase }}
-              </span>
             </div>
-            <p class="mb-1 small fw-semibold">
-              {{ branch.branchCode }} • {{ branch.companyName }}
+            <p class="mb-1 small fw-semibold opacity-75 text-truncate">
+              {{ branch.branch_name }}
             </p>
-            <p class="mb-1 small opacity-75">
-              Managed by {{ branch.managerName }}
-            </p>
-            <small class="d-flex align-items-center">
-              <mat-icon
-                style="font-size: 14px; width: 14px; height: 14px"
-                class="me-1 align-middle"
-                >location_on</mat-icon
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <span class="badge rounded-pill bg-light text-dark border small"
+                >{{ branch.branch_type }}</span
               >
-              {{ branch.address }}
-            </small>
+              <span
+                class="badge rounded-pill"
+                [ngClass]="{
+                  'text-bg-success': branch.status === 'Active',
+                  'text-bg-secondary': branch.status === 'Inactive'
+                }"
+                >{{ branch.status | translate }}</span
+              >
+            </div>
           </button>
 
           <div
@@ -130,244 +129,212 @@
             <mat-icon
               class="opacity-50 mb-2"
               style="font-size: 32px; height: 32px; width: 32px"
-              >storefront</mat-icon
+              >business_center</mat-icon
             >
-            <p class="mb-0 small">No branches recorded yet.</p>
+            <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT SIDE: BRANCH SETUP FORM -->
+    <!-- RIGHT SIDE: FORM -->
     <div
-      class="col-12 col-md-8 col-xl-9 h-100 d-flex flex-column"
-      style="overflow: hidden"
+      class="col-12 col-md-8 col-xl-9 h-100 d-flex flex-column form-content-col"
     >
-      <div class="page-card-body flex-grow-1" style="overflow-y: auto">
-        <div class="card--main">
-          <!-- <div
-            class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom"
+      <div class="page-card-body flex-grow-1 overflow-auto">
+        <div class="card--main h-100 d-flex flex-column">
+          <form
+            [formGroup]="formdata"
+            autocomplete="off"
+            class="h-100 d-flex flex-column"
           >
-            <h4 class="m-0 fw-bold d-flex align-items-center">
-              <mat-icon style="color: var(--indigo) !important" class="me-2">
-                {{ selectedBranchId ? 'edit_square' : 'add_circle' }}
-              </mat-icon>
-              {{
-                selectedBranchId
-                  ? 'Edit Branch: ' + formdata.value.branchName
-                  : 'Register New Branch'
-              }}
-            </h4>
-            <button
-              *ngIf="selectedBranchId"
-              class="btn btn-sm btn-outline-secondary d-flex align-items-center"
-              (click)="onNew()"
-            >
-              <mat-icon
-                style="font-size: 18px; width: 18px; height: 18px"
-                class="me-1"
-                >close</mat-icon
-              >
-              Deselect
-            </button>
-          </div> -->
-
-          <form [formGroup]="formdata" autocomplete="off">
-            <div class="row row-group">
+            <div class="row row-group flex-grow-1">
               <!-- Branch Core Identity -->
-              <div class="col-xl-8 col-lg-12">
-                <div class="form-section-card card">
+              <div class="col-xl-8 col-lg-12 d-flex flex-column">
+                <div class="form-section-card card flex-grow-1">
                   <div class="card-header">
                     <h4 class="card-header__title mb-0 fw-bold">
                       <mat-icon class="me-2 align-middle">info</mat-icon>
-                      Branch Information
+                      {{ 'branchInfo' | translate }}
                     </h4>
                   </div>
                   <div class="card-body">
                     <div class="row row-group">
-                      <div class="col-md-8">
-                        <div class="field-group">
-                          <label class="field-label required" for="branchName"
-                            >Branch Name</label
-                          >
-                          <input
-                            type="text"
-                            id="branchName"
-                            formControlName="branchName"
-                            class="form-control"
-                            placeholder="e.g. Downtown Main Branch"
-                          />
-                        </div>
-                      </div>
-
                       <div class="col-md-4">
                         <div class="field-group">
-                          <label class="field-label" for="branchCode"
-                            >Branch Code</label
+                          <label class="field-label required" for="branch_code"
+                            >{{ 'branchCode' | translate }}</label
                           >
                           <input
                             type="text"
-                            id="branchCode"
-                            formControlName="branchCode"
+                            id="branch_code"
+                            formControlName="branch_code"
                             class="form-control text-uppercase"
                             placeholder="e.g. BR-001"
                           />
                         </div>
                       </div>
 
-                      <div class="col-md-6">
+                      <div class="col-md-8">
                         <div class="field-group">
-                          <label class="field-label required" for="companyId"
-                            >Company</label
-                          >
-                          <ng-select
-                            [items]="companies()"
-                            bindLabel="companyName"
-                            bindValue="id"
-                            formControlName="companyId"
-                            [searchable]="true"
-                            class="custom-ng-select"
-                          >
-                          </ng-select>
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label required" for="branchType"
-                            >Branch Type</label
-                          >
-                          <ng-select
-                            id="branchType"
-                            formControlName="branchType"
-                            class="custom-ng-select"
-                            [searchable]="true"
-                            [clearable]="true"
-                          >
-                            <ng-option value="null"
-                              >— Select branch type —</ng-option
-                            >
-                            <ng-option value="headquarters"
-                              >Headquarters</ng-option
-                            >
-                            <ng-option value="regional"
-                              >Regional Office</ng-option
-                            >
-                            <ng-option value="local">Local Branch</ng-option>
-                            <ng-option value="kiosk">Kiosk</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="managerName"
-                            >Branch Manager</label
+                          <label class="field-label required" for="branch_name"
+                            >{{ 'branchName' | translate }}</label
                           >
                           <input
                             type="text"
-                            id="managerName"
-                            formControlName="managerName"
+                            id="branch_name"
+                            formControlName="branch_name"
                             class="form-control"
-                            placeholder="Manager full name"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- State & Operations -->
-              <div class="col-xl-4 col-lg-12">
-                <div class="form-section-card card h-100">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">settings</mat-icon>
-                      Status Control
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label
-                            class="field-label d-block text-uppercase fw-bold opacity-75"
-                            style="font-size: 11px"
-                            >Current Operation Status</label
-                          >
-                          <ng-select
-                            formControlName="status"
-                            class="custom-ng-select mt-1"
-                            [searchable]="true"
-                            [clearable]="false"
-                          >
-                            <ng-option value="active">Active Location</ng-option>
-                            <ng-option value="inactive">Inactive</ng-option>
-                            <ng-option value="suspended">Temporarily Suspended</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Communications & Address -->
-              <div class="col-xl-12 col-lg-12">
-                <div class="form-section-card card">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">contact_support</mat-icon>
-                      Location & Support Contact
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="phone"
-                            >Support Phone Number</label
-                          >
-                          <input
-                            type="tel"
-                            id="phone"
-                            formControlName="phone"
-                            class="form-control"
-                            placeholder="(555) 000-0000"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="email"
-                            >Branch Admin Email</label
-                          >
-                          <input
-                            type="email"
-                            id="email"
-                            formControlName="email"
-                            class="form-control"
-                            placeholder="branch@company.com"
+                            placeholder="e.g. Downtown Main Branch"
                           />
                         </div>
                       </div>
 
                       <div class="col-md-12">
-                        <div class="field-group mb-0">
-                          <label class="field-label required" for="address"
-                            >Registered Full Address</label
+                        <div class="field-group">
+                          <label class="field-label" for="branch_name_local"
+                            >{{ 'Name in Local Language' | translate }}</label
                           >
-                          <textarea
-                            id="address"
-                            formControlName="address"
+                          <input
+                            type="text"
+                            id="branch_name_local"
+                            formControlName="branch_name_local"
                             class="form-control"
-                            rows="2"
-                            placeholder="Street address, city, state, postal code…"
-                          ></textarea>
+                            placeholder="Name in local language"
+                          />
                         </div>
                       </div>
+
+                      <div class="col-md-6">
+                        <div class="field-group">
+                          <label class="field-label" for="branch_type"
+                            >{{ 'branchType' | translate }}</label
+                          >
+                          <ng-select
+                            id="branch_type"
+                            formControlName="branch_type"
+                            class="custom-ng-select"
+                            [searchable]="true"
+                            [clearable]="true"
+                          >
+                            <ng-option value="">— Select —</ng-option>
+                            <ng-option
+                              *ngFor="let opt of SYS_CONSTS.branchTypes"
+                              [value]="opt.value"
+                            >
+                              {{ opt.label | translate }}
+                            </ng-option>
+                          </ng-select>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="field-group">
+                          <label class="field-label">&nbsp;</label>
+                          <div class="custom--checkbox">
+                            <mat-checkbox
+                              formControlName="is_head_office"
+                              color="primary"
+                            >
+                              <label class="field-label" for="branch_type"
+                                >{{ 'isHeadOffice' | translate }}</label
+                              >
+                            </mat-checkbox>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="field-group">
+                          <label class="field-label" for="manager_id"
+                            >{{ 'manager' | translate }}</label
+                          >
+                          <ng-select
+                            id="manager_id"
+                            formControlName="manager_id"
+                            class="custom-ng-select"
+                            [searchable]="true"
+                            [clearable]="true"
+                          >
+                            <ng-option
+                              *ngFor="let opt of SYS_CONSTS.branchManagers"
+                              [value]="opt.value"
+                            >
+                              {{ opt.label | translate }}
+                            </ng-option>
+                          </ng-select>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="field-group">
+                          <label class="field-label" for="phone"
+                            >{{ 'phone' | translate }}</label
+                          >
+                          <input
+                            type="text"
+                            id="phone"
+                            formControlName="phone"
+                            class="form-control"
+                            placeholder="+880 1XXX-XXXXXX"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact & Location Side (4-col) -->
+              <div class="col-xl-4 col-lg-12 d-flex flex-column">
+                <div class="form-section-card card h-100 shadow-sm border-0">
+                  <div class="card-header bg-light">
+                    <h4 class="card-header__title mb-0 fw-bold">
+                      <mat-icon class="me-2 align-middle">place</mat-icon>
+                      {{ 'address' | translate }}
+                    </h4>
+                  </div>
+                  <div class="card-body">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="address"
+                        >{{ 'address' | translate }}</label
+                      >
+                      <textarea
+                        id="address"
+                        formControlName="address"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Complete physical address..."
+                      ></textarea>
+                    </div>
+
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="email"
+                        >{{ 'email' | translate }}</label
+                      >
+                      <input
+                        type="email"
+                        id="email"
+                        formControlName="email"
+                        class="form-control"
+                        placeholder="branch@company.com"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <label class="field-label" for="status"
+                        >{{ 'status' | translate }}</label
+                      >
+                      <ng-select
+                        id="status"
+                        formControlName="status"
+                        class="custom-ng-select"
+                        [searchable]="false"
+                        [clearable]="false"
+                      >
+                        <ng-option value="Active">{{ 'active' | translate }}</ng-option>
+                        <ng-option value="Inactive">{{ 'inactive' | translate }}</ng-option>
+                      </ng-select>
                     </div>
                   </div>
                 </div>

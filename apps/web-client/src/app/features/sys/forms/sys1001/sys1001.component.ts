@@ -3,13 +3,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from '../../../../shared';
 import { ToastrService } from 'ngx-toastr';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
-import { CompanyService } from '../../services/company.service';
-import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
+import { SysDataService } from '../../services/data.service';
+import { sysConstants } from '../../constants/sys.constants';
 
 @Component({
   selector: 'app-sys1001',
   standalone: true,
-  imports: [SharedModule, HasPermissionDirective],
+  imports: [SharedModule],
   templateUrl: './sys1001.component.html',
   styleUrls: ['./sys1001.component.scss'],
 })
@@ -17,19 +17,23 @@ export class Sys1001Component implements OnInit {
   formdata!: FormGroup;
   isLoading = signal(true);
   isSaving = signal(false);
-  
+
   currentCompanyNo: number | null = null;
   lastUpdated = signal<string | null>(null);
 
+  // Constants for dropdowns
+  readonly SYS_CONSTS = sysConstants;
+
   logoPreview = signal('');
+  logoFileName = signal('');
   isDragActive = signal(false);
   private readonly maxLogoSize = 2 * 1024 * 1024;
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private toastr: ToastrService,
     public permissionService: FormPermissionService,
-    private companyService: CompanyService
+    private sysService: SysDataService,
   ) {}
 
   ngOnInit(): void {
@@ -48,41 +52,47 @@ export class Sys1001Component implements OnInit {
       company_code: [{ value: '', disabled: true }],
       company_name: ['', [Validators.required, Validators.maxLength(255)]],
       company_name_local: [''],
-      company_type: [''], // Proprietorship / LLC / Partnership / Others
-      
+      company_type: [''],
+
       // Tax & Legal
+      reg_no: [''],
       trade_license_no: [''],
       vat_reg_no: [''],
-      tin_no: [''],
       bin_no: [''],
-      
-      // Address & Contact
+      tin_no: [''],
+
+      // Contact
+      email: ['', [Validators.email]],
+      email_primary: ['', [Validators.email]],
+      phone: [''],
+      phone_primary: [''],
+      website: [''],
+      address: [''],
       address_line1: [''],
       city: [''],
+
+      // Localization & Defaults
       country_code: ['BD'],
-      phone_primary: [''],
-      email_primary: ['', [Validators.email]],
-      website: [''],
-      logo_url: [''],
-      
-      // Preferences
       base_currency_no: ['', Validators.required],
       fiscal_year_start: ['', Validators.required],
-      decimal_places: [2, [Validators.required, Validators.min(0), Validators.max(4)]],
+      fiscal_year_start_month: ['', Validators.required],
       date_format: ['DD-MM-YYYY'],
       time_zone: ['Asia/Dhaka'],
+      logo_url: [''],
     });
   }
 
   private loadInitialCompany(): void {
     this.isLoading.set(true);
     // Fetch list of companies
-    this.companyService.listCompanies().subscribe({
+    this.sysService.getList<any>('company/list').subscribe({
       next: (res) => {
         if (res.success && res.data && res.data.length > 0) {
           // Take the first company and load its details
           const firstCompany = res.data[0];
-          this.loadCompanyDetails(firstCompany.companyNo || firstCompany.company_no);
+          this.loadCompanyDetails(
+            firstCompany.companyNo || firstCompany.company_no,
+          );
         } else {
           this.isLoading.set(false);
           this.toastr.warning('No company found to edit.');
@@ -91,28 +101,40 @@ export class Sys1001Component implements OnInit {
       error: () => {
         this.isLoading.set(false);
         this.toastr.error('Failed to load companies.');
-      }
+      },
     });
   }
 
   private loadCompanyDetails(companyNo: number): void {
-    this.companyService.getCompanyDetails(companyNo).subscribe({
-      next: (res) => {
-        this.isLoading.set(false);
-        if (res.success && res.data) {
-          this.currentCompanyNo = res.data.companyNo || res.data.company_no;
-          this.formdata.patchValue(res.data);
-          if (res.data.logo_url) {
-            this.logoPreview.set(res.data.logo_url);
+    this.sysService
+      .getDetails<any>('company/detail', { company_no: companyNo })
+      .subscribe({
+        next: (res) => {
+          this.isLoading.set(false);
+          if (res.success && res.data) {
+            this.currentCompanyNo = res.data.companyNo || res.data.company_no;
+            // Map old fields to new ones if necessary for compatibility
+            const data = {
+              ...res.data,
+              reg_no: res.data.reg_no || res.data.trade_license_no,
+              email: res.data.email || res.data.email_primary,
+              phone: res.data.phone || res.data.phone_primary,
+              address: res.data.address || res.data.address_line1,
+              fiscal_year_start_month:
+                res.data.fiscal_year_start_month || res.data.fiscal_year_start,
+            };
+            this.formdata.patchValue(data);
+            if (res.data.logo_url) {
+              this.logoPreview.set(res.data.logo_url);
+            }
+            this.lastUpdated.set(new Date().toLocaleString());
           }
-          this.lastUpdated.set(new Date().toLocaleString());
-        }
-      },
-      error: () => {
-        this.isLoading.set(false);
-        this.toastr.error('Failed to load company details.');
-      }
-    });
+        },
+        error: () => {
+          this.isLoading.set(false);
+          this.toastr.error('Failed to load company details.');
+        },
+      });
   }
 
   onLogoSelected(event: Event): void {
@@ -149,6 +171,7 @@ export class Sys1001Component implements OnInit {
   clearLogo(): void {
     this.formdata.patchValue({ logo_url: '' });
     this.logoPreview.set('');
+    this.logoFileName.set('');
   }
 
   private handleLogoFile(file: File): void {
@@ -166,6 +189,7 @@ export class Sys1001Component implements OnInit {
       const value = reader.result as string;
       this.formdata.patchValue({ logo_url: value });
       this.logoPreview.set(value);
+      this.logoFileName.set(file.name);
     };
     reader.readAsDataURL(file);
   }
@@ -178,27 +202,51 @@ export class Sys1001Component implements OnInit {
     }
 
     this.isSaving.set(true);
-    // Merge disabled fields (like company_code) by using getRawValue
+    const rawData = this.formdata.getRawValue();
+    // Map new fields back to old ones for API compatibility
     const payload = {
-      ...this.formdata.getRawValue(),
-      operation_flag: 'U', // Update
-      company_no: this.currentCompanyNo
+      ...rawData,
+      company_no: this.currentCompanyNo,
+      trade_license_no: rawData.reg_no,
+      email_primary: rawData.email,
+      phone_primary: rawData.phone,
+      address_line1: rawData.address,
+      fiscal_year_start: rawData.fiscal_year_start_month,
     };
 
-    this.companyService.writeCompany(payload).subscribe({
+    const saveObs = this.currentCompanyNo
+      ? this.sysService.update<any>('company/update', payload)
+      : this.sysService.create<any>('company/create', payload);
+
+    saveObs.subscribe({
       next: (res) => {
         this.isSaving.set(false);
         if (res.success) {
           this.toastr.success('Company settings updated successfully.');
           this.lastUpdated.set(new Date().toLocaleString());
         } else {
-          this.toastr.error(res.message || 'Failed to update company settings.');
+          this.toastr.error(
+            res.message || 'Failed to update company settings.',
+          );
         }
       },
       error: () => {
         this.isSaving.set(false);
         this.toastr.error('An error occurred while saving.');
-      }
+      },
     });
+  }
+
+  onReset(): void {
+    if (this.currentCompanyNo) {
+      this.loadCompanyDetails(this.currentCompanyNo);
+    } else {
+      this.formdata.reset({
+        country_code: 'BD',
+        date_format: 'DD-MM-YYYY',
+        time_zone: 'Asia/Dhaka',
+      });
+      this.clearLogo();
+    }
   }
 }

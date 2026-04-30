@@ -17,6 +17,8 @@ export const globalConstants = {
     defaultPageSize: 10,
     defaultPage: 1,
   },
-  
+
+
+
   // API settings or other hardcoded values can be added here
 };

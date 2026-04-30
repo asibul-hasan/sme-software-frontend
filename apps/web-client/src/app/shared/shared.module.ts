@@ -26,6 +26,8 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatDialogModule } from '@angular/material/dialog';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 const MODULES = [
@@ -57,6 +59,8 @@ const MODULES = [
   MatProgressSpinnerModule,
   MatCheckboxModule,
   MatRadioModule,
+  MatDialogModule,
+  DragDropModule,
 ];
 
 @NgModule({

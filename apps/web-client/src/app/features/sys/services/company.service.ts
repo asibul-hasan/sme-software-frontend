@@ -1,37 +1,37 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-
-export interface CompanyListResponse {
-  success: boolean;
-  message: string;
-  data: any[];
-}
-
-export interface CompanyDetailResponse {
-  success: boolean;
-  message: string;
-  data: any;
-}
+import { AppConfigService } from '../../../core/services/app-config.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CompanyService {
-  private apiUrl = `${environment.apiUrl}/sys/company`;
+  private get apiUrl() { return `${this.config.apiUrl}/sys/company`; }
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private config: AppConfigService) {}
 
-  listCompanies(): Observable<CompanyListResponse> {
-    return this.http.post<CompanyListResponse>(`${this.apiUrl}/list`, {});
+  listCompanies(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/list`);
   }
 
-  getCompanyDetails(companyNo: number): Observable<CompanyDetailResponse> {
-    return this.http.post<CompanyDetailResponse>(`${this.apiUrl}/detail`, { company_no: companyNo });
+  getCompanyDetails(companyNo: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/detail`, {
+      params: { company_no: companyNo },
+    });
   }
 
-  writeCompany(payload: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/write`, payload);
+  createCompany(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/create`, payload);
+  }
+
+  updateCompany(payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/update`, payload);
+  }
+
+  deleteCompany(companyNo: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/delete`, {
+      params: { company_no: companyNo },
+    });
   }
 }

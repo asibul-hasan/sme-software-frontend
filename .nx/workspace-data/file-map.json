@@ -6,8 +6,12 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": ".vscode/settings.json",
-        "hash": "1389868326933519382"
+        "file": ".editorconfig",
+        "hash": "11532813898455409296"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "11751663399876450553"
       },
       {
         "file": ".prettierignore",
@@ -18,47 +22,101 @@
         "hash": "6820402234827505055"
       },
       {
-        "file": "AI_INSTRUCTIONS.md",
-        "hash": "7145469653950562665"
-      },
-      {
-        "file": "db.md",
-        "hash": "17786456305232670079"
-      },
-      {
-        "file": "nx.json",
-        "hash": "9648514650165378930"
-      },
-      {
-        "file": ".editorconfig",
-        "hash": "11532813898455409296"
-      },
-      {
         "file": ".vscode/extensions.json",
         "hash": "4305574964819615641"
       },
       {
-        "file": "tsconfig.base.json",
-        "hash": "12471885200579325840"
+        "file": ".vscode/settings.json",
+        "hash": "1389868326933519382"
+      },
+      {
+        "file": "AI_INSTRUCTIONS.md",
+        "hash": "7145469653950562665"
       },
       {
         "file": "README.md",
         "hash": "5839997762649794868"
       },
       {
-        "file": "package.json",
-        "hash": "7528620988385380627"
+        "file": "db.md",
+        "hash": "17786456305232670079"
       },
       {
         "file": "eslint.config.mjs",
         "hash": "1750064783103198479"
       },
       {
-        "file": ".gitignore",
-        "hash": "11751663399876450553"
+        "file": "nx.json",
+        "hash": "9648514650165378930"
+      },
+      {
+        "file": "package.json",
+        "hash": "7528620988385380627"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "12471885200579325840"
       }
     ],
     "projectFileMap": {
+      "web-support": [
+        {
+          "file": "apps/web-support/eslint.config.mjs",
+          "hash": "4022437926435226564"
+        },
+        {
+          "file": "apps/web-support/project.json",
+          "hash": "772572301203323809"
+        },
+        {
+          "file": "apps/web-support/public/favicon.ico",
+          "hash": "9303420814833116677"
+        },
+        {
+          "file": "apps/web-support/src/app/app.config.ts",
+          "hash": "12279013514839509586"
+        },
+        {
+          "file": "apps/web-support/src/app/app.css",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/web-support/src/app/app.html",
+          "hash": "1889378473367225142"
+        },
+        {
+          "file": "apps/web-support/src/app/app.routes.ts",
+          "hash": "12790378059371385261"
+        },
+        {
+          "file": "apps/web-support/src/app/app.ts",
+          "hash": "1320985325496550370"
+        },
+        {
+          "file": "apps/web-support/src/app/nx-welcome.ts",
+          "hash": "3428749500432037933"
+        },
+        {
+          "file": "apps/web-support/src/index.html",
+          "hash": "13933110631827457213"
+        },
+        {
+          "file": "apps/web-support/src/main.ts",
+          "hash": "17436527127367840298"
+        },
+        {
+          "file": "apps/web-support/src/styles.css",
+          "hash": "2917954890128038984"
+        },
+        {
+          "file": "apps/web-support/tsconfig.app.json",
+          "hash": "1904063451971987368"
+        },
+        {
+          "file": "apps/web-support/tsconfig.json",
+          "hash": "13197230760538749365"
+        }
+      ],
       "web-client": [
         {
           "file": "apps/web-client/eslint.config.mjs",
@@ -86,7 +144,7 @@
         },
         {
           "file": "apps/web-client/src/app/app.config.ts",
-          "hash": "14640147915137837550"
+          "hash": "9681491840121687968"
         },
         {
           "file": "apps/web-client/src/app/app.routes.ts",
@@ -94,7 +152,7 @@
         },
         {
           "file": "apps/web-client/src/app/core/constants/global.constants.ts",
-          "hash": "5535842256922236763"
+          "hash": "11078572872322875995"
         },
         {
           "file": "apps/web-client/src/app/core/core.config.ts",
@@ -157,6 +215,14 @@
           "hash": "13319078945346923605"
         },
         {
+          "file": "apps/web-client/src/app/core/services/alert.service.ts",
+          "hash": "8470406687771354126"
+        },
+        {
+          "file": "apps/web-client/src/app/core/services/app-config.service.ts",
+          "hash": "15854188685150650216"
+        },
+        {
           "file": "apps/web-client/src/app/core/services/auth-context.service.ts",
           "hash": "14774985254020240461"
         },
@@ -175,6 +241,10 @@
         {
           "file": "apps/web-client/src/app/core/services/loader.service.ts",
           "hash": "16132251804611623752"
+        },
+        {
+          "file": "apps/web-client/src/app/core/services/modal.service.ts",
+          "hash": "9142925706392227140"
         },
         {
           "file": "apps/web-client/src/app/core/services/permission.service.ts",
@@ -226,7 +296,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/auth/services/data.service.ts",
-          "hash": "2954765501656773295"
+          "hash": "17181175640086198611"
         },
         {
           "file": "apps/web-client/src/app/features/auth/subscription-expired/subscription-expired.component.html",
@@ -298,11 +368,11 @@
         },
         {
           "file": "apps/web-client/src/app/features/dashboard/services/data.service.ts",
-          "hash": "13988196814827264540"
+          "hash": "7990225633566240634"
         },
         {
           "file": "apps/web-client/src/app/features/fin/services/data.service.ts",
-          "hash": "12287927485549221533"
+          "hash": "4727316577663290119"
         },
         {
           "file": "apps/web-client/src/app/features/hr/hr.routes.ts",
@@ -310,7 +380,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/hr/services/data.service.ts",
-          "hash": "3301868171469306666"
+          "hash": "15456217622362568677"
         },
         {
           "file": "apps/web-client/src/app/features/hr/services/employee.service.ts",
@@ -382,15 +452,15 @@
         },
         {
           "file": "apps/web-client/src/app/features/inv/services/data.service.ts",
-          "hash": "2782104397165334354"
+          "hash": "7834145296477568852"
         },
         {
           "file": "apps/web-client/src/app/features/pur/services/data.service.ts",
-          "hash": "13584344211715401756"
+          "hash": "2043756531751092942"
         },
         {
           "file": "apps/web-client/src/app/features/rpt/services/data.service.ts",
-          "hash": "14884270450968251606"
+          "hash": "11586555657383514294"
         },
         {
           "file": "apps/web-client/src/app/features/sal/pages/customer-list/customer-list.component.html",
@@ -446,7 +516,11 @@
         },
         {
           "file": "apps/web-client/src/app/features/sal/services/data.service.ts",
-          "hash": "5859894184822139093"
+          "hash": "16152988127417632159"
+        },
+        {
+          "file": "apps/web-client/src/app/features/sys/constants/sys.constants.ts",
+          "hash": "2361770516292655380"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/services/model.servicce.ts",
@@ -454,7 +528,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/sys1001.component.html",
-          "hash": "5246512059151347291"
+          "hash": "13843924693368106791"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/sys1001.component.scss",
@@ -462,47 +536,51 @@
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1001/sys1001.component.ts",
-          "hash": "150117578217995905"
+          "hash": "10523036596079705732"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1002/sys1002.component.html",
-          "hash": "5538723523445902624"
+          "hash": "15325169681703161283"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1002/sys1002.component.ts",
-          "hash": "12213432061152819278"
+          "hash": "14227143688182022494"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1003/sys1003.component.html",
-          "hash": "16525095853411793546"
+          "hash": "1244212475476800440"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1003/sys1003.component.ts",
-          "hash": "2817002324655866124"
+          "hash": "2440701477514574132"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1004/sys1004.component.html",
-          "hash": "7087753980896459906"
+          "hash": "8393816714885248786"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1004/sys1004.component.ts",
-          "hash": "11017996257379584466"
+          "hash": "9134692604038646452"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1005/sys1005.component.html",
-          "hash": "8211524174852066138"
+          "hash": "9536883377728765503"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1005/sys1005.component.ts",
-          "hash": "11711489595871311803"
+          "hash": "9867937416319547548"
+        },
+        {
+          "file": "apps/web-client/src/app/features/sys/services/branch.service.ts",
+          "hash": "16418767767381643010"
         },
         {
           "file": "apps/web-client/src/app/features/sys/services/company.service.ts",
-          "hash": "667061537308387462"
+          "hash": "958933145112725126"
         },
         {
           "file": "apps/web-client/src/app/features/sys/services/data.service.ts",
-          "hash": "7538145961216783751"
+          "hash": "7339557015239920829"
         },
         {
           "file": "apps/web-client/src/app/features/sys/settings.routes.ts",
@@ -629,6 +707,10 @@
           "hash": "14126842153812329776"
         },
         {
+          "file": "apps/web-client/src/app/shared/components/confirm-dialog/confirm-dialog.component.ts",
+          "hash": "8805002018231252001"
+        },
+        {
           "file": "apps/web-client/src/app/shared/components/confirmation-modal/confirmation-modal.component.html",
           "hash": "4098522546936152185"
         },
@@ -639,6 +721,10 @@
         {
           "file": "apps/web-client/src/app/shared/components/confirmation-modal/confirmation-modal.component.ts",
           "hash": "12830315405170917852"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/data-list-modal/data-list-modal.component.ts",
+          "hash": "4690601833804977487"
         },
         {
           "file": "apps/web-client/src/app/shared/components/global-loader/global-loader.component.scss",
@@ -706,19 +792,31 @@
         },
         {
           "file": "apps/web-client/src/app/shared/shared.module.ts",
-          "hash": "9902204447177384393"
+          "hash": "6316846247431800017"
+        },
+        {
+          "file": "apps/web-client/src/assets/config.json",
+          "hash": "13309029181860445064"
+        },
+        {
+          "file": "apps/web-client/src/assets/env.js",
+          "hash": "651897086879093168"
+        },
+        {
+          "file": "apps/web-client/src/assets/env.template.js",
+          "hash": "1162005434332259920"
         },
         {
           "file": "apps/web-client/src/assets/i18n/bn.json",
-          "hash": "9581427144362448929"
+          "hash": "15714649453586119009"
         },
         {
           "file": "apps/web-client/src/assets/i18n/en.json",
-          "hash": "12175280615240812854"
+          "hash": "16113932271117886751"
         },
         {
           "file": "apps/web-client/src/assets/styles/_form-page.scss",
-          "hash": "13291670567628738969"
+          "hash": "144644466033745675"
         },
         {
           "file": "apps/web-client/src/assets/styles/_mixins.scss",
@@ -758,11 +856,11 @@
         },
         {
           "file": "apps/web-client/src/assets/styles/styles.scss",
-          "hash": "1168632322849782430"
+          "hash": "5794764480597741164"
         },
         {
           "file": "apps/web-client/src/environments/environment.ts",
-          "hash": "2731334966362878444"
+          "hash": "8326414707747861688"
         },
         {
           "file": "apps/web-client/src/index.html",
@@ -801,64 +899,6 @@
         {
           "file": "libs/shared-ui/src/lib/pipes/index.ts",
           "hash": "6752633469762681791"
-        }
-      ],
-      "web-support": [
-        {
-          "file": "apps/web-support/eslint.config.mjs",
-          "hash": "4022437926435226564"
-        },
-        {
-          "file": "apps/web-support/project.json",
-          "hash": "772572301203323809"
-        },
-        {
-          "file": "apps/web-support/public/favicon.ico",
-          "hash": "9303420814833116677"
-        },
-        {
-          "file": "apps/web-support/src/app/app.config.ts",
-          "hash": "12279013514839509586"
-        },
-        {
-          "file": "apps/web-support/src/app/app.css",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "apps/web-support/src/app/app.html",
-          "hash": "1889378473367225142"
-        },
-        {
-          "file": "apps/web-support/src/app/app.routes.ts",
-          "hash": "12790378059371385261"
-        },
-        {
-          "file": "apps/web-support/src/app/app.ts",
-          "hash": "1320985325496550370"
-        },
-        {
-          "file": "apps/web-support/src/app/nx-welcome.ts",
-          "hash": "3428749500432037933"
-        },
-        {
-          "file": "apps/web-support/src/index.html",
-          "hash": "13933110631827457213"
-        },
-        {
-          "file": "apps/web-support/src/main.ts",
-          "hash": "17436527127367840298"
-        },
-        {
-          "file": "apps/web-support/src/styles.css",
-          "hash": "2917954890128038984"
-        },
-        {
-          "file": "apps/web-support/tsconfig.app.json",
-          "hash": "1904063451971987368"
-        },
-        {
-          "file": "apps/web-support/tsconfig.json",
-          "hash": "13197230760538749365"
         }
       ]
     }

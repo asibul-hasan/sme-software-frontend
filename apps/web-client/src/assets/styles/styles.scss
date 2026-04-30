@@ -524,11 +524,15 @@ select option,
     padding-left: 0 !important;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     align-content: center;
     min-height: 42px;
     width: 100%;
+  }
+
+  &.ng-select-multiple .ng-value-container {
+    flex-wrap: wrap;
     gap: 6px;
+    padding: 4px 0;
   }
 
   &.ng-select-multiple .ng-value {
@@ -588,6 +592,7 @@ select option,
     color: var(--text-secondary) !important;
     opacity: 0.65;
     font-size: 13.5px;
+    position: absolute !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     padding-left: 0 !important;
@@ -608,8 +613,8 @@ select option,
     justify-content: space-between !important;
   }
 
-  &.ng-select-has-value .ng-placeholder,
-  &.ng-select-opened .ng-placeholder {
+  &.ng-select-has-value .ng-placeholder {
+    display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
   }
@@ -617,6 +622,21 @@ select option,
   .ng-input {
     padding: 0 !important;
     input { font-size: 13.5px !important; }
+  }
+
+  // Ensure single select input cursor is vertically centered and overlaps the value properly
+  &:not(.ng-select-multiple) .ng-input {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  // Dim the selected value when dropdown is open to make typing clearer
+  &.ng-select-opened:not(.ng-select-multiple) .ng-value {
+    opacity: 0.4 !important;
+    pointer-events: none;
   }
 
   .ng-dropdown-panel {

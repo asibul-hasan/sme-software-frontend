@@ -50,435 +50,326 @@
             autocomplete="off"
             class="h-100 d-flex flex-column"
           >
-            <div class="row row-group flex-grow-1">
-              <!-- LEFT COLUMN (Main Content) -->
-              <div class="col-xl-8 col-lg-8 d-flex flex-column">
-                <!-- General Info Card -->
-                <div class="form-section-card card">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">info</mat-icon>
-                      General Info
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-md-3">
-                        <div class="field-group">
-                          <label class="field-label" for="company_code"
-                            >Company Code</label
-                          >
-                          <input
-                            type="text"
-                            id="company_code"
-                            formControlName="company_code"
-                            class="form-control text-uppercase"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-9">
-                        <div class="field-group">
-                          <label class="field-label required" for="company_name"
-                            >Company Name</label
-                          >
-                          <input
-                            type="text"
-                            id="company_name"
-                            formControlName="company_name"
-                            class="form-control"
-                            placeholder="Legal company name"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="company_name_local"
-                            >Local Name</label
-                          >
-                          <input
-                            type="text"
-                            id="company_name_local"
-                            formControlName="company_name_local"
-                            class="form-control"
-                            placeholder="Name in local language"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="company_type"
-                            >Company Type</label
-                          >
-                          <ng-select
-                            id="company_type"
-                            formControlName="company_type"
-                            [searchable]="false"
-                          >
-                            <ng-option value="">— Select Type —</ng-option>
-                            <ng-option value="Proprietorship"
-                              >Proprietorship</ng-option
-                            >
-                            <ng-option value="LLC">LLC</ng-option>
-                            <ng-option value="Partnership"
-                              >Partnership</ng-option
-                            >
-                            <ng-option value="Others">Others</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
+            <div class="d-flex flex-column gap-3 flex-grow-1">
+              <!-- TOP ROW: General Info & Company Logo -->
+              <div class="row row-group">
+                <div class="col-xl-8 col-lg-8">
+                  <div class="form-section-card card">
+                    <div class="card-header">
+                      <h4 class="card-header__title mb-0 fw-bold">
+                        <mat-icon class="me-2 align-middle">info</mat-icon>
+                        General Info
+                      </h4>
                     </div>
-                  </div>
-                </div>
-
-                <!-- Address & Contact Card -->
-                <div class="form-section-card card">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle"
-                        >contact_phone</mat-icon
-                      >
-                      Address & Contact
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-md-12">
-                        <div class="field-group">
-                          <label class="field-label" for="address_line1"
-                            >Registered Address</label
-                          >
-                          <input
-                            type="text"
-                            id="address_line1"
-                            formControlName="address_line1"
-                            class="form-control"
-                            placeholder="Street address, building, etc."
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="city">City</label>
-                          <input
-                            type="text"
-                            id="city"
-                            formControlName="city"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="country_code"
-                            >Country</label
-                          >
-                          <ng-select
-                            id="country_code"
-                            formControlName="country_code"
-                          >
-                            <ng-option value="BD">Bangladesh (BD)</ng-option>
-                            <ng-option value="US">United States (US)</ng-option>
-                            <ng-option value="GB"
-                              >United Kingdom (GB)</ng-option
+                    <div class="card-body">
+                      <div class="row row-group">
+                        <div class="col-md-3">
+                          <div class="field-group">
+                            <label class="field-label" for="company_code"
+                              >Company Code</label
                             >
-                          </ng-select>
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label" for="phone_primary"
-                            >Primary Phone</label
-                          >
-                          <input
-                            type="text"
-                            id="phone_primary"
-                            formControlName="phone_primary"
-                            class="form-control"
-                            placeholder="+880..."
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label" for="email_primary"
-                            >Primary Email</label
-                          >
-                          <input
-                            type="email"
-                            id="email_primary"
-                            formControlName="email_primary"
-                            class="form-control"
-                            placeholder="contact@domain.com"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label" for="website"
-                            >Website</label
-                          >
-                          <input
-                            type="url"
-                            id="website"
-                            formControlName="website"
-                            class="form-control"
-                            placeholder="https://..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Tax & Legal Card -->
-                <div class="form-section-card card flex-grow-1">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">gavel</mat-icon>
-                      Tax & Legal
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="trade_license_no"
-                            >Trade License No.</label
-                          >
-                          <input
-                            type="text"
-                            id="trade_license_no"
-                            formControlName="trade_license_no"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="vat_reg_no"
-                            >VAT Registration No.</label
-                          >
-                          <input
-                            type="text"
-                            id="vat_reg_no"
-                            formControlName="vat_reg_no"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="tin_no"
-                            >TIN (Tax Identification No.)</label
-                          >
-                          <input
-                            type="text"
-                            id="tin_no"
-                            formControlName="tin_no"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label" for="bin_no"
-                            >BIN (Business Identification No.)</label
-                          >
-                          <input
-                            type="text"
-                            id="bin_no"
-                            formControlName="bin_no"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- </div> -->
-
-              <!-- RIGHT COLUMN (Side Cards) -->
-              <div class="col-xl-4 col-lg-4 d-flex flex-column">
-                <!-- Company Logo Card -->
-                <div class="form-section-card card">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">image</mat-icon>
-                      Company Logo
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div
-                      class="h-100 d-flex flex-column justify-content-between"
-                    >
-                      <div>
-                        <div class="field-group">
-                          <label
-                            class="logo-dropzone d-flex flex-column justify-content-center align-items-center text-center rounded-3 p-4"
-                            [class.bg-light]="isDragActive()"
-                            (dragover)="onLogoDragOver($event)"
-                            (dragleave)="onLogoDragLeave()"
-                            (drop)="onLogoDrop($event)"
-                          >
                             <input
-                              type="file"
-                              accept="image/*"
-                              hidden
-                              (change)="onLogoSelected($event)"
+                              type="text"
+                              id="company_code"
+                              formControlName="company_code"
+                              class="form-control text-uppercase"
                             />
-
-                            <ng-container *ngIf="!logoPreview()">
-                              <mat-icon class="logo-upload-icon mb-2"
-                                >cloud_upload</mat-icon
-                              >
-                              <div class="fw-bold mt-2 text-dark">
-                                Drag & drop your logo here
-                              </div>
-                              <div class="small text-secondary mt-1">
-                                or click to browse. Max 2MB.
-                              </div>
-                            </ng-container>
-
-                            <ng-container *ngIf="logoPreview()">
-                              <img
-                                [src]="logoPreview()"
-                                alt="Logo preview"
-                                class="logo-preview-img mb-2"
-                              />
-                              <div class="small text-primary mt-2 fw-semibold">
-                                Click to replace image
-                              </div>
-                            </ng-container>
-                          </label>
+                          </div>
                         </div>
-                      </div>
-
-                      <div *ngIf="logoPreview()" class="mt-3 text-center">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger w-100"
-                          (click)="clearLogo()"
-                        >
-                          <mat-icon class="align-middle me-1 icon-small"
-                            >delete</mat-icon
-                          >
-                          Remove Logo
-                        </button>
+                        <div class="col-md-9">
+                          <div class="field-group">
+                            <label
+                              class="field-label required"
+                              for="company_name"
+                              >Company Name</label
+                            >
+                            <input
+                              type="text"
+                              id="company_name"
+                              formControlName="company_name"
+                              class="form-control"
+                              placeholder="Legal company name"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="field-group">
+                            <label class="field-label" for="company_name_local"
+                              >Local Name</label
+                            >
+                            <input
+                              type="text"
+                              id="company_name_local"
+                              formControlName="company_name_local"
+                              class="form-control"
+                              placeholder="Name in local language"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="field-group">
+                            <label class="field-label" for="company_type"
+                              >Company Type</label
+                            >
+                            <ng-select
+                              id="company_type"
+                              formControlName="company_type"
+                              [searchable]="false"
+                            >
+                              <ng-option value="">— Select —</ng-option>
+                              <ng-option
+                                *ngFor="let opt of SYS_CONSTS.companyTypes"
+                                [value]="opt.value"
+                                >{{ opt.label }}</ng-option
+                              >
+                            </ng-select>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Preferences Card -->
-                <div class="form-section-card card flex-grow-1">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">settings</mat-icon>
-                      Preferences
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label
-                            class="field-label required"
-                            for="base_currency_no"
-                            >Base Currency</label
-                          >
-                          <ng-select
-                            id="base_currency_no"
-                            formControlName="base_currency_no"
-                          >
-                            <ng-option [value]="1">BDT (Taka)</ng-option>
-                            <ng-option [value]="2">USD (Dollar)</ng-option>
-                            <ng-option [value]="3">EUR (Euro)</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
-
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label
-                            class="field-label required"
-                            for="fiscal_year_start"
-                            >Fiscal Year Start Month</label
-                          >
-                          <ng-select
-                            id="fiscal_year_start"
-                            formControlName="fiscal_year_start"
-                            [searchable]="false"
-                          >
-                            <ng-option [value]="1">January</ng-option>
-                            <ng-option [value]="4">April</ng-option>
-                            <ng-option [value]="7">July</ng-option>
-                            <ng-option [value]="10">October</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
-
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label
-                            class="field-label required"
-                            for="decimal_places"
-                            >Decimal Places</label
-                          >
+                <div class="col-xl-4 col-lg-4">
+                  <div class="form-section-card card">
+                    <div class="card-header">
+                      <h4 class="card-header__title mb-0 fw-bold">
+                        <mat-icon class="me-2 align-middle">image</mat-icon>
+                        Company Logo
+                      </h4>
+                    </div>
+                    <div class="card-body">
+                      <div class="modern-upload d-flex flex-column">
+                        <label
+                          class="modern-upload-dropzone"
+                          [class.active]="isDragActive()"
+                          (dragover)="onLogoDragOver($event)"
+                          (dragleave)="onLogoDragLeave()"
+                          (drop)="onLogoDrop($event)"
+                        >
                           <input
-                            type="number"
-                            id="decimal_places"
-                            formControlName="decimal_places"
-                            class="form-control"
-                            min="0"
-                            max="4"
+                            #logoInput
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            (change)="onLogoSelected($event)"
                           />
-                        </div>
-                      </div>
+                          <ng-container *ngIf="logoPreview()">
+                            <img
+                              [src]="logoPreview()"
+                              alt="Logo preview"
+                              class="logo-preview-img"
+                            />
+                          </ng-container>
 
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label class="field-label" for="date_format"
-                            >Date Format</label
-                          >
-                          <ng-select
-                            id="date_format"
-                            formControlName="date_format"
-                            [searchable]="false"
-                          >
-                            <ng-option value="DD-MM-YYYY">DD-MM-YYYY</ng-option>
-                            <ng-option value="MM-DD-YYYY">MM-DD-YYYY</ng-option>
-                            <ng-option value="YYYY-MM-DD">YYYY-MM-DD</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
+                          <!-- Placeholder text when no logo -->
+                          <ng-container *ngIf="!logoPreview()">
+                            <div class="upload-placeholder">
+                              <mat-icon>add_photo_alternate</mat-icon>
+                              <span>Upload Logo</span>
+                            </div>
+                          </ng-container>
+                        </label>
 
-                      <div class="col-12">
-                        <div class="field-group">
-                          <label class="field-label" for="time_zone"
-                            >Time Zone</label
-                          >
-                          <ng-select
-                            id="time_zone"
-                            formControlName="time_zone"
-                            [searchable]="false"
-                          >
-                            <ng-option value="Asia/Dhaka"
-                              >Asia/Dhaka (GMT+6)</ng-option
+                        <div
+                          class="modern-upload-status mt-3"
+                          [class.no-file]="!logoPreview()"
+                        >
+                          <ng-container *ngIf="!logoPreview()">
+                            <button
+                              type="button"
+                              class="btn-upload-trigger"
+                              (click)="logoInput.click()"
                             >
-                            <ng-option value="UTC">UTC</ng-option>
-                          </ng-select>
+                              <mat-icon>cloud_upload</mat-icon>
+                              <span>Upload Company Logo</span>
+                            </button>
+                          </ng-container>
+                          <ng-container *ngIf="logoPreview()">
+                            <div class="file-info">
+                              <mat-icon>insert_drive_file</mat-icon>
+                              <span
+                                title="{{ logoFileName() || 'Company Logo' }}"
+                              >
+                                {{ logoFileName() || 'Company Logo' }}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              class="btn-delete-file"
+                              (click)="clearLogo()"
+                              matTooltip="Remove Logo"
+                            >
+                              <mat-icon>delete</mat-icon>
+                            </button>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BOTTOM ROW: Address & Legal/Preferences -->
+                <!-- <div class="row row-group"> -->
+                <div class="col-xl-8 col-lg-8">
+                  <div class="form-section-card card h-100 mb-0">
+                    <div class="card-header">
+                      <h4 class="card-header__title mb-0 fw-bold">
+                        <mat-icon class="me-2 align-middle"
+                          >contact_phone</mat-icon
+                        >
+                        Address & Contact
+                      </h4>
+                    </div>
+                    <div class="card-body">
+                      <div class="row row-group">
+                        <div class="col-md-12">
+                          <div class="field-group">
+                            <label class="field-label" for="address_line1"
+                              >Registered Address</label
+                            >
+                            <input
+                              type="text"
+                              id="address_line1"
+                              formControlName="address_line1"
+                              class="form-control"
+                              placeholder="Street address, building, etc."
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="field-group">
+                            <label class="field-label" for="city">City</label>
+                            <input
+                              type="text"
+                              id="city"
+                              formControlName="city"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="field-group">
+                            <label class="field-label" for="country_code"
+                              >Country</label
+                            >
+                            <ng-select
+                              id="country_code"
+                              formControlName="country_code"
+                            >
+                              <ng-option value="">— Select —</ng-option>
+                              <ng-option
+                                *ngFor="let opt of SYS_CONSTS.countries"
+                                [value]="opt.value"
+                                >{{ opt.label }}</ng-option
+                              >
+                            </ng-select>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="field-group">
+                            <label class="field-label" for="phone_primary"
+                              >Primary Phone</label
+                            >
+                            <input
+                              type="text"
+                              id="phone_primary"
+                              formControlName="phone_primary"
+                              class="form-control"
+                              placeholder="+880..."
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="field-group">
+                            <label class="field-label" for="email_primary"
+                              >Primary Email</label
+                            >
+                            <input
+                              type="email"
+                              id="email_primary"
+                              formControlName="email_primary"
+                              class="form-control"
+                              placeholder="contact@domain.com"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="field-group">
+                            <label class="field-label" for="website"
+                              >Website</label
+                            >
+                            <input
+                              type="url"
+                              id="website"
+                              formControlName="website"
+                              class="form-control"
+                              placeholder="https://..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-xl-4 col-lg-4">
+                  <div class="form-section-card card h-100 mb-0">
+                    <div class="card-header">
+                      <h4 class="card-header__title mb-0 fw-bold">
+                        <mat-icon class="me-2 align-middle">gavel</mat-icon>
+                        Legal
+                      </h4>
+                    </div>
+                    <div class="card-body">
+                      <div class="row row-group">
+                        <div class="col-12">
+                          <div class="field-group">
+                            <label class="field-label" for="trade_license_no"
+                              >Trade License No.</label
+                            >
+                            <input
+                              type="text"
+                              id="trade_license_no"
+                              formControlName="trade_license_no"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="field-group">
+                            <label class="field-label" for="vat_reg_no"
+                              >VAT Registration No.</label
+                            >
+                            <input
+                              type="text"
+                              id="vat_reg_no"
+                              formControlName="vat_reg_no"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="field-group">
+                            <label class="field-label" for="tin_no">TIN</label>
+                            <input
+                              type="text"
+                              id="tin_no"
+                              formControlName="tin_no"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="field-group">
+                            <label class="field-label" for="bin_no">BIN</label>
+                            <input
+                              type="text"
+                              id="bin_no"
+                              formControlName="bin_no"
+                              class="form-control"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
