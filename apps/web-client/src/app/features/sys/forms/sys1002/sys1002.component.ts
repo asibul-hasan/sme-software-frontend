@@ -1,17 +1,38 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { SharedModule } from '../../../../shared';
 import { SysDataService } from '../../services/data.service';
 import { finalize } from 'rxjs/operators';
-import { PermissionService } from '../../../../core/services/permission.service';
-import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
+import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { sysConstants } from '../../constants/sys.constants';
+
+export interface Branch {
+  branchNo: number;
+  branchCode: string;
+  branchName: string;
+  branchNameLocal?: string;
+  branchType?: string;
+  isHeadOffice?: boolean | number;
+  addressLine1?: string;
+  city?: string;
+  phonePrimary?: string;
+  email?: string;
+  managerUserNo?: string | number;
+  costCenterCode?: string;
+  openingDate?: string | Date;
+  status?: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
 
 @Component({
   selector: 'app-sys1002',
@@ -27,7 +48,7 @@ export class Sys1002Component implements OnInit {
   // Constants for dropdowns
   readonly SYS_CONSTS = sysConstants;
 
-  branches = signal<any[]>([]);
+  branches = signal<Branch[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
 
@@ -45,14 +66,13 @@ export class Sys1002Component implements OnInit {
   });
 
   selectedBranchNo = signal<number | null>(null);
-  lastSelectedBranchIndex: number = 0;
+  lastSelectedBranchIndex = 0;
 
-  constructor(
-    private fb: FormBuilder,
-    private sysService: SysDataService,
-    public permissionService: FormPermissionService,
-    private datePipe: DatePipe,
-  ) {}
+  private fb = inject(FormBuilder);
+  private sysService = inject(SysDataService);
+  public permissionService = inject(FormPermissionService);
+  private datePipe = inject(DatePipe);
+
 
   ngOnInit(): void {
     this.initForm();
@@ -81,7 +101,7 @@ export class Sys1002Component implements OnInit {
   loadBranches(reselectIndex?: number) {
     this.isLoading.set(true);
     this.sysService
-      .getList<any>('branch/list')
+      .getList<ApiResponse<Branch[]>>('branch/list')
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
@@ -109,7 +129,7 @@ export class Sys1002Component implements OnInit {
       });
   }
 
-  selectBranch(branch: any, index?: number) {
+  selectBranch(branch: Branch, index?: number) {
     if (index !== undefined) {
       this.lastSelectedBranchIndex = index;
     } else {
@@ -121,9 +141,9 @@ export class Sys1002Component implements OnInit {
 
     this.selectedBranchNo.set(branch.branchNo);
     this.isLoading.set(true);
-  
+
     this.sysService
-      .getDetails<any>('branch/detail', { branch_no: branch.branchNo })
+      .getDetails<ApiResponse<Branch>>('branch/detail', { branch_no: branch.branchNo })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
@@ -188,27 +208,24 @@ export class Sys1002Component implements OnInit {
 
     const isUpdate = !!this.selectedBranchNo();
     const saveObs = isUpdate
-      ? this.sysService.update<any>('branch/update', payload)
-      : this.sysService.create<any>('branch/create', payload);
+      ? this.sysService.update<ApiResponse<unknown>>('branch/update', payload)
+      : this.sysService.create<ApiResponse<unknown>>('branch/create', payload);
 
-    saveObs
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: (res) => {
-          if (res.success) {
-            // If inserting, we might want to select the newly added branch.
-            // For simplicity, re-select the same index (or 0 if new).
-            const reselectIdx =
-              isUpdate ? this.lastSelectedBranchIndex : 0;
-            this.loadBranches(reselectIdx);
-          } else {
-            console.error('Save failed:', res.message);
-          }
-        },
-        error: (err) => {
-          console.error('API Error:', err);
-        },
-      });
+    saveObs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: (res) => {
+        if (res.success) {
+          // If inserting, we might want to select the newly added branch.
+          // For simplicity, re-select the same index (or 0 if new).
+          const reselectIdx = isUpdate ? this.lastSelectedBranchIndex : 0;
+          this.loadBranches(reselectIdx);
+        } else {
+          console.error('Save failed:', res.message);
+        }
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+      },
+    });
   }
 
   onNew() {
@@ -234,10 +251,11 @@ export class Sys1002Component implements OnInit {
 
   onDelete() {
     if (!this.selectedBranchNo) return;
-    
+
     if (confirm('Are you sure you want to delete this branch?')) {
       this.isLoading.set(true);
-      this.sysService.delete<any>('branch/delete', { branch_no: this.selectedBranchNo() })
+      this.sysService
+        .delete<ApiResponse<unknown>>('branch/delete', { branch_no: this.selectedBranchNo() })
         .pipe(finalize(() => this.isLoading.set(false)))
         .subscribe({
           next: (res) => {
@@ -249,7 +267,7 @@ export class Sys1002Component implements OnInit {
           },
           error: (err) => {
             console.error('API Error:', err);
-          }
+          },
         });
     }
   }

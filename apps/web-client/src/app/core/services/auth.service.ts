@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, tap, of, catchError } from 'rxjs';
-import { User, LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService } from '../../features/auth/services/data.service';
+import { LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService, User } from '../../features/auth/services/data.service';
 import { PermissionService } from './permission.service';
 import { StorageService } from './storage.service';
 import { AuthContextService } from './auth-context.service';
@@ -8,15 +8,20 @@ import { globalConstants } from '../constants/global.constants';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private authDataService = inject(AuthDataService);
+  private permissionService = inject(PermissionService);
+  private storageService = inject(StorageService);
+  private authContext = inject(AuthContextService);
 
-  constructor(
-    private authDataService: AuthDataService,
-    private permissionService: PermissionService,
-    private storageService: StorageService,
-    private authContext: AuthContextService
-  ) {}
+  // Expose authentication state as a signal
+  public isAuthenticated = this.authContext.isAuthenticated;
+  public user = this.authContext.user;
 
-  initialize(): Observable<any> {
+  getUser() {
+    return this.authContext.user;
+  }
+
+  initialize(): Observable<boolean | User | null> {
     const token = this.getToken();
     if (!token) {
       return of(null);
@@ -27,7 +32,10 @@ export class AuthService {
 
     if (loaded) {
         // Also sync with PermissionService
-        this.permissionService.setPermissions(this.authContext.permissions());
+        const perms = this.authContext.permissions();
+        if (perms) {
+          this.permissionService.setPermissions(perms);
+        }
         return of(true); 
     }
 
@@ -35,55 +43,91 @@ export class AuthService {
     return this.loadProfile();
   }
 
-  getUser() {
-    return this.authContext.user;
-  }
-
   getToken(): string | null {
     return this.storageService.getItem<string>(globalConstants.storageKeys.accessToken);
   }
 
+  getRefreshToken(): string | null {
+    return this.storageService.getItem<string>(globalConstants.storageKeys.refreshToken);
+  }
+
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.authDataService.login(credentials).pipe(
-      tap(response => {
+      tap((response: LoginResponse) => {
         this.setSession(response);
       })
     );
   }
 
-  register(userData: RegisterRequest): Observable<any> {
+  refreshToken(): Observable<LoginResponse | null> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return of(null);
+    }
+
+    return this.authDataService.refresh({ refreshToken }).pipe(
+      tap((response: LoginResponse) => {
+        this.setSession(response);
+      }),
+      catchError(err => {
+        this.logout();
+        throw err;
+      })
+    );
+  }
+
+  register(userData: RegisterRequest): Observable<unknown> {
     return this.authDataService.register(userData);
   }
 
-  registerCompany(data: RegisterCompanyRequest): Observable<any> {
+  registerCompany(data: RegisterCompanyRequest): Observable<unknown> {
     return this.authDataService.registerCompany(data);
+  }
+
+  switchBranch(branchId: number) {
+    const user = this.authContext.user();
+    if (user) {
+      const updatedUser = { ...user, branch_id: branchId };
+      this.authContext.user.set(updatedUser);
+      this.authContext.encryptAndStore(globalConstants.storageKeys.userData, updatedUser);
+    }
   }
 
   logout() {
     this.storageService.removeItem(globalConstants.storageKeys.accessToken);
+    this.storageService.removeItem(globalConstants.storageKeys.refreshToken);
     this.authContext.clear();
     this.permissionService.clearPermissions();
   }
 
   private setSession(response: LoginResponse) {
-    this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token);
+    this.storageService.setItem(globalConstants.storageKeys.accessToken, response.accessToken);
+    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refreshToken);
     
-    // Use AuthContextService to encrypt and store signals
-    this.authContext.populateFromLogin(response.user, response.permissions, response.menu || []);
+    // Only update context if user/permissions/menu are present (prevents clearing state on refresh)
+    const user = response.user || (response.userNo ? {
+      id: response.userNo,
+      name: response.userName,
+      company_id: response.companyNo,
+      branch_id: response.branchNo
+    } : null);
+
+    this.authContext.populateFromLogin(user, response.permissions || null, response.menu || []);
     
-    // Set for backward compatibility in PermissionService
-    this.permissionService.setPermissions(response.permissions);
+    if (response.permissions) {
+      this.permissionService.setPermissions(response.permissions);
+    }
   }
 
-  private loadProfile() {
+  private loadProfile(): Observable<User> {
     return this.authDataService.getProfile().pipe(
       tap(user => {
           this.authContext.user.set(user);
           this.authContext.encryptAndStore(globalConstants.storageKeys.userData, user);
       }),
-      catchError(() => {
+      catchError((err) => {
         this.logout();
-        return of(null);
+        throw err;
       })
     );
   }

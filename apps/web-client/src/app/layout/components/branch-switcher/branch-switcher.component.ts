@@ -1,5 +1,4 @@
-
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,20 +24,28 @@ interface Branch {
     TranslateModule,
   ],
   template: `
-    <mat-form-field appearance="outline" class="branch-selector" *ngIf="branches().length > 1">
-      <mat-icon matPrefix>store</mat-icon>
-      <mat-select 
-        [value]="selectedBranch()"
-        (selectionChange)="onBranchChange($event.value)">
-        <mat-option *ngFor="let branch of branches()" [value]="branch.id">
-          <div class="branch-option">
-            <span class="branch-name">{{ branch.name }}</span>
-            <span class="branch-code" *ngIf="branch.code">({{ branch.code }})</span>
-            <mat-icon *ngIf="branch.is_primary" class="primary-icon">verified</mat-icon>
-          </div>
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    @if (branches().length > 1) {
+      <mat-form-field appearance="outline" class="branch-selector">
+        <mat-icon matPrefix>store</mat-icon>
+        <mat-select 
+          [value]="selectedBranch()"
+          (selectionChange)="onBranchChange($event.value)">
+          @for (branch of branches(); track branch.id) {
+            <mat-option [value]="branch.id">
+              <div class="branch-option">
+                <span class="branch-name">{{ branch.name }}</span>
+                @if (branch.code) {
+                  <span class="branch-code">({{ branch.code }})</span>
+                }
+                @if (branch.is_primary) {
+                  <mat-icon class="primary-icon">verified</mat-icon>
+                }
+              </div>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
   `,
   styles: [`
     .branch-selector {
@@ -79,17 +86,17 @@ interface Branch {
   `]
 })
 export class BranchSwitcherComponent implements OnInit {
+  private authService = inject(AuthService);
+  
   branches = signal<Branch[]>([]);
   selectedBranch = signal<number>(0);
-
-  constructor(private authService: AuthService) { }
 
   ngOnInit() {
     this.loadBranches();
   }
 
   private loadBranches() {
-    const user = this.authService.getUser()();
+    const user = this.authService.user();
     if (user?.branch_ids) {
       // In real app, fetch branch details from API
       // For now, mock data
@@ -101,13 +108,13 @@ export class BranchSwitcherComponent implements OnInit {
       }));
 
       this.branches.set(mockBranches);
-      this.selectedBranch.set(mockBranches[0]?.id || 0);
+      this.selectedBranch.set(user.branch_id || mockBranches[0]?.id || 0);
     }
   }
 
   onBranchChange(branchId: number) {
     this.selectedBranch.set(branchId);
-    // In real app, update user context and reload data
+    this.authService.switchBranch(branchId);
     console.log('Branch changed to:', branchId);
   }
 }

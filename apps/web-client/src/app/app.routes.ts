@@ -9,21 +9,21 @@ export const routes: Routes = [
     redirectTo: 'dashboard',
     pathMatch: 'full',
   },
-  // {
-  //   path: 'auth',
-  //   component: AuthLayoutComponent,
-  //   children: [
-  //     {
-  //       path: '',
-  //       loadChildren: () =>
-  //         import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
-  //     },
-  //   ],
-  // },
+  {
+    path: 'auth',
+    component: AuthLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+      },
+    ],
+  },
   {
     path: '',
     component: MainLayoutComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',
@@ -32,11 +32,11 @@ export const routes: Routes = [
             (m) => m.DASHBOARD_ROUTES,
           ),
       },
-      {
-        path: 'hr',
-        loadChildren: () =>
-          import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
-      },
+      // {
+      //   path: 'hr',
+      //   loadChildren: () =>
+      //     import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+      // },
       {
         path: 'sys',
         loadChildren: () =>

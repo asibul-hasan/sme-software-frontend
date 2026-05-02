@@ -12,6 +12,8 @@
 @use 'utilities' as *;
 @use 'form-page' as *;
 
+@import "@ng-select/ng-select/themes/default.theme.css";
+
 /* ----------------------------------------- */
 /* BASE STYLES AND SCROLLBARS                */
 /* ----------------------------------------- */
@@ -513,6 +515,9 @@ select option,
 /* ── NG-SELECT CUSTOM STYLES ── */
 .ng-select,
 .custom-ng-select {
+  display: block !important;
+  width: 100% !important;
+
   .ng-select-container {
     padding: 0 10px !important;
     display: flex;

@@ -44,15 +44,16 @@
         <span class="btn-action-label">{{ 'reset' | translate }}</span>
       </button>
 
-      <button
-        *ngIf="selectedBranchNo()"
-        class="btn-action btn-delete"
-        (click)="onDelete()"
-        [matTooltip]="'delete' | translate"
-      >
-        <mat-icon>delete</mat-icon>
-        <span class="btn-action-label">{{ 'delete' | translate }}</span>
-      </button>
+      @if (selectedBranchNo()) {
+        <button
+          class="btn-action btn-delete"
+          (click)="onDelete()"
+          [matTooltip]="'delete' | translate"
+        >
+          <mat-icon>delete</mat-icon>
+          <span class="btn-action-label">{{ 'delete' | translate }}</span>
+        </button>
+      }
     </div>
   </div>
 
@@ -89,50 +90,54 @@
         <div
           class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
         >
-          <button
-            *ngFor="let branch of filteredBranches()"
-            type="button"
-            class="list-group-item list-group-item-action p-3"
-            [class.active]="selectedBranchNo() === branch.branch_no"
-            (click)="selectBranch(branch)"
-          >
-            <div
-              class="d-flex w-100 justify-content-between align-items-center mb-1"
+          @for (branch of filteredBranches(); track branch.branchNo) {
+            <button
+              type="button"
+              class="list-group-item list-group-item-action p-3"
+              [class.active]="selectedBranchNo() === branch.branchNo"
+              (click)="selectBranch(branch)"
             >
-              <h6 class="mb-0 fw-bold">{{ branch.branch_code }}</h6>
-              <span *ngIf="branch.is_head_office" class="badge text-bg-primary"
-                >{{ 'isHeadOffice' | translate }}</span
+              <div
+                class="d-flex w-100 justify-content-between align-items-center mb-1"
               >
-            </div>
-            <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-              {{ branch.branch_name }}
-            </p>
-            <div class="d-flex justify-content-between align-items-center mt-2">
-              <span class="badge rounded-pill bg-light text-dark border small"
-                >{{ branch.branch_type }}</span
-              >
-              <span
-                class="badge rounded-pill"
-                [ngClass]="{
-                  'text-bg-success': branch.status === 'Active',
-                  'text-bg-secondary': branch.status === 'Inactive'
-                }"
-                >{{ branch.status | translate }}</span
-              >
-            </div>
-          </button>
+                <h6 class="mb-0 fw-bold">{{ branch.branchCode }}</h6>
+                @if (branch.isHeadOffice) {
+                  <span class="badge text-bg-primary"
+                    >{{ 'isHeadOffice' | translate }}</span
+                  >
+                }
+              </div>
+              <p class="mb-1 small fw-semibold opacity-75 text-truncate">
+                {{ branch.branchName }}
+              </p>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="badge rounded-pill bg-light text-dark border small"
+                  >{{ branch.branchType }}</span
+                >
+                <span
+                  class="badge rounded-pill"
+                  [ngClass]="{
+                    'text-bg-success': branch.status === 'Active',
+                    'text-bg-secondary': branch.status === 'Inactive'
+                  }"
+                  >{{ branch.status | translate }}</span
+                >
+              </div>
+            </button>
+          }
 
-          <div
-            *ngIf="filteredBranches().length === 0"
-            class="p-4 text-center opacity-75"
-          >
-            <mat-icon
-              class="opacity-50 mb-2"
-              style="font-size: 32px; height: 32px; width: 32px"
-              >business_center</mat-icon
+          @if (filteredBranches().length === 0) {
+            <div
+              class="p-4 text-center opacity-75"
             >
-            <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
-          </div>
+              <mat-icon
+                class="opacity-50 mb-2"
+                style="font-size: 32px; height: 32px; width: 32px"
+                >business_center</mat-icon
+              >
+              <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -218,26 +223,27 @@
                             [clearable]="true"
                           >
                             <ng-option value="">— Select —</ng-option>
-                            <ng-option
-                              *ngFor="let opt of SYS_CONSTS.branchTypes"
-                              [value]="opt.value"
-                            >
-                              {{ opt.label | translate }}
-                            </ng-option>
+                            @for (opt of SYS_CONSTS.branchTypes; track opt.value) {
+                              <ng-option
+                                [value]="opt.value"
+                              >
+                                {{ opt.label | translate }}
+                              </ng-option>
+                            }
                           </ng-select>
                         </div>
                       </div>
 
                       <div class="col-md-6">
                         <div class="field-group">
-                          <label class="field-label">&nbsp;</label>
+                          <span class="field-label" aria-hidden="true">&nbsp;</span>
                           <div class="custom--checkbox">
                             <mat-checkbox
                               formControlName="is_head_office"
                               color="primary"
                             >
-                              <label class="field-label" for="branch_type"
-                                >{{ 'isHeadOffice' | translate }}</label
+                              <span class="field-label"
+                                >{{ 'isHeadOffice' | translate }}</span
                               >
                             </mat-checkbox>
                           </div>
@@ -256,12 +262,13 @@
                             [searchable]="true"
                             [clearable]="true"
                           >
-                            <ng-option
-                              *ngFor="let opt of SYS_CONSTS.branchManagers"
-                              [value]="opt.value"
-                            >
-                              {{ opt.label | translate }}
-                            </ng-option>
+                            @for (opt of SYS_CONSTS.branchManagers; track opt.value) {
+                              <ng-option
+                                [value]="opt.value"
+                              >
+                                {{ opt.label | translate }}
+                              </ng-option>
+                            }
                           </ng-select>
                         </div>
                       </div>

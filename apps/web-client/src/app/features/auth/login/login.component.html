@@ -124,67 +124,84 @@
         Enter your credentials to access your dashboard.
       </p>
 
-      <div *ngIf="lockedUntil" class="alert alert-danger d-flex align-items-center py-2" role="alert" style="font-size: 13px;">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <div>
-          <strong>Account Locked!</strong><br>
-          Try again in {{ lockedRemainingSeconds }} seconds.
+      @if (lockedUntil) {
+        <div class="alert alert-danger d-flex align-items-center py-2" role="alert" style="font-size: 13px;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <div>
+            <strong>Account Locked!</strong><br>
+            Try again in {{ lockedRemainingSeconds }} seconds.
+          </div>
         </div>
-      </div>
+      }
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- Username -->
         <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 12.5px">Username</label>
+          <label for="userNameInput" class="form-label fw-semibold" style="font-size: 12.5px">Username</label>
           <div class="input-group">
             <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-person text-secondary"></i></span>
             <input
+              id="userNameInput"
               type="text"
               class="form-control bg-body-secondary border-start-0"
               placeholder="Enter username"
               formControlName="userName"
               (blur)="onUserNameBlur()"
             />
-            <span *ngIf="isLoadingMetadata" class="input-group-text bg-body-secondary border-start-0">
-               <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
-            </span>
+            @if (isLoadingMetadata) {
+              <span class="input-group-text bg-body-secondary border-start-0">
+                 <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+              </span>
+            }
           </div>
-          <div *ngIf="loginForm.get('userName')?.touched && loginForm.get('userName')?.invalid" class="text-danger small mt-1">
-            <span *ngIf="loginForm.get('userName')?.errors?.['required']">Username is required.</span>
-          </div>
+          @if (loginForm.get('userName')?.touched && loginForm.get('userName')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (loginForm.get('userName')?.errors?.['required']) {
+                <span>Username is required.</span>
+              }
+            </div>
+          }
         </div>
 
         <!-- Company Field -->
         <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 12.5px">Company</label>
+          <label for="companySelect" class="form-label fw-semibold" style="font-size: 12.5px">Company</label>
           <div class="input-group">
             <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-building text-secondary"></i></span>
-            <select class="form-select bg-body-secondary border-start-0" formControlName="company_no">
+            <select id="companySelect" class="form-select bg-body-secondary border-start-0" formControlName="company_no" (change)="onCompanyChange()">
               <option [ngValue]="null" disabled>Auto-loaded</option>
-              <option *ngFor="let c of companies" [value]="c.company_no || c.id">{{ c.companyName || c.name || c.id }}</option>
+              @for (c of companies; track c.id) {
+                <option [value]="c.company_no || c.id">{{ c.companyName || c.name || c.id }}</option>
+              }
             </select>
           </div>
         </div>
 
         <!-- Branch Field -->
         <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 12.5px">Branch</label>
+          <label for="branchSelect" class="form-label fw-semibold" style="font-size: 12.5px">Branch</label>
           <div class="input-group">
             <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-shop text-secondary"></i></span>
-            <select class="form-select bg-body-secondary border-start-0" formControlName="branch_no">
+            <select id="branchSelect" class="form-select bg-body-secondary border-start-0" formControlName="branch_no">
               <option [ngValue]="null" disabled>Select Branch</option>
-              <option *ngFor="let b of branches" [value]="b.branch_no || b.id">{{ b.branchName || b.name || b.id }}</option>
+              @for (b of branches; track b.id) {
+                <option [value]="b.branch_no || b.id">{{ b.branchName || b.name || b.id }}</option>
+              }
             </select>
           </div>
-          <div *ngIf="loginForm.get('branch_no')?.touched && loginForm.get('branch_no')?.invalid" class="text-danger small mt-1">
-            <span *ngIf="loginForm.get('branch_no')?.errors?.['required']">Branch is required.</span>
-          </div>
+          @if (loginForm.get('branch_no')?.touched && loginForm.get('branch_no')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (loginForm.get('branch_no')?.errors?.['required']) {
+                <span>Branch is required.</span>
+              }
+            </div>
+          }
         </div>
 
         <!-- Password -->
         <div class="mb-3">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label fw-semibold mb-0" style="font-size: 12.5px">Password</label>
+            <label for="liPwd" class="form-label fw-semibold mb-0" style="font-size: 12.5px">Password</label>
             <a routerLink="/auth/forgot" class="fw-semibold text-decoration-none" style="font-size: 12px; color: #ff2d6b">Forgot password?</a>
           </div>
           <div class="input-group">
@@ -200,9 +217,11 @@
               <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
-          <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-danger small mt-1">
-            Password is required.
-          </div>
+          @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+            <div class="text-danger small mt-1">
+              Password is required.
+            </div>
+          }
         </div>
 
         <button
@@ -212,9 +231,15 @@
           [disabled]="loginForm.invalid || isLoading || lockedUntil"
           style="background: #ff2d6b; color: #fff; border: none; font-size: 15px; box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);"
         >
-          <span *ngIf="!isLoading">Sign In</span>
-          <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status"></span>
-          <i class="bi bi-arrow-right" *ngIf="!isLoading"></i>
+          @if (!isLoading) {
+            <span>Sign In</span>
+          } @else {
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+          }
+          
+          @if (!isLoading) {
+            <i class="bi bi-arrow-right"></i>
+          }
         </button>
       </form>
     </div>

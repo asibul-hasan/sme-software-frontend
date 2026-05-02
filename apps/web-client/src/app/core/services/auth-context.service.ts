@@ -1,21 +1,24 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import * as CryptoJS from 'crypto-js';
 import { globalConstants } from '../constants/global.constants';
+import { User } from '../../features/auth/services/data.service';
+import { IPermissionConfig } from '../models/permission.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthContextService {
   private helper = new JwtHelperService();
 
   // Signals for state management
-  user = signal<any | null>(null);
-  permissions = signal<any | null>(null);
-  menu = signal<any[]>([]);
+  user = signal<User | null>(null);
+  permissions = signal<IPermissionConfig | null>(null);
+  menu = signal<unknown[]>([]);
 
-  constructor() {}
+  // Computed state
+  isAuthenticated = computed(() => !!this.user());
 
   // Decode JWT token to get claims if needed
-  decodeToken(token: string): any {
+  decodeToken(token: string): unknown {
     try {
       return this.helper.decodeToken(token);
     } catch (e) {
@@ -25,7 +28,7 @@ export class AuthContextService {
   }
 
   // Encrypt and store data
-  encryptAndStore(key: string, data: any): void {
+  encryptAndStore(key: string, data: unknown): void {
     try {
       const jsonStr = JSON.stringify(data);
       const encrypted = CryptoJS.AES.encrypt(jsonStr, globalConstants.encryption.secretKey).toString();
@@ -36,13 +39,13 @@ export class AuthContextService {
   }
 
   // Retrieve and decrypt data
-  decryptAndRetrieve(key: string): any | null {
+  decryptAndRetrieve<T>(key: string): T | null {
     try {
       const encrypted = localStorage.getItem(key);
       if (!encrypted) return null;
       const bytes = CryptoJS.AES.decrypt(encrypted, globalConstants.encryption.secretKey);
       const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-      return JSON.parse(decryptedStr);
+      return JSON.parse(decryptedStr) as T;
     } catch (e) {
       console.error('Decryption failed', e);
       return null;
@@ -50,21 +53,28 @@ export class AuthContextService {
   }
 
   // Populate state from login response
-  populateFromLogin(userPayload: any, permissionsPayload: any, menuPayload: any[]) {
-    this.user.set(userPayload);
-    this.permissions.set(permissionsPayload);
-    this.menu.set(menuPayload || []);
+  populateFromLogin(userPayload: User | null, permissionsPayload: IPermissionConfig | null, menuPayload: unknown[]) {
+    if (userPayload) {
+      this.user.set(userPayload);
+      this.encryptAndStore(globalConstants.storageKeys.userData, userPayload);
+    }
+    
+    if (permissionsPayload) {
+      this.permissions.set(permissionsPayload);
+      this.encryptAndStore(globalConstants.storageKeys.userPermissions, permissionsPayload);
+    }
 
-    this.encryptAndStore(globalConstants.storageKeys.userData, userPayload);
-    this.encryptAndStore(globalConstants.storageKeys.userPermissions, permissionsPayload);
-    this.encryptAndStore(globalConstants.storageKeys.userMenu, menuPayload || []);
+    if (menuPayload && menuPayload.length > 0) {
+      this.menu.set(menuPayload);
+      this.encryptAndStore(globalConstants.storageKeys.userMenu, menuPayload);
+    }
   }
 
   // Load state from local storage on initialization
   loadFromStorage(): boolean {
-    const cachedUser = this.decryptAndRetrieve(globalConstants.storageKeys.userData);
-    const cachedPerms = this.decryptAndRetrieve(globalConstants.storageKeys.userPermissions);
-    const cachedMenu = this.decryptAndRetrieve(globalConstants.storageKeys.userMenu);
+    const cachedUser = this.decryptAndRetrieve<User>(globalConstants.storageKeys.userData);
+    const cachedPerms = this.decryptAndRetrieve<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
+    const cachedMenu = this.decryptAndRetrieve<unknown[]>(globalConstants.storageKeys.userMenu);
 
     if (cachedUser) {
       this.user.set(cachedUser);

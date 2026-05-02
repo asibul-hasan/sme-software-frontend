@@ -2,6 +2,7 @@ export const globalConstants = {
   // Local Storage Keys
   storageKeys: {
     accessToken: 'access_token',
+    refreshToken: 'refresh_token',
     userData: 'user_data',
     userPermissions: 'user_permissions',
     userMenu: 'user_menu',
