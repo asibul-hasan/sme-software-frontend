@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { AppConfigService } from '../../../core/services/app-config.service';
 
 export interface LoginRequest {
-  email: string;
+  company_no: number;
+  branch_no: number;
+  user_name: string;
   password: string;
 }
 
@@ -41,18 +43,47 @@ export interface LoginResponse {
   access_token: string;
   user: User;
   permissions: any; // IPermissionConfig
+  menu?: any[];
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthDataService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private get apiUrl() {
+    return `${this.config.apiUrl}/auth`;
+  }
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private config: AppConfigService,
+  ) {}
+
+  // Generic CRUD Methods
+  getList<T>(path: string): Observable<T> {
+    return this.http.get<T>(`${this.apiUrl}/${path}`);
+  }
+
+  getDetails<T>(path: string, params: any): Observable<T> {
+    return this.http.get<T>(`${this.apiUrl}/${path}`, { params });
+  }
+
+  create<T>(path: string, payload: any): Observable<T> {
+    return this.http.post<T>(`${this.apiUrl}/${path}`, payload);
+  }
+
+  update<T>(path: string, payload: any): Observable<T> {
+    return this.http.put<T>(`${this.apiUrl}/${path}`, payload);
+  }
+
+  delete<T>(path: string, params: any): Observable<T> {
+    return this.http.delete<T>(`${this.apiUrl}/${path}`, { params });
+  }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials);
+    return this.http.get<LoginResponse>(`${this.apiUrl}/login`, {
+      params: credentials as any,
+    });
   }
 
   register(userData: RegisterRequest): Observable<any> {
@@ -69,5 +100,23 @@ export class AuthDataService {
 
   getPermissions(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/permissions`);
+  }
+
+  getCompaniesByUserName(userName: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/companies`, {
+      params: { user_name: userName },
+    });
+  }
+
+  getBranchesByUserName(userName: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/branches`, {
+      params: { user_name: userName },
+    });
+  }
+
+  checkFormPermission(formId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/permissions/check`, {
+      params: { formId },
+    });
   }
 }

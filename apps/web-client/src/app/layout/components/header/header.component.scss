@@ -79,23 +79,30 @@
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--indigo-rgb), 0.12);
     color: white;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--input-focus-border);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
 /* ── Notification Badge ── */
 .notif-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 5px;
+  right: 5px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--amber);
+  background: var(--rose);
   border: 2px solid var(--header-bg);
   pointer-events: none;
+  box-shadow: 0 0 4px var(--rose);
+  animation: statusPulse 2s ease-in-out infinite;
 }
 
 /* ── User Card ── */
@@ -119,6 +126,11 @@
 
   &[aria-expanded="true"] {
     box-shadow: 0 0 0 0.15rem rgba(var(--indigo-rgb), 0.18);
+    transform: scale(1.02);
+  }
+
+  &:hover {
+    transform: scale(1.02);
   }
 }
 
@@ -175,20 +187,21 @@
 
 .branch-sw {
   height: 32px;
-  width: auto;
-  max-width: 210px;
+  width: 210px; // Fixed width to prevent layout shifts
   padding: 0 10px;
   gap: 6px;
   background: var(--header-hover);
   border: 1px solid var(--header-border);
   border-radius: 10px;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; // Contain truncated title
 }
 
 .branch-sw:hover,
 .branch-sw[aria-expanded="true"] {
   background: rgba(var(--indigo-rgb), 0.12);
   border-color: var(--input-focus-border);
+  transform: scale(1.02);
 }
 
 .branch-icon {

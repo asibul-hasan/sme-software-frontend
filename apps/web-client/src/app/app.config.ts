@@ -20,10 +20,23 @@ import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { AppConfigService } from './core/services/app-config.service';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
+}
+
+export function initApp(appConfig: AppConfigService, auth: AuthService) {
+  return () => appConfig.loadConfig().then(() => {
+    return new Promise((resolve) => {
+      auth.initialize().subscribe({
+        next: () => resolve(true),
+        error: () => resolve(true)
+      });
+    });
+  });
 }
 
 export const appConfig: ApplicationConfig = {
@@ -42,9 +55,14 @@ export const appConfig: ApplicationConfig = {
       multi: true,
     },
     {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LoaderInterceptor,
+      multi: true,
+    },
+    {
       provide: APP_INITIALIZER,
-      useFactory: (auth: AuthService) => () => auth.initialize(),
-      deps: [AuthService],
+      useFactory: initApp,
+      deps: [AppConfigService, AuthService],
       multi: true,
     },
     {

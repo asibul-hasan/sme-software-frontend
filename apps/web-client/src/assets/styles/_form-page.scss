@@ -10,7 +10,7 @@
 .page-card {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 108px);
+  height: calc(100vh - 73px);
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -23,8 +23,9 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0px 20px;
+  // padding: 12px 20px;
   border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
   z-index: 10;
 }
 
@@ -39,14 +40,18 @@
 
 // ── Global Premium Header Styles ──
 .header-icon-box {
-  width: 48px;
-  height: 48px;
+  width: 30px;
+  height: 30px;
   border-radius: 14px;
   background: var(--indigo-g);
   color: white;
   display: grid;
   place-items: center;
-  mat-icon { font-size: 28px; width: 28px; height: 28px; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .gradient-text-header {
@@ -64,7 +69,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 
@@ -87,12 +92,62 @@
 
 // ── Form Content Abstractions ────────
 .card--main {
-  padding: 1rem;
+  padding: 2px;
 }
 
 .row-group {
   --bs-gutter-x: 0.5rem;
   --bs-gutter-y: 0.5rem;
+}
+
+// ── Custom Checkbox Field ─────────────────────────────────────────
+// Use this wrapper div around mat-checkbox for a consistent bordered
+// checkbox that matches the input field height and hover border color.
+.custom--checkbox {
+  height: 42px;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 6px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--input-focus-border) !important;
+  }
+
+  // Remove mat-checkbox ripple/hover circle
+  mat-checkbox {
+    .mdc-checkbox__ripple,
+    .mat-ripple,
+    .mat-mdc-checkbox-ripple {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    // Match checked background + border to indigo theme
+    .mdc-checkbox__background {
+      border-color: var(--indigo) !important;
+      transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+    }
+
+    .mdc-checkbox--selected .mdc-checkbox__background,
+    &.mat-mdc-checkbox-checked .mdc-checkbox__background,
+    .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+      background-color: var(--indigo) !important;
+      border-color: var(--indigo) !important;
+    }
+
+    .mdc-checkbox__checkmark {
+      color: #fff !important;
+    }
+  }
 }
 
 .form-section-card {
@@ -101,6 +156,7 @@
   margin-bottom: 0;
   background: var(--card-bg);
   border-radius: 10px;
+  margin-bottom: 5px;
 
   .card-header {
     padding: 0.5rem 0.75rem;
@@ -343,7 +399,6 @@
 
 .field-input,
 .field-select,
-
 .field-textarea {
   width: 100%;
   font-family: var(--font-family-base);
@@ -417,15 +472,244 @@
     background: var(--select-bg) !important;
     border-left: 4px solid var(--indigo) !important;
 
-    h6, h2, h3, h4, .fw-bold {
+    h6,
+    h2,
+    h3,
+    h4,
+    .fw-bold {
       color: var(--indigo) !important;
     }
 
-    p, small, span:not(.badge) {
+    p,
+    small,
+    span:not(.badge) {
       color: var(--select-text) !important;
       opacity: 0.9;
     }
   }
 }
 
+// ─────────────────────────────────────────────────────────────────
+// FORM INTERNAL LAYOUT CLASSES
+// ─────────────────────────────────────────────────────────────────
 
+.form-content-row {
+  overflow: hidden;
+  height: 100%;
+}
+
+.form-content-col {
+  overflow: hidden;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UPLOAD / DROPZONE ZONES
+// ─────────────────────────────────────────────────────────────────
+
+.logo-dropzone {
+  border: 2px dashed var(--border-color, #ccc);
+  cursor: pointer;
+  min-height: 200px;
+  transition: all 0.2s ease;
+
+  &.bg-light {
+    background-color: var(--bg-secondary) !important;
+    border-color: var(--indigo);
+  }
+}
+
+.logo-upload-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: var(--text-secondary, #888);
+}
+
+.logo-preview-img {
+  max-width: 90px;
+  max-height: 90px;
+  object-fit: contain;
+}
+
+.icon-small {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+// ─────────────────────────────────────────────────────────────────
+// MODERN UPLOAD AREA (3rd Type)
+// ─────────────────────────────────────────────────────────────────
+
+.modern-upload {
+  width: 100%;
+
+  &-dropzone {
+    border: 2px dashed #3182ce;
+    border-radius: 12px;
+    padding: 20px;
+    background: #f0f7ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: none;
+    text-align: center;
+    min-height: 80px;
+    height: 80px;
+    width: 100%;
+    overflow: hidden;
+
+    .upload-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #3182ce;
+      opacity: 0.7;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      span {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    &:hover,
+    &.active {
+      background: #ebf4ff;
+      border-color: #2b6cb0;
+    }
+
+    .upload-icon {
+      font-size: 48px !important;
+      width: 48px !important;
+      height: 48px !important;
+      color: #3182ce;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #2d3748;
+    }
+  }
+
+  &-status {
+    margin-top: 12px;
+    background: #edf2f7;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #4a5568;
+      font-size: 13px;
+      font-weight: 500;
+      overflow: hidden;
+
+      mat-icon {
+        color: #3182ce;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .btn-delete-file {
+      background: transparent;
+      border: none;
+      color: #2d3748;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: none;
+
+      &:hover {
+        color: #e53e3e;
+      }
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    &.no-file {
+      background: transparent;
+      padding: 0;
+      margin-top: 15px;
+    }
+  }
+
+  .btn-upload-trigger {
+    width: 100%;
+    height: 40px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: none;
+    cursor: pointer;
+
+    &:hover {
+      background: #2b6cb0;
+    }
+
+    &:active {
+      background: #2c5282;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &-preview {
+    margin-top: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    img {
+      max-width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+}

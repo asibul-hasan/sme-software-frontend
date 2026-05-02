@@ -82,14 +82,88 @@ body {
   border-radius: 6px !important;
   min-height: 42px;
   color: var(--text-primary) !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  // Sync placeholder format
+  &::placeholder {
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    opacity: 0.65;
+  }
+
+  &:hover {
+    border-color: var(--input-focus-border) !important;
+  }
 
   &:focus,
   &.mat-focused,
   &:focus-within,
-  &.ng-select-focused {
+  &.ng-select-focused,
+  &.ng-select-opened {
     border-color: var(--input-focus-border) !important;
     box-shadow: 0 0 0 0.25rem var(--input-focus-ring) !important;
+    outline: none !important;
+  }
+
+  // Datepicker indicator enhancement
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    &:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+  }
+}
+
+.datepicker-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible !important;
+
+  .form-control {
+    padding-right: 44px !important;
+  }
+
+  mat-datepicker-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+
+    &:hover {
+      color: var(--indigo);
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    button {
+      width: 36px !important;
+      height: 36px !important;
+      line-height: 36px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      
+      mat-icon {
+        font-size: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+        color: var(--indigo);
+        opacity: 0.8;
+      }
+    }
   }
 }
 
@@ -178,10 +252,10 @@ select option,
 /* ----------------------------------------- */
 
 .main-content {
-  padding-top: calc(48px + 0.5rem);
-  padding-bottom: calc(40px + 0.5rem);
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  padding-top: 48px;
+  padding-bottom: 25px;
+  padding-left: 0;
+  padding-right: 0;
   margin-left: 250px;
   min-height: 100vh;
   z-index: 1;
@@ -207,7 +281,11 @@ select option,
     max-width: 340px !important;
     min-width: 320px !important;
     padding: 0 !important;
+    border-radius: 16px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-color) !important;
     overflow: hidden;
+    animation: calendar-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     .mat-mdc-menu-content {
       padding: 0 !important;
@@ -216,38 +294,47 @@ select option,
 
   &.profile-menu-panel {
     min-width: 260px !important;
-    padding: 12px 0 0 0 !important;
-    border-top: 3px solid var(--rose) !important;
+    padding: 0 !important;
+    border-top: 4px solid var(--indigo) !important;
 
     .profile-header {
-      padding: 4px 20px 12px;
+      padding: 20px 20px 15px;
+      background: linear-gradient(to bottom, rgba(var(--indigo-rgb), 0.05), transparent);
 
       .profile-ava {
         width: 48px;
         height: 48px;
-        border-radius: 50%;
-        background: var(--bg-secondary);
-        color: var(--indigo);
+        border-radius: 12px;
+        background: var(--indigo-g);
+        color: white;
         font-size: 16px;
-        font-weight: bold;
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 0 4px 12px rgba(var(--indigo-rgb), 0.2);
       }
 
       .profile-name {
         font-size: 15px;
+        font-weight: 700;
         color: var(--text-primary);
+        letter-spacing: -0.2px;
       }
 
       .profile-role {
-        font-size: var(--text-xs);
+        font-size: 11px;
+        font-weight: 500;
         color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .logout-icon-btn {
-        color: var(--text-primary);
-        transform: scale(0.9);
+        color: var(--rose);
+        opacity: 0.7;
+        transition: all 0.2s;
+        &:hover { opacity: 1; background: rgba(244, 63, 94, 0.1); }
       }
     }
 
@@ -276,29 +363,45 @@ select option,
     }
 
     .profile-menu-list {
-      padding-top: 8px;
+      padding: 8px 0;
 
       .profile-menu-item {
-        font-weight: 400 !important;
-        font-size: var(--text-base) !important;
+        font-weight: 500 !important;
+        font-size: 13.5px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
         mat-icon {
           color: var(--text-secondary);
           margin-right: 12px;
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          transition: color 0.2s;
+        }
+
+        &:hover {
+          background: var(--sidebar-hover) !important;
+          transform: translateX(4px);
+          
+          mat-icon { color: var(--indigo); }
         }
       }
     }
   }
 
   &.notif-menu-panel {
+    border-top: 4px solid var(--emerald) !important;
+
     .notif-header {
-      padding: 16px 20px;
+      padding: 20px 20px 15px;
       border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent);
 
       .notif-title {
         font-weight: 700;
         font-size: 15px;
         color: var(--text-primary);
+        letter-spacing: -0.2px;
       }
 
       .notif-read-all {
@@ -307,6 +410,9 @@ select option,
         font-size: 20px;
         width: 20px;
         height: 20px;
+        opacity: 0.7;
+        transition: all 0.2s;
+        &:hover { opacity: 1; transform: scale(1.1); }
       }
     }
 
@@ -320,20 +426,28 @@ select option,
         height: auto !important;
         line-height: 1.4 !important;
         white-space: normal !important;
+        transition: all 0.2s ease !important;
 
         &:last-child {
           border-bottom: none;
         }
 
+        &:hover {
+          background: var(--sidebar-hover) !important;
+          transform: scale(1.01);
+          border-left: 3px solid var(--indigo);
+        }
+
         .notif-icon-wrapper {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-right: 16px;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
           mat-icon {
             font-size: 20px;
@@ -363,9 +477,24 @@ select option,
 
     .notif-footer {
       border-top: 1px solid var(--border-color);
-      padding: 12px 0 !important;
-      font-size: 13px;
-      color: var(--text-secondary);
+      padding: 0 !important;
+      background: var(--bg-secondary);
+      
+      a {
+        display: block;
+        padding: 12px 0;
+        width: 100%;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--indigo);
+        text-decoration: none;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: rgba(var(--indigo-rgb), 0.08);
+          letter-spacing: 0.5px;
+        }
+      }
     }
   }
 }
@@ -385,35 +514,25 @@ select option,
 .ng-select,
 .custom-ng-select {
   .ng-select-container {
-    background-color: var(--input-bg) !important;
-    border: 1px solid var(--input-border) !important;
-    border-radius: 6px !important;
-    min-height: 42px !important;
     padding: 0 10px !important;
     display: flex;
     align-items: center;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     box-shadow: none !important;
-
-    &:hover {
-      border-color: var(--input-focus-border) !important;
-    }
-  }
-
-  &.ng-select-opened .ng-select-container {
-    border-color: var(--input-focus-border) !important;
-    box-shadow: 0 0 0 0.25rem var(--input-focus-ring) !important;
   }
 
   .ng-value-container {
     padding-left: 0 !important;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     align-content: center;
     min-height: 42px;
     width: 100%;
+  }
+
+  &.ng-select-multiple .ng-value-container {
+    flex-wrap: wrap;
     gap: 6px;
+    padding: 4px 0;
   }
 
   &.ng-select-multiple .ng-value {
@@ -431,22 +550,25 @@ select option,
   }
 
   &:not(.ng-select-multiple) .ng-value {
-    display: inline !important;
+    display: flex !important;
+    align-items: center !important;
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
     font-weight: 500 !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     line-height: 1.4 !important;
+    color: var(--text-primary) !important;
   }
 
   &:not(.ng-select-multiple) .ng-value .ng-value-icon {
     display: none !important;
   }
 
-  &:not(.ng-select-multiple) .ng-clear-wrapper {
-    display: none !important;
-  }
+  // Re-enable clear wrapper for single-select if needed
+  // (Removed the display:none restriction)
 
   .ng-value-icon {
     display: inline-flex !important;
@@ -468,11 +590,14 @@ select option,
 
   .ng-placeholder {
     color: var(--text-secondary) !important;
-    opacity: 0.75;
+    opacity: 0.65;
     font-size: 13.5px;
+    position: absolute !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     padding-left: 0 !important;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
   .ng-arrow-wrapper {
@@ -490,11 +615,28 @@ select option,
 
   &.ng-select-has-value .ng-placeholder {
     display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
 
   .ng-input {
     padding: 0 !important;
     input { font-size: 13.5px !important; }
+  }
+
+  // Ensure single select input cursor is vertically centered and overlaps the value properly
+  &:not(.ng-select-multiple) .ng-input {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  // Dim the selected value when dropdown is open to make typing clearer
+  &.ng-select-opened:not(.ng-select-multiple) .ng-value {
+    opacity: 0.4 !important;
+    pointer-events: none;
   }
 
   .ng-dropdown-panel {
@@ -557,6 +699,106 @@ select option,
   }
 }
 
+
+/* ── PREMIUM MATERIAL DATEPICKER & CALENDAR DESIGN ── */
+.mat-datepicker-content {
+  background-color: var(--card-bg) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-color) !important;
+  color: var(--text-primary) !important;
+  overflow: hidden;
+  animation: calendar-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .mat-calendar {
+    font-family: var(--font-family-base) !important;
+    width: 280px !important;
+    height: auto !important;
+  }
+
+  .mat-calendar-header {
+    background: linear-gradient(135deg, var(--bg-secondary), var(--card-bg)) !important;
+    padding: 12px !important;
+    border-bottom: 1px solid var(--border-color);
+    
+    .mat-calendar-controls { margin: 0 !important; }
+    
+    .mat-calendar-period-button {
+      font-weight: 700 !important;
+      font-size: 14px !important;
+      letter-spacing: 0.2px;
+      &:hover { background: rgba(var(--indigo-rgb), 0.1) !important; }
+    }
+
+    .mat-calendar-previous-button, .mat-calendar-next-button {
+      color: var(--text-primary) !important;
+      &:hover { background: var(--sidebar-hover) !important; }
+    }
+  }
+
+  .mat-calendar-table-header {
+    color: var(--text-secondary) !important;
+    opacity: 0.6;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .mat-calendar-body-label {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    padding-top: 15px !important;
+  }
+
+  .mat-calendar-body-cell-content {
+    color: var(--text-primary) !important;
+    border-radius: 10px !important; // Softer corners for the day cells
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none !important;
+
+    &:hover {
+      background-color: var(--sidebar-hover) !important;
+      color: var(--indigo) !important;
+      transform: scale(1.1);
+    }
+  }
+
+  .mat-calendar-body-selected {
+    background: var(--indigo-g) !important; // Using the indigo gradient defined in theme
+    color: #fff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(var(--indigo-rgb), 0.3) !important;
+    border: none !important;
+    transform: scale(1.05);
+  }
+
+  .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+    border: 2px solid var(--indigo) !important;
+    background: rgba(var(--indigo-rgb), 0.05) !important;
+    color: var(--indigo) !important;
+  }
+
+  .mat-calendar-arrow {
+    fill: var(--text-primary) !important;
+  }
+}
+
+@keyframes calendar-fade-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--emerald); }
+  50% { opacity: 0.6; transform: scale(1.1); box-shadow: 0 0 12px var(--emerald); }
+}
 
 /* ── Mobile Responsive Overrides (Using Bootstrap Breakpoints) ── */
 

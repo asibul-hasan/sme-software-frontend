@@ -2,65 +2,35 @@
   class="app-footer d-flex align-items-center justify-content-center justify-content-md-between px-3 px-md-4 gap-2"
   [class.collapsed]="isCollapsed()"
 >
-  <div class="d-flex align-items-center gap-2">
-    <span
-      class="navbar-brand fw-bold d-inline-flex align-items-baseline m-0"
-      style="letter-spacing: -0.02em"
-    >
-      <span class="fs-6" style="color: var(--indigo)">A</span>
-      <span class="small" style="color: white">IDLY</span>
-      <span class="small ms-1 fw-normal" style="color: var(--sidebar-text)">by</span>
-      <span class="small ms-1" style="color: var(--rose)">InfoaidTech</span>
+  <div class="footer-logo-area d-flex align-items-center gap-2">
+    <span class="navbar-brand fw-bold d-inline-flex align-items-baseline m-0">
+      <span class="brand-a">A</span>
+      <span class="brand-idly">IDLY</span>
+      <span class="brand-by ms-1 fw-normal">by</span>
+      <span class="brand-partner ms-1">InfoaidTech</span>
     </span>
-    <span class="d-none d-md-inline mx-1" style="color: var(--text-4); font-size: 14px"
-      >|</span
-    >
-    <span
-      class="font-monospace px-2 rounded-pill d-none d-md-inline"
-      style="
-        font-size: 10px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        background: rgba(var(--indigo-rgb), 0.1);
-        border: 1px solid rgba(var(--indigo-rgb), 0.2);
-        color: var(--indigo);
-      "
-    >
-      ERP v2025.1
-    </span>
+    <span class="footer-sep d-none d-md-inline">|</span>
+    <span class="version-chip d-none d-md-inline"> ERP v2025.1 </span>
   </div>
 
-  <div class="flex-grow-1 text-center d-none d-md-block">
-    <span style="color: var(--text-3); font-size: 11px">
-      © {{ currentYear }} Infoaidtech. All rights reserved.
-    </span>
+  <div class="footer-copyright flex-grow-1 text-center d-none d-md-block">
+    <span> © {{ currentYear }} Infoaidtech. All rights reserved. </span>
   </div>
 
-  <div class="d-flex align-items-center gap-2 d-none d-md-flex">
-    <span
-      class="d-flex align-items-center gap-1 fw-medium"
-      style="font-size: 11px; color: var(--text-2)"
-    >
-      <span class="status-dot flex-shrink-0" style="width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 6px var(--emerald);"></span>
+  <div
+    class="footer-status-area d-flex align-items-center gap-2 d-none d-md-flex"
+  >
+    <span class="status-indicator d-flex align-items-center gap-1 fw-medium">
+      <span class="status-dot flex-shrink-0"></span>
       {{ 'allSystemsOperational' | translate }}
     </span>
-    <span class="mx-1" style="color: var(--text-4); font-size: 14px">|</span>
-    <a
-      class="text-decoration-none footer-link"
-      style="font-size: 11px; color: var(--text-3);"
-      href="#"
-      (click)="onHelp($event)"
-    >
+    <span class="footer-sep">|</span>
+    <a class="footer-link" href="#" (click)="onHelp($event)">
       {{ 'help' | translate }}
     </a>
-    <span class="mx-1" style="color: var(--text-4); font-size: 14px">|</span>
+    <span class="footer-sep">|</span>
 
-    <a
-      class="text-decoration-none footer-link"
-      style="font-size: 11px; color: var(--text-3);"
-      href="#"
-      (click)="onPrivacy($event)"
-    >
+    <a class="footer-link" href="#" (click)="onPrivacy($event)">
       {{ 'privacy' | translate }}
     </a>
   </div>
