@@ -108,7 +108,7 @@ export class BranchSwitcherComponent implements OnInit {
       }));
 
       this.branches.set(mockBranches);
-      this.selectedBranch.set(user.branch_id || mockBranches[0]?.id || 0);
+      this.selectedBranch.set(user.branch_no || mockBranches[0]?.id || 0);
     }
   }
 

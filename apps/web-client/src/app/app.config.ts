@@ -22,21 +22,19 @@ import { routes } from './app.routes';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
-import { AppConfigService } from './core/services/app-config.service';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
 }
 
-export function initApp(appConfig: AppConfigService, auth: AuthService) {
-  return () => appConfig.loadConfig().then(() => {
-    return new Promise((resolve) => {
+export function initApp(auth: AuthService) {
+  return () =>
+    new Promise((resolve) => {
       auth.initialize().subscribe({
         next: () => resolve(true),
-        error: () => resolve(true)
+        error: () => resolve(true),
       });
     });
-  });
 }
 
 export const appConfig: ApplicationConfig = {
@@ -62,7 +60,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initApp,
-      deps: [AppConfigService, AuthService],
+      deps: [AuthService],
       multi: true,
     },
     {

@@ -1,247 +1,173 @@
-<!-- Reusable left panel macro (inlined per page for simplicity) -->
-
-<!-- ===================================================
-     PAGE: LOGIN
-     =================================================== -->
-<div id="pg-login" class="min-vh-100 d-flex">
-  <!-- LEFT -->
-  <div
-    class="d-none d-lg-flex flex-column justify-content-center p-5"
-    style="
-      width: 42%;
-      background: linear-gradient(155deg, #0c0c16 0%, #11111e 100%);
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-    "
-  >
-    <div class="d-flex align-items-center gap-2 pb-3">
-      <span class="fw-bold fs-5 text-white"
-        >Aidly<span style="color: #ff2d6b">ERP</span></span
-      >
-    </div>
-
-    <div>
-      <span
-        class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
-        style="
-          background: rgba(255, 45, 107, 0.12);
-          color: #ff2d6b;
-          border: 1px solid rgba(255, 45, 107, 0.3);
-          font-size: 10px;
-          letter-spacing: 0.1em;
-        "
-        >🇧🇩 BUILT FOR YOUR BUSINESS</span
-      >
-      <h2
-        class="fw-bold text-white mb-3"
-        style="font-size: 2rem; line-height: 1.2"
-      >
-        Welcome back to<br />
-        <span
-          style="
-            background: linear-gradient(135deg, #ff2d6b, #ff8c42);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          "
-          >your business hub.</span
-        >
-      </h2>
-      <p
-        class="text-secondary mb-4"
-        style="font-size: 13.5px; line-height: 1.75; max-width: 300px"
-      >
-        Manage retail, wholesale, or pharmacy from one powerful dashboard.
-      </p>
-
-      <div class="d-flex flex-column gap-2 mb-4">
-        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 13px">
-          <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width: 28px; height: 28px; min-width: 28px; background: rgba(255, 45, 107, 0.12); border: 1px solid rgba(255, 45, 107, 0.3); color: #ff2d6b; font-size: 12px;">
-            <i class="bi bi-speedometer2"></i>
-          </div>
-          Real-time sales &amp; inventory across branches
+<div class="login-page-container">
+  <div class="login-card-master shadow-lg">
+    <!-- ── LEFT SIDE: BRANDING & INFO ── -->
+    <div class="desc-panel">
+      <div class="panel-content">
+        <div class="brand-header">
+          <mat-icon class="brand-logo-icon">rocket_launch</mat-icon>
+          <h1 class="brand-name">Aidly<span>ERP</span></h1>
         </div>
-        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 13px">
-          <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width: 28px; height: 28px; min-width: 28px; background: rgba(255, 45, 107, 0.12); border: 1px solid rgba(255, 45, 107, 0.3); color: #ff2d6b; font-size: 12px;">
-            <i class="bi bi-buildings"></i>
-          </div>
-          Multi-branch management in one login
+
+        <div class="welcome-text">
+          <h2>Welcome back to your business hub.</h2>
+          <p>Manage retail, wholesale, or pharmacy from one powerful, unified dashboard.</p>
         </div>
-        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 13px">
-          <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width: 28px; height: 28px; min-width: 28px; background: rgba(255, 45, 107, 0.12); border: 1px solid rgba(255, 45, 107, 0.3); color: #ff2d6b; font-size: 12px;">
-            <i class="bi bi-shield-check"></i>
+
+        <div class="feature-rows">
+          <div class="feature-row">
+            <div class="icon-circle"><mat-icon>inventory_2</mat-icon></div>
+            <span>Real-time sales & inventory across branches</span>
           </div>
-          Role-based access &amp; full audit trail
+          <div class="feature-row">
+            <div class="icon-circle"><mat-icon>account_tree</mat-icon></div>
+            <span>Multi-branch management in one login</span>
+          </div>
+          <div class="feature-row">
+            <div class="icon-circle"><mat-icon>security</mat-icon></div>
+            <span>Role-based access & full audit trail</span>
+          </div>
+          <div class="feature-row">
+            <div class="icon-circle"><mat-icon>language</mat-icon></div>
+            <span>Bengali & English interface support</span>
+          </div>
         </div>
-        <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 13px">
-          <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width: 28px; height: 28px; min-width: 28px; background: rgba(255, 45, 107, 0.12); border: 1px solid rgba(255, 45, 107, 0.3); color: #ff2d6b; font-size: 12px;">
-            <i class="bi bi-translate"></i>
+
+        <div class="stats-footer">
+          <div class="stat-box">
+            <span class="stat-num">50+</span>
+            <span class="stat-txt">Forms</span>
           </div>
-          Bengali &amp; English interface support
+          <div class="stat-box">
+            <span class="stat-num">7</span>
+            <span class="stat-txt">Modules</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num">2-4w</span>
+            <span class="stat-txt">Go-live</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div
-      class="d-flex gap-4 pt-4"
-      style="border-top: 1px solid rgba(255, 255, 255, 0.07)"
-    >
-      <div>
-        <div class="fw-bold" style="color: #ff2d6b; font-size: 1.5rem">50+</div>
-        <div class="text-secondary" style="font-size: 10.5px">Forms &amp; Screens</div>
-      </div>
-      <div>
-        <div class="fw-bold" style="color: #ff2d6b; font-size: 1.5rem">7</div>
-        <div class="text-secondary" style="font-size: 10.5px">Core Modules</div>
-      </div>
-      <div>
-        <div class="fw-bold" style="color: #ff2d6b; font-size: 1.5rem">2–4w</div>
-        <div class="text-secondary" style="font-size: 10.5px">Go-live Time</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT -->
-  <div
-    class="flex-fill d-flex align-items-center justify-content-center p-4"
-    style="padding-top: 80px !important"
-  >
-    <div class="w-100" style="max-width: 420px">
-      <span
-        class="badge rounded-pill px-3 py-2 mb-3 d-inline-block"
-        style="
-          background: rgba(255, 45, 107, 0.12);
-          color: #ff2d6b;
-          border: 1px solid rgba(255, 45, 107, 0.3);
-          font-size: 10px;
-          letter-spacing: 0.1em;
-        "
-        >🔑 SECURE LOGIN</span
-      >
-      <h1 class="fw-bold mb-1" style="font-size: 1.8rem">
-        Sign in to AidlyERP
-      </h1>
-      <p class="text-secondary mb-4" style="font-size: 14px">
-        Enter your credentials to access your dashboard.
-      </p>
-
-      @if (lockedUntil) {
-        <div class="alert alert-danger d-flex align-items-center py-2" role="alert" style="font-size: 13px;">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <div>
-            <strong>Account Locked!</strong><br>
-            Try again in {{ lockedRemainingSeconds }} seconds.
+    <!-- ── RIGHT SIDE: LOGIN FORM ── -->
+    <div class="form-panel">
+      <div class="form-content">
+        <div class="form-header">
+          <div class="secure-badge">
+            <mat-icon>lock</mat-icon> SECURE LOGIN
           </div>
+          <h3>Sign in to AidlyERP</h3>
+          <p class="text-muted">Enter your credentials to access your dashboard.</p>
         </div>
-      }
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <!-- Username -->
-        <div class="mb-3">
-          <label for="userNameInput" class="form-label fw-semibold" style="font-size: 12.5px">Username</label>
-          <div class="input-group">
-            <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-person text-secondary"></i></span>
-            <input
-              id="userNameInput"
-              type="text"
-              class="form-control bg-body-secondary border-start-0"
-              placeholder="Enter username"
-              formControlName="userName"
-              (blur)="onUserNameBlur()"
-            />
-            @if (isLoadingMetadata) {
-              <span class="input-group-text bg-body-secondary border-start-0">
-                 <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
-              </span>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+          <!-- Username -->
+          <div class="form-group-custom">
+            <label for="login-username">Username</label>
+            <div class="input-wrapper">
+              <mat-icon class="prefix">person</mat-icon>
+              <input 
+                id="login-username"
+                type="text" 
+                formControlName="userName" 
+                placeholder="Enter username"
+                (blur)="onUserNameBlur()"
+              />
+              @if (isLoadingMetadata) {
+                <div class="spinner-inline"></div>
+              }
+            </div>
+          </div>
+
+          <!-- Company Selection (ng-select) -->
+          <div class="form-group-custom">
+            <label for="login-company">Company</label>
+            <ng-select
+              id="login-company"
+              [items]="companies"
+              bindLabel="companyName"
+              bindValue="company_no"
+              formControlName="company_no"
+              placeholder="Select Company"
+              (change)="onCompanyChange()"
+              [clearable]="false"
+              [loading]="isLoadingMetadata"
+              class="custom-ng-select"
+            >
+              <ng-template ng-option-tmp let-item="item">
+                <div class="d-flex align-items-center gap-2">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">business</mat-icon>
+                  {{item.companyName}}
+                </div>
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Branch Selection (ng-select) -->
+          <div class="form-group-custom">
+            <label for="login-branch">Branch</label>
+            <ng-select
+              id="login-branch"
+              [items]="branches"
+              bindLabel="branchName"
+              bindValue="branch_no"
+              formControlName="branch_no"
+              placeholder="Select Branch"
+              [clearable]="false"
+              class="custom-ng-select"
+            >
+              <ng-template ng-option-tmp let-item="item">
+                <div class="d-flex align-items-center gap-2">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">storefront</mat-icon>
+                  {{item.branchName}}
+                </div>
+              </ng-template>
+            </ng-select>
+            @if (loginForm.get('branch_no')?.touched && loginForm.get('branch_no')?.errors?.['required']) {
+              <div class="error-msg">
+                Branch selection is required.
+              </div>
             }
           </div>
-          @if (loginForm.get('userName')?.touched && loginForm.get('userName')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (loginForm.get('userName')?.errors?.['required']) {
-                <span>Username is required.</span>
-              }
+
+          <!-- Password -->
+          <div class="form-group-custom">
+            <div class="d-flex justify-content-between">
+              <label for="login-password">Password</label>
+              <a href="javascript:void(0)" class="forgot-pwd">Forgot password?</a>
+            </div>
+            <div class="input-wrapper">
+              <mat-icon class="prefix">lock_open</mat-icon>
+              <input 
+                id="login-password"
+                [type]="showPassword ? 'text' : 'password'" 
+                formControlName="password" 
+                placeholder="••••••••"
+              />
+              <button type="button" class="toggle-eye" (click)="showPassword = !showPassword">
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Lock Banner -->
+          @if (lockedUntil) {
+            <div class="alert alert-warning mt-3 py-2">
+              <mat-icon class="me-2" style="font-size: 18px; width: 18px; height: 18px;">timer</mat-icon>
+              Locked for {{ lockedRemainingSeconds }}s
             </div>
           }
-        </div>
 
-        <!-- Company Field -->
-        <div class="mb-3">
-          <label for="companySelect" class="form-label fw-semibold" style="font-size: 12.5px">Company</label>
-          <div class="input-group">
-            <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-building text-secondary"></i></span>
-            <select id="companySelect" class="form-select bg-body-secondary border-start-0" formControlName="company_no" (change)="onCompanyChange()">
-              <option [ngValue]="null" disabled>Auto-loaded</option>
-              @for (c of companies; track c.id) {
-                <option [value]="c.company_no || c.id">{{ c.companyName || c.name || c.id }}</option>
-              }
-            </select>
-          </div>
-        </div>
-
-        <!-- Branch Field -->
-        <div class="mb-3">
-          <label for="branchSelect" class="form-label fw-semibold" style="font-size: 12.5px">Branch</label>
-          <div class="input-group">
-            <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-shop text-secondary"></i></span>
-            <select id="branchSelect" class="form-select bg-body-secondary border-start-0" formControlName="branch_no">
-              <option [ngValue]="null" disabled>Select Branch</option>
-              @for (b of branches; track b.id) {
-                <option [value]="b.branch_no || b.id">{{ b.branchName || b.name || b.id }}</option>
-              }
-            </select>
-          </div>
-          @if (loginForm.get('branch_no')?.touched && loginForm.get('branch_no')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (loginForm.get('branch_no')?.errors?.['required']) {
-                <span>Branch is required.</span>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Password -->
-        <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <label for="liPwd" class="form-label fw-semibold mb-0" style="font-size: 12.5px">Password</label>
-            <a routerLink="/auth/forgot" class="fw-semibold text-decoration-none" style="font-size: 12px; color: #ff2d6b">Forgot password?</a>
-          </div>
-          <div class="input-group">
-            <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-lock text-secondary"></i></span>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              class="form-control bg-body-secondary border-start-0 border-end-0"
-              id="liPwd"
-              placeholder="Enter your password"
-              formControlName="password"
-            />
-            <button class="btn btn-outline-secondary border-start-0" type="button" (click)="showPassword = !showPassword">
-              <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-            </button>
-          </div>
-          @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-            <div class="text-danger small mt-1">
-              Password is required.
-            </div>
-          }
-        </div>
-
-        <button
-          class="btn w-100 fw-bold py-3 mb-3 d-flex align-items-center justify-content-center gap-2"
-          id="loginBtn"
-          type="submit"
-          [disabled]="loginForm.invalid || isLoading || lockedUntil"
-          style="background: #ff2d6b; color: #fff; border: none; font-size: 15px; box-shadow: 0 4px 18px rgba(255, 45, 107, 0.4);"
-        >
-          @if (!isLoading) {
-            <span>Sign In</span>
-          } @else {
-            <span class="spinner-border spinner-border-sm" role="status"></span>
-          }
-          
-          @if (!isLoading) {
-            <i class="bi bi-arrow-right"></i>
-          }
-        </button>
-      </form>
+          <!-- Submit -->
+          <button type="submit" class="btn-login-main" [disabled]="isLoading || loginForm.invalid">
+            @if (!isLoading) {
+              <span>Sign In <mat-icon>arrow_forward</mat-icon></span>
+            } @else {
+              <span class="spinner-border spinner-border-sm"></span>
+            }
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

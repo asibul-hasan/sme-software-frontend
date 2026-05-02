@@ -1,5 +1,20 @@
 import { Injectable } from '@angular/core';
 import { MenuItem } from '../models/menu.model';
+import { ModuleEnum } from '../../../../core/models/permission.model';
+
+export interface RawMenuForm {
+  module: string;
+  moduleIcon?: string;
+  subModule: string;
+  subModuleIcon?: string;
+  formId: string;
+  formName: string;
+  icon?: string;
+  code: string;
+  type: string;
+  badge?: string;
+  badgeColor?: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -13,9 +28,10 @@ export class MenuService {
       icon: 'corporate_fare',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Company Configuration',
+      subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'business',
+      subModuleIcon: 'business',
+      serial: 1,
     },
     {
       formId: 'SYS_1002',
@@ -24,9 +40,10 @@ export class MenuService {
       icon: 'store',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Company Configuration',
+      subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'business',
+      subModuleIcon: 'business',
+      serial: 1,
     },
     {
       formId: 'SYS_1003',
@@ -35,9 +52,10 @@ export class MenuService {
       icon: 'calendar_today',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Company Configuration',
+      subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'business',
+      subModuleIcon: 'business',
+      serial: 1,
     },
     {
       formId: 'SYS_1004',
@@ -46,9 +64,10 @@ export class MenuService {
       icon: 'payments',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Company Configuration',
+      subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'business',
+      subModuleIcon: 'business',
+      serial: 1,
     },
     {
       formId: 'SYS_1005',
@@ -57,9 +76,10 @@ export class MenuService {
       icon: 'request_quote',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Company Configuration',
+      subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'business',
+      subModuleIcon: 'business',
+      serial: 1,
     },
     {
       formId: 'SYS_1101',
@@ -68,9 +88,10 @@ export class MenuService {
       icon: 'person',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'User & Security',
+      subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'security',
+      subModuleIcon: 'security',
+      serial: 1,
     },
     {
       formId: 'SYS_1102',
@@ -79,9 +100,10 @@ export class MenuService {
       icon: 'manage_accounts',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'User & Security',
+      subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'security',
+      subModuleIcon: 'security',
+      serial: 1,
     },
     {
       formId: 'SYS_1103',
@@ -90,9 +112,10 @@ export class MenuService {
       icon: 'rule',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'User & Security',
+      subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'security',
+      subModuleIcon: 'security',
+      serial: 1,
     },
     {
       formId: 'SYS_1104',
@@ -101,9 +124,10 @@ export class MenuService {
       icon: 'map',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'User & Security',
+      subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'security',
+      subModuleIcon: 'security',
+      serial: 1,
     },
     {
       formId: 'SYS_1105',
@@ -112,9 +136,10 @@ export class MenuService {
       icon: 'history',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'User & Security',
+      subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'security',
+      subModuleIcon: 'security',
+      serial: 1,
     },
     {
       formId: 'SYS_1201',
@@ -123,9 +148,10 @@ export class MenuService {
       icon: 'list_alt',
       module: 'System Administration',
       code: 'SYS',
-      submodule: 'Menu Builder',
+      subModule: 'Menu Builder',
       moduleIcon: 'admin_panel_settings',
-      submoduleIcon: 'menu',
+      subModuleIcon: 'menu',
+      serial: 1,
     },
     {
       formId: 'INV_1001',
@@ -134,9 +160,10 @@ export class MenuService {
       icon: 'inventory_2',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Product Management',
+      subModule: 'Product Management',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'category',
+      subModuleIcon: 'category',
+      serial: 2,
     },
     {
       formId: 'INV_1002',
@@ -145,9 +172,10 @@ export class MenuService {
       icon: 'qr_code_2',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Product Management',
+      subModule: 'Product Management',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'category',
+      subModuleIcon: 'category',
+      serial: 2,
     },
     {
       formId: 'INV_1101',
@@ -156,9 +184,10 @@ export class MenuService {
       icon: 'list_alt',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Stock Initialization',
+      subModule: 'Stock Initialization',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'inventory',
+      subModuleIcon: 'inventory',
+      serial: 2,
     },
     {
       formId: 'INV_1102',
@@ -167,9 +196,10 @@ export class MenuService {
       icon: 'balance',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Stock Initialization',
+      subModule: 'Stock Initialization',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'inventory',
+      subModuleIcon: 'inventory',
+      serial: 2,
     },
     {
       formId: 'SAL_1001',
@@ -178,9 +208,10 @@ export class MenuService {
       icon: 'point_of_sale',
       module: 'Sales & POS',
       code: 'SAL',
-      submodule: 'POS',
+      subModule: 'POS',
       moduleIcon: 'point_of_sale',
-      submoduleIcon: 'shopping_cart',
+      subModuleIcon: 'shopping_cart',
+      serial: 3,
     },
     {
       formId: 'SAL_1002',
@@ -189,9 +220,10 @@ export class MenuService {
       icon: 'pause_circle',
       module: 'Sales & POS',
       code: 'SAL',
-      submodule: 'POS',
+      subModule: 'POS',
       moduleIcon: 'point_of_sale',
-      submoduleIcon: 'shopping_cart',
+      subModuleIcon: 'shopping_cart',
+      serial: 3,
     },
     {
       formId: 'SAL_1003',
@@ -200,9 +232,10 @@ export class MenuService {
       icon: 'lock',
       module: 'Sales & POS',
       code: 'SAL',
-      submodule: 'POS',
+      subModule: 'POS',
       moduleIcon: 'point_of_sale',
-      submoduleIcon: 'shopping_cart',
+      subModuleIcon: 'shopping_cart',
+      serial: 3,
     },
     {
       formId: 'SAL_1101',
@@ -211,9 +244,10 @@ export class MenuService {
       icon: 'account_circle',
       module: 'Sales & POS',
       code: 'SAL',
-      submodule: 'Customer',
+      subModule: 'Customer',
       moduleIcon: 'point_of_sale',
-      submoduleIcon: 'group',
+      subModuleIcon: 'group',
+      serial: 3,
     },
     {
       formId: 'SAL_1102',
@@ -222,9 +256,10 @@ export class MenuService {
       icon: 'payments',
       module: 'Sales & POS',
       code: 'SAL',
-      submodule: 'Customer',
+      subModule: 'Customer',
       moduleIcon: 'point_of_sale',
-      submoduleIcon: 'group',
+      subModuleIcon: 'group',
+      serial: 3,
     },
     {
       formId: 'PUR_1001',
@@ -233,9 +268,10 @@ export class MenuService {
       icon: 'supervised_user_circle',
       module: 'Procurement Management',
       code: 'PUR',
-      submodule: 'Supplier',
+      subModule: 'Supplier',
       moduleIcon: 'shopping_bag',
-      submoduleIcon: 'local_shipping',
+      subModuleIcon: 'local_shipping',
+      serial: 4,
     },
     {
       formId: 'PUR_1101',
@@ -244,9 +280,10 @@ export class MenuService {
       icon: 'shopping_cart',
       module: 'Procurement Management',
       code: 'PUR',
-      submodule: 'Purchase Workflow',
+      subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
-      submoduleIcon: 'receipt_long',
+      subModuleIcon: 'receipt_long',
+      serial: 4,
     },
     {
       formId: 'PUR_1102',
@@ -255,9 +292,10 @@ export class MenuService {
       icon: 'request_quote',
       module: 'Procurement Management',
       code: 'PUR',
-      submodule: 'Purchase Workflow',
+      subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
-      submoduleIcon: 'receipt_long',
+      subModuleIcon: 'receipt_long',
+      serial: 4,
     },
     {
       formId: 'PUR_1103',
@@ -266,9 +304,10 @@ export class MenuService {
       icon: 'keyboard_return',
       module: 'Procurement Management',
       code: 'PUR',
-      submodule: 'Purchase Workflow',
+      subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
-      submoduleIcon: 'receipt_long',
+      subModuleIcon: 'receipt_long',
+      serial: 4,
     },
     {
       formId: 'PUR_1104',
@@ -277,9 +316,10 @@ export class MenuService {
       icon: 'payments',
       module: 'Procurement Management',
       code: 'PUR',
-      submodule: 'Purchase Workflow',
+      subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
-      submoduleIcon: 'receipt_long',
+      subModuleIcon: 'receipt_long',
+      serial: 4,
     },
     {
       formId: 'FIN_1001',
@@ -288,9 +328,10 @@ export class MenuService {
       icon: 'account_tree',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Chart of Accounts',
+      subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'account_tree',
+      subModuleIcon: 'account_tree',
+      serial: 5,
     },
     {
       formId: 'FIN_1002',
@@ -299,9 +340,10 @@ export class MenuService {
       icon: 'sync_alt',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Chart of Accounts',
+      subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'account_tree',
+      subModuleIcon: 'account_tree',
+      serial: 5,
     },
     {
       formId: 'FIN_1003',
@@ -310,9 +352,10 @@ export class MenuService {
       icon: 'input',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Chart of Accounts',
+      subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'account_tree',
+      subModuleIcon: 'account_tree',
+      serial: 5,
     },
     {
       formId: 'FIN_1101',
@@ -321,9 +364,10 @@ export class MenuService {
       icon: 'payments',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Voucher System',
+      subModule: 'Voucher System',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'receipt',
+      subModuleIcon: 'receipt',
+      serial: 5,
     },
     {
       formId: 'FIN_1102',
@@ -332,9 +376,10 @@ export class MenuService {
       icon: 'account_balance_wallet',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Voucher System',
+      subModule: 'Voucher System',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'receipt',
+      subModuleIcon: 'receipt',
+      serial: 5,
     },
     {
       formId: 'FIN_1103',
@@ -343,9 +388,10 @@ export class MenuService {
       icon: 'book',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Voucher System',
+      subModule: 'Voucher System',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'receipt',
+      subModuleIcon: 'receipt',
+      serial: 5,
     },
     {
       formId: 'FIN_1104',
@@ -354,9 +400,10 @@ export class MenuService {
       icon: 'swap_vert',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Voucher System',
+      subModule: 'Voucher System',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'receipt',
+      subModuleIcon: 'receipt',
+      serial: 5,
     },
     {
       formId: 'FIN_1201',
@@ -365,9 +412,10 @@ export class MenuService {
       icon: 'category',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Expense',
+      subModule: 'Expense',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'money_off',
+      subModuleIcon: 'money_off',
+      serial: 5,
     },
     {
       formId: 'FIN_1202',
@@ -376,156 +424,184 @@ export class MenuService {
       icon: 'money_off',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Expense',
+      subModule: 'Expense',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'money_off',
+      subModuleIcon: 'money_off',
+      serial: 5,
     },
     {
-      formId: 'INV_2001',
+      formId: 'INV_2301',
       type: 'form',
       formName: 'Warehouse Setup',
       icon: 'domain',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Warehouse',
+      subModule: 'Warehouse',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'warehouse',
+      subModuleIcon: 'warehouse',
+      serial: 2,
     },
     {
-      formId: 'INV_2002',
+      formId: 'INV_2302',
       type: 'form',
       formName: 'Rack/Shelf Setup',
       icon: 'view_week',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Warehouse',
+      subModule: 'Warehouse',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'warehouse',
+      subModuleIcon: 'warehouse',
+      serial: 2,
     },
     {
-      formId: 'INV_2003',
+      formId: 'INV_2303',
       type: 'form',
       formName: 'Stock Transfer',
       icon: 'swap_horiz',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Stock Transfer',
+      subModule: 'Stock Transfer',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'local_shipping',
+      subModuleIcon: 'local_shipping',
+      serial: 2,
     },
     {
-      formId: 'INV_2004',
+      formId: 'INV_2304',
       type: 'form',
       formName: 'Batch & Expiry Management',
       icon: 'date_range',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Batch Control',
+      subModule: 'Batch Control',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'sell',
+      subModuleIcon: 'sell',
+      serial: 2,
     },
     {
-      formId: 'INV_2005',
+      formId: 'INV_2305',
       type: 'form',
       formName: 'Reorder Level Setup',
       icon: 'trending_down',
       module: 'Inventory Management',
       code: 'INV',
-      submodule: 'Reorder Control',
+      subModule: 'Reorder Control',
       moduleIcon: 'inventory_2',
-      submoduleIcon: 'shopping_cart_checkout',
+      subModuleIcon: 'shopping_cart_checkout',
+      serial: 2,
     },
     {
-      formId: 'FIN_2001',
+      formId: 'FIN_1301',
       type: 'report',
       formName: 'Branch-wise Ledger',
       icon: 'menu_book',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Branch Finance',
+      subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'store',
+      subModuleIcon: 'store',
+      serial: 5,
     },
     {
-      formId: 'FIN_2002',
+      formId: 'FIN_1302',
       type: 'form',
       formName: 'Inter Branch Transfer',
       icon: 'sync',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Branch Finance',
+      subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'store',
+      subModuleIcon: 'store',
+      serial: 5,
     },
     {
-      formId: 'FIN_2003',
+      formId: 'FIN_1303',
       type: 'report',
       formName: 'Consolidated Report Setup',
       icon: 'summarize',
       module: 'Financial Management',
       code: 'FIN',
-      submodule: 'Branch Finance',
+      subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
-      submoduleIcon: 'store',
+      subModuleIcon: 'store',
+      serial: 5,
     },
   ];
 
-  buildMenu(forms: any[]): MenuItem[] {
-    const moduleMap: any = {};
+  buildMenu(forms: RawMenuForm[]): MenuItem[] {
+    interface SubModuleMap {
+      formId: string;
+      formName: string;
+      icon: string;
+      children: MenuItem[];
+    }
+    interface ModuleMap {
+      formId: string;
+      formName: string;
+      icon: string;
+      expanded: boolean;
+      children: Record<string, SubModuleMap>;
+    }
+
+    const moduleMap: Record<string, ModuleMap> = {};
 
     forms.forEach((form) => {
+      const moduleKey = form.module || 'Unknown';
+
       // Module level
-      if (!moduleMap[form.module!]) {
-        moduleMap[form.module!] = {
-          formId: form.module,
-          formName: this.toCamelCaseRoute(form.module),
+      if (!moduleMap[moduleKey]) {
+        moduleMap[moduleKey] = {
+          formId: moduleKey,
+          formName: this.toCamelCaseRoute(moduleKey),
           icon: form.moduleIcon || 'folder',
           expanded: false,
           children: {},
         };
       }
 
-      const module = moduleMap[form.module!];
+      const module = moduleMap[moduleKey];
+      const subModuleKey = form.subModule || 'General';
 
       // Submodule level
-      if (!module.children[form.submodule!]) {
-        module.children[form.submodule!] = {
-          formId: form.submodule,
-          formName: this.toCamelCaseRoute(form.submodule),
-          icon: form.submoduleIcon || 'folder_open',
+      if (!module.children[subModuleKey]) {
+        module.children[subModuleKey] = {
+          formId: subModuleKey,
+          formName: this.toCamelCaseRoute(subModuleKey),
+          icon: form.subModuleIcon || 'folder_open',
           children: [],
         };
       }
 
       // Form level
-      module.children[form.submodule!].children.push({
+      module.children[subModuleKey].children.push({
         formId: form.formId,
         formName: this.toCamelCaseRoute(form.formName),
-        icon: form.icon,
-        route: `${this.toLowerCase(form.code)}/${form.type}/${form.formName
-          .toLowerCase()
+        icon: form.icon || 'description',
+        route: `${this.toLowerCase(form.code)}/${form.type}/${this.toLowerCase(
+          form.formName
+        )
           .replace(/[^a-z0-9\s]/g, '')
           .trim()
           .replace(/\s+/g, '-')}`,
         code: form.code,
-        type: form.type,
-        module: this.toCamelCaseRoute(form.module),
-        submodule: this.toCamelCaseRoute(form.submodule),
+        type: form.type as 'form' | 'report',
+        module: moduleKey as ModuleEnum,
+        subModule: this.toCamelCaseRoute(subModuleKey),
         badge: form.badge,
-        badgeColor: form.badgeColor,
+        badgeColor: form.badgeColor as 'primary' | 'accent' | 'warn',
       });
     });
 
     // Convert map → array
-    const menu: MenuItem[] = Object.values(moduleMap).map((module: any) => ({
-      ...module,
-      children: Object.values(module.children),
-    }));
+    const menu: MenuItem[] = Object.values(moduleMap).map((m) => ({
+      ...m,
+      children: Object.values(m.children),
+    }) as MenuItem);
 
     return menu;
   }
-  toLowerCase(value: any) {
-    return value.toLowerCase();
+
+  toLowerCase(value: string | undefined | null): string {
+    return (value || '').toLowerCase();
   }
   toCamelCaseRoute(value: string): string {
     if (!value) return '';

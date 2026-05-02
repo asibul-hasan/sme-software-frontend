@@ -8,7 +8,7 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
-import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService, ThemeService, LanguageService } from '../../../core';
 import { MenuService } from '../sidebar/services/menu-builder.service';
@@ -48,6 +48,12 @@ export class HeaderComponent implements OnInit {
   @Output() themeToggled = new EventEmitter<boolean>();
 
   // ── Signals ─────────────────────────────────────────────
+  private router = inject(Router);
+  public authService = inject(AuthService);
+  public themeService = inject(ThemeService);
+  public languageService = inject(LanguageService);
+  public menuService = inject(MenuService);
+
   breadcrumbs = signal<BreadcrumbItem[]>([{ label: 'Dashboard', url: '/' }]);
   formCode = signal<string | null>(null);
   showAiPill = signal<boolean>(true);
@@ -98,22 +104,14 @@ export class HeaderComponent implements OnInit {
 
   activeProfileTab = signal<'profile' | 'setting'>('profile');
 
-  branches = signal<{ id: string; name: string }[]>([
-    { id: '1', name: 'Head Office' },
-    { id: '2', name: 'Dhaka Branch' },
-    { id: '3', name: 'Chittagong Branch' },
-  ]);
-  selectedBranch = signal<string>('1');
+  availableBranches = this.authService.availableBranches;
+  
+  selectedBranch = computed(() => this.authService.user()?.branch_no?.toString() || '');
+  
   currentBranchName = computed(() => {
-    const b = this.branches().find((x) => x.id === this.selectedBranch());
-    return b ? b.name : 'Unknown Branch';
+    const b = this.availableBranches().find((x) => (x.branch_no || x.id)?.toString() === this.selectedBranch());
+    return b ? (b.branchName || b.name) : 'Select Branch';
   });
-
-  private router = inject(Router);
-  public authService = inject(AuthService);
-  public themeService = inject(ThemeService);
-  public languageService = inject(LanguageService);
-  public menuService = inject(MenuService);
 
   private _sidebarCollapsed = signal(false);
   isFullScreen = signal(false);
@@ -163,8 +161,8 @@ export class HeaderComponent implements OnInit {
         },
         {
           label:
-            this.menuService.toCamelCaseRoute(matchingForm.submodule) ||
-            matchingForm.submodule,
+            this.menuService.toCamelCaseRoute(matchingForm.subModule) ||
+            matchingForm.subModule,
         },
         {
           label:
@@ -219,8 +217,8 @@ export class HeaderComponent implements OnInit {
     /* open search dialog */
   }
 
-  onBranchChange(branchId: string) {
-    this.selectedBranch.set(branchId);
+  onBranchChange(branchId: number) {
+    this.authService.switchBranch(branchId);
   }
 
   onNotifications() {
@@ -237,7 +235,6 @@ export class HeaderComponent implements OnInit {
 
   onLogout() {
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 
   onAiClick() {

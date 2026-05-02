@@ -1,17 +1,31 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { AuthService } from '../../../core';
 import { ToastrService } from 'ngx-toastr';
-import { AuthDataService, Company, Branch, UserContextResponse } from '../services/data.service';
+import {
+  AuthDataService,
+  Company,
+  Branch,
+  UserContextResponse,
+} from '../services/data.service';
 import { catchError, of } from 'rxjs';
+
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './login.component.html'
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, NgSelectModule, MatIconModule],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
@@ -34,14 +48,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     userName: ['', Validators.required],
     company_no: [{ value: null, disabled: true }, Validators.required],
     branch_no: [null, Validators.required],
-    password: ['', Validators.required]
+    password: ['', Validators.required],
   });
 
   isLoading = false;
   isLoadingMetadata = false;
 
   ngOnInit() {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.returnUrl =
+      this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
   onUserNameBlur() {
@@ -55,48 +70,43 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.companies = [];
       this.branches = [];
 
-      this.authDataService.getUserContexts(userName).pipe(
-        catchError(() => of([]))
-      ).subscribe((contexts: UserContextResponse[]) => {
-        this.isLoadingMetadata = false;
-        this.contexts = contexts;
-        
-        if (this.contexts && this.contexts.length > 0) {
-          this.companies = this.contexts.map(c => ({
-            id: c.companyNo,
-            company_no: c.companyNo,
-            companyName: c.companyName
-          }));
+      this.authDataService
+        .getUserContexts(userName)
+        .pipe(catchError(() => of([])))
+        .subscribe((contexts: UserContextResponse[]) => {
+          this.isLoadingMetadata = false;
+          this.contexts = contexts;
 
-          const firstCompany = this.companies[0].company_no || this.companies[0].id;
-          this.loginForm.get('company_no')?.setValue(firstCompany);
-          
-          if (this.companies.length > 1) {
+          if (this.contexts && this.contexts.length > 0) {
+            this.companies = this.contexts.map((c) => ({
+              id: c.company_no,
+              company_no: c.company_no,
+              companyName: c.company_name,
+            }));
+
+            const firstCompany = this.companies[0].company_no || this.companies[0].id;
+            this.loginForm.get('company_no')?.setValue(firstCompany);
             this.loginForm.get('company_no')?.enable();
+            
+            this.onCompanyChange();
           }
-          
-          this.onCompanyChange();
-        }
-      });
+        });
     }
   }
 
   onCompanyChange() {
     const companyNo = Number(this.loginForm.get('company_no')?.value);
-    const context = this.contexts.find(c => c.companyNo === companyNo);
-    
+    const context = this.contexts.find((c) => c.company_no === companyNo);
+
     if (context) {
-      this.branches = context.branches.map(b => ({
-        id: b.branchNo,
-        branch_no: b.branchNo,
-        branchName: b.branchName
+      this.branches = context.branches.map((b) => ({
+        id: b.branch_no,
+        branch_no: b.branch_no,
+        branchName: b.branch_name,
       }));
 
-      if (this.branches && this.branches.length > 0) {
-        this.loginForm.get('branch_no')?.setValue(this.branches[0].branch_no || this.branches[0].id);
-      } else {
-        this.loginForm.get('branch_no')?.setValue(null);
-      }
+      // We don't auto-select the branch anymore, user must select it
+      this.loginForm.get('branch_no')?.setValue(null);
     } else {
       this.branches = [];
       this.loginForm.get('branch_no')?.setValue(null);
@@ -107,32 +117,41 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.lockedUntil = null;
-      
+
       const formValue = this.loginForm.getRawValue();
       const payload = {
-        userName: formValue.userName,
+        user_name: formValue.userName,
         password: formValue.password,
-        companyNo: formValue.company_no,
-        branchNo: formValue.branch_no
+        company_no: Number(formValue.company_no),
+        branch_no: Number(formValue.branch_no),
       };
-      
+
       this.authService.login(payload).subscribe({
         next: () => {
           this.isLoading = false;
+          // Save the current branches list to context so Header can show them
+          this.authService.setAvailableBranches(this.branches);
+          
+          console.log(this.returnUrl);
           this.toastr.success('Logged in successfully', 'Welcome');
           this.router.navigateByUrl(this.returnUrl);
         },
-        error: (err: { error?: { locked_until?: string, message?: string } }) => {
+        error: (err: {
+          error?: { locked_until?: string; message?: string };
+        }) => {
           this.isLoading = false;
-          
+
           if (err.error && err.error.locked_until) {
-             this.lockedUntil = err.error.locked_until;
-             this.startLockTimer();
+            this.lockedUntil = err.error.locked_until;
+            this.startLockTimer();
           } else {
-             this.toastr.error(err.error?.message || 'Invalid credentials', 'Login Failed');
+            this.toastr.error(
+              err.error?.message || 'Invalid credentials',
+              'Login Failed',
+            );
           }
           console.error('Login error', err);
-        }
+        },
       });
     } else {
       this.loginForm.markAllAsTouched();
@@ -140,23 +159,23 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   startLockTimer() {
-     if (this.timer) clearInterval(this.timer);
-     const lockedDate = new Date(this.lockedUntil as string).getTime();
-     
-     this.timer = setInterval(() => {
-        const now = new Date().getTime();
-        const diff = lockedDate - now;
-        if (diff <= 0) {
-           if (this.timer) clearInterval(this.timer);
-           this.lockedRemainingSeconds = 0;
-           this.lockedUntil = null;
-        } else {
-           this.lockedRemainingSeconds = Math.floor(diff / 1000);
-        }
-     }, 1000);
+    if (this.timer) clearInterval(this.timer);
+    const lockedDate = new Date(this.lockedUntil as string).getTime();
+
+    this.timer = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = lockedDate - now;
+      if (diff <= 0) {
+        if (this.timer) clearInterval(this.timer);
+        this.lockedRemainingSeconds = 0;
+        this.lockedUntil = null;
+      } else {
+        this.lockedRemainingSeconds = Math.floor(diff / 1000);
+      }
+    }, 1000);
   }
 
   ngOnDestroy() {
-     if (this.timer) clearInterval(this.timer);
+    if (this.timer) clearInterval(this.timer);
   }
 }

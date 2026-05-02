@@ -5,6 +5,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  inject,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem } from './models/menu.model';
@@ -20,6 +21,10 @@ import { SharedModule } from '../../../shared';
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
+  private permissionService = inject(PermissionService);
+  private router = inject(Router);
+  private service = inject(MenuService);
+
   menuItems = signal<MenuItem[]>([]);
 
   @Input() set collapsed(val: boolean) {
@@ -81,11 +86,7 @@ export class SidebarComponent {
     return filterNodes(items);
   });
 
-  constructor(
-    private permissionService: PermissionService,
-    private router: Router,
-    private service: MenuService,
-  ) {
+  constructor() {
     const builtMap = this.service.buildMenu(this.service.menu);
     // Restore expanded structures from localStorage
     const savedStr = localStorage.getItem('sme_sidebar_expanded');

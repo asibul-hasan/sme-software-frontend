@@ -2,13 +2,13 @@ import { ModuleEnum } from '../../../../core/models/permission.model';
 
 export interface MenuItem {
     formId: string;
-    type: 'form'| 'report'
+    type?: 'form'| 'report'
     formName: string;
     icon: string;
     route?: string;
     module?: ModuleEnum;
     code?: string;
-    submodule?: string;
+    subModule?: string;
     children?: MenuItem[];
     badge?: string;
     badgeColor?: 'primary' | 'accent' | 'warn';

@@ -1,20 +1,34 @@
 (function (window) {
   window.__env = window.__env || {};
 
-  // Base API URL
-  window.__env.apiUrl = 'http://localhost:5230/api';
+  // Retrieve URLs from config.js source
+  const config = window.__config || {};
 
-  // Specific ERP Service URLs
-  window.__env.erpUrls = {
-    adminApiUrl: 'http://localhost:5230/api/admin',
-    coreApiUrl: 'http://localhost:5230/api/core',
-    authApiUrl: 'http://localhost:5230/api/auth',
-    sysApiUrl: 'http://localhost:5230/api/sys',
-    finApiUrl: 'http://localhost:5230/api/fin',
-    hrApiUrl: 'http://localhost:5230/api/hr',
-    invApiUrl: 'http://localhost:5230/api/inv',
-    purApiUrl: 'http://localhost:5230/api/pur',
-    salApiUrl: 'http://localhost:5230/api/sal',
-    rptApiUrl: 'http://localhost:5230/api/rpt',
-  };
+  // Restore fallbacks to prevent 'undefined' which causes relative path issues (like 4202/undefined)
+  const localUrl = config.apiUrlLocal || 'http://localhost:8080/api';
+  const liveUrl = config.apiUrlLive || 'https://sme-software-backend.onrender.com/api';
+
+  console.log('Environment Debug: Config loaded:', config);
+
+  // 1. Set a "Predictive" default (Live)
+  window.__env.apiUrl = liveUrl;
+
+  // 2. Perform a "Connection Check" to Local API
+  console.log('Environment: Checking connectivity to Local API...');
+
+  fetch(localUrl + '/auth/contexts?userName=ping', {
+    method: 'GET',
+    mode: 'no-cors',
+    cache: 'no-cache',
+  })
+    .then(() => {
+      window.__env.apiUrl = localUrl;
+      console.log('Environment: Local API detected. Switching to:', localUrl);
+    })
+    .catch(() => {
+      window.__env.apiUrl = liveUrl;
+      console.log('Environment: Local API unreachable. Using Live:', liveUrl);
+    });
+
+  window.__env.enableDebug = true;
 })(this);

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfigService } from '../../../core/services/app-config.service';
 import { IPermissionConfig } from '../../../core/models/permission.model';
+import { User } from '../../../core/models/user.model';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -12,26 +13,17 @@ export interface ApiResponse<T> {
 }
 
 export interface LoginRequest {
-  userName: string;
+  user_name: string;
   password: string;
-  companyNo?: number;
-  branchNo?: number;
+  company_no?: number;
+  branch_no?: number;
 }
 
 export interface RefreshTokenRequest {
-  refreshToken: string;
+  refresh_token: string;
 }
 
-export interface User {
-  id: number;
-  name: string;
-  email?: string;
-  company_id: number;
-  branch_id?: number;
-  phone?: string;
-  designation?: string;
-  branch_ids?: number[];
-}
+// User interface removed - now imported from core/models
 
 export interface Company {
   id?: number;
@@ -60,21 +52,21 @@ export interface FormPermissionData {
 }
 
 export interface UserContextResponse {
-  companyNo: number;
-  companyName: string;
+  company_no: number;
+  company_name: string;
   branches: Array<{
-    branchNo: number;
-    branchName: string;
+    branch_no: number;
+    branch_name: string;
   }>;
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  userName: string;
-  userNo: number;
-  companyNo: number;
-  branchNo: number;
+  access_token: string;
+  refresh_token: string;
+  user_name: string;
+  user_no: number;
+  company_no: number;
+  branch_no: number;
   user?: User; 
   permissions?: IPermissionConfig;
   menu?: unknown[];
@@ -84,7 +76,7 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password?: string;
-  company_id: number;
+  company_no: number;
   phone?: string;
   designation?: string;
   branch_ids?: number[];

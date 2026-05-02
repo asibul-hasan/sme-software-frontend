@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import * as CryptoJS from 'crypto-js';
 import { globalConstants } from '../constants/global.constants';
-import { User } from '../../features/auth/services/data.service';
+import { User } from '../models/user.model';
 import { IPermissionConfig } from '../models/permission.model';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +13,7 @@ export class AuthContextService {
   user = signal<User | null>(null);
   permissions = signal<IPermissionConfig | null>(null);
   menu = signal<unknown[]>([]);
+  availableBranches = signal<import('../../features/auth/services/data.service').Branch[]>([]);
 
   // Computed state
   isAuthenticated = computed(() => !!this.user());
@@ -70,16 +71,23 @@ export class AuthContextService {
     }
   }
 
+  setAvailableBranches(branches: import('../../features/auth/services/data.service').Branch[]) {
+    this.availableBranches.set(branches);
+    this.encryptAndStore('sme_available_branches', branches);
+  }
+
   // Load state from local storage on initialization
   loadFromStorage(): boolean {
     const cachedUser = this.decryptAndRetrieve<User>(globalConstants.storageKeys.userData);
     const cachedPerms = this.decryptAndRetrieve<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
     const cachedMenu = this.decryptAndRetrieve<unknown[]>(globalConstants.storageKeys.userMenu);
+    const cachedBranches = this.decryptAndRetrieve<any[]>('sme_available_branches');
 
     if (cachedUser) {
       this.user.set(cachedUser);
       this.permissions.set(cachedPerms || null);
       this.menu.set(cachedMenu || []);
+      this.availableBranches.set(cachedBranches || []);
       return true;
     }
     return false;
@@ -89,8 +97,10 @@ export class AuthContextService {
     this.user.set(null);
     this.permissions.set(null);
     this.menu.set([]);
+    this.availableBranches.set([]);
     localStorage.removeItem(globalConstants.storageKeys.userData);
     localStorage.removeItem(globalConstants.storageKeys.userPermissions);
     localStorage.removeItem(globalConstants.storageKeys.userMenu);
+    localStorage.removeItem('sme_available_branches');
   }
 }

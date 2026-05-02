@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, tap, of, catchError } from 'rxjs';
-import { LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService, User } from '../../features/auth/services/data.service';
+import { LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService, Branch } from '../../features/auth/services/data.service';
+import { User } from '../models/user.model';
 import { PermissionService } from './permission.service';
 import { StorageService } from './storage.service';
 import { AuthContextService } from './auth-context.service';
@@ -12,10 +14,12 @@ export class AuthService {
   private permissionService = inject(PermissionService);
   private storageService = inject(StorageService);
   private authContext = inject(AuthContextService);
+  private router = inject(Router);
 
   // Expose authentication state as a signal
   public isAuthenticated = this.authContext.isAuthenticated;
   public user = this.authContext.user;
+  public availableBranches = this.authContext.availableBranches;
 
   getUser() {
     return this.authContext.user;
@@ -65,7 +69,7 @@ export class AuthService {
       return of(null);
     }
 
-    return this.authDataService.refresh({ refreshToken }).pipe(
+    return this.authDataService.refresh({ refresh_token: refreshToken }).pipe(
       tap((response: LoginResponse) => {
         this.setSession(response);
       }),
@@ -87,10 +91,14 @@ export class AuthService {
   switchBranch(branchId: number) {
     const user = this.authContext.user();
     if (user) {
-      const updatedUser = { ...user, branch_id: branchId };
+      const updatedUser = { ...user, branch_no: branchId };
       this.authContext.user.set(updatedUser);
       this.authContext.encryptAndStore(globalConstants.storageKeys.userData, updatedUser);
     }
+  }
+
+  setAvailableBranches(branches: Branch[]) {
+    this.authContext.setAvailableBranches(branches);
   }
 
   logout() {
@@ -98,18 +106,19 @@ export class AuthService {
     this.storageService.removeItem(globalConstants.storageKeys.refreshToken);
     this.authContext.clear();
     this.permissionService.clearPermissions();
+    this.router.navigate(['/auth/login']);
   }
 
   private setSession(response: LoginResponse) {
-    this.storageService.setItem(globalConstants.storageKeys.accessToken, response.accessToken);
-    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refreshToken);
+    this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token);
+    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
     
     // Only update context if user/permissions/menu are present (prevents clearing state on refresh)
-    const user = response.user || (response.userNo ? {
-      id: response.userNo,
-      name: response.userName,
-      company_id: response.companyNo,
-      branch_id: response.branchNo
+    const user = response.user || (response.user_no ? {
+      user_no: response.user_no,
+      name: response.user_name,
+      company_no: response.company_no,
+      branch_no: response.branch_no
     } : null);
 
     this.authContext.populateFromLogin(user, response.permissions || null, response.menu || []);

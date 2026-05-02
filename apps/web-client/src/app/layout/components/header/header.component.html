@@ -7,48 +7,39 @@
       (click)="onToggleSidebar()"
       title="Toggle Sidebar"
     >
-      <mat-icon>menu</mat-icon
-      >
+      <mat-icon>menu</mat-icon>
     </button>
 
     <div class="d-flex align-items-center gap-1 text-nowrap overflow-hidden">
-      <ng-container
-        *ngFor="let crumb of breadcrumbs(); let last = last; let first = first"
-      >
-        <ng-container *ngIf="!last">
-          <span class="crumb-link" [routerLink]="crumb.url">{{
+      @for (
+        crumb of breadcrumbs();
+        track crumb.label;
+        let last = $last;
+        let first = $first
+      ) {
+        @if (!last) {
+          <a class="crumb-link" [routerLink]="crumb.url">{{
             crumb.label | translate
-          }}</span>
+          }}</a>
           <span class="sep">›</span>
-        </ng-container>
-        <ng-container *ngIf="last">
+        } @else {
           <span class="current">{{ crumb.label | translate }}</span>
-          <span class="form-chip" *ngIf="formCode()">{{ formCode() }}</span>
-        </ng-container>
-      </ng-container>
+          @if (formCode()) {
+            <span class="form-chip">{{ formCode() }}</span>
+          }
+        }
+      }
     </div>
   </div>
 
   <!-- Right: Actions -->
   <div class="d-flex align-items-center gap-2 flex-shrink-0">
-    <!-- AI Assistant Pill -->
-    <!-- <div class="ai-pill" (click)="onAiClick()" *ngIf="showAiPill()">
-      <span class="ai-dot ai-dot-blink"></span>
-      <span>AI Assistant</span>
-    </div> -->
-
-    <!-- Search -->
-    <!-- <button class="top-btn" title="Search" (click)="onSearch()">
-      <mat-icon style="font-size:17px;width:17px;height:17px;">search</mat-icon>
-    </button> -->
-
     <!-- Quick Actions -->
     <button
       class="top-btn d-none d-lg-flex align-items-center justify-content-center"
       title="Quick Actions"
     >
-      <mat-icon>bolt</mat-icon
-      >
+      <mat-icon>bolt</mat-icon>
     </button>
 
     <!-- Full Screen -->
@@ -63,12 +54,15 @@
     </button>
 
     <!-- Branch switcher -->
-    <div
-      class="user-card branch-sw d-flex align-items-center justify-content-between gap-1"
+    <button
+      class="user-card branch-sw d-flex align-items-center justify-content-between gap-1 border-0 bg-transparent"
       [matMenuTriggerFor]="branchMenu"
       title="Switch Branch"
     >
-      <div class="d-flex align-items-center gap-1 overflow-hidden" style="min-width: 0;">
+      <div
+        class="d-flex align-items-center gap-1 overflow-hidden"
+        style="min-width: 0"
+      >
         <mat-icon class="branch-icon">store</mat-icon>
         <div class="user-info text-truncate">
           <div class="user-name text-truncate">
@@ -76,23 +70,29 @@
           </div>
         </div>
       </div>
-      <mat-icon class="chevron-icon">
-        expand_more
-      </mat-icon>
-    </div>
+      <mat-icon class="chevron-icon">expand_more</mat-icon>
+    </button>
 
     <mat-menu #branchMenu="matMenu" class="custom-mat-menu">
-      <button
-        mat-menu-item
-        *ngFor="let branch of branches()"
-        (click)="onBranchChange(branch.id)"
-        [ngClass]="{
-          'mdc-list-item--selected': branch.id === selectedBranch(),
-          'mat-mdc-option-active': branch.id === selectedBranch(),
-        }"
-      >
-        <span>{{ branch.name }}</span>
-      </button>
+      @for (
+        branch of availableBranches();
+        track branch.branch_no || branch.id
+      ) {
+        <button
+          mat-menu-item
+          (click)="onBranchChange((branch.branch_no || branch.id) || 0)"
+          [ngClass]="{
+            'mdc-list-item--selected':
+              ((branch.branch_no || branch.id) || 0).toString() ===
+              selectedBranch(),
+            'mat-mdc-option-active':
+              ((branch.branch_no || branch.id) || 0).toString() ===
+              selectedBranch(),
+          }"
+        >
+          <span>{{ branch.branchName || branch.name }}</span>
+        </button>
+      }
     </mat-menu>
 
     <!-- Notifications -->
@@ -101,9 +101,10 @@
       title="Notifications"
       [matMenuTriggerFor]="notifMenu"
     >
-      <mat-icon>notifications</mat-icon
-      >
-      <span class="notif-badge" *ngIf="notificationCount() > 0"></span>
+      <mat-icon>notifications</mat-icon>
+      @if (notificationCount() > 0) {
+        <span class="notif-badge"></span>
+      }
     </button>
 
     <!-- Theme Toggle -->
@@ -112,14 +113,12 @@
       title="Toggle Theme"
       (click)="onToggleTheme()"
     >
-      <mat-icon>
-        {{ isDark() ? 'light_mode' : 'dark_mode' }}
-      </mat-icon>
+      <mat-icon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </button>
 
     <!-- User Card -->
-    <div
-      class="user-card d-flex align-items-center gap-2"
+    <button
+      class="user-card d-flex align-items-center gap-2 border-0 bg-transparent"
       [matMenuTriggerFor]="userProfileMenu"
     >
       <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
@@ -127,15 +126,11 @@
         <div class="user-name">{{ userName() }}</div>
         <div class="user-role">{{ userRole() }}</div>
       </div>
-      <mat-icon class="chevron-icon">
-        expand_more
-      </mat-icon>
-    </div>
+      <mat-icon class="chevron-icon">expand_more</mat-icon>
+    </button>
   </div>
 
-  <!-- ============================================== -->
-  <!-- NOTIFICATIONS MENU                             -->
-  <!-- ============================================== -->
+  <!-- NOTIFICATIONS MENU -->
   <mat-menu
     #notifMenu="matMenu"
     class="custom-mat-menu notif-menu-panel"
@@ -144,50 +139,46 @@
     <div
       class="notif-header d-flex align-items-center justify-content-between"
       (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
     >
       <span class="notif-title">Notification</span>
       <mat-icon class="notif-read-all">check_circle_outline</mat-icon>
     </div>
 
     <div class="notif-list">
-      <div
-        class="notif-item d-flex align-items-start"
-        *ngFor="let item of notifications()"
-        mat-menu-item
-      >
-        <div
-          class="notif-icon-wrapper"
-          [style.background]="item.bgColor"
-          [style.color]="item.color"
-        >
-          <mat-icon>{{ item.icon }}</mat-icon>
-        </div>
-        <div class="notif-content flex-grow-1 overflow-hidden">
-          <div class="d-flex justify-content-between align-items-baseline mb-1">
-            <div class="notif-text text-truncate">
-              <span class="fw-bold">{{ item.title }}</span> {{ item.text }}
+      @for (item of notifications(); track item.id) {
+        <button mat-menu-item class="notif-item d-flex align-items-start">
+          <div
+            class="notif-icon-wrapper"
+            [style.background]="item.bgColor"
+            [style.color]="item.color"
+          >
+            <mat-icon>{{ item.icon }}</mat-icon>
+          </div>
+          <div class="notif-content flex-grow-1 overflow-hidden">
+            <div
+              class="d-flex justify-content-between align-items-baseline mb-1"
+            >
+              <div class="notif-text text-truncate">
+                <span class="fw-bold">{{ item.title }}</span> {{ item.text }}
+              </div>
+              <span class="notif-time flex-shrink-0 ms-2">{{ item.time }}</span>
             </div>
-            <span class="notif-time flex-shrink-0 ms-2">{{ item.time }}</span>
+            @if (item.subtext) {
+              <div class="notif-subtext text-truncate">{{ item.subtext }}</div>
+            }
           </div>
-          <div class="notif-subtext text-truncate" *ngIf="item.subtext">
-            {{ item.subtext }}
-          </div>
-        </div>
-      </div>
+        </button>
+      }
     </div>
 
-    <div class="notif-footer text-center" mat-menu-item>
-      <a
-        href="javascript:void(0)"
-        class="text-primary text-decoration-none fw-medium"
-        >View all</a
-      >
-    </div>
+    <button class="notif-footer text-center border-0 bg-transparent w-100" mat-menu-item>
+      <span class="text-primary fw-medium">View all</span>
+    </button>
   </mat-menu>
 
-  <!-- ============================================== -->
-  <!-- USER PROFILE MENU                              -->
-  <!-- ============================================== -->
+  <!-- USER PROFILE MENU -->
   <mat-menu
     #userProfileMenu="matMenu"
     class="custom-mat-menu profile-menu-panel"
@@ -196,6 +187,8 @@
     <div
       class="profile-header d-flex align-items-center mb-2"
       (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
     >
       <div class="profile-ava d-grid me-3">{{ userInitials() }}</div>
       <div class="profile-info flex-grow-1">
@@ -207,60 +200,53 @@
       </button>
     </div>
 
-    <div class="profile-tabs d-flex mb-2" (click)="$event.stopPropagation()">
-      <div
-        class="profile-tab flex-fill text-center"
+    <div
+      class="profile-tabs d-flex mb-2"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+    >
+      <button
+        class="profile-tab flex-fill text-center border-0 bg-transparent"
         [class.active]="activeProfileTab() === 'profile'"
         (click)="activeProfileTab.set('profile')"
       >
-        <mat-icon class="tab-icon">person_outline</mat-icon
-        >
-        Profile
-      </div>
-      <div
-        class="profile-tab flex-fill text-center"
+        <mat-icon class="tab-icon">person_outline</mat-icon> Profile
+      </button>
+      <button
+        class="profile-tab flex-fill text-center border-0 bg-transparent"
         [class.active]="activeProfileTab() === 'setting'"
         (click)="activeProfileTab.set('setting')"
       >
-        <mat-icon class="tab-icon">settings</mat-icon
-        >
-        Setting
-      </div>
+        <mat-icon class="tab-icon">settings</mat-icon> Settings
+      </button>
     </div>
 
     <div class="profile-menu-list pb-2">
-      <!-- These only show if profile tab is selected, as per typical design, or we just render them statically -->
-      <ng-container *ngIf="activeProfileTab() === 'profile'">
+      @if (activeProfileTab() === 'profile') {
         <button mat-menu-item class="profile-menu-item">
-          <mat-icon>edit</mat-icon>
-          <span>Edit Profile</span>
+          <mat-icon>edit</mat-icon><span>Edit Profile</span>
         </button>
         <button mat-menu-item class="profile-menu-item">
-          <mat-icon>person_outline</mat-icon>
-          <span>View Profile</span>
+          <mat-icon>person_outline</mat-icon><span>View Profile</span>
         </button>
         <button mat-menu-item class="profile-menu-item">
-          <mat-icon>list_alt</mat-icon>
-          <span>Social Profile</span>
+          <mat-icon>list_alt</mat-icon><span>Social Profile</span>
         </button>
         <button mat-menu-item class="profile-menu-item">
-          <mat-icon>account_balance_wallet</mat-icon>
-          <span>Billing</span>
+          <mat-icon>account_balance_wallet</mat-icon><span>Billing</span>
         </button>
         <button mat-menu-item class="profile-menu-item" (click)="onLanguage()">
-          <mat-icon>translate</mat-icon>
-          <span>Change Language</span>
+          <mat-icon>translate</mat-icon><span>Change Language</span>
         </button>
         <button mat-menu-item class="profile-menu-item" (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
+          <mat-icon>logout</mat-icon><span>Logout</span>
         </button>
-      </ng-container>
-      <ng-container *ngIf="activeProfileTab() === 'setting'">
+      } @else {
         <div class="px-3 py-2 text-center text-secondary small">
           Settings goes here.
         </div>
-      </ng-container>
+      }
     </div>
   </mat-menu>
 </header>

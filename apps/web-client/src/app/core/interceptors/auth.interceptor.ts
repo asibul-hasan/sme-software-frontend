@@ -22,9 +22,9 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     if (user) {
-      if (user.company_id) headers['X-Company-No'] = user.company_id.toString();
-      if (user.branch_id) headers['X-Branch-No'] = user.branch_id.toString();
-      if (user.id) headers['X-User-No'] = user.id.toString();
+      if (user.company_no) headers['X-Company-No'] = user.company_no.toString();
+      if (user.branch_no) headers['X-Branch-No'] = user.branch_no.toString();
+      if (user.user_no) headers['X-User-No'] = user.user_no.toString();
     }
     
     const authReq = req.clone({ setHeaders: headers });
@@ -46,9 +46,9 @@ export class AuthInterceptor implements HttpInterceptor {
     };
 
     if (user) {
-      if (user.company_id) headers['X-Company-No'] = user.company_id.toString();
-      if (user.branch_id) headers['X-Branch-No'] = user.branch_id.toString();
-      if (user.id) headers['X-User-No'] = user.id.toString();
+      if (user.company_no) headers['X-Company-No'] = user.company_no.toString();
+      if (user.branch_no) headers['X-Branch-No'] = user.branch_no.toString();
+      if (user.user_no) headers['X-User-No'] = user.user_no.toString();
     }
 
     return request.clone({ setHeaders: headers });
@@ -62,7 +62,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return this.authService.refreshToken().pipe(
         switchMap((response: LoginResponse | null) => {
           this.isRefreshing = false;
-          const accessToken = response?.accessToken || '';
+          const accessToken = response?.access_token || '';
           this.refreshTokenSubject.next(accessToken);
           return next.handle(this.addToken(request, accessToken));
         }),

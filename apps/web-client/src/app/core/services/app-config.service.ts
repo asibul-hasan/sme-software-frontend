@@ -1,27 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+
+interface EnvConfig {
+  apiUrlLocal: string;
+  apiUrlLive: string;
+  enableDebug?: boolean;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppConfigService {
-  private config: any = {};
-
-  constructor(private http: HttpClient) {}
-
-  async loadConfig(): Promise<any> {
-    try {
-      const data = await firstValueFrom(this.http.get('/assets/config.json'));
-      this.config = data;
-      return this.config;
-    } catch (err) {
-      console.error('Failed to load configuration from /assets/config.json', err);
-      return {};
-    }
+  get apiUrl(): string {
+    const env = (window as any).__env;
+    return env?.apiUrl;
   }
 
-  get apiUrl(): string {
-    return this.config.apiUrl || '';
+  get production(): boolean {
+    return window.location.hostname !== 'localhost';
   }
 }
