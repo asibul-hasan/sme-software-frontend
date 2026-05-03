@@ -139,6 +139,11 @@
                 "node_modules/bootstrap/dist/css/bootstrap.min.css",
                 "apps/web-client/src/assets/styles/styles.scss"
               ],
+              "stylePreprocessorOptions": {
+                "includePaths": [
+                  "apps/web-client/src/assets/styles"
+                ]
+              },
               "scripts": [
                 "node_modules/bootstrap/dist/js/bootstrap.js"
               ]
@@ -239,5 +244,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1777742773293
+  "computedAt": 1777825482106
 }

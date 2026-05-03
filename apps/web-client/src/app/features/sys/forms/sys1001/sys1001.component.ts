@@ -11,7 +11,6 @@ import { sysConstants } from '../../constants/sys.constants';
   standalone: true,
   imports: [SharedModule],
   templateUrl: './sys1001.component.html',
-  styleUrls: ['./sys1001.component.scss'],
 })
 export class Sys1001Component implements OnInit {
   formdata!: FormGroup;

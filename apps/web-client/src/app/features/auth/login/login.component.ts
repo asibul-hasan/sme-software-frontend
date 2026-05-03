@@ -23,7 +23,13 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, NgSelectModule, MatIconModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    MatIconModule,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -43,6 +49,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   lockedRemainingSeconds = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private returnUrl = '/dashboard';
+  currentYear = new Date().getFullYear();
 
   loginForm: FormGroup = this.fb.group({
     userName: ['', Validators.required],
@@ -84,10 +91,11 @@ export class LoginComponent implements OnInit, OnDestroy {
               companyName: c.company_name,
             }));
 
-            const firstCompany = this.companies[0].company_no || this.companies[0].id;
+            const firstCompany =
+              this.companies[0].company_no || this.companies[0].id;
             this.loginForm.get('company_no')?.setValue(firstCompany);
             this.loginForm.get('company_no')?.enable();
-            
+
             this.onCompanyChange();
           }
         });
@@ -131,7 +139,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           // Save the current branches list to context so Header can show them
           this.authService.setAvailableBranches(this.branches);
-          
+
           console.log(this.returnUrl);
           this.toastr.success('Logged in successfully', 'Welcome');
           this.router.navigateByUrl(this.returnUrl);

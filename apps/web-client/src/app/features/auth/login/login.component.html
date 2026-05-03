@@ -1,173 +1,634 @@
-<div class="login-page-container">
-  <div class="login-card-master shadow-lg">
-    <!-- ── LEFT SIDE: BRANDING & INFO ── -->
-    <div class="desc-panel">
-      <div class="panel-content">
-        <div class="brand-header">
-          <mat-icon class="brand-logo-icon">rocket_launch</mat-icon>
-          <h1 class="brand-name">Aidly<span>ERP</span></h1>
-        </div>
+<section class="min-vh-100 d-flex align-items-center py-4 py-xl-5 login-page">
+  <div class="container">
+    <div class="row gy-4 align-items-center justify-content-center">
+      <!-- ══ LEFT: BRANDING (hidden on mobile) ══ -->
+      <div class="col-12 col-md-6 col-xl-7 d-none d-md-block">
+        <div class="d-flex justify-content-center">
+          <div class="col-12 col-xl-9">
+            <!-- Logo -->
+            <div class="d-flex align-items-center gap-2 mb-4">
+              <mat-icon
+                style="
+                  font-size: 28px;
+                  width: 28px;
+                  height: 28px;
+                  color: var(--indigo);
+                "
+                >rocket_launch</mat-icon
+              >
+              <span
+                style="
+                  font-size: 1.55rem;
+                  font-weight: 800;
+                  color: #fff;
+                  letter-spacing: -0.3px;
+                "
+              >
+                Aidly<span style="color: var(--indigo)">ERP</span>
+              </span>
+            </div>
 
-        <div class="welcome-text">
-          <h2>Welcome back to your business hub.</h2>
-          <p>Manage retail, wholesale, or pharmacy from one powerful, unified dashboard.</p>
-        </div>
+            <hr style="border-color: rgba(255, 255, 255, 0.1)" class="mb-4" />
 
-        <div class="feature-rows">
-          <div class="feature-row">
-            <div class="icon-circle"><mat-icon>inventory_2</mat-icon></div>
-            <span>Real-time sales & inventory across branches</span>
-          </div>
-          <div class="feature-row">
-            <div class="icon-circle"><mat-icon>account_tree</mat-icon></div>
-            <span>Multi-branch management in one login</span>
-          </div>
-          <div class="feature-row">
-            <div class="icon-circle"><mat-icon>security</mat-icon></div>
-            <span>Role-based access & full audit trail</span>
-          </div>
-          <div class="feature-row">
-            <div class="icon-circle"><mat-icon>language</mat-icon></div>
-            <span>Bengali & English interface support</span>
-          </div>
-        </div>
+            <h2 class="h1 fw-bold mb-3" style="color: #fff; line-height: 1.2">
+              Your business.<br />One unified hub.
+            </h2>
+            <p
+              class="lead mb-5"
+              style="color: var(--sidebar-text); opacity: 0.8; font-size: 15px"
+            >
+              Retail, wholesale, and pharmacy — all managed from a single,
+              powerful dashboard.
+            </p>
 
-        <div class="stats-footer">
-          <div class="stat-box">
-            <span class="stat-num">50+</span>
-            <span class="stat-txt">Forms</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-num">7</span>
-            <span class="stat-txt">Modules</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-num">2-4w</span>
-            <span class="stat-txt">Go-live</span>
+            <!-- Feature list -->
+            <div class="d-flex flex-column gap-3 mb-5">
+              <div
+                class="d-flex align-items-center gap-3"
+                style="color: var(--sidebar-text); font-size: 13.5px"
+              >
+                <span
+                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  <mat-icon
+                    style="
+                      font-size: 17px;
+                      width: 17px;
+                      height: 17px;
+                      color: var(--indigo);
+                    "
+                    >account_tree</mat-icon
+                  >
+                </span>
+                Log in once to manage all branches easily
+              </div>
+
+              <div
+                class="d-flex align-items-center gap-3"
+                style="color: var(--sidebar-text); font-size: 13.5px"
+              >
+                <span
+                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  <mat-icon
+                    style="
+                      font-size: 17px;
+                      width: 17px;
+                      height: 17px;
+                      color: var(--indigo);
+                    "
+                    >inventory_2</mat-icon
+                  >
+                </span>
+                Check stock and sales live from any location
+              </div>
+
+              <div
+                class="d-flex align-items-center gap-3"
+                style="color: var(--sidebar-text); font-size: 13.5px"
+              >
+                <span
+                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  <mat-icon
+                    style="
+                      font-size: 17px;
+                      width: 17px;
+                      height: 17px;
+                      color: var(--indigo);
+                    "
+                    >calculate</mat-icon
+                  >
+                </span>
+                Handle internal accounting automatically without errors
+              </div>
+
+              <div
+                class="d-flex align-items-center gap-3"
+                style="color: var(--sidebar-text); font-size: 13.5px"
+              >
+                <span
+                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  <mat-icon
+                    style="
+                      font-size: 17px;
+                      width: 17px;
+                      height: 17px;
+                      color: var(--indigo);
+                    "
+                    >rocket_launch</mat-icon
+                  >
+                </span>
+                Add new features anytime as your business grows
+              </div>
+              <div
+                class="d-flex align-items-center gap-3"
+                style="color: var(--sidebar-text); font-size: 13.5px"
+              >
+                <span
+                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  <mat-icon
+                    style="
+                      font-size: 17px;
+                      width: 17px;
+                      height: 17px;
+                      color: var(--indigo);
+                    "
+                    >analytics</mat-icon
+                  >
+                </span>
+                Generate full business reports with just one click
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <!-- <div
+              class="d-flex gap-5 pt-3"
+              style="border-top: 1px solid rgba(255, 255, 255, 0.08)"
+            >
+              <div>
+                <div
+                  class="fw-bold"
+                  style="
+                    font-size: 1.7rem;
+                    color: var(--indigo);
+                    line-height: 1;
+                  "
+                >
+                  50+
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    color: var(--sidebar-text);
+                    opacity: 0.55;
+                  "
+                >
+                  Forms
+                </div>
+              </div>
+              <div>
+                <div
+                  class="fw-bold"
+                  style="
+                    font-size: 1.7rem;
+                    color: var(--indigo);
+                    line-height: 1;
+                  "
+                >
+                  7
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    color: var(--sidebar-text);
+                    opacity: 0.55;
+                  "
+                >
+                  Modules
+                </div>
+              </div>
+              <div>
+                <div
+                  class="fw-bold"
+                  style="
+                    font-size: 1.7rem;
+                    color: var(--indigo);
+                    line-height: 1;
+                  "
+                >
+                  2–4w
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    color: var(--sidebar-text);
+                    opacity: 0.55;
+                  "
+                >
+                  Go-live
+                </div>
+              </div>
+            </div> -->
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ── RIGHT SIDE: LOGIN FORM ── -->
-    <div class="form-panel">
-      <div class="form-content">
-        <div class="form-header">
-          <div class="secure-badge">
-            <mat-icon>lock</mat-icon> SECURE LOGIN
-          </div>
-          <h3>Sign in to AidlyERP</h3>
-          <p class="text-muted">Enter your credentials to access your dashboard.</p>
+      <!-- ══ RIGHT: LOGIN CARD ══ -->
+      <div class="col-12 col-md-6 col-xl-5">
+        <!-- Mobile logo -->
+        <div class="d-flex d-md-none align-items-center gap-2 mb-3">
+          <mat-icon
+            style="
+              font-size: 24px;
+              width: 24px;
+              height: 24px;
+              color: var(--indigo);
+            "
+            >rocket_launch</mat-icon
+          >
+          <span
+            style="
+              font-size: 1.3rem;
+              font-weight: 800;
+              color: var(--text-primary);
+            "
+          >
+            Aidly<span style="color: var(--indigo)">ERP</span>
+          </span>
         </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
-          <!-- Username -->
-          <div class="form-group-custom">
-            <label for="login-username">Username</label>
-            <div class="input-wrapper">
-              <mat-icon class="prefix">person</mat-icon>
-              <input 
-                id="login-username"
-                type="text" 
-                formControlName="userName" 
-                placeholder="Enter username"
-                (blur)="onUserNameBlur()"
-              />
-              @if (isLoadingMetadata) {
-                <div class="spinner-inline"></div>
-              }
+        <div
+          class="card border-0 rounded-4"
+          style="
+            background: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color) !important;
+          "
+        >
+          <div class="card-body p-3 p-md-4 p-xl-5">
+            <!-- Card heading -->
+            <div class="mb-4">
+              <span
+                class="d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 mb-3"
+                style="
+                  background: rgba(16, 185, 129, 0.1);
+                  color: #10b981;
+                  font-size: 10px;
+                  font-weight: 700;
+                  letter-spacing: 0.06em;
+                "
+              >
+                <mat-icon style="font-size: 13px; width: 13px; height: 13px"
+                  >lock</mat-icon
+                >
+                SECURE LOGIN
+              </span>
+              <h3
+                class="fw-bold mb-1"
+                style="
+                  color: var(--text-primary);
+                  font-size: 1.6rem;
+                  letter-spacing: -0.3px;
+                "
+              >
+                Sign in to AidlyERP
+              </h3>
+              <p
+                class="mb-0"
+                style="font-size: 13.5px; color: var(--text-secondary)"
+              >
+                Enter your credentials to access your dashboard.
+              </p>
             </div>
-          </div>
 
-          <!-- Company Selection (ng-select) -->
-          <div class="form-group-custom">
-            <label for="login-company">Company</label>
-            <ng-select
-              id="login-company"
-              [items]="companies"
-              bindLabel="companyName"
-              bindValue="company_no"
-              formControlName="company_no"
-              placeholder="Select Company"
-              (change)="onCompanyChange()"
-              [clearable]="false"
-              [loading]="isLoadingMetadata"
-              class="custom-ng-select"
+            <!-- Form -->
+            <form
+              [formGroup]="loginForm"
+              (ngSubmit)="onSubmit()"
+              autocomplete="off"
             >
-              <ng-template ng-option-tmp let-item="item">
-                <div class="d-flex align-items-center gap-2">
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">business</mat-icon>
-                  {{item.companyName}}
+              <div class="row gy-3 overflow-hidden">
+                <!-- Username -->
+                <div class="col-12">
+                  <label
+                    for="login-username"
+                    class="form-label fw-bold"
+                    style="
+                      font-size: 11px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.04em;
+                      color: var(--text-secondary);
+                    "
+                  >
+                    Username
+                  </label>
+                  <div class="position-relative">
+                    <mat-icon
+                      class="position-absolute top-50 translate-middle-y"
+                      style="
+                        left: 11px;
+                        font-size: 18px;
+                        width: 18px;
+                        height: 18px;
+                        color: var(--text-secondary);
+                        opacity: 0.65;
+                        pointer-events: none;
+                      "
+                    >
+                      person
+                    </mat-icon>
+                    <input
+                      id="login-username"
+                      type="text"
+                      class="form-control"
+                      formControlName="userName"
+                      placeholder="Enter username"
+                      (blur)="onUserNameBlur()"
+                      style="
+                        padding-left: 40px;
+                        height: 42px;
+                        background: var(--bg-secondary);
+                        border: 1px solid var(--input-border);
+                        border-radius: 9px;
+                        font-size: 13.5px;
+                        color: var(--text-primary);
+                      "
+                    />
+                    @if (isLoadingMetadata) {
+                      <span
+                        class="position-absolute top-50 translate-middle-y spinner-border spinner-border-sm"
+                        style="
+                          right: 12px;
+                          color: var(--indigo);
+                          width: 15px;
+                          height: 15px;
+                          border-width: 2px;
+                        "
+                      ></span>
+                    }
+                  </div>
                 </div>
-              </ng-template>
-            </ng-select>
-          </div>
 
-          <!-- Branch Selection (ng-select) -->
-          <div class="form-group-custom">
-            <label for="login-branch">Branch</label>
-            <ng-select
-              id="login-branch"
-              [items]="branches"
-              bindLabel="branchName"
-              bindValue="branch_no"
-              formControlName="branch_no"
-              placeholder="Select Branch"
-              [clearable]="false"
-              class="custom-ng-select"
-            >
-              <ng-template ng-option-tmp let-item="item">
-                <div class="d-flex align-items-center gap-2">
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">storefront</mat-icon>
-                  {{item.branchName}}
+                <!-- Company -->
+                <div class="col-12">
+                  <label
+                    for="login-company"
+                    class="form-label fw-bold"
+                    style="
+                      font-size: 11px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.04em;
+                      color: var(--text-secondary);
+                    "
+                  >
+                    Company
+                  </label>
+                  <ng-select
+                    id="login-company"
+                    [items]="companies"
+                    bindLabel="companyName"
+                    bindValue="company_no"
+                    formControlName="company_no"
+                    placeholder="Select Company"
+                    (change)="onCompanyChange()"
+                    [clearable]="false"
+                    [loading]="isLoadingMetadata"
+                    class="ng-select-aidly"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="d-flex align-items-center gap-2">
+                        <mat-icon
+                          style="
+                            font-size: 16px;
+                            width: 16px;
+                            height: 16px;
+                            color: var(--text-secondary);
+                          "
+                          >business</mat-icon
+                        >
+                        {{ item.companyName }}
+                      </div>
+                    </ng-template>
+                  </ng-select>
                 </div>
-              </ng-template>
-            </ng-select>
-            @if (loginForm.get('branch_no')?.touched && loginForm.get('branch_no')?.errors?.['required']) {
-              <div class="error-msg">
-                Branch selection is required.
+
+                <!-- Branch -->
+                <div class="col-12">
+                  <label
+                    for="login-branch"
+                    class="form-label fw-bold"
+                    style="
+                      font-size: 11px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.04em;
+                      color: var(--text-secondary);
+                    "
+                  >
+                    Branch
+                  </label>
+                  <ng-select
+                    id="login-branch"
+                    [items]="branches"
+                    bindLabel="branchName"
+                    bindValue="branch_no"
+                    formControlName="branch_no"
+                    placeholder="Select Branch"
+                    [clearable]="false"
+                    class="ng-select-aidly"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="d-flex align-items-center gap-2">
+                        <mat-icon
+                          style="
+                            font-size: 16px;
+                            width: 16px;
+                            height: 16px;
+                            color: var(--text-secondary);
+                          "
+                          >storefront</mat-icon
+                        >
+                        {{ item.branchName }}
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                  @if (
+                    loginForm.get('branch_no')?.touched &&
+                    loginForm.get('branch_no')?.errors?.['required']
+                  ) {
+                    <div
+                      style="
+                        font-size: 11px;
+                        color: var(--rose);
+                        font-weight: 500;
+                        margin-top: 4px;
+                      "
+                    >
+                      Branch selection is required.
+                    </div>
+                  }
+                </div>
+
+                <!-- Password -->
+                <div class="col-12">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-1"
+                  >
+                    <label
+                      for="login-password"
+                      class="form-label mb-0 fw-bold"
+                      style="
+                        font-size: 11px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.04em;
+                        color: var(--text-secondary);
+                      "
+                    >
+                      Password
+                    </label>
+                    <a
+                      href="javascript:void(0)"
+                      style="
+                        font-size: 11.5px;
+                        font-weight: 600;
+                        color: var(--indigo);
+                        text-decoration: none;
+                      "
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
+                  <div class="position-relative">
+                    <mat-icon
+                      class="position-absolute top-50 translate-middle-y"
+                      style="
+                        left: 11px;
+                        font-size: 18px;
+                        width: 18px;
+                        height: 18px;
+                        color: var(--text-secondary);
+                        opacity: 0.65;
+                        pointer-events: none;
+                      "
+                    >
+                      lock_open
+                    </mat-icon>
+                    <input
+                      id="login-password"
+                      [type]="showPassword ? 'text' : 'password'"
+                      class="form-control"
+                      formControlName="password"
+                      placeholder="••••••••"
+                      style="
+                        padding-left: 40px;
+                        padding-right: 42px;
+                        height: 42px;
+                        background: var(--bg-secondary);
+                        border: 1px solid var(--input-border);
+                        border-radius: 9px;
+                        font-size: 13.5px;
+                        color: var(--text-primary);
+                      "
+                    />
+                    <button
+                      type="button"
+                      class="position-absolute top-50 translate-middle-y d-flex align-items-center border-0 bg-transparent p-1"
+                      style="
+                        right: 8px;
+                        color: var(--text-secondary);
+                        cursor: pointer;
+                      "
+                      (click)="showPassword = !showPassword"
+                    >
+                      <mat-icon
+                        style="font-size: 18px; width: 18px; height: 18px"
+                      >
+                        {{ showPassword ? 'visibility_off' : 'visibility' }}
+                      </mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lock banner -->
+                @if (lockedUntil) {
+                  <div class="col-12">
+                    <div
+                      class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0 rounded-3"
+                    >
+                      <mat-icon
+                        style="font-size: 17px; width: 17px; height: 17px"
+                        >timer</mat-icon
+                      >
+                      Account locked. Try again in
+                      <strong>{{ lockedRemainingSeconds }}s</strong>
+                    </div>
+                  </div>
+                }
+
+                <!-- Submit -->
+                <div class="col-12">
+                  <div class="d-grid">
+                    <button
+                      type="submit"
+                      class="btn btn-lg fw-bold d-flex align-items-center justify-content-center gap-2"
+                      [disabled]="isLoading || loginForm.invalid"
+                      style="
+                        height: 46px;
+                        background: var(--indigo);
+                        color: #fff;
+                        border: none;
+                        border-radius: 9px;
+                        font-size: 14.5px;
+                        transition:
+                          transform 0.25s,
+                          box-shadow 0.25s,
+                          filter 0.25s;
+                        box-shadow: 0 4px 14px rgba(var(--indigo-rgb), 0.32);
+                      "
+                    >
+                      @if (!isLoading) {
+                        Sign In
+                        <mat-icon
+                          style="font-size: 18px; width: 18px; height: 18px"
+                          >arrow_forward</mat-icon
+                        >
+                      } @else {
+                        <span class="spinner-border spinner-border-sm"></span>
+                      }
+                    </button>
+                  </div>
+                </div>
               </div>
-            }
+            </form>
+
+            <!-- Footer note -->
+            <p
+              class="text-center mt-4 mb-0"
+              style="font-size: 12px; color: var(--text-secondary)"
+            >
+              © {{ currentYear }} InfoAidTech. All rights reserved.
+            </p>
           </div>
-
-          <!-- Password -->
-          <div class="form-group-custom">
-            <div class="d-flex justify-content-between">
-              <label for="login-password">Password</label>
-              <a href="javascript:void(0)" class="forgot-pwd">Forgot password?</a>
-            </div>
-            <div class="input-wrapper">
-              <mat-icon class="prefix">lock_open</mat-icon>
-              <input 
-                id="login-password"
-                [type]="showPassword ? 'text' : 'password'" 
-                formControlName="password" 
-                placeholder="••••••••"
-              />
-              <button type="button" class="toggle-eye" (click)="showPassword = !showPassword">
-                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <!-- Lock Banner -->
-          @if (lockedUntil) {
-            <div class="alert alert-warning mt-3 py-2">
-              <mat-icon class="me-2" style="font-size: 18px; width: 18px; height: 18px;">timer</mat-icon>
-              Locked for {{ lockedRemainingSeconds }}s
-            </div>
-          }
-
-          <!-- Submit -->
-          <button type="submit" class="btn-login-main" [disabled]="isLoading || loginForm.invalid">
-            @if (!isLoading) {
-              <span>Sign In <mat-icon>arrow_forward</mat-icon></span>
-            } @else {
-              <span class="spinner-border spinner-border-sm"></span>
-            }
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</section>
