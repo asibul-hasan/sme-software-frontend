@@ -28,6 +28,14 @@ export class AuthContextService {
     }
   }
 
+  isTokenExpired(token: string): boolean {
+    try {
+      return this.helper.isTokenExpired(token);
+    } catch (e) {
+      return true;
+    }
+  }
+
   // Encrypt and store data
   encryptAndStore(key: string, data: unknown): void {
     try {
@@ -73,7 +81,7 @@ export class AuthContextService {
 
   setAvailableBranches(branches: import('../../features/auth/services/data.service').Branch[]) {
     this.availableBranches.set(branches);
-    this.encryptAndStore('sme_available_branches', branches);
+    this.encryptAndStore(globalConstants.storageKeys.availableBranches, branches);
   }
 
   // Load state from local storage on initialization
@@ -81,7 +89,7 @@ export class AuthContextService {
     const cachedUser = this.decryptAndRetrieve<User>(globalConstants.storageKeys.userData);
     const cachedPerms = this.decryptAndRetrieve<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
     const cachedMenu = this.decryptAndRetrieve<unknown[]>(globalConstants.storageKeys.userMenu);
-    const cachedBranches = this.decryptAndRetrieve<any[]>('sme_available_branches');
+    const cachedBranches = this.decryptAndRetrieve<any[]>(globalConstants.storageKeys.availableBranches);
 
     if (cachedUser) {
       this.user.set(cachedUser);
@@ -101,6 +109,6 @@ export class AuthContextService {
     localStorage.removeItem(globalConstants.storageKeys.userData);
     localStorage.removeItem(globalConstants.storageKeys.userPermissions);
     localStorage.removeItem(globalConstants.storageKeys.userMenu);
-    localStorage.removeItem('sme_available_branches');
+    localStorage.removeItem(globalConstants.storageKeys.availableBranches);
   }
 }

@@ -1,78 +1,43 @@
-import { Component, OnInit, signal, computed, inject, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { SysDataService } from '../../services/data.service';
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
+import { ToastrService } from 'ngx-toastr';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
 import { MatDialog } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
 import { sysConstants } from '../../constants/sys.constants';
+import { Sys1004ModelService, Currency, RateHistory } from './services/model.service';
 import { ModalService } from 'apps/web-client/src/app/core/services/modal.service';
-
-interface Currency {
-  currency_no: number;
-  currency_code: string;
-  currency_name_en: string;
-  currency_name_bn?: string;
-  currency_symbol: string;
-  fractional_unit_en?: string;
-  fractional_unit_bn?: string;
-  region: string;
-  number_format: string;
-  exchange_rate: number;
-  decimal_places: number;
-  is_base_currency: boolean;
-  rate_date: string;
-  last_rate_update?: string;
-}
-
-interface RateHistory {
-  rate_date: string;
-  exchange_rate: number;
-  entered_by: string;
-  entered_at: string;
-}
 
 @Component({
   selector: 'app-sys1004',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule],
-  providers: [DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  providers: [DatePipe, Sys1004ModelService],
   templateUrl: './sys1004.component.html',
   styles: [`:host { display: block; height: 100%; }`]
 })
 export class Sys1004Component implements OnInit {
+  public model = inject(Sys1004ModelService);
   private fb = inject(FormBuilder);
   private sysService = inject(SysDataService);
   private alertService = inject(AlertService);
+  private toastr = inject(ToastrService);
   private modalService = inject(ModalService);
   private datePipe = inject(DatePipe);
   public dialog = inject(MatDialog);
   public permissionService = inject(FormPermissionService);
 
+  readonly sysConstants = sysConstants;
   readonly SYS_CONSTS = sysConstants;
 
-  // Data signals
-  currencies = signal<Currency[]>([]);
-  branches = signal<any[]>([]);
-  isLoading = signal(false);
-  isSaving = signal(false);
-  rateHistory = signal<RateHistory[]>([]);
-  isHistoryLoading = signal(false);
-
-  searchTerm = signal('');
-  selectedCurrencyNo = signal<number | null>(null);
-  lastSelectedIndex: number = 0;
-
-  filteredCurrencies = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    return this.currencies().filter(c =>
-      c.currency_name_en.toLowerCase().includes(term) || 
-      (c.currency_name_bn && c.currency_name_bn.toLowerCase().includes(term)) ||
-      c.currency_code.toLowerCase().includes(term)
-    );
-  });
+  onSearchTermChange(val: string) {
+    this.model.searchTerm.set(val);
+  }
 
   formdata: FormGroup = this.fb.group({
     currency_no: [null],
@@ -101,20 +66,20 @@ export class Sys1004Component implements OnInit {
     this.sysService.getList<any>('branch/list').subscribe({
       next: (res) => {
         if (res.success && res.data) {
-          this.branches.set(res.data);
+          this.model.branches.set(res.data);
         }
       }
     });
   }
 
   loadCurrencies(reselectIndex?: number) {
-    this.isLoading.set(true);
+    this.model.isLoading.set(true);
     this.sysService.getList<any>('currency/list')
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
-            this.currencies.set(res.data);
+            this.model.currencies.set(res.data);
             if (res.data.length > 0) {
               const index = (reselectIndex !== undefined && reselectIndex < res.data.length) ? reselectIndex : 0;
               this.selectCurrency(res.data[index], index);
@@ -124,19 +89,19 @@ export class Sys1004Component implements OnInit {
           }
         },
         error: (err) => {
-          this.alertService.error('Failed to load currencies');
+          this.toastr.error('Failed to load currencies');
           console.error(err);
         }
       });
   }
 
   selectCurrency(currency: any, index?: number) {
-    if (index !== undefined) this.lastSelectedIndex = index;
-    this.selectedCurrencyNo.set(currency.currency_no);
+    if (index !== undefined) this.model.lastSelectedIndex = index;
+    this.model.selectedCurrencyNo.set(currency.currency_no);
     
-    this.isLoading.set(true);
+    this.model.isLoading.set(true);
     this.sysService.getDetails<any>('currency/detail', { currency_no: currency.currency_no })
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
@@ -159,7 +124,7 @@ export class Sys1004Component implements OnInit {
           }
         },
         error: (err) => {
-          this.alertService.error('Failed to load details');
+          this.toastr.error('Failed to load details');
           console.error(err);
         }
       });
@@ -168,11 +133,11 @@ export class Sys1004Component implements OnInit {
   onSave() {
     if (this.formdata.invalid) {
       this.formdata.markAllAsTouched();
-      this.alertService.warning('Please correct the errors before saving.');
+      this.toastr.warning('Please correct the errors before saving.');
       return;
     }
 
-    this.isSaving.set(true);
+    this.model.isSaving.set(true);
     const val = this.formdata.value;
 
     const payload = {
@@ -192,47 +157,47 @@ export class Sys1004Component implements OnInit {
       rate_date: val.rate_date
     };
 
-    const isUpdate = !!this.selectedCurrencyNo();
+    const isUpdate = !!this.model.selectedCurrencyNo();
     const obs = isUpdate 
       ? this.sysService.update<any>('currency/update', payload)
       : this.sysService.create<any>('currency/create', payload);
 
-    obs.pipe(finalize(() => this.isSaving.set(false)))
+    obs.pipe(finalize(() => this.model.isSaving.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.alertService.success(isUpdate ? 'Currency updated' : 'Currency registered');
-            this.loadCurrencies(isUpdate ? this.lastSelectedIndex : 0);
+            this.toastr.success(isUpdate ? 'Currency updated' : 'Currency registered');
+            this.loadCurrencies(isUpdate ? this.model.lastSelectedIndex : 0);
           } else {
-            this.alertService.error(res.message || 'Save failed');
+            this.toastr.error(res.message || 'Save failed');
           }
         },
         error: (err) => {
-          this.alertService.error('Server error during save');
+          this.toastr.error('Server error during save');
           console.error(err);
         }
       });
   }
 
   onDelete() {
-    if (!this.selectedCurrencyNo()) return;
+    if (!this.model.selectedCurrencyNo()) return;
 
     this.alertService.deleteConfirm().subscribe(confirmed => {
       if (confirmed) {
-        this.isLoading.set(true);
-        this.sysService.delete<any>('currency/delete', { currency_no: this.selectedCurrencyNo() })
-          .pipe(finalize(() => this.isLoading.set(false)))
+        this.model.isLoading.set(true);
+        this.sysService.delete<any>('currency/delete', { currency_no: this.model.selectedCurrencyNo() })
+          .pipe(finalize(() => this.model.isLoading.set(false)))
           .subscribe({
             next: (res) => {
               if (res.success) {
-                this.alertService.success('Currency deleted successfully');
+                this.toastr.success('Currency deleted successfully');
                 this.loadCurrencies();
               } else {
-                this.alertService.error(res.message || 'Delete failed');
+                this.toastr.error(res.message || 'Delete failed');
               }
             },
             error: (err) => {
-              this.alertService.error('Server error during delete');
+              this.toastr.error('Server error during delete');
               console.error(err);
             }
           });
@@ -241,7 +206,7 @@ export class Sys1004Component implements OnInit {
   }
 
   onNew() {
-    this.selectedCurrencyNo.set(null);
+    this.model.selectedCurrencyNo.set(null);
     this.formdata.reset({
       decimal_places: 2,
       exchange_rate: 1.0,
@@ -251,8 +216,8 @@ export class Sys1004Component implements OnInit {
   }
 
   onReset() {
-    if (this.selectedCurrencyNo()) {
-       const original = this.currencies().find(c => c.currency_no === this.selectedCurrencyNo());
+    if (this.model.selectedCurrencyNo()) {
+       const original = this.model.currencies().find(c => c.currency_no === this.model.selectedCurrencyNo());
        if (original) this.selectCurrency(original);
     } else {
       this.onNew();
@@ -260,11 +225,11 @@ export class Sys1004Component implements OnInit {
   }
 
   viewRateHistory() {
-    if (!this.selectedCurrencyNo()) return;
+    if (!this.model.selectedCurrencyNo()) return;
 
-    this.isHistoryLoading.set(true);
-    this.sysService.getDetails<any>('currency/rate-history', { currency_no: this.selectedCurrencyNo() })
-      .pipe(finalize(() => this.isHistoryLoading.set(false)))
+    this.model.isHistoryLoading.set(true);
+    this.sysService.getDetails<any>('currency/rate-history', { currency_no: this.model.selectedCurrencyNo() })
+      .pipe(finalize(() => this.model.isHistoryLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
@@ -282,7 +247,7 @@ export class Sys1004Component implements OnInit {
           }
         },
         error: (err) => {
-          this.alertService.error('Failed to load history');
+          this.toastr.error('Failed to load history');
           console.error(err);
         }
       });

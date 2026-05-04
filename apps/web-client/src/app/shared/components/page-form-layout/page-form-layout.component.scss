@@ -1,0 +1,108 @@
+/* Reusable Page Form Layout specific styles */
+.page-card {
+  height: calc(100vh - 75px) !important;
+}
+
+.page-card-header {
+    min-height: 60px;
+}
+
+.form-content-row {
+    height: calc(100% - 60px);
+}
+
+/* Ensure sidebar and form content fill height */
+.form-content-col {
+    height: 100%;
+}
+
+.btn-action-group {
+    padding-right: 10px;
+}
+
+/* Branding & Logo Upload Styles */
+.branding-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+}
+
+.logo-upload-container {
+  padding: 10px;
+}
+
+.logo-dropzone {
+  border: 2px dashed rgba(var(--bs-primary-rgb), 0.2);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-dropzone:hover, .logo-dropzone.active {
+  border-color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.05);
+  transform: translateY(-2px);
+}
+
+.logo-preview-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.logo-preview-wrapper:hover .logo-overlay {
+  opacity: 1;
+}
+
+.upload-placeholder-modern {
+  color: #6c757d;
+}
+
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  background: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--bs-primary);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smaller {
+    font-size: 0.75rem;
+}

@@ -1,0 +1,22 @@
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+}
+
+.card-header {
+    background-color: transparent !important;
+}
+
+.chart-wrapper {
+    height: 200px;
+}
+
+.xx-small { font-size: 0.65rem; }
+.small { font-size: 0.8rem; }
+.fw-black { font-weight: 900; }
+
+.text-muted { color: var(--text-secondary) !important; }
+.text-success { color: #10b981 !important; }
+.text-primary { color: #3b82f6 !important; }

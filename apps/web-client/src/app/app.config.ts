@@ -22,17 +22,24 @@ import { routes } from './app.routes';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { SessionManagerService } from './core/services/session-manager.service';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
 }
 
-export function initApp(auth: AuthService) {
+export function initApp(auth: AuthService, session: SessionManagerService) {
   return () =>
     new Promise((resolve) => {
       auth.initialize().subscribe({
-        next: () => resolve(true),
-        error: () => resolve(true),
+        next: () => {
+          session.init();
+          resolve(true);
+        },
+        error: () => {
+          session.init();
+          resolve(true);
+        },
       });
     });
 }
@@ -60,7 +67,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initApp,
-      deps: [AuthService],
+      deps: [AuthService, SessionManagerService],
       multi: true,
     },
     {

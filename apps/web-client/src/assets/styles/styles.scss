@@ -12,7 +12,7 @@
 @use 'utilities' as *;
 @use 'form-page' as *;
 
-@import "@ng-select/ng-select/themes/default.theme.css";
+@import '@ng-select/ng-select/themes/default.theme.css';
 
 /* ----------------------------------------- */
 /* BASE STYLES AND SCROLLBARS                */
@@ -60,9 +60,7 @@ body {
   }
 }
 
-/* ----------------------------------------- */
-/* MATERIAL OVERRIDES                        */
-/* ----------------------------------------- */
+// Mat-Card Base Style (Global)
 .mat-mdc-card,
 .card {
   background-color: var(--card-bg) !important;
@@ -73,116 +71,7 @@ body {
   color: var(--text-primary) !important;
 }
 
-// Inputs
-.mat-mdc-form-field-flex,
-.form-control,
-.form-select,
-.ng-select .ng-select-container,
-.custom-ng-select .ng-select-container {
-  background-color: var(--input-bg) !important;
-  border: 1px solid var(--input-border) !important;
-  border-radius: 6px !important;
-  min-height: 42px;
-  color: var(--text-primary) !important;
-  font-size: 13.5px !important;
-  font-weight: 500 !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 
-  // Sync placeholder format
-  &::placeholder {
-    font-size: 13.5px !important;
-    font-weight: 400 !important;
-    opacity: 0.65;
-  }
-
-  &:hover {
-    border-color: var(--input-focus-border) !important;
-  }
-
-  &:focus,
-  &.mat-focused,
-  &:focus-within,
-  &.ng-select-focused,
-  &.ng-select-opened {
-    border-color: var(--input-focus-border) !important;
-    box-shadow: 0 0 0 0.25rem var(--input-focus-ring) !important;
-    outline: none !important;
-  }
-
-  // Datepicker indicator enhancement
-  &::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    padding: 2px;
-    border-radius: 4px;
-    transition: transform 0.2s ease, filter 0.2s ease;
-    &:hover {
-      transform: scale(1.1);
-      filter: brightness(1.2);
-    }
-  }
-}
-
-.datepicker-wrapper {
-  position: relative;
-  width: 100%;
-  overflow: visible !important;
-
-  .form-control {
-    padding-right: 44px !important;
-  }
-
-  mat-datepicker-toggle {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-
-    &:hover {
-      color: var(--indigo);
-      transform: translateY(-50%) scale(1.05);
-    }
-
-    button {
-      width: 36px !important;
-      height: 36px !important;
-      line-height: 36px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      
-      mat-icon {
-        font-size: 22px !important;
-        width: 22px !important;
-        height: 22px !important;
-        color: var(--indigo);
-        opacity: 0.8;
-      }
-    }
-  }
-}
-
-select,
-.form-select,
-.ng-select .ng-select-container,
-.custom-ng-select .ng-select-container {
-  border-radius: 6px !important;
-}
-
-select option,
-.form-select option,
-.ng-select .ng-option,
-.custom-ng-select .ng-option {
-  background: var(--card-bg) !important;
-  color: var(--text-primary) !important;
-}
 
 .mat-mdc-form-field.mat-form-field-appearance-fill .mat-mdc-form-field-flex {
   background-color: var(--input-filled) !important;
@@ -209,45 +98,6 @@ select option,
   color: var(--sidebar-text) !important;
 }
 
-// Global Menu & Select Panel Styling
-.mat-mdc-menu-panel,
-.mat-mdc-select-panel {
-  background-color: var(--card-bg) !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--border-color) !important;
-  box-shadow: var(--card-shadow) !important;
-  padding: 4px 0 !important;
-
-  .mat-mdc-menu-item,
-  .mat-mdc-option {
-    color: var(--text-primary) !important;
-    font-size: var(--text-base) !important;
-    min-height: 40px !important;
-    padding: 0 16px !important;
-    transition: background-color 0.2s, color 0.2s;
-
-    &:hover,
-    &.cdk-keyboard-focused,
-    &.cdk-program-focused {
-      background-color: var(--sidebar-hover) !important;
-    }
-  }
-
-  // Active/Selected state using themed variables
-  .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled),
-  .mat-mdc-option.mat-mdc-option-active,
-  .mat-mdc-menu-item.active {
-    background-color: var(--select-bg) !important;
-    color: var(--select-text) !important;
-
-    .mdc-list-item__primary-text,
-    span,
-    button {
-      color: var(--select-text) !important;
-      font-weight: 600;
-    }
-  }
-}
 
 /* ----------------------------------------- */
 /* MAIN LAYOUT specific styles               */
@@ -264,8 +114,6 @@ select option,
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-
 
 .main-layout.sidebar-collapsed {
   .topbar,
@@ -285,7 +133,9 @@ select option,
     padding: 0 !important;
     border-radius: 16px !important;
     border: 1px solid var(--border-color) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-color) !important;
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px var(--border-color) !important;
     overflow: hidden;
     animation: calendar-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -301,7 +151,11 @@ select option,
 
     .profile-header {
       padding: 20px 20px 15px;
-      background: linear-gradient(to bottom, rgba(var(--indigo-rgb), 0.05), transparent);
+      background: linear-gradient(
+        to bottom,
+        rgba(var(--indigo-rgb), 0.05),
+        transparent
+      );
 
       .profile-ava {
         width: 48px;
@@ -336,7 +190,10 @@ select option,
         color: var(--rose);
         opacity: 0.7;
         transition: all 0.2s;
-        &:hover { opacity: 1; background: rgba(244, 63, 94, 0.1); }
+        &:hover {
+          opacity: 1;
+          background: rgba(244, 63, 94, 0.1);
+        }
       }
     }
 
@@ -384,8 +241,10 @@ select option,
         &:hover {
           background: var(--sidebar-hover) !important;
           transform: translateX(4px);
-          
-          mat-icon { color: var(--indigo); }
+
+          mat-icon {
+            color: var(--indigo);
+          }
         }
       }
     }
@@ -397,7 +256,11 @@ select option,
     .notif-header {
       padding: 20px 20px 15px;
       border-bottom: 1px solid var(--border-color);
-      background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent);
+      background: linear-gradient(
+        to bottom,
+        rgba(16, 185, 129, 0.05),
+        transparent
+      );
 
       .notif-title {
         font-weight: 700;
@@ -414,7 +277,10 @@ select option,
         height: 20px;
         opacity: 0.7;
         transition: all 0.2s;
-        &:hover { opacity: 1; transform: scale(1.1); }
+        &:hover {
+          opacity: 1;
+          transform: scale(1.1);
+        }
       }
     }
 
@@ -481,7 +347,7 @@ select option,
       border-top: 1px solid var(--border-color);
       padding: 0 !important;
       background: var(--bg-secondary);
-      
+
       a {
         display: block;
         padding: 12px 0;
@@ -491,7 +357,7 @@ select option,
         color: var(--indigo);
         text-decoration: none;
         transition: all 0.2s;
-        
+
         &:hover {
           background: rgba(var(--indigo-rgb), 0.08);
           letter-spacing: 0.5px;
@@ -501,216 +367,15 @@ select option,
   }
 }
 
-/* ── THEMED SELECTION CHIPS ── */
-.badge-select {
-  background: var(--select-bg) !important;
-  color: var(--select-text) !important;
-  border: 1px solid rgba(var(--indigo-rgb), 0.15) !important;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* ── NG-SELECT CUSTOM STYLES ── */
-.ng-select,
-.custom-ng-select {
-  display: block !important;
-  width: 100% !important;
-
-  .ng-select-container {
-    padding: 0 10px !important;
-    display: flex;
-    align-items: center;
-    box-shadow: none !important;
-  }
-
-  .ng-value-container {
-    padding-left: 0 !important;
-    display: flex;
-    align-items: center;
-    align-content: center;
-    min-height: 42px;
-    width: 100%;
-  }
-
-  &.ng-select-multiple .ng-value-container {
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 4px 0;
-  }
-
-  &.ng-select-multiple .ng-value {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    padding: 4px 10px !important;
-    border-radius: 999px !important;
-    background: var(--select-bg) !important;
-    border: 1px solid rgba(var(--indigo-rgb), 0.15) !important;
-    color: var(--text-primary) !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-  }
-
-  &:not(.ng-select-multiple) .ng-value {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    font-weight: 500 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    line-height: 1.4 !important;
-    color: var(--text-primary) !important;
-  }
-
-  &:not(.ng-select-multiple) .ng-value .ng-value-icon {
-    display: none !important;
-  }
-
-  // Re-enable clear wrapper for single-select if needed
-  // (Removed the display:none restriction)
-
-  .ng-value-icon {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 18px !important;
-    height: 18px !important;
-    border-radius: 50% !important;
-    background: rgba(var(--text-secondary-rgb), 0.08) !important;
-    color: var(--text-secondary) !important;
-    cursor: pointer !important;
-    transition: background 0.15s ease, color 0.15s ease !important;
-  }
-
-  .ng-value-icon:hover {
-    background: rgba(var(--indigo-rgb), 0.12) !important;
-    color: var(--indigo) !important;
-  }
-
-  .ng-placeholder {
-    color: var(--text-secondary) !important;
-    opacity: 0.65;
-    font-size: 13.5px;
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    padding-left: 0 !important;
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .ng-arrow-wrapper {
-    width: 28px !important;
-    min-width: 28px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-left: auto !important;
-  }
-
-  .ng-select-container {
-    justify-content: space-between !important;
-  }
-
-  &.ng-select-has-value .ng-placeholder {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-  }
-
-  .ng-input {
-    padding: 0 !important;
-    input { font-size: 13.5px !important; }
-  }
-
-  // Ensure single select input cursor is vertically centered and overlaps the value properly
-  &:not(.ng-select-multiple) .ng-input {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    left: 0 !important;
-    width: 100% !important;
-  }
-
-  // Dim the selected value when dropdown is open to make typing clearer
-  &.ng-select-opened:not(.ng-select-multiple) .ng-value {
-    opacity: 0.4 !important;
-    pointer-events: none;
-  }
-
-  .ng-dropdown-panel {
-    background: var(--card-bg) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 10px !important;
-    box-shadow: var(--card-shadow) !important;
-    margin-top: 5px;
-    overflow: hidden;
-  }
-
-  .ng-dropdown-panel .ng-option {
-    background: transparent !important;
-    color: var(--text-primary) !important;
-    font-size: 13.5px;
-    padding: 10px 15px !important;
-    transition: all 0.2s;
-  }
-
-  .ng-dropdown-panel .ng-option:hover,
-  .ng-dropdown-panel .ng-option.ng-option-marked {
-    background: var(--select-bg) !important;
-    color: var(--indigo) !important;
-  }
-
-  .ng-dropdown-panel .ng-option.ng-option-selected {
-    background: var(--indigo) !important;
-    color: #fff !important;
-  }
-
-  .ng-clear-wrapper {
-    color: var(--text-secondary) !important;
-    display: flex !important;
-    align-items: center !important;
-    &:hover { color: var(--rose) !important; }
-  }
-
-  .ng-arrow-wrapper {
-    width: 28px !important;
-    min-width: 28px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-left: auto !important;
-
-    .ng-arrow {
-      display: block !important;
-      border-style: solid !important;
-      border-width: 5px 5px 2.5px 5px !important;
-      border-color: var(--text-secondary) transparent transparent transparent !important;
-      opacity: 1 !important;
-      transition: border-color 0.15s ease !important;
-      &:hover { border-top-color: var(--indigo) !important; }
-    }
-  }
-
-  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
-    border-color: transparent transparent var(--text-secondary) !important;
-    border-width: 0 5px 5px !important;
-  }
-}
-
 
 /* ── PREMIUM MATERIAL DATEPICKER & CALENDAR DESIGN ── */
 .mat-datepicker-content {
   background-color: var(--card-bg) !important;
   border-radius: 16px !important;
   border: 1px solid var(--border-color) !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-color) !important;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px var(--border-color) !important;
   color: var(--text-primary) !important;
   overflow: hidden;
   animation: calendar-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -722,22 +387,33 @@ select option,
   }
 
   .mat-calendar-header {
-    background: linear-gradient(135deg, var(--bg-secondary), var(--card-bg)) !important;
+    background: linear-gradient(
+      135deg,
+      var(--bg-secondary),
+      var(--card-bg)
+    ) !important;
     padding: 12px !important;
     border-bottom: 1px solid var(--border-color);
-    
-    .mat-calendar-controls { margin: 0 !important; }
-    
+
+    .mat-calendar-controls {
+      margin: 0 !important;
+    }
+
     .mat-calendar-period-button {
       font-weight: 700 !important;
       font-size: 14px !important;
       letter-spacing: 0.2px;
-      &:hover { background: rgba(var(--indigo-rgb), 0.1) !important; }
+      &:hover {
+        background: rgba(var(--indigo-rgb), 0.1) !important;
+      }
     }
 
-    .mat-calendar-previous-button, .mat-calendar-next-button {
+    .mat-calendar-previous-button,
+    .mat-calendar-next-button {
       color: var(--text-primary) !important;
-      &:hover { background: var(--sidebar-hover) !important; }
+      &:hover {
+        background: var(--sidebar-hover) !important;
+      }
     }
   }
 
@@ -776,7 +452,9 @@ select option,
   }
 
   .mat-calendar-body-selected {
-    background: var(--indigo-g) !important; // Using the indigo gradient defined in theme
+    background: var(
+      --indigo-g
+    ) !important; // Using the indigo gradient defined in theme
     color: #fff !important;
     font-weight: 700 !important;
     box-shadow: 0 4px 12px rgba(var(--indigo-rgb), 0.3) !important;
@@ -796,13 +474,28 @@ select option,
 }
 
 @keyframes calendar-fade-in {
-  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--emerald); }
-  50% { opacity: 0.6; transform: scale(1.1); box-shadow: 0 0 12px var(--emerald); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 6px var(--emerald);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+    box-shadow: 0 0 12px var(--emerald);
+  }
 }
 
 /* ── Mobile Responsive Overrides (Using Bootstrap Breakpoints) ── */
@@ -826,5 +519,20 @@ select option,
 
   .main-layout.sidebar-collapsed .main-content {
     margin-left: 0 !important;
+  }
+}
+
+/* ── Session Lock Backdrop ── */
+.session-lock-backdrop {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.session-lock-panel {
+  .mat-mdc-dialog-container {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 }

@@ -1,0 +1,39 @@
+:host {
+    display: block;
+    height: 100%;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.dashboard-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.bg-card-themed {
+    background-color: var(--card-bg);
+}
+
+.fw-black { font-weight: 900; }
+.text-primary { color: #3b82f6 !important; }
+
+input[type="date"] {
+    color: var(--text-primary) !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    
+    &::-webkit-calendar-picker-indicator {
+        filter: var(--calendar-icon-filter);
+        cursor: pointer;
+    }
+}
+
+// Support for dark mode filter icon
+:root {
+    --calendar-icon-filter: none;
+}
+[data-bs-theme="dark"], .dark-theme {
+    --calendar-icon-filter: invert(1);
+}

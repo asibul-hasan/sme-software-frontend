@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../../core';
+import { AlertService } from '../../../core/services/alert.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -24,6 +25,7 @@ export class RegisterComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private alertService = inject(AlertService);
   private toastr = inject(ToastrService);
 
   registerForm: FormGroup = this.fb.group({

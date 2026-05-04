@@ -6,6 +6,7 @@ export const globalConstants = {
     userData: 'user_data',
     userPermissions: 'user_permissions',
     userMenu: 'user_menu',
+    availableBranches: 'sme_available_branches',
   },
 
   // Security / Encryption

@@ -6,11 +6,7 @@ import { AppConfigService } from '../../../core/services/app-config.service';
 import { IPermissionConfig } from '../../../core/models/permission.model';
 import { User } from '../../../core/models/user.model';
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message: string;
-}
+import { ApiResponse } from '../../../core/models/response.model';
 
 export interface LoginRequest {
   user_name: string;

@@ -1,371 +1,188 @@
-<div class="page-card d-flex flex-column">
-  <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
-  <div
-    class="page-card-header d-flex flex-column flex-md-row justify-content-between p-2 border-bottom flex-shrink-0"
-  >
-    <div class="d-flex align-items-center gap-3">
-      <div class="header-icon-box shadow-sm">
-        <mat-icon>monetization_on</mat-icon>
-      </div>
-      <div>
-        <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
-          {{ 'currSetup' | translate }}
-        </h2>
-        <p class="text-secondary m-0 small mt-1">
-          {{ 'Manage currencies, exchange rates, and base currency settings' | translate }}
-        </p>
-      </div>
-    </div>
+<app-page-form-layout
+  [title]="'currencySetup' | translate"
+  [subtitle]="'Manage global currencies, exchange rates, and regional formats' | translate"
+  [icon]="'payments'"
+  [recordsCount]="model.filteredCurrencies().length"
+  [sidebarTitle]="'currencies' | translate"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showDelete]="!!model.selectedCurrencyNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <!-- Extra Header Actions -->
+  <div extraHeaderActions>
+    <button
+      *ngIf="model.selectedCurrencyNo() && !formdata.get('is_base_currency')?.value"
+      type="button"
+      class="btn btn-sm btn-outline-info d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
+      (click)="viewRateHistory()"
+      [disabled]="model.isHistoryLoading()"
+    >
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px">history</mat-icon>
+      <span class="small">{{ model.isHistoryLoading() ? 'Loading...' : ('View History' | translate) }}</span>
+    </button>
+  </div>
 
-    <!-- Action Buttons -->
-    <div class="btn-action-group mt-md-0 d-flex gap-2">
-      <button
-        class="btn-action btn-save"
-        (click)="onSave()"
-        [disabled]="isSaving()"
-        [matTooltip]="'save' | translate"
-      >
-        <mat-icon>done_all</mat-icon>
-        <span class="btn-action-label">{{ 'save' | translate }}</span>
-      </button>
-      <button
-        class="btn-action btn-new"
-        (click)="onNew()"
-        [matTooltip]="'new' | translate"
-      >
-        <mat-icon>add</mat-icon>
-        <span class="btn-action-label">{{ 'new' | translate }}</span>
-      </button>
-      <button
-        class="btn-action btn-reset"
-        (click)="onReset()"
-        [matTooltip]="'reset' | translate"
-      >
-        <mat-icon>refresh</mat-icon>
-        <span class="btn-action-label">{{ 'reset' | translate }}</span>
-      </button>
+  <!-- Sidebar List -->
+  <div sidebarList>
+    <button
+      *ngFor="let curr of model.filteredCurrencies()"
+      type="button"
+      class="list-group-item list-group-item-action p-3"
+      [class.active]="model.selectedCurrencyNo() === curr.currency_no"
+      (click)="selectCurrency(curr)"
+    >
+      <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+        <h6 class="mb-0 fw-bold">{{ curr.currency_code }}</h6>
+        <span class="badge rounded-pill text-bg-light border small">{{ curr.currency_symbol }}</span>
+      </div>
+      <p class="mb-1 small fw-semibold opacity-75 text-truncate">
+        {{ curr.currency_name_en }}
+      </p>
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <span class="badge rounded-pill bg-light text-dark border small">{{ curr.region }}</span>
+        <div class="d-flex align-items-center gap-1 text-primary small fw-bold">
+          <span class="opacity-50">1 :</span>
+          <span>{{ curr.exchange_rate | number: '1.2-4' }}</span>
+        </div>
+      </div>
+    </button>
 
-      <button
-        *ngIf="selectedCurrencyNo()"
-        class="btn-action btn-delete"
-        (click)="onDelete()"
-        [matTooltip]="'delete' | translate"
-      >
-        <mat-icon>delete</mat-icon>
-        <span class="btn-action-label">{{ 'delete' | translate }}</span>
-      </button>
+    <div *ngIf="model.filteredCurrencies().length === 0" class="p-4 text-center opacity-75">
+      <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">money_off</mat-icon>
+      <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
     </div>
   </div>
 
-  <!-- ── SPLIT BODY ──────────────────── -->
-  <div class="row g-0 flex-grow-1 form-content-row">
-    <!-- LEFT SIDEBAR: CURRENCY LIST -->
-    <div
-      class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
-    >
-      <div class="p-3 pb-2">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6
-            class="m-0 fw-bold text-uppercase opacity-75 small"
-            style="letter-spacing: 0.5px"
-          >
-            {{ 'currSetup' | translate }}
-          </h6>
-          <span class="badge rounded-pill text-bg-secondary"
-            >{{ filteredCurrencies().length }} {{ 'records' | translate }}</span
-          >
-        </div>
-        <div class="field-group mb-0">
-          <input
-            type="text"
-            class="form-control"
-            [placeholder]="'search' | translate"
-            [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event)"
-          />
-        </div>
-      </div>
-
-      <div class="p-3 pt-0 flex-grow-1 overflow-auto">
-        <div
-          class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
-        >
-          <button
-            *ngFor="let curr of filteredCurrencies()"
-            type="button"
-            class="list-group-item list-group-item-action p-3"
-            [class.active]="selectedCurrencyNo() === curr.currency_no"
-            (click)="selectCurrency(curr)"
-          >
-            <div
-              class="d-flex w-100 justify-content-between align-items-center mb-1"
-            >
-              <h6 class="mb-0 fw-bold">{{ curr.currency_code }}</h6>
-              <span *ngIf="curr.is_base_currency" class="badge text-bg-success"
-                >{{ 'isBaseCurrency' | translate }}</span
-              >
+  <!-- Main Form Content -->
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Currency Info (8-col) -->
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">info</mat-icon>
+                {{ 'currencyInfo' | translate }}
+              </h4>
             </div>
-            <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-              {{ curr.currency_name_en }}
-            </p>
-            <div class="d-flex justify-content-between align-items-center mt-2">
-              <span class="small fw-bold text-success"
-                >{{ curr.currency_symbol }} ({{ curr.exchange_rate }})</span
-              >
-              <span class="small opacity-50">{{
-                curr.rate_date | date: 'shortDate'
-              }}</span>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'currencyCode' | translate }}</label>
+                    <input type="text" formControlName="currency_code" class="form-control text-uppercase" placeholder="e.g. USD" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'currencyNameEn' | translate }}</label>
+                    <input type="text" formControlName="currency_name_en" class="form-control" placeholder="e.g. United States Dollar" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{ 'currencyNameLocal' | translate }}</label>
+                    <input type="text" formControlName="currency_name_bn" class="form-control" placeholder="Name in local language" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'currencySymbol' | translate }}</label>
+                    <input type="text" formControlName="currency_symbol" class="form-control" placeholder="e.g. $" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'region' | translate }}</label>
+                    <ng-select formControlName="region" [items]="SYS_CONSTS.regions" bindLabel="label" bindValue="value" placeholder="Select Region"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'assignedBranches' | translate }}</label>
+                    <ng-select [items]="model.branches()" bindLabel="branch_name" bindValue="branch_no" [multiple]="true" formControlName="branch_nos" placeholder="Select branches"></ng-select>
+                  </div>
+                </div>
+              </div>
             </div>
-          </button>
+          </div>
 
-          <div
-            *ngIf="filteredCurrencies().length === 0"
-            class="p-4 text-center opacity-75"
-          >
-            <mat-icon
-              class="opacity-50 mb-2"
-              style="font-size: 32px; height: 32px; width: 32px"
-              >monetization_on</mat-icon
-            >
-            <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">trending_up</mat-icon>
+                {{ 'exchangeRate' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'baseRate' | translate }} (1 Base = ?)</label>
+                    <input type="number" formControlName="exchange_rate" class="form-control fw-bold text-primary" step="0.0001" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required">{{ 'effectiveDate' | translate }}</label>
+                    <input type="date" formControlName="rate_date" class="form-control" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Format & Settings (4-col) -->
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">tune</mat-icon>
+                {{ 'formatting' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group mb-3">
+                <label class="field-label required">{{ 'numberFormat' | translate }}</label>
+                <ng-select formControlName="number_format" [searchable]="false" [clearable]="false">
+                  <ng-option value="International">International (1,234.56)</ng-option>
+                  <ng-option value="Indian">Indian (1,23,456.78)</ng-option>
+                </ng-select>
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label required">{{ 'decimalPlaces' | translate }}</label>
+                <input type="number" formControlName="decimal_places" class="form-control" min="0" max="4" />
+              </div>
+              <div class="field-group">
+                <div class="custom--checkbox">
+                  <mat-checkbox formControlName="is_base_currency" color="primary">
+                    <label class="field-label mb-0" style="cursor: pointer">{{ 'Set as Base Currency' | translate }}</label>
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card bg-indigo-50 border-0 shadow-none mt-3">
+            <div class="card-body">
+              <h6 class="fw-bold small text-uppercase mb-2 text-indigo">{{ 'Currency Guide' | translate }}</h6>
+              <ul class="small text-secondary ps-3 mb-0">
+                <li>{{ 'Base currency rate is always 1.' | translate }}</li>
+                <li>{{ 'Rates are used for multi-branch consolidation.' | translate }}</li>
+                <li>{{ 'History preserves past exchange records.' | translate }}</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- RIGHT SIDE: FORM -->
-    <div
-      class="col-12 col-md-8 col-xl-9 h-100 d-flex flex-column form-content-col"
-    >
-      <div class="page-card-body flex-grow-1 overflow-auto">
-        <div class="card--main h-100 d-flex flex-column">
-          <form
-            [formGroup]="formdata"
-            autocomplete="off"
-            class="h-100 d-flex flex-column"
-          >
-            <div class="row row-group">
-              <!-- Currency Info Column (8-col) -->
-              <div class="col-xl-8 col-lg-12 d-flex flex-column">
-                <div class="form-section-card card">
-                  <div
-                    class="card-header d-flex justify-content-between align-items-center"
-                  >
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">info</mat-icon>
-                      {{ 'currInfo' | translate }}
-                    </h4>
-                    <button
-                      *ngIf="selectedCurrencyNo()"
-                      type="button"
-                      class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 py-1 px-3 fw-bold"
-                      (click)="viewRateHistory()"
-                    >
-                      <mat-icon
-                        style="font-size: 18px; width: 18px; height: 18px"
-                        >history</mat-icon
-                      >
-                      <span>{{ 'rateHistory' | translate }}</span>
-                    </button>
-                  </div>
-                  <div class="card-body">
-                    <div class="row row-group">
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'currCode' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="currency_code"
-                            class="form-control text-uppercase"
-                            placeholder="e.g. USD"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'currencyNameEn' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="currency_name_en"
-                            class="form-control"
-                            placeholder="e.g. US Dollar"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="field-group">
-                          <label class="field-label">{{ 'currencyNameBn' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="currency_name_bn"
-                            class="form-control"
-                            placeholder="যেমন: ইউএস ডলার"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label">{{ 'fractionalUnitEn' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="fractional_unit_en"
-                            class="form-control"
-                            placeholder="e.g. Cent"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label">{{ 'fractionalUnitBn' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="fractional_unit_bn"
-                            class="form-control"
-                            placeholder="যেমন: পয়সা"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-3">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'currSymbol' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="currency_symbol"
-                            class="form-control"
-                            placeholder="$"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'decimalPlaces' | translate }}</label>
-                          <input
-                            type="number"
-                            formControlName="decimal_places"
-                            class="form-control"
-                            min="0"
-                            max="4"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="field-group">
-                          <label class="field-label required"
-                            >{{ 'exchangeRate' | translate }}</label
-                          >
-                          <input
-                            type="number"
-                            formControlName="exchange_rate"
-                            class="form-control fw-bold text-success"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'rateDate' | translate }}</label>
-                          <input
-                            type="date"
-                            formControlName="rate_date"
-                            class="form-control"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'region' | translate }}</label>
-                          <input
-                            type="text"
-                            formControlName="region"
-                            class="form-control"
-                            placeholder="e.g. USA / Europe"
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="field-group">
-                          <label class="field-label required">{{ 'numberFormat' | translate }}</label>
-                          <ng-select
-                            formControlName="number_format"
-                            class="custom-ng-select"
-                            [searchable]="false"
-                            [clearable]="false"
-                          >
-                            <ng-option value="BD/IND">BD / IND (12,34,567.89)</ng-option>
-                            <ng-option value="International">International (1,234,567.89)</ng-option>
-                          </ng-select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sidebar/Status Column (4-col) -->
-              <div class="col-xl-4 col-lg-12 d-flex flex-column">
-                <div class="form-section-card card h-100">
-                  <div class="card-header">
-                    <h4 class="card-header__title mb-0 fw-bold">
-                      <mat-icon class="me-2 align-middle">settings</mat-icon>
-                      {{ 'settings' | translate }}
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="field-group mb-3">
-                      <label class="field-label required"
-                        >{{ 'assignedBranches' | translate }}</label
-                      >
-                      <ng-select
-                        [items]="branches()"
-                        bindLabel="branch_name"
-                        bindValue="branch_no"
-                        [multiple]="true"
-                        formControlName="branch_nos"
-                        placeholder="Select branches"
-                      ></ng-select>
-                    </div>
-
-                    <div class="col-12">
-                      <div class="field-group">
-                        <label
-                          class="field-label"
-                          for="is_base_currency"
-                        ></label>
-                        <div class="custom--checkbox">
-                          <mat-checkbox
-                            formControlName="is_base_currency"
-                            color="primary"
-                          >
-                            <label
-                              class="field-label mb-0"
-                              style="cursor: pointer"
-                              >{{ 'isBaseCurrency' | translate }}</label
-                            >
-                          </mat-checkbox>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      *ngIf="formdata.get('is_base_currency')?.value"
-                      class="alert alert-info py-2 px-3 small border-0 shadow-none mb-0"
-                      style="background-color: #e7f3ff"
-                    >
-                      <mat-icon
-                        class="align-middle me-2 text-primary"
-                        style="font-size: 18px; width: 18px; height: 18px"
-                        >info</mat-icon
-                      >
-                      {{ 'Base currency cannot be deleted and will have a fixed rate of 1.' | translate }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    </form>
   </div>
-</div>
+</app-page-form-layout>

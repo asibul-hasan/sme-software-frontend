@@ -3,6 +3,8 @@
 // Pattern: page-card > page-card-header + page-card-body > card
 // ═══════════════════════════════════════════════════════════════
 
+@import '@ng-select/ng-select/themes/default.theme.css';
+
 // ─────────────────────────────────────────────────────────────────
 // PAGE CARD — master container
 // ─────────────────────────────────────────────────────────────────
@@ -334,20 +336,36 @@
 }
 
 .btn-new {
-  background: rgba(var(--indigo-rgb, 108, 99, 255), 0.15);
-  border-color: rgba(var(--indigo-rgb, 108, 99, 255), 0.3);
-  color: var(--indigo);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  
   &:hover {
-    background: rgba(var(--indigo-rgb, 108, 99, 255), 0.25);
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+    color: #fff;
+  }
+
+  mat-icon {
+    color: #fff;
   }
 }
 
 .btn-save {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--emerald);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  
   &:hover {
-    background: rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    color: #fff;
+  }
+
+  mat-icon {
+    color: #fff;
   }
 }
 
@@ -710,6 +728,252 @@
       object-fit: contain;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// GLOBAL FORM ELEMENTS (Moved from styles.scss)
+// ─────────────────────────────────────────────────────────────────
+
+.mat-mdc-form-field-flex,
+.form-control,
+.form-select,
+.ng-select .ng-select-container,
+.custom-ng-select .ng-select-container {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 6px !important;
+  min-height: 42px;
+  color: var(--text-primary) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    opacity: 0.65;
+  }
+
+  &:hover {
+    border-color: var(--input-focus-border) !important;
+  }
+
+  &:focus,
+  &.mat-focused,
+  &:focus-within,
+  &.ng-select-focused,
+  &.ng-select-opened {
+    border-color: var(--input-focus-border) !important;
+    box-shadow: 0 0 0 0.25rem var(--input-focus-ring) !important;
+    outline: none !important;
+  }
+
+  // Datepicker indicator enhancement
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    &:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+  }
+}
+
+/* ── NATIVE SELECT OPTIONS ── */
+/* Chrome/Windows renders option dropdowns via OS — hover/selected colors cannot be overridden with CSS */
+select option,
+.form-select option {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+/* ── THEMED SELECTION CHIPS ── */
+.badge-select {
+  background: var(--select-bg) !important;
+  color: var(--select-text) !important;
+  border: 1px solid rgba(var(--indigo-rgb), 0.15) !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── NG-SELECT PREMIUM STYLING ── */
+.ng-select,
+.custom-ng-select {
+  display: block !important;
+  width: 100% !important;
+
+  .ng-select-container {
+    padding: 0 10px !important;
+    display: flex;
+    align-items: center;
+    box-shadow: none !important;
+    border: 1px solid var(--input-border) !important;
+  }
+
+  .ng-value-container {
+    padding-left: 0 !important;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    min-height: 40px;
+    width: 100%;
+  }
+
+  // Ghosting fix: Hide the selected value when user starts searching/typing
+  &.ng-select-opened .ng-value {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  &.ng-select-has-value .ng-placeholder {
+    display: none !important;
+  }
+
+  .ng-input {
+    padding: 0 !important;
+    input {
+      font-size: 13.5px !important;
+      color: var(--text-primary) !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+    }
+  }
+
+  // Center search input for single selects
+  &:not(.ng-select-multiple) .ng-input {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  .ng-arrow-wrapper {
+    width: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    .ng-arrow {
+      border-color: var(--text-secondary) transparent transparent transparent !important;
+      border-style: solid !important;
+      border-width: 5px 5px 0 5px !important;
+      transition: all 0.2s ease;
+      display: inline-block !important;
+    }
+  }
+
+  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+    border-color: transparent transparent var(--text-secondary) transparent !important;
+    border-width: 0 5px 5px 5px !important;
+  }
+
+  .ng-dropdown-panel {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--card-shadow) !important;
+    margin-top: 8px;
+    overflow: hidden;
+    z-index: 1050;
+
+    .ng-option {
+      padding: 12px 16px !important;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      transition: all 0.2s;
+
+      &.ng-option-marked {
+        background: var(--select-bg) !important;
+        color: var(--indigo) !important;
+      }
+
+      &.ng-option-selected {
+        background: var(--indigo) !important;
+        color: #fff !important;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+/* ── DATEPICKER WRAPPER ── */
+.datepicker-wrapper {
+  position: relative;
+  width: 100%;
+
+  .form-control {
+    padding-right: 44px !important;
+  }
+
+  mat-datepicker-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+
+    button {
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      color: var(--indigo);
+    }
+  }
+}
+
+/* ── GLOBAL MENU & SELECT PANEL STYLING ── */
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel {
+  background-color: var(--card-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow) !important;
+  padding: 6px 0 !important;
+  margin-top: 4px;
+
+  .mat-mdc-menu-item,
+  .mat-mdc-option {
+    color: var(--text-primary) !important;
+    font-size: 13.5px !important;
+    min-height: 42px !important;
+    padding: 0 16px !important;
+    transition: all 0.2s ease;
+
+    &:hover,
+    &.cdk-keyboard-focused,
+    &.cdk-program-focused,
+    &.mat-mdc-option-active {
+      background-color: var(--select-bg) !important;
+      color: var(--indigo) !important;
+    }
+  }
+
+  // Selected state
+  .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+    background-color: var(--indigo) !important;
+    color: #fff !important;
+
+    .mdc-list-item__primary-text {
+      color: #fff !important;
+      font-weight: 600;
     }
   }
 }

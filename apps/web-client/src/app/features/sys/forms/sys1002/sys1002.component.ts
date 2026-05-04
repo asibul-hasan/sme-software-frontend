@@ -1,82 +1,44 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from '../../../../shared';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { SysDataService } from '../../services/data.service';
 import { finalize } from 'rxjs/operators';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { sysConstants } from '../../constants/sys.constants';
-
-export interface Branch {
-  branchNo: number;
-  branchCode: string;
-  branchName: string;
-  branchNameLocal?: string;
-  branchType?: string;
-  isHeadOffice?: boolean | number;
-  addressLine1?: string;
-  city?: string;
-  phonePrimary?: string;
-  email?: string;
-  managerUserNo?: string | number;
-  costCenterCode?: string;
-  openingDate?: string | Date;
-  status?: string;
-}
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
+import { Sys1002ModelService, Branch } from './services/model.service';
+import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-sys1002',
   standalone: true,
-  imports: [SharedModule, CommonModule],
-  providers: [DatePipe],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  providers: [DatePipe, Sys1002ModelService],
   templateUrl: './sys1002.component.html',
   styles: [],
 })
 export class Sys1002Component implements OnInit {
+  public model = inject(Sys1002ModelService);
   formdata!: FormGroup;
 
   // Constants for dropdowns
-  readonly SYS_CONSTS = sysConstants;
-
-  branches = signal<Branch[]>([]);
-  isLoading = signal(false);
-  isSaving = signal(false);
-
-  searchTerm = signal('');
-
-  filteredBranches = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const data = this.branches();
-    if (!term) return data;
-    return data.filter(
-      (b) =>
-        (b.branchName || '').toLowerCase().includes(term) ||
-        (b.branchCode || '').toLowerCase().includes(term),
-    );
-  });
-
-  selectedBranchNo = signal<number | null>(null);
-  lastSelectedBranchIndex = 0;
+  readonly sysConstants = sysConstants;
+  onSearchTermChange(val: string) {
+    this.model.searchTerm.set(val);
+  }
 
   private fb = inject(FormBuilder);
   private sysService = inject(SysDataService);
   public permissionService = inject(FormPermissionService);
   private datePipe = inject(DatePipe);
-
+  private alertService = inject(AlertService);
+  private toastr = inject(ToastrService);
 
   ngOnInit(): void {
     this.initForm();
-    this.permissionService.loadPermissions('SYS_1001').subscribe();
+    this.permissionService.loadPermissions('SYS_1002').subscribe();
 
     this.loadBranches();
   }
@@ -95,18 +57,19 @@ export class Sys1002Component implements OnInit {
       manager_user_no: [''],
       cost_center_code: [''],
       opening_date: [''],
+      status: ['Active'],
     });
   }
 
   loadBranches(reselectIndex?: number) {
-    this.isLoading.set(true);
+    this.model.isLoading.set(true);
     this.sysService
-      .getList<ApiResponse<Branch[]>>('branch/list')
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .getList<Branch[]>('branch/list')
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
-            this.branches.set(res.data);
+            this.model.branches.set(res.data);
 
             if (res.data.length > 0) {
               let indexToSelect = 0;
@@ -124,6 +87,7 @@ export class Sys1002Component implements OnInit {
           }
         },
         error: (err) => {
+          this.toastr.error('Failed to load branches');
           console.error('Failed to load branches', err);
         },
       });
@@ -131,20 +95,22 @@ export class Sys1002Component implements OnInit {
 
   selectBranch(branch: Branch, index?: number) {
     if (index !== undefined) {
-      this.lastSelectedBranchIndex = index;
+      this.model.lastSelectedBranchIndex = index;
     } else {
-      const idx = this.branches().findIndex(
-        (b) => b.branchNo === branch.branchNo,
-      );
-      if (idx !== -1) this.lastSelectedBranchIndex = idx;
+      const idx = this.model
+        .branches()
+        .findIndex((b) => b.branchNo === branch.branchNo);
+      if (idx !== -1) this.model.lastSelectedBranchIndex = idx;
     }
 
-    this.selectedBranchNo.set(branch.branchNo);
-    this.isLoading.set(true);
+    this.model.selectedBranchNo.set(branch.branchNo);
+    this.model.isLoading.set(true);
 
     this.sysService
-      .getDetails<ApiResponse<Branch>>('branch/detail', { branch_no: branch.branchNo })
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .getDetails<Branch>('branch/detail', {
+        branch_no: branch.branchNo,
+      })
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
@@ -163,11 +129,12 @@ export class Sys1002Component implements OnInit {
               opening_date: res.data.openingDate
                 ? new Date(res.data.openingDate)
                 : null,
+              status: res.data.status || 'Active',
             });
           }
         },
         error: (err) => {
-          console.error('Failed to get branch details', err);
+          this.toastr.error('Failed to load branch details');
         },
       });
   }
@@ -175,10 +142,11 @@ export class Sys1002Component implements OnInit {
   onSave() {
     if (this.formdata.invalid) {
       this.formdata.markAllAsTouched();
+      this.toastr.warning('Please correct the validation errors.');
       return;
     }
 
-    this.isSaving.set(true);
+    this.model.isSaving.set(true);
     const formValue = this.formdata.value;
 
     // Formatting date
@@ -191,7 +159,7 @@ export class Sys1002Component implements OnInit {
     }
 
     const payload = {
-      branch_no: this.selectedBranchNo(),
+      branch_no: this.model.selectedBranchNo(),
       branch_code: formValue.branch_code,
       branch_name: formValue.branch_name,
       branch_name_local: formValue.branch_name_local,
@@ -204,43 +172,45 @@ export class Sys1002Component implements OnInit {
       manager_user_no: formValue.manager_user_no,
       cost_center_code: formValue.cost_center_code,
       opening_date: formattedDate,
+      status: formValue.status,
     };
 
-    const isUpdate = !!this.selectedBranchNo();
+    const isUpdate = !!this.model.selectedBranchNo();
     const saveObs = isUpdate
-      ? this.sysService.update<ApiResponse<unknown>>('branch/update', payload)
-      : this.sysService.create<ApiResponse<unknown>>('branch/create', payload);
+      ? this.sysService.update<unknown>('branch/update', payload)
+      : this.sysService.create<unknown>('branch/create', payload);
 
-    saveObs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+    saveObs.pipe(finalize(() => this.model.isSaving.set(false))).subscribe({
       next: (res) => {
         if (res.success) {
-          // If inserting, we might want to select the newly added branch.
-          // For simplicity, re-select the same index (or 0 if new).
-          const reselectIdx = isUpdate ? this.lastSelectedBranchIndex : 0;
+          this.toastr.success(
+            isUpdate ? 'Branch updated' : 'Branch created',
+          );
+          const reselectIdx = isUpdate ? this.model.lastSelectedBranchIndex : 0;
           this.loadBranches(reselectIdx);
         } else {
-          console.error('Save failed:', res.message);
+          this.toastr.error(res.message || 'Save failed');
         }
       },
       error: (err) => {
-        console.error('API Error:', err);
+        this.toastr.error('Failed to save branch');
       },
     });
   }
 
   onNew() {
-    this.selectedBranchNo.set(null);
+    this.model.selectedBranchNo.set(null);
     this.formdata.reset({
       is_head_office: false,
     });
   }
 
   onReset() {
-    if (this.selectedBranchNo()) {
+    if (this.model.selectedBranchNo()) {
       // Re-fetch details
-      const b = this.branches().find(
-        (x) => x.branchNo === this.selectedBranchNo(),
-      );
+      const b = this.model
+        .branches()
+        .find((x) => x.branchNo === this.model.selectedBranchNo());
       if (b) {
         this.selectBranch(b);
       }
@@ -250,25 +220,33 @@ export class Sys1002Component implements OnInit {
   }
 
   onDelete() {
-    if (!this.selectedBranchNo) return;
+    if (!this.model.selectedBranchNo()) return;
 
-    if (confirm('Are you sure you want to delete this branch?')) {
-      this.isLoading.set(true);
-      this.sysService
-        .delete<ApiResponse<unknown>>('branch/delete', { branch_no: this.selectedBranchNo() })
-        .pipe(finalize(() => this.isLoading.set(false)))
-        .subscribe({
-          next: (res) => {
-            if (res.success) {
-              this.loadBranches();
-            } else {
-              console.error('Delete failed:', res.message);
-            }
-          },
-          error: (err) => {
-            console.error('API Error:', err);
-          },
-        });
-    }
+    this.alertService
+      .deleteConfirm('Are you sure you want to delete this branch?')
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.model.isLoading.set(true);
+          this.sysService
+            .delete<unknown>('branch/delete', {
+              branch_no: this.model.selectedBranchNo(),
+            })
+            .pipe(finalize(() => this.model.isLoading.set(false)))
+            .subscribe({
+              next: (res) => {
+                if (res.success) {
+                  this.toastr.success('Branch deleted successfully');
+                  this.loadBranches();
+                } else {
+                  this.toastr.error(res.message || 'Delete failed');
+                }
+              },
+              error: (err) => {
+                this.toastr.error('Server error during delete');
+                console.error(err);
+              },
+            });
+        }
+      });
   }
 }

@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../../core';
+import { AlertService } from '../../../core/services/alert.service';
 import { ToastrService } from 'ngx-toastr';
 import {
   AuthDataService,
@@ -40,6 +41,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private authDataService = inject(AuthDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private alertService = inject(AlertService);
   private toastr = inject(ToastrService);
 
   contexts: UserContextResponse[] = [];

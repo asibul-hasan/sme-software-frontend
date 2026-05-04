@@ -13,21 +13,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.authService.getToken();
-    const user = this.authService.user();
-    
-    const headers: Record<string, string> = {};
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    if (user) {
-      if (user.company_no) headers['X-Company-No'] = user.company_no.toString();
-      if (user.branch_no) headers['X-Branch-No'] = user.branch_no.toString();
-      if (user.user_no) headers['X-User-No'] = user.user_no.toString();
-    }
-    
-    const authReq = req.clone({ setHeaders: headers });
+    const authReq = token ? this.addAuthHeaders(req, token) : req;
     
     return next.handle(authReq).pipe(
       catchError(error => {
@@ -39,7 +25,7 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private addToken(request: HttpRequest<unknown>, token: string) {
+  private addAuthHeaders(request: HttpRequest<unknown>, token: string) {
     const user = this.authService.user();
     const headers: Record<string, string> = {
       'Authorization': `Bearer ${token}`
@@ -64,7 +50,7 @@ export class AuthInterceptor implements HttpInterceptor {
           this.isRefreshing = false;
           const accessToken = response?.access_token || '';
           this.refreshTokenSubject.next(accessToken);
-          return next.handle(this.addToken(request, accessToken));
+          return next.handle(this.addAuthHeaders(request, accessToken));
         }),
         catchError((err) => {
           this.isRefreshing = false;
@@ -77,7 +63,7 @@ export class AuthInterceptor implements HttpInterceptor {
         filter(token => token != null),
         take(1),
         switchMap(jwt => {
-          return next.handle(this.addToken(request, jwt as string));
+          return next.handle(this.addAuthHeaders(request, jwt as string));
         })
       );
     }

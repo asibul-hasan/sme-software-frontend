@@ -1,0 +1,28 @@
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+}
+
+.card-header {
+    background-color: transparent !important;
+}
+
+.bg-light-2d { background-color: var(--bg-secondary); color: var(--text-primary); }
+.xx-small { font-size: 0.65rem; }
+.small { font-size: 0.8rem; }
+.fw-black { font-weight: 900; }
+
+.text-muted { color: var(--text-secondary) !important; }
+.text-dark { color: var(--text-primary) !important; }
+
+.progress {
+    background-color: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    background-color: var(--indigo);
+}

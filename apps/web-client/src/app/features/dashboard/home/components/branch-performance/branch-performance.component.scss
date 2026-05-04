@@ -1,0 +1,32 @@
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+}
+
+.card-header {
+    background-color: transparent !important;
+}
+
+.progress {
+    background-color: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.xx-small { font-size: 0.65rem; }
+.small { font-size: 0.8rem; }
+.fw-black { font-weight: 900; }
+
+.text-muted { color: var(--text-secondary) !important; }
+.text-warning { color: #f59e0b !important; }

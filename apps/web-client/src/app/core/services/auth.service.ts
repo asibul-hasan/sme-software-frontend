@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap, of, catchError } from 'rxjs';
+import { Observable, tap, of, catchError, switchMap, map } from 'rxjs';
 import { LoginRequest, RegisterRequest, RegisterCompanyRequest, LoginResponse, AuthDataService, Branch } from '../../features/auth/services/data.service';
 import { User } from '../models/user.model';
 import { PermissionService } from './permission.service';
@@ -31,20 +31,41 @@ export class AuthService {
       return of(null);
     }
 
+    // Check if token is expired
+    if (this.authContext.isTokenExpired(token)) {
+      return this.refreshToken().pipe(
+        switchMap(() => {
+          const loaded = this.authContext.loadFromStorage();
+          if (loaded) {
+            this.syncPermissions();
+            return of(true);
+          }
+          return of(null);
+        }),
+        catchError(() => {
+          this.logout();
+          return of(null);
+        })
+      );
+    }
+
     // Try to load state from LocalStorage using AuthContextService
     const loaded = this.authContext.loadFromStorage();
 
     if (loaded) {
-        // Also sync with PermissionService
-        const perms = this.authContext.permissions();
-        if (perms) {
-          this.permissionService.setPermissions(perms);
-        }
-        return of(true); 
+      this.syncPermissions();
+      return of(true);
     }
 
     // Fallback: If cache missing but token exists (legacy or cleared), fetch profile
     return this.loadProfile();
+  }
+
+  private syncPermissions() {
+    const perms = this.authContext.permissions();
+    if (perms) {
+      this.permissionService.setPermissions(perms);
+    }
   }
 
   getToken(): string | null {
@@ -114,12 +135,14 @@ export class AuthService {
     this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
     
     // Only update context if user/permissions/menu are present (prevents clearing state on refresh)
-    const user = response.user || (response.user_no ? {
-      user_no: response.user_no,
-      name: response.user_name,
-      company_no: response.company_no,
-      branch_no: response.branch_no
-    } : null);
+    const user: User = {
+      ...(response.user || {}),
+      user_no: response.user?.user_no || response.user_no,
+      user_name: response.user?.user_name || response.user_name,
+      name: response.user?.name || response.user_name,
+      company_no: response.user?.company_no || response.company_no,
+      branch_no: response.user?.branch_no || response.branch_no
+    } as User;
 
     this.authContext.populateFromLogin(user, response.permissions || null, response.menu || []);
     

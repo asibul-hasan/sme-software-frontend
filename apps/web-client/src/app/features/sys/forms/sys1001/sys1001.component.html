@@ -1,420 +1,354 @@
-<div class="page-card d-flex flex-column">
-  <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
-  <div
-    class="page-card-header d-flex flex-column flex-md-row justify-content-between p-2 border-bottom flex-shrink-0"
-  >
-    <div class="d-flex align-items-center gap-2">
-      <div class="header-icon-box shadow-sm">
-        <mat-icon>business</mat-icon>
-      </div>
-      <div>
-        <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
-          Company Management
-        </h2>
-      </div>
-    </div>
-
-    <div class="btn-action-group mt-3 mt-md-0 d-flex gap-2">
-      <button
-        !*appHasPermission="'update'"
-        class="btn-action btn-save"
-        (click)="onSave()"
-        [disabled]="isSaving()"
-        matTooltip="Save Company (Ctrl+S)"
+<app-page-form-layout
+  [title]="'companyManagement' | translate"
+  [subtitle]="
+    'Manage global enterprise settings, branding, and legal identifiers'
+      | translate
+  "
+  [icon]="'business'"
+  [hasSidebar]="false"
+  (save)="onSave()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+  [showNew]="false"
+  [showReset]="true"
+  (reset)="onReset()"
+  [showDelete]="false"
+>
+  <!-- Extra Header Action for Last Updated -->
+  <div extraHeaderActions>
+    <div
+      *ngIf="model.lastUpdated()"
+      class="d-none d-lg-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border ms-2"
+    >
+      <mat-icon
+        class="text-secondary"
+        style="font-size: 16px; width: 16px; height: 16px"
+        >history</mat-icon
       >
-        <ng-container *ngIf="!isSaving()">
-          <mat-icon>done_all</mat-icon>
-          <span class="btn-action-label">Save Changes</span>
-        </ng-container>
-        <ng-container *ngIf="isSaving()">
-          <span
-            class="spinner-border spinner-border-sm me-1"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          Saving...
-        </ng-container>
-      </button>
+      <span class="smaller text-secondary fw-medium"
+        >{{ 'lastUpdated' | translate }}: {{ model.lastUpdated() }}</span
+      >
     </div>
   </div>
 
-  <div
-    class="row g-0 flex-grow-1 form-content-row"
-    *ngIf="!isLoading() && !permissionService.hasPermission('view')"
-  >
-    <div class="col-12 h-100 d-flex flex-column form-content-col">
-      <div class="page-card-body flex-grow-1">
-        <div class="card--main p-1 h-100 d-flex flex-column">
-          <form
-            [formGroup]="formdata"
-            autocomplete="off"
-            class="h-100 d-flex flex-column"
-          >
-            <div class="d-flex flex-column gap-3 flex-grow-1">
-              <!-- TOP ROW: General Info & Company Logo -->
+  <!-- Main Form Content -->
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Left Column: Core Identity & Branding -->
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">info</mat-icon>
+                {{ 'generalInfo' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
               <div class="row row-group">
-                <div class="col-xl-8 col-lg-8">
-                  <div class="form-section-card card">
-                    <div class="card-header">
-                      <h4 class="card-header__title mb-0 fw-bold">
-                        <mat-icon class="me-2 align-middle">info</mat-icon>
-                        General Info
-                      </h4>
-                    </div>
-                    <div class="card-body">
-                      <div class="row row-group">
-                        <div class="col-md-3">
-                          <div class="field-group">
-                            <label class="field-label" for="company_code"
-                              >Company Code</label
-                            >
-                            <input
-                              type="text"
-                              id="company_code"
-                              formControlName="company_code"
-                              class="form-control text-uppercase"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-9">
-                          <div class="field-group">
-                            <label
-                              class="field-label required"
-                              for="company_name"
-                              >Company Name</label
-                            >
-                            <input
-                              type="text"
-                              id="company_name"
-                              formControlName="company_name"
-                              class="form-control"
-                              placeholder="Legal company name"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="field-group">
-                            <label class="field-label" for="company_name_local"
-                              >Local Name</label
-                            >
-                            <input
-                              type="text"
-                              id="company_name_local"
-                              formControlName="company_name_local"
-                              class="form-control"
-                              placeholder="Name in local language"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="field-group">
-                            <label class="field-label" for="company_type"
-                              >Company Type</label
-                            >
-                            <ng-select
-                              id="company_type"
-                              formControlName="company_type"
-                              [searchable]="false"
-                            >
-                              <ng-option value="">— Select —</ng-option>
-                              <ng-option
-                                *ngFor="let opt of SYS_CONSTS.companyTypes"
-                                [value]="opt.value"
-                                >{{ opt.label }}</ng-option
-                              >
-                            </ng-select>
-                          </div>
-                        </div>
-                      </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'companyCode' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px"
+                          >fingerprint</mat-icon
+                        ></span
+                      >
+                      <input
+                        type="text"
+                        formControlName="company_code"
+                        class="form-control bg-light fw-bold"
+                        readonly
+                      />
                     </div>
                   </div>
                 </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required">{{
+                      'companyName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="company_name"
+                      class="form-control form-control-lg fw-bold"
+                      placeholder="Legal company name"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'localName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="company_name_local"
+                      class="form-control"
+                      placeholder="Name in local language"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'companyType' | translate
+                    }}</label>
+                    <ng-select
+                      formControlName="company_type"
+                      [items]="sysConstants.companyTypes"
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="Select Type"
+                    ></ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <div class="col-xl-4 col-lg-4">
-                  <div class="form-section-card card">
-                    <div class="card-header">
-                      <h4 class="card-header__title mb-0 fw-bold">
-                        <mat-icon class="me-2 align-middle">image</mat-icon>
-                        Company Logo
-                      </h4>
-                    </div>
-                    <div class="card-body">
-                      <div class="modern-upload d-flex flex-column">
-                        <label
-                          class="modern-upload-dropzone"
-                          [class.active]="isDragActive()"
-                          (dragover)="onLogoDragOver($event)"
-                          (dragleave)="onLogoDragLeave()"
-                          (drop)="onLogoDrop($event)"
-                        >
-                          <input
-                            #logoInput
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            (change)="onLogoSelected($event)"
-                          />
-                          <ng-container *ngIf="logoPreview()">
-                            <img
-                              [src]="logoPreview()"
-                              alt="Logo preview"
-                              class="logo-preview-img"
-                            />
-                          </ng-container>
-
-                          <!-- Placeholder text when no logo -->
-                          <ng-container *ngIf="!logoPreview()">
-                            <div class="upload-placeholder">
-                              <mat-icon>add_photo_alternate</mat-icon>
-                              <span>Upload Logo</span>
-                            </div>
-                          </ng-container>
-                        </label>
-
-                        <div
-                          class="modern-upload-status mt-3"
-                          [class.no-file]="!logoPreview()"
-                        >
-                          <ng-container *ngIf="!logoPreview()">
-                            <button
-                              type="button"
-                              class="btn-upload-trigger"
-                              (click)="logoInput.click()"
-                            >
-                              <mat-icon>cloud_upload</mat-icon>
-                              <span>Upload Company Logo</span>
-                            </button>
-                          </ng-container>
-                          <ng-container *ngIf="logoPreview()">
-                            <div class="file-info">
-                              <mat-icon>insert_drive_file</mat-icon>
-                              <span
-                                title="{{ logoFileName() || 'Company Logo' }}"
-                              >
-                                {{ logoFileName() || 'Company Logo' }}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              class="btn-delete-file"
-                              (click)="clearLogo()"
-                              matTooltip="Remove Logo"
-                            >
-                              <mat-icon>delete</mat-icon>
-                            </button>
-                          </ng-container>
-                        </div>
-                      </div>
+          <!-- Address & Contact -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">place</mat-icon>
+                {{ 'Address & Contact' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'registeredAddress' | translate
+                    }}</label>
+                    <textarea
+                      formControlName="address_line1"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Street address, building, etc."
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{ 'city' | translate }}</label>
+                    <input
+                      type="text"
+                      formControlName="city"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'country' | translate
+                    }}</label>
+                    <ng-select
+                      formControlName="country_code"
+                      [items]="SYS_CONSTS.countries"
+                      bindLabel="label"
+                      bindValue="value"
+                    ></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'primaryPhone' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px">call</mat-icon></span
+                      >
+                      <input
+                        type="text"
+                        formControlName="phone_primary"
+                        class="form-control"
+                        placeholder="+880..."
+                      />
                     </div>
                   </div>
                 </div>
-
-                <!-- BOTTOM ROW: Address & Legal/Preferences -->
-                <!-- <div class="row row-group"> -->
-                <div class="col-xl-8 col-lg-8">
-                  <div class="form-section-card card h-100 mb-0">
-                    <div class="card-header">
-                      <h4 class="card-header__title mb-0 fw-bold">
-                        <mat-icon class="me-2 align-middle"
-                          >contact_phone</mat-icon
-                        >
-                        Address & Contact
-                      </h4>
-                    </div>
-                    <div class="card-body">
-                      <div class="row row-group">
-                        <div class="col-md-12">
-                          <div class="field-group">
-                            <label class="field-label" for="address_line1"
-                              >Registered Address</label
-                            >
-                            <input
-                              type="text"
-                              id="address_line1"
-                              formControlName="address_line1"
-                              class="form-control"
-                              placeholder="Street address, building, etc."
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="field-group">
-                            <label class="field-label" for="city">City</label>
-                            <input
-                              type="text"
-                              id="city"
-                              formControlName="city"
-                              class="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="field-group">
-                            <label class="field-label" for="country_code"
-                              >Country</label
-                            >
-                            <ng-select
-                              id="country_code"
-                              formControlName="country_code"
-                            >
-                              <ng-option value="">— Select —</ng-option>
-                              <ng-option
-                                *ngFor="let opt of SYS_CONSTS.countries"
-                                [value]="opt.value"
-                                >{{ opt.label }}</ng-option
-                              >
-                            </ng-select>
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="field-group">
-                            <label class="field-label" for="phone_primary"
-                              >Primary Phone</label
-                            >
-                            <input
-                              type="text"
-                              id="phone_primary"
-                              formControlName="phone_primary"
-                              class="form-control"
-                              placeholder="+880..."
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="field-group">
-                            <label class="field-label" for="email_primary"
-                              >Primary Email</label
-                            >
-                            <input
-                              type="email"
-                              id="email_primary"
-                              formControlName="email_primary"
-                              class="form-control"
-                              placeholder="contact@domain.com"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="field-group">
-                            <label class="field-label" for="website"
-                              >Website</label
-                            >
-                            <input
-                              type="url"
-                              id="website"
-                              formControlName="website"
-                              class="form-control"
-                              placeholder="https://..."
-                            />
-                          </div>
-                        </div>
-                      </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'primaryEmail' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px"
+                          >alternate_email</mat-icon
+                        ></span
+                      >
+                      <input
+                        type="email"
+                        formControlName="email_primary"
+                        class="form-control"
+                        placeholder="contact@domain.com"
+                      />
                     </div>
                   </div>
                 </div>
-
-                <div class="col-xl-4 col-lg-4">
-                  <div class="form-section-card card h-100 mb-0">
-                    <div class="card-header">
-                      <h4 class="card-header__title mb-0 fw-bold">
-                        <mat-icon class="me-2 align-middle">gavel</mat-icon>
-                        Legal
-                      </h4>
-                    </div>
-                    <div class="card-body">
-                      <div class="row row-group">
-                        <div class="col-12">
-                          <div class="field-group">
-                            <label class="field-label" for="trade_license_no"
-                              >Trade License No.</label
-                            >
-                            <input
-                              type="text"
-                              id="trade_license_no"
-                              formControlName="trade_license_no"
-                              class="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <div class="field-group">
-                            <label class="field-label" for="vat_reg_no"
-                              >VAT Registration No.</label
-                            >
-                            <input
-                              type="text"
-                              id="vat_reg_no"
-                              formControlName="vat_reg_no"
-                              class="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-6">
-                          <div class="field-group">
-                            <label class="field-label" for="tin_no">TIN</label>
-                            <input
-                              type="text"
-                              id="tin_no"
-                              formControlName="tin_no"
-                              class="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-6">
-                          <div class="field-group">
-                            <label class="field-label" for="bin_no">BIN</label>
-                            <input
-                              type="text"
-                              id="bin_no"
-                              formControlName="bin_no"
-                              class="form-control"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'website' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px"
+                          >language</mat-icon
+                        ></span
+                      >
+                      <input
+                        type="url"
+                        formControlName="website"
+                        class="form-control"
+                        placeholder="https://..."
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </form>
+          </div>
         </div>
 
-        <!-- Footer / Last Updated -->
-        <div
-          class="d-flex justify-content-end align-items-center mt-3 pt-3 border-top"
-          *ngIf="lastUpdated()"
-        >
-          <small class="text-secondary d-flex align-items-center">
-            <mat-icon
-              class="me-1"
-              style="font-size: 14px; width: 14px; height: 14px"
-              >history</mat-icon
-            >
-            Last Updated: {{ lastUpdated() }}
-          </small>
+        <!-- Right Column: Logo & Legal -->
+        <div class="col-xl-4 col-lg-12">
+          <!-- Logo Card -->
+          <div class="form-section-card card branding-card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">brush</mat-icon>
+                {{ 'Branding' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="logo-fixed-container d-flex flex-column align-items-center py-2">
+                <!-- Fixed Area Box -->
+                <div
+                  class="logo-box-fixed mb-3"
+                  [class.drag-active]="model.isDragActive()"
+                  [class.has-logo]="!!model.logoPreview()"
+                  (dragover)="onLogoDragOver($event)"
+                  (dragleave)="onLogoDragLeave()"
+                  (drop)="onLogoDrop($event)"
+                >
+                  <input
+                    #logoInput
+                    type="file"
+                    accept="image/*"
+                    class="file-input-overlay"
+                    (change)="onLogoSelected($event)"
+                  />
+
+                  @if (model.logoPreview()) {
+                    <img
+                      [src]="model.logoPreview()"
+                      alt="Logo preview"
+                      class="logo-img-contain"
+                    />
+                  } @else {
+                    <div class="logo-empty-state">
+                      <mat-icon>add_a_photo</mat-icon>
+                      <span class="placeholder-text">{{ 'selectLogoForUpload' | translate }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Integrated Action Bar -->
+                <div class="logo-action-bar-integrated">
+                  <div class="logo-file-name" [title]="model.logoFileName() || ('selectLogoForUpload' | translate)">
+                    {{ model.logoFileName() || ('selectLogoForUpload' | translate) }}
+                  </div>
+                  <button
+                    type="button"
+                    class="action-btn-icon"
+                    (click)="onLogoUploadClick(logoInput)"
+                    title="Upload"
+                  >
+                    <mat-icon>cloud_upload</mat-icon>
+                  </button>
+                  <div class="action-sep"></div>
+                  <button
+                    type="button"
+                    class="action-btn-icon text-danger"
+                    [disabled]="!model.logoPreview()"
+                    (click)="clearLogo(); $event.stopPropagation()"
+                    title="Delete"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legal Card -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">gavel</mat-icon>
+                {{ 'legal' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'tradeLicense' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="trade_license_no"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'vatReg' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="vat_reg_no"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="field-group">
+                    <label class="field-label">TIN</label>
+                    <input
+                      type="text"
+                      formControlName="tin_no"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="field-group">
+                    <label class="field-label">BIN</label>
+                    <input
+                      type="text"
+                      formControlName="bin_no"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   </div>
-
-  <!-- Fallback if no view permission -->
-  <!-- <div
-    class="page-content flex-grow-1 p-5 d-flex flex-column align-items-center justify-content-center"
-    *ngIf="!isLoading() && !permissionService.hasPermission('view')"
-  >
-    <mat-icon
-      style="
-        font-size: 64px;
-        width: 64px;
-        height: 64px;
-        color: var(--bs-gray-400);
-      "
-      >lock</mat-icon
-    >
-    <h3 class="mt-3 text-muted">Access Denied</h3>
-    <p class="text-secondary text-center">
-      You do not have permission to view this company's details.
-    </p>
-  </div> -->
-</div>
+</app-page-form-layout>

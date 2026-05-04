@@ -1,0 +1,80 @@
+<div class="page-card d-flex flex-column h-100">
+  <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
+  <div class="page-card-header d-flex flex-column flex-md-row justify-content-between p-2 border-bottom flex-shrink-0">
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon-box shadow-sm">
+        <mat-icon>{{ icon }}</mat-icon>
+      </div>
+      <div>
+        <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
+          {{ title | translate }}
+        </h2>
+        <p class="text-secondary m-0 small mt-1">
+          {{ subtitle | translate }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-action-group mt-md-0 d-flex gap-2">
+      <button *ngIf="showSave" class="btn-action btn-save" (click)="save.emit()" [matTooltip]="'save' | translate" [disabled]="isSaving">
+        <mat-icon>{{ isSaving ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+        <span class="btn-action-label">{{ 'save' | translate }}</span>
+      </button>
+      
+      <button *ngIf="showNew" class="btn-action btn-new" (click)="new.emit()" [matTooltip]="'new' | translate">
+        <mat-icon>add</mat-icon>
+        <span class="btn-action-label">{{ 'new' | translate }}</span>
+      </button>
+      
+      <button *ngIf="showReset" class="btn-action btn-reset" (click)="reset.emit()" [matTooltip]="'reset' | translate">
+        <mat-icon>refresh</mat-icon>
+        <span class="btn-action-label">{{ 'reset' | translate }}</span>
+      </button>
+
+      <button *ngIf="showDelete" class="btn-action btn-delete" (click)="delete.emit()" [matTooltip]="'delete' | translate">
+        <mat-icon>delete</mat-icon>
+        <span class="btn-action-label">{{ 'delete' | translate }}</span>
+      </button>
+      
+      <ng-content select="[extraHeaderActions]"></ng-content>
+    </div>
+  </div>
+
+  <!-- ── SPLIT BODY ──────────────────── -->
+  <div class="row g-0 flex-grow-1 form-content-row overflow-hidden">
+    <!-- LEFT SIDEBAR -->
+    <div *ngIf="hasSidebar" class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col">
+      <div class="p-3 pb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="m-0 fw-bold text-uppercase opacity-75 small" style="letter-spacing: 0.5px">
+            {{ sidebarTitle | translate }}
+          </h6>
+          <span class="badge rounded-pill text-bg-secondary">{{ recordsCount }} {{ 'records' | translate }}</span>
+        </div>
+        <div class="field-group mb-0">
+          <input
+            type="text"
+            class="form-control"
+            [placeholder]="'search' | translate"
+            [ngModel]="searchTerm"
+            (ngModelChange)="onSearchChange($event)"
+          />
+        </div>
+      </div>
+
+      <div class="p-3 pt-0 flex-grow-1 overflow-auto">
+        <div class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden">
+          <ng-content select="[sidebarList]"></ng-content>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: FORM -->
+    <div [ngClass]="hasSidebar ? 'col-12 col-md-8 col-xl-9' : 'col-12'" class="h-100 d-flex flex-column form-content-col overflow-auto">
+      <div class="page-card-body p-4 flex-grow-1">
+        <ng-content select="[formContent]"></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

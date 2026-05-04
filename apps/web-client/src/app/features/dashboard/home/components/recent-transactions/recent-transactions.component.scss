@@ -1,0 +1,44 @@
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+}
+
+.tab-group {
+    display: flex;
+    background-color: var(--bg-secondary);
+}
+
+.tab-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    
+    &.active {
+        background: var(--card-bg);
+        color: var(--indigo);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+}
+
+.bg-light-2d { background-color: var(--bg-secondary); }
+
+.transaction-item {
+    &:last-child {
+        border-bottom: none !important;
+    }
+}
+
+.border-bottom-themed {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.text-success { color: #10b981 !important; }
+.text-danger  { color: #ef4444 !important; }
+.text-muted   { color: var(--text-secondary) !important; }
+
+.fw-black { font-weight: 900; }
+.small { font-size: 0.85rem; }
+.xx-small { font-size: 0.7rem; }

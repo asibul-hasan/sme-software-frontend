@@ -24,10 +24,10 @@
 }
 
 .main-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    background-color: var(--bg-primary);
 }
 
 .content-wrapper {

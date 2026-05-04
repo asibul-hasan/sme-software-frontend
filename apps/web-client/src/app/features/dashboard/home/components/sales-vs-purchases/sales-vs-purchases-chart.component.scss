@@ -1,0 +1,23 @@
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+}
+
+.chart-wrapper {
+    height: 300px;
+    width: 100%;
+}
+
+.bg-light-2d { background-color: var(--bg-secondary); color: var(--text-primary); }
+.xx-small { font-size: 0.65rem; }
+.small { font-size: 0.8rem; }
+
+.text-muted { color: var(--text-secondary) !important; }
+
+.form-select-sm {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}

@@ -1,0 +1,29 @@
+.chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    // Removed hover lift effect as per user request
+}
+
+.card-header {
+    background-color: transparent !important;
+}
+
+.chart-wrapper {
+    height: 300px;
+    width: 100%;
+}
+
+.bg-light-2d { background-color: var(--bg-secondary); }
+.x-small { font-size: 0.75rem; }
+.fw-black { font-weight: 900; }
+
+.text-muted { color: var(--text-secondary) !important; }
+
+// Select override
+.form-select-sm {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}

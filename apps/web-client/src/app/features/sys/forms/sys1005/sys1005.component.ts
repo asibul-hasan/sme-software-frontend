@@ -1,47 +1,22 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { sysConstants } from '../../constants/sys.constants';
+import { Sys1005ModelService, TaxRule, TaxComponent } from './services/model.service';
 import { SysDataService } from '../../services/data.service';
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
+import { ToastrService } from 'ngx-toastr';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
 import { finalize } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-interface TaxComponent {
-  child_tax_no: number;
-  child_tax_code: string;
-  child_tax_name: string;
-  tax_rate: number;
-  sequence: number;
-}
-
-interface TaxRule {
-  tax_no: number;
-  tax_code: string;
-  tax_name: string;
-  tax_type: string;
-  tax_rate: number;
-  is_compound: boolean;
-  applies_to_sales: boolean;
-  applies_to_purchase: boolean;
-  is_inclusive: boolean;
-  is_default: boolean;
-  tax_authority: string;
-  reporting_code: string;
-  effective_from: string;
-  effective_to?: string;
-  status: string;
-  branch_nos: number[];
-  components: TaxComponent[];
-}
-
 @Component({
   selector: 'app-sys1005',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule],
-  providers: [DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  providers: [DatePipe, Sys1005ModelService],
   templateUrl: './sys1005.component.html',
   styles: [`
     :host { display: block; height: 100%; }
@@ -64,33 +39,20 @@ interface TaxRule {
   `]
 })
 export class Sys1005Component implements OnInit {
+  public model = inject(Sys1005ModelService);
   private fb = inject(FormBuilder);
   private sysService = inject(SysDataService);
   private alertService = inject(AlertService);
+  private toastr = inject(ToastrService);
   private datePipe = inject(DatePipe);
   public permissionService = inject(FormPermissionService);
 
+  readonly sysConstants = sysConstants;
   readonly SYS_CONSTS = sysConstants;
 
-  // Data signals
-  taxRules = signal<TaxRule[]>([]);
-  branches = signal<any[]>([]);
-  accounts = signal<any[]>([]); // GL Accounts
-  allTaxes = signal<any[]>([]); // For composite child selection
-  isLoading = signal(false);
-  isSaving = signal(false);
-
-  searchTerm = signal('');
-  selectedTaxNo = signal<number | null>(null);
-  lastSelectedIndex: number = 0;
-
-  filteredTaxRules = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    return this.taxRules().filter(t =>
-      t.tax_name.toLowerCase().includes(term) || 
-      t.tax_code.toLowerCase().includes(term)
-    );
-  });
+  onSearchTermChange(val: string) {
+    this.model.searchTerm.set(val);
+  }
 
   formdata: FormGroup = this.fb.group({
     tax_no: [null],
@@ -124,19 +86,19 @@ export class Sys1005Component implements OnInit {
 
   loadBranches() {
     this.sysService.getList<any>('branch/list').subscribe(res => {
-      if (res.success) this.branches.set(res.data);
+      if (res.success) this.model.branches.set(res.data);
     });
   }
 
   loadTaxRules(reselectIndex?: number) {
-    this.isLoading.set(true);
+    this.model.isLoading.set(true);
     this.sysService.getList<any>('tax/list')
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
-            this.taxRules.set(res.data);
-            this.allTaxes.set(res.data); // Store for composite selection
+            this.model.taxRules.set(res.data);
+            this.model.allTaxes.set(res.data); // Store for composite selection
             if (res.data.length > 0) {
               const index = (reselectIndex !== undefined && reselectIndex < res.data.length) ? reselectIndex : 0;
               this.selectTax(res.data[index], index);
@@ -146,19 +108,19 @@ export class Sys1005Component implements OnInit {
           }
         },
         error: (err) => {
-          this.alertService.error('Failed to load tax rules');
+          this.toastr.error('Failed to load tax rules');
           console.error(err);
         }
       });
   }
 
   selectTax(tax: any, index?: number) {
-    if (index !== undefined) this.lastSelectedIndex = index;
-    this.selectedTaxNo.set(tax.tax_no);
+    if (index !== undefined) this.model.lastSelectedIndex = index;
+    this.model.selectedTaxNo.set(tax.tax_no);
     
-    this.isLoading.set(true);
+    this.model.isLoading.set(true);
     this.sysService.getDetails<any>('tax/detail', { tax_no: tax.tax_no })
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .pipe(finalize(() => this.model.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success && res.data) {
@@ -189,7 +151,7 @@ export class Sys1005Component implements OnInit {
           }
         },
         error: (err) => {
-          this.alertService.error('Failed to load details');
+          this.toastr.error('Failed to load details');
           console.error(err);
         }
       });
@@ -236,14 +198,14 @@ export class Sys1005Component implements OnInit {
     // Check if already added
     const exists = this.componentsFormArray.value.some((c: any) => c.child_tax_no === tax.tax_no);
     if (exists) {
-      this.alertService.warning('This tax is already added as a component.');
+      this.toastr.warning('This tax is already added as a component.');
       return;
     }
     this.addComponentRow(tax);
   }
 
   onNew() {
-    this.selectedTaxNo.set(null);
+    this.model.selectedTaxNo.set(null);
     this.componentsFormArray.clear();
     this.formdata.reset({
       tax_type: 'VAT',
@@ -262,11 +224,11 @@ export class Sys1005Component implements OnInit {
   onSave() {
     if (this.formdata.invalid) {
       this.formdata.markAllAsTouched();
-      this.alertService.warning('Please correct the errors before saving.');
+      this.toastr.warning('Please correct the errors before saving.');
       return;
     }
 
-    this.isSaving.set(true);
+    this.model.isSaving.set(true);
     const val = this.formdata.getRawValue();
 
     const payload = {
@@ -279,47 +241,47 @@ export class Sys1005Component implements OnInit {
       components: val.tax_type === 'COMPOSITE' ? val.components : []
     };
 
-    const isUpdate = !!this.selectedTaxNo();
+    const isUpdate = !!this.model.selectedTaxNo();
     const obs = isUpdate 
       ? this.sysService.update<any>('tax/update', payload)
       : this.sysService.create<any>('tax/create', payload);
 
-    obs.pipe(finalize(() => this.isSaving.set(false)))
+    obs.pipe(finalize(() => this.model.isSaving.set(false)))
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.alertService.success(isUpdate ? 'Tax updated' : 'Tax created');
-            this.loadTaxRules(isUpdate ? this.lastSelectedIndex : 0);
+            this.toastr.success(isUpdate ? 'Tax updated' : 'Tax created');
+            this.loadTaxRules(isUpdate ? this.model.lastSelectedIndex : 0);
           } else {
-            this.alertService.error(res.message || 'Save failed');
+            this.toastr.error(res.message || 'Save failed');
           }
         },
         error: (err) => {
-          this.alertService.error('Server error during save');
+          this.toastr.error('Server error during save');
           console.error(err);
         }
       });
   }
 
   onDelete() {
-    if (!this.selectedTaxNo()) return;
+    if (!this.model.selectedTaxNo()) return;
 
     this.alertService.deleteConfirm().subscribe(confirmed => {
       if (confirmed) {
-        this.isLoading.set(true);
-        this.sysService.delete<any>('tax/delete', { tax_no: this.selectedTaxNo() })
-          .pipe(finalize(() => this.isLoading.set(false)))
+        this.model.isLoading.set(true);
+        this.sysService.delete<any>('tax/delete', { tax_no: this.model.selectedTaxNo() })
+          .pipe(finalize(() => this.model.isLoading.set(false)))
           .subscribe({
             next: (res) => {
               if (res.success) {
-                this.alertService.success('Tax rule deleted');
+                this.toastr.success('Tax rule deleted');
                 this.loadTaxRules();
               } else {
-                this.alertService.error(res.message || 'Delete failed');
+                this.toastr.error(res.message || 'Delete failed');
               }
             },
             error: (err) => {
-              this.alertService.error('Server error during delete');
+              this.toastr.error('Server error during delete');
               console.error(err);
             }
           });
@@ -328,8 +290,8 @@ export class Sys1005Component implements OnInit {
   }
 
   onReset() {
-    if (this.selectedTaxNo()) {
-      const original = this.taxRules().find(t => t.tax_no === this.selectedTaxNo());
+    if (this.model.selectedTaxNo()) {
+      const original = this.model.taxRules().find(t => t.tax_no === this.model.selectedTaxNo());
       if (original) this.selectTax(original);
     } else {
       this.onNew();
