@@ -1,0 +1,135 @@
+.lock-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: transparent;
+}
+
+/* ── Login card — premium glass style ── */
+.lock-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 24px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme='dark'] .lock-card {
+  background: var(--bg-primary, #0f1225);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Avatar ── */
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: var(--indigo-g, linear-gradient(135deg, #6366f1, #818cf8));
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+
+  mat-icon {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ── Typography ── */
+.user-name {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
+}
+
+.user-email {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* ── Input group ── */
+.lock-input {
+  background: var(--bg-secondary, #f8faff);
+  border: 1.5px solid var(--border-color) !important;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: var(--indigo) !important;
+    background: var(--card-bg);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  }
+}
+
+[data-theme='dark'] .lock-input {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lock-input-field {
+  color: var(--text-primary) !important;
+  font-size: 14px;
+
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
+  }
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.input-icon {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* ── Unlock button ── */
+.btn-unlock {
+  background: var(--indigo-g);
+  border: none;
+  color: #fff;
+  height: 48px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(99, 102, 241, 0.4);
+    color: #fff;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Switch user ── */
+.switch-btn {
+  color: var(--text-secondary) !important;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: var(--indigo) !important;
+    transform: scale(1.02);
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}

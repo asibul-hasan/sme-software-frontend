@@ -1,0 +1,36 @@
+<div
+  class="main-layout h-100 w-100 position-relative"
+  style="background: var(--bg-primary)"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+>
+  <!-- Sidebar -->
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (toggleCollapse)="toggleSidebar()"
+  ></app-sidebar>
+
+  <!-- Mobile Overlay -->
+  <div
+    *ngIf="!sidebarCollapsed()"
+    class="position-fixed top-0 start-0 w-100 h-100 bg-dark z-2 d-lg-none"
+    style="opacity: 0.5"
+    (click)="toggleSidebar()"
+  ></div>
+
+  <!-- Header -->
+  <app-header
+    [sidebarCollapsed]="sidebarCollapsed()"
+    (toggleSidebar)="toggleSidebar()"
+    (themeToggled)="onThemeToggle($event)"
+  >
+  </app-header>
+
+  <!-- Main Content Area -->
+  <main class="main-content position-relative z-1">
+    <app-global-loader></app-global-loader>
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <app-footer [sidebarCollapsed]="sidebarCollapsed()"></app-footer>
+</div>

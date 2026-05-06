@@ -1,0 +1,252 @@
+<header class="topbar d-flex align-items-center px-2 gap-2">
+  <!-- Left: Breadcrumb -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0">
+    <!-- Hamburger toggle for mobile / sidebar collapse -->
+    <button
+      class="top-btn me-1 d-flex justify-content-center align-items-center"
+      (click)="onToggleSidebar()"
+      title="Toggle Sidebar"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="d-flex align-items-center gap-1 text-nowrap overflow-hidden">
+      @for (
+        crumb of breadcrumbs();
+        track crumb.label;
+        let last = $last;
+        let first = $first
+      ) {
+        @if (!last) {
+          <a class="crumb-link" [routerLink]="crumb.url">{{
+            crumb.label | translate
+          }}</a>
+          <span class="sep">›</span>
+        } @else {
+          <span class="current">{{ crumb.label | translate }}</span>
+          @if (formCode()) {
+            <span class="form-chip">{{ formCode() }}</span>
+          }
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <!-- Quick Actions -->
+    <button
+      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      title="Quick Actions"
+    >
+      <mat-icon>bolt</mat-icon>
+    </button>
+
+    <!-- Full Screen -->
+    <button
+      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      title="Toggle Fullscreen"
+      (click)="onToggleFullScreen()"
+    >
+      <mat-icon>{{
+        isFullScreen() ? 'fullscreen_exit' : 'fullscreen'
+      }}</mat-icon>
+    </button>
+
+    <!-- Branch switcher -->
+    <button
+      class="user-card branch-sw d-flex align-items-center justify-content-between gap-1 border-0 bg-transparent"
+      [matMenuTriggerFor]="branchMenu"
+      title="Switch Branch"
+    >
+      <div
+        class="d-flex align-items-center gap-1 overflow-hidden"
+        style="min-width: 0"
+      >
+        <mat-icon class="branch-icon">store</mat-icon>
+        <div class="user-info text-truncate">
+          <div class="user-name text-truncate">
+            {{ currentBranchName() }}
+          </div>
+        </div>
+      </div>
+      <mat-icon class="chevron-icon">expand_more</mat-icon>
+    </button>
+
+    <mat-menu #branchMenu="matMenu" class="custom-mat-menu">
+      @for (
+        branch of availableBranches();
+        track branch.branch_no || branch.id
+      ) {
+        <button
+          mat-menu-item
+          (click)="onBranchChange((branch.branch_no || branch.id) || 0)"
+          [ngClass]="{
+            'mdc-list-item--selected':
+              ((branch.branch_no || branch.id) || 0).toString() ===
+              selectedBranch(),
+            'mat-mdc-option-active':
+              ((branch.branch_no || branch.id) || 0).toString() ===
+              selectedBranch(),
+          }"
+        >
+          <span>{{ branch.branchName || branch.name }}</span>
+        </button>
+      }
+    </mat-menu>
+
+    <!-- Notifications -->
+    <button
+      class="top-btn"
+      title="Notifications"
+      [matMenuTriggerFor]="notifMenu"
+    >
+      <mat-icon>notifications</mat-icon>
+      @if (notificationCount() > 0) {
+        <span class="notif-badge"></span>
+      }
+    </button>
+
+    <!-- Theme Toggle -->
+    <button
+      class="top-btn d-none d-sm-flex align-items-center justify-content-center"
+      title="Toggle Theme"
+      (click)="onToggleTheme()"
+    >
+      <mat-icon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
+    <!-- User Card -->
+    <button
+      class="user-card d-flex align-items-center gap-2 border-0 bg-transparent"
+      [matMenuTriggerFor]="userProfileMenu"
+    >
+      <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
+      <div class="user-info d-none d-md-block">
+        <div class="user-name">{{ userName() }}</div>
+        <div class="user-role">{{ userRole() }}</div>
+      </div>
+      <mat-icon class="chevron-icon">expand_more</mat-icon>
+    </button>
+  </div>
+
+  <!-- NOTIFICATIONS MENU -->
+  <mat-menu
+    #notifMenu="matMenu"
+    class="custom-mat-menu notif-menu-panel"
+    xPosition="before"
+  >
+    <div
+      class="notif-header d-flex align-items-center justify-content-between"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+    >
+      <span class="notif-title">Notification</span>
+      <mat-icon class="notif-read-all">check_circle_outline</mat-icon>
+    </div>
+
+    <div class="notif-list">
+      @for (item of notifications(); track item.id) {
+        <button mat-menu-item class="notif-item d-flex align-items-start">
+          <div
+            class="notif-icon-wrapper"
+            [style.background]="item.bgColor"
+            [style.color]="item.color"
+          >
+            <mat-icon>{{ item.icon }}</mat-icon>
+          </div>
+          <div class="notif-content flex-grow-1 overflow-hidden">
+            <div
+              class="d-flex justify-content-between align-items-baseline mb-1"
+            >
+              <div class="notif-text text-truncate">
+                <span class="fw-bold">{{ item.title }}</span> {{ item.text }}
+              </div>
+              <span class="notif-time flex-shrink-0 ms-2">{{ item.time }}</span>
+            </div>
+            @if (item.subtext) {
+              <div class="notif-subtext text-truncate">{{ item.subtext }}</div>
+            }
+          </div>
+        </button>
+      }
+    </div>
+
+    <button class="notif-footer text-center border-0 bg-transparent w-100" mat-menu-item>
+      <span class="text-primary fw-medium">View all</span>
+    </button>
+  </mat-menu>
+
+  <!-- USER PROFILE MENU -->
+  <mat-menu
+    #userProfileMenu="matMenu"
+    class="custom-mat-menu profile-menu-panel"
+    xPosition="before"
+  >
+    <div
+      class="profile-header d-flex align-items-center mb-2"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+    >
+      <div class="profile-ava d-grid me-3">{{ userInitials() }}</div>
+      <div class="profile-info flex-grow-1">
+        <div class="profile-name fw-bold">{{ userName() }}</div>
+        <div class="profile-role text-secondary">{{ userRole() }}</div>
+      </div>
+      <button mat-icon-button class="logout-icon-btn" (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+    <div
+      class="profile-tabs d-flex mb-2"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+    >
+      <button
+        class="profile-tab flex-fill text-center border-0 bg-transparent"
+        [class.active]="activeProfileTab() === 'profile'"
+        (click)="activeProfileTab.set('profile')"
+      >
+        <mat-icon class="tab-icon">person_outline</mat-icon> Profile
+      </button>
+      <button
+        class="profile-tab flex-fill text-center border-0 bg-transparent"
+        [class.active]="activeProfileTab() === 'setting'"
+        (click)="activeProfileTab.set('setting')"
+      >
+        <mat-icon class="tab-icon">settings</mat-icon> Settings
+      </button>
+    </div>
+
+    <div class="profile-menu-list pb-2">
+      @if (activeProfileTab() === 'profile') {
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>edit</mat-icon><span>Edit Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>person_outline</mat-icon><span>View Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>list_alt</mat-icon><span>Social Profile</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item">
+          <mat-icon>account_balance_wallet</mat-icon><span>Billing</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item" (click)="onLanguage()">
+          <mat-icon>translate</mat-icon><span>Change Language</span>
+        </button>
+        <button mat-menu-item class="profile-menu-item" (click)="onLogout()">
+          <mat-icon>logout</mat-icon><span>Logout</span>
+        </button>
+      } @else {
+        <div class="px-3 py-2 text-center text-secondary small">
+          Settings goes here.
+        </div>
+      }
+    </div>
+  </mat-menu>
+</header>
