@@ -56497,3 +56497,245 @@ Time for 'build typescript dependencies' 0.37059999999974025
 [NX v22.4.3 Daemon Server] - 2026-05-06T13:16:37.807Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 1.
 [NX v22.4.3 Daemon Client] - 2026-05-06T13:16:37.806Z - [Messenger] Received message, length: 24300
 [NX v22.4.3 Daemon Server] - 2026-05-06T13:17:01.894Z - [NX-CONSOLE]: Successfully pulled latest Nx to C:\Users\Asibul\AppData\Local\Temp\tmp-19128-PHf8G3NzZeFC
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.208Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.210Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.227Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.229Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.230Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:07.234Z - [Messenger] Received message, length: 24300
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:22.857Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:22.861Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:22.865Z - [Messenger] Sending message type: GET_NX_CONSOLE_STATUS
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:22.867Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:23.561Z - [Messenger] Received message, length: 22
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:28.514Z - [Client] Starting new daemon server in background
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:28.551Z - [Client] Waiting for server (max: 6000 attempts, 10ms interval)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.940Z - New daemon starting from: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server\server.js
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.943Z - New daemon __dirname: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.944Z - New daemon nxVersion: 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.947Z - New daemon getInstalledNxVersion(): 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.958Z - [Server] Starting outdated check interval (20ms)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.970Z - Started listening on: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\ad7aff1b89f00929f371\d.sock
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.980Z - [WATCHER]: Subscribed to changes within: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend (native)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:29.985Z - [NX-CONSOLE]: Pulling latest Nx (latest) to check console status...
+Fetching nx...
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.009Z - [Client] Server available after 84 attempts
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.011Z - [Client] Daemon server started, pid=29720
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.121Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.123Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.127Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:30.129Z - [Messenger] Message sent
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 10508, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-0-2236.9354.sock)
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 7948, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-1-2280.0421.sock)
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 13184, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-2-2322.1586.sock)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:30.953Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:30.955Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:30.955Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:30.962Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:30.962Z - Closed a connection. Number of open connections: 1
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 10508) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-0-2236.9354.sock
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 10508) after 7 attempt(s)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.089Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.089Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.090Z - [REQUEST]: Client Request for Project Graph Received
+Time for 'plugin worker 10508 code loading' 45.311400000000006
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 10508) connected
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.093Z - Time taken for 'start-plugin-worker:c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js' 245.07630000000017ms
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 7948) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-1-2280.0421.sock
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 7948) after 9 attempt(s)
+Time for 'plugin worker 7948 code loading' 47.346999999999994
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.112Z - Time taken for 'start-plugin-worker:c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 228.77760000000035ms
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 7948) connected
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 13184) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin29720-2-2322.1586.sock
+Time for 'plugin worker 13184 code loading' 44.3146
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 13184) after 10 attempt(s)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.121Z - Time taken for 'start-plugin-worker:c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json' 194.51409999999987ms
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 13184) connected
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 13184) loaded successfully
+[plugin-pool] loaded plugin "nx/core/project-json" from worker (pid: 13184)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.783Z - Time taken for 'Load Nx Plugin: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json' 947.1051000000002ms
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 7948) loaded successfully
+[plugin-pool] loaded plugin "nx/core/package-json" from worker (pid: 7948)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.786Z - Time taken for 'Load Nx Plugin: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 954.1905999999999ms
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 10508) loaded successfully
+[plugin-pool] loaded plugin "nx/js/dependencies-and-lockfile" from worker (pid: 10508)
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.814Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.814Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.814Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.818Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.834Z - Time taken for 'loadDefaultNxPlugins' 987.826ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.3242999999999938
+Time for 'nx/core/package-json:createNodes' 2.9967000000000326
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.891Z - Time taken for 'build-project-configs' 29.69190000000026ms
+Time for 'nx/core/project-json:createNodes' 1.842999999999961
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.897Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.918Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.918Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.918Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.918Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.920Z - Time taken for 'total for creating and serializing project graph' 828.0776999999998ms
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:31.919Z - [Messenger] Received message, length: 12859
+Time for 'build typescript dependencies' 0.3343999999999596
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.924Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.924Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 828. Response time: 6.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:31.923Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:31.924Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.926Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.926Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.929Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.929Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.929Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.930Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:31.930Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:31.929Z - [Messenger] Received message, length: 24300
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.711Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.711Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.712Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.712Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.715Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.715Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.716Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.717Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.734Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.734Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.734Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.734Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.735Z - Time taken for 'total for creating and serializing project graph' 18.798799999999574ms
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.738Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.738Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 19. Response time: 4.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.737Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.741Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.743Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.748Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.748Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.750Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.750Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.750Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.751Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:32.753Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 3.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:11:32.756Z - [Messenger] Received message, length: 24300
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:11:55.233Z - [NX-CONSOLE]: Successfully pulled latest Nx to C:\Users\Asibul\AppData\Local\Temp\tmp-29720-OziDYc7rfYHe
+[NX v22.7.1 Daemon Server] - 2026-05-06T14:12:09.983Z - [NX-CONSOLE]: Using local implementation (NX_USE_LOCAL=true or inner call)
+DEBUG nx::native::ide::install: Detected editor: Unknown
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:12:10.001Z - [NX-CONSOLE]: Console status check completed, shouldPrompt: false
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.219Z - [WATCHER]: 0 file(s) created or restored, 13 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.222Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.224Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.269Z - [WATCHER]: 0 file(s) created or restored, 15 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.272Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.277Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.485Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.485Z - [REQUEST]: apps/web-client/src/app/layout/components/footer/footer.component.ts,apps/web-client/src/app/layout/components/language-switcher/language-switcher.component.html,apps/web-client/src/app/layout/components/branch-switcher/branch-switcher.component.html,apps/web-client/src/app/layout/components/header/header.component.ts,apps/web-client/src/app/layout/components/branch-switcher/branch-switcher.component.ts,apps/web-client/src/app/layout/auth-layout/auth-layout.component.html,apps/web-client/src/app/layout/components/branch-switcher/branch-switcher.component.scss,apps/web-client/src/app/layout/components/footer/footer.component.html,apps/web-client/src/app/layout/auth-layout/auth-layout.component.scss,apps/web-client/src/app/layout/components/footer/footer.component.scss,apps/web-client/src/app/layout/auth-layout/auth-layout.component.ts,apps/web-client/src/app/layout/components/header/header.component.html,apps/web-client/src/app/layout/components/header/header.component.scss,apps/web-client/src/app/layout/components/session-lock/session-lock.component.html,apps/web-client/src/app/layout/components/session-lock/session-lock.component.scss,apps/web-client/src/app/layout/components/sidebar/services/menu-builder.service.ts,apps/web-client/src/app/layout/components/sidebar/sidebar.component.ts,apps/web-client/src/app/layout/components/language-switcher/language-switcher.component.scss,apps/web-client/src/app/layout/components/language-switcher/language-switcher.component.ts,apps/web-client/src/app/layout/components/theme-switcher/theme-switcher.component.scss,apps/web-client/src/app/layout/components/theme-switcher/theme-switcher.component.ts,apps/web-client/src/app/layout/components/theme-switcher/theme-switcher.component.html,apps/web-client/src/app/layout/components/session-lock/session-lock.component.ts,apps/web-client/src/app/layout/main-layout/main-layout.component.html,apps/web-client/src/app/layout/components/sidebar/models/menu.model.ts,apps/web-client/src/app/layout/components/sidebar/sidebar.component.scss,apps/web-client/src/app/layout/components/sidebar/sidebar.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.485Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.492Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.492Z - [WATCHER]: 0 file(s) created or restored, 2 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.492Z - [SYNC]: clearing sync generators cache due to file changes
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.18919999999343418
+Time for 'nx/core/package-json:createNodes' 1.3258999999961816
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.493Z - Time taken for 'hash changed files from watcher' 147.85390000001644ms
+Time for 'nx/core/project-json:createNodes' 1.9319000000250526
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.502Z - Time taken for 'build-project-configs' 7.9469999999855645ms
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.707Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.708Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.708Z - [REQUEST]: 
+Time for 'nx/core/package-json:createNodes' 1.159299999999348
+Time for 'nx/core/project-json:createNodes' 1.1803000000072643
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:41.715Z - Time taken for 'hash changed files from watcher' 1.189700000017183ms
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.178Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.179Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.179Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.180Z - Time taken for 'total execution time for createProjectGraph()' 680.5574999999953ms
+Time for 'build typescript dependencies' 671.9930000000168
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1300000000046566
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.187Z - Time taken for 'build-project-configs' 472.5946999999869ms
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.190Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.192Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.192Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:42.192Z - Time taken for 'total execution time for createProjectGraph()' 6.3329999999841675ms
+Time for 'build typescript dependencies' 0.03190000000176951
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.375Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.376Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.378Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.377Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.379Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.380Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.380Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.384Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.415Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.416Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.416Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.416Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.416Z - Time taken for 'total for creating and serializing project graph' 35.492399999988265ms
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.416Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.419Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.420Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.425Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.425Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 36. Response time: 9.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.426Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.426Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.429Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.430Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.430Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.431Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:15:52.431Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 3. Response time: 2.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:15:52.431Z - [Messenger] Received message, length: 27509
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:00.921Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:00.921Z - [WATCHER]: apps/web-client/src/app/core/services/session-manager.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:00.923Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.038Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.038Z - [REQUEST]: apps/web-client/src/app/core/services/session-manager.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.038Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.2238999999826774
+Time for 'nx/core/package-json:createNodes' 1.0930999999982305
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.121Z - Time taken for 'hash changed files from watcher' 1.3367999999900348ms
+Time for 'nx/core/project-json:createNodes' 1.3537999999825843
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.135Z - Time taken for 'build-project-configs' 9.873699999996461ms
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.161Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.162Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.162Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:01.163Z - Time taken for 'total execution time for createProjectGraph()' 31.629300000029616ms
+Time for 'build typescript dependencies' 22.198800000012852
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:05.036Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.051Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.115Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.295Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.943Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.944Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.943Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.947Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.949Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.950Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.950Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.951Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.969Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.970Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.970Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.970Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.970Z - Time taken for 'total for creating and serializing project graph' 20.007800000021234ms
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.971Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.973Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.975Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.973Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.975Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 20. Response time: 5.
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.976Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.976Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.978Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.978Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.978Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.979Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:11.979Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-06T14:16:11.979Z - [Messenger] Received message, length: 27509
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.070Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.165Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.380Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.447Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.737Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:33.960Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:34.032Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:34.359Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:34.870Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:34.948Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:35.167Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:35.271Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:35.359Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-06T14:16:35.447Z - [WATCHER]: Processing file changes in outputs
