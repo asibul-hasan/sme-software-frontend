@@ -8,32 +8,16 @@
   [hasSidebar]="false"
   (save)="onSave()"
   [isSaving]="model.isSaving()"
-  [isLoading]="model.isLoading()"
   [showNew]="false"
   [showReset]="true"
   (reset)="onReset()"
   [showDelete]="false"
 >
   <!-- Extra Header Action for Last Updated -->
-  <div extraHeaderActions>
-    <div
-      *ngIf="model.lastUpdated()"
-      class="d-none d-lg-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border ms-2"
-    >
-      <mat-icon
-        class="text-secondary"
-        style="font-size: 16px; width: 16px; height: 16px"
-        >history</mat-icon
-      >
-      <span class="smaller text-secondary fw-medium"
-        >{{ 'lastUpdated' | translate }}: {{ model.lastUpdated() }}</span
-      >
-    </div>
-  </div>
 
   <!-- Main Form Content -->
   <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
+    <form [formGroup]="model.form" autocomplete="off">
       <div class="row row-group">
         <!-- Left Column: Core Identity & Branding -->
         <div class="col-xl-8 col-lg-12">
@@ -120,25 +104,65 @@
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-12">
+                <!-- Addresses -->
+                <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label">{{
-                      'registeredAddress' | translate
+                      'addressLine1' | translate
                     }}</label>
-                    <textarea
+                    <input
+                      type="text"
                       formControlName="address_line1"
                       class="form-control"
-                      rows="2"
                       placeholder="Street address, building, etc."
-                    ></textarea>
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'addressLine2' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="address_line2"
+                      class="form-control"
+                      placeholder="Suite, floor, etc."
+                    />
+                  </div>
+                </div>
+
+                <!-- Location Details -->
+                <div class="col-md-4">
                   <div class="field-group">
                     <label class="field-label">{{ 'city' | translate }}</label>
                     <input
                       type="text"
                       formControlName="city"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'stateProvince' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="state_province"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'postalCode' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="postal_code"
                       class="form-control"
                     />
                   </div>
@@ -156,45 +180,7 @@
                     ></ng-select>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label">{{
-                      'primaryPhone' | translate
-                    }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px">call</mat-icon></span
-                      >
-                      <input
-                        type="text"
-                        formControlName="phone_primary"
-                        class="form-control"
-                        placeholder="+880..."
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label">{{
-                      'primaryEmail' | translate
-                    }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px"
-                          >alternate_email</mat-icon
-                        ></span
-                      >
-                      <input
-                        type="email"
-                        formControlName="email_primary"
-                        class="form-control"
-                        placeholder="contact@domain.com"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label">{{
                       'website' | translate
@@ -210,6 +196,84 @@
                         formControlName="website"
                         class="form-control"
                         placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'primaryPhone' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px">call</mat-icon></span
+                      >
+                      <input
+                        type="text"
+                        formControlName="phone_primary"
+                        class="form-control"
+                        placeholder="Primary phone"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'secondaryPhone' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px">call</mat-icon></span
+                      >
+                      <input
+                        type="text"
+                        formControlName="phone_secondary"
+                        class="form-control"
+                        placeholder="Secondary phone"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'primaryEmail' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px"
+                          >alternate_email</mat-icon
+                        ></span
+                      >
+                      <input
+                        type="email"
+                        formControlName="email_primary"
+                        class="form-control"
+                        placeholder="Primary email"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'secondaryEmail' | translate
+                    }}</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"
+                        ><mat-icon style="font-size: 18px"
+                          >alternate_email</mat-icon
+                        ></span
+                      >
+                      <input
+                        type="email"
+                        formControlName="email_secondary"
+                        class="form-control"
+                        placeholder="Secondary email"
                       />
                     </div>
                   </div>
@@ -230,7 +294,9 @@
               </h4>
             </div>
             <div class="card-body">
-              <div class="logo-fixed-container d-flex flex-column align-items-center py-2">
+              <div
+                class="logo-fixed-container d-flex flex-column align-items-center py-2"
+              >
                 <!-- Fixed Area Box -->
                 <div
                   class="logo-box-fixed mb-3"
@@ -257,15 +323,26 @@
                   } @else {
                     <div class="logo-empty-state">
                       <mat-icon>add_a_photo</mat-icon>
-                      <span class="placeholder-text">{{ 'selectLogoForUpload' | translate }}</span>
+                      <span class="placeholder-text">{{
+                        'selectLogoForUpload' | translate
+                      }}</span>
                     </div>
                   }
                 </div>
 
                 <!-- Integrated Action Bar -->
                 <div class="logo-action-bar-integrated">
-                  <div class="logo-file-name" [title]="model.logoFileName() || ('selectLogoForUpload' | translate)">
-                    {{ model.logoFileName() || ('selectLogoForUpload' | translate) }}
+                  <div
+                    class="logo-file-name"
+                    [title]="
+                      model.logoFileName() ||
+                      ('selectLogoForUpload' | translate)
+                    "
+                  >
+                    {{
+                      model.logoFileName() ||
+                        ('selectLogoForUpload' | translate)
+                    }}
                   </div>
                   <button
                     type="button"
@@ -300,6 +377,18 @@
             </div>
             <div class="card-body">
               <div class="row row-group">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label">{{
+                      'registrationNo' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="registration_no"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
                 <div class="col-12">
                   <div class="field-group">
                     <label class="field-label">{{

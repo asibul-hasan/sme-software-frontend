@@ -63,6 +63,8 @@ export interface LoginResponse {
   user_no: number;
   company_no: number;
   branch_no: number;
+  company_name?: string;
+  branch_name?: string;
   user?: User; 
   permissions?: IPermissionConfig;
   menu?: unknown[];

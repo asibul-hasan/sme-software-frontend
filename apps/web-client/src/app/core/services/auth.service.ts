@@ -141,7 +141,9 @@ export class AuthService {
       user_name: response.user?.user_name || response.user_name,
       name: response.user?.name || response.user_name,
       company_no: response.user?.company_no || response.company_no,
-      branch_no: response.user?.branch_no || response.branch_no
+      company_name: response.user?.company_name || response.company_name,
+      branch_no: response.user?.branch_no || response.branch_no,
+      branch_name: response.user?.branch_name || response.branch_name
     } as User;
 
     this.authContext.populateFromLogin(user, response.permissions || null, response.menu || []);

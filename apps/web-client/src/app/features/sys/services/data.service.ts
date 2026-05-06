@@ -5,12 +5,17 @@ import { AppConfigService } from '../../../core/services/app-config.service';
 import { ApiResponse } from '../../../core/models/response.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SysDataService {
-  private get apiUrl() { return `${this.config.apiUrl}/sys`; }
+  private get apiUrl() {
+    return `${this.config.apiUrl}/sys`;
+  }
 
-  constructor(private http: HttpClient, private config: AppConfigService) { }
+  constructor(
+    private http: HttpClient,
+    private config: AppConfigService,
+  ) {}
 
   // Generic CRUD Methods
   getList<T>(path: string): Observable<ApiResponse<T>> {
@@ -30,7 +35,9 @@ export class SysDataService {
   }
 
   delete<T>(path: string, params: any): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(`${this.apiUrl}/${path}`, { params });
+    return this.http.delete<ApiResponse<T>>(`${this.apiUrl}/${path}`, {
+      params,
+    });
   }
 
   // Specific Methods (if any)
@@ -54,15 +61,27 @@ export class SysDataService {
     return this.getList<any>(`settings/permission/${designationId}`);
   }
 
-  updatePermissions(designationId: number, permissions: any): Observable<ApiResponse<any>> {
-    return this.update<any>(`settings/permission/${designationId}`, permissions);
+  updatePermissions(
+    designationId: number,
+    permissions: any,
+  ): Observable<ApiResponse<any>> {
+    return this.update<any>(
+      `settings/permission/${designationId}`,
+      permissions,
+    );
   }
 
   getModules(): Observable<ApiResponse<any[]>> {
     return this.getList<any[]>('settings/module-toggle');
   }
 
-  toggleModule(moduleId: string, enabled: boolean): Observable<ApiResponse<any>> {
-    return this.create<any>('settings/module-toggle/toggle', { moduleId, enabled });
+  toggleModule(
+    moduleId: string,
+    enabled: boolean,
+  ): Observable<ApiResponse<any>> {
+    return this.create<any>('settings/module-toggle/toggle', {
+      moduleId,
+      enabled,
+    });
   }
 }

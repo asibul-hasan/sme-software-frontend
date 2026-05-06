@@ -1,13 +1,14 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import * as CryptoJS from 'crypto-js';
 import { globalConstants } from '../constants/global.constants';
 import { User } from '../models/user.model';
 import { IPermissionConfig } from '../models/permission.model';
+import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthContextService {
   private helper = new JwtHelperService();
+  private storageService = inject(StorageService);
 
   // Signals for state management
   user = signal<User | null>(null);
@@ -38,27 +39,12 @@ export class AuthContextService {
 
   // Encrypt and store data
   encryptAndStore(key: string, data: unknown): void {
-    try {
-      const jsonStr = JSON.stringify(data);
-      const encrypted = CryptoJS.AES.encrypt(jsonStr, globalConstants.encryption.secretKey).toString();
-      localStorage.setItem(key, encrypted);
-    } catch (e) {
-      console.error('Encryption failed', e);
-    }
+    this.storageService.setSecureItem(key, data);
   }
 
   // Retrieve and decrypt data
   decryptAndRetrieve<T>(key: string): T | null {
-    try {
-      const encrypted = localStorage.getItem(key);
-      if (!encrypted) return null;
-      const bytes = CryptoJS.AES.decrypt(encrypted, globalConstants.encryption.secretKey);
-      const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-      return JSON.parse(decryptedStr) as T;
-    } catch (e) {
-      console.error('Decryption failed', e);
-      return null;
-    }
+    return this.storageService.getSecureItem<T>(key);
   }
 
   // Populate state from login response
@@ -106,9 +92,9 @@ export class AuthContextService {
     this.permissions.set(null);
     this.menu.set([]);
     this.availableBranches.set([]);
-    localStorage.removeItem(globalConstants.storageKeys.userData);
-    localStorage.removeItem(globalConstants.storageKeys.userPermissions);
-    localStorage.removeItem(globalConstants.storageKeys.userMenu);
-    localStorage.removeItem(globalConstants.storageKeys.availableBranches);
+    this.storageService.removeItem(globalConstants.storageKeys.userData);
+    this.storageService.removeItem(globalConstants.storageKeys.userPermissions);
+    this.storageService.removeItem(globalConstants.storageKeys.userMenu);
+    this.storageService.removeItem(globalConstants.storageKeys.availableBranches);
   }
 }

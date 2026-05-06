@@ -770,6 +770,27 @@
     outline: none !important;
   }
 
+  /* Disabled and Readonly States */
+  &:disabled,
+  &[readonly],
+  &.ng-select-disabled .ng-select-container {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+    cursor: not-allowed !important;
+    opacity: 0.75 !important;
+    border-style: dashed !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+    pointer-events: none;
+    
+    // Icon color adjustment within disabled groups
+    & ~ .input-group-text {
+      background-color: var(--bg-secondary) !important;
+      opacity: 0.75;
+      border-style: dashed !important;
+    }
+  }
+
   // Datepicker indicator enhancement
   &::-webkit-calendar-picker-indicator {
     cursor: pointer;

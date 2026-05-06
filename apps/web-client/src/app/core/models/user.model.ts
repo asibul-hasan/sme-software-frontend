@@ -6,7 +6,9 @@ export interface User {
   role?: string;
   designation?: string;
   company_no: number;
+  company_name?: string;
   branch_no?: number;
+  branch_name?: string;
   branch_ids?: number[];
   token?: string;
   refreshToken?: string;
