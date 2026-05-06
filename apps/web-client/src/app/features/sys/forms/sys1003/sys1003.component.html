@@ -1,6 +1,6 @@
 <app-page-form-layout
   [title]="'fySetup' | translate"
-  [subtitle]="'Configure accounting periods and fiscal cycles' | translate"
+  [subtitle]="'manageFySettings' | translate"
   [icon]="'calendar_today'"
   [recordsCount]="model.filteredYears().length"
   [sidebarTitle]="'fySetup' | translate"
@@ -22,7 +22,9 @@
       class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
       (click)="onCloseFY()"
     >
-      <mat-icon style="font-size: 18px; width: 18px; height: 18px">lock_open</mat-icon>
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+        >lock_open</mat-icon
+      >
       <span class="small">{{ 'closeFy' | translate }}</span>
     </button>
   </div>
@@ -32,7 +34,7 @@
     <button
       *ngFor="let year of model.filteredYears()"
       type="button"
-      class="list-group-item list-group-item-action p-3"
+      class="list-group-item list-group-item-action"
       [class.active]="model.selectedYearNo() === year.fin_year_no"
       (click)="selectYear(year)"
     >
@@ -42,20 +44,34 @@
           class="badge rounded-pill"
           [ngClass]="{
             'text-bg-success': year.status === 'Open',
-            'text-bg-secondary': year.status === 'Closed'
+            'text-bg-secondary': year.status === 'Closed',
           }"
           >{{ year.status }}</span
         >
       </div>
-      <p class="mb-1 small fw-semibold opacity-75 text-truncate">{{ year.fin_year_name }}</p>
+      <p class="mb-1 small fw-semibold opacity-75 text-truncate">
+        {{ year.fin_year_name }}
+      </p>
       <div class="d-flex gap-2 mt-1 opacity-50 small">
-        <mat-icon style="font-size: 14px; width: 14px; height: 14px">event</mat-icon>
-        <span>{{ year.start_date | date: 'shortDate' }} - {{ year.end_date | date: 'shortDate' }}</span>
+        <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+          >event</mat-icon
+        >
+        <span
+          >{{ year.start_date | date: 'shortDate' }} -
+          {{ year.end_date | date: 'shortDate' }}</span
+        >
       </div>
     </button>
 
-    <div *ngIf="model.filteredYears().length === 0" class="p-4 text-center opacity-75">
-      <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">event_busy</mat-icon>
+    <div
+      *ngIf="model.filteredYears().length === 0"
+      class="p-4 text-center opacity-75"
+    >
+      <mat-icon
+        class="opacity-50 mb-2"
+        style="font-size: 32px; height: 32px; width: 32px"
+        >event_busy</mat-icon
+      >
       <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
     </div>
   </div>
@@ -77,32 +93,69 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'fyCode' | translate }}</label>
-                    <input type="text" formControlName="fin_year_code" class="form-control text-uppercase" placeholder="e.g. FY2025-26" />
+                    <label class="field-label required">{{
+                      'fyCode' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="fin_year_code"
+                      class="form-control text-uppercase"
+                      placeholder="e.g. FY2025-26"
+                    />
                   </div>
                 </div>
                 <div class="col-md-8">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'fyName' | translate }}</label>
-                    <input type="text" formControlName="fin_year_name" class="form-control" placeholder="e.g. Financial Year 2025-2026" />
+                    <label class="field-label required">{{
+                      'fyName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="fin_year_name"
+                      class="form-control"
+                      placeholder="e.g. Financial Year 2025-2026"
+                    />
                   </div>
                 </div>
                 <div class="col-md-12">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'assignedBranches' | translate }}</label>
-                    <ng-select [items]="model.branches()" bindLabel="branch_name" bindValue="branch_no" [multiple]="true" formControlName="branch_nos" placeholder="Select branches"></ng-select>
+                    <label class="field-label required">{{
+                      'assignedBranches' | translate
+                    }}</label>
+                    <ng-select
+                      [items]="model.branches()"
+                      bindLabel="branch_name"
+                      bindValue="branch_no"
+                      [multiple]="true"
+                      formControlName="branch_nos"
+                      placeholder="Select branches"
+                    ></ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'startDate' | translate }}</label>
-                    <input type="date" formControlName="start_date" class="form-control" (change)="autoGeneratePeriods()" />
+                    <label class="field-label required">{{
+                      'startDate' | translate
+                    }}</label>
+                    <input
+                      type="date"
+                      formControlName="start_date"
+                      class="form-control"
+                      (change)="autoGeneratePeriods()"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'endDate' | translate }}</label>
-                    <input type="date" formControlName="end_date" class="form-control" (change)="autoGeneratePeriods()" />
+                    <label class="field-label required">{{
+                      'endDate' | translate
+                    }}</label>
+                    <input
+                      type="date"
+                      formControlName="end_date"
+                      class="form-control"
+                      (change)="autoGeneratePeriods()"
+                    />
                   </div>
                 </div>
               </div>
@@ -110,41 +163,82 @@
           </div>
 
           <!-- Periods Table -->
-          <div class="form-section-card card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="form-section-card card">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">list_alt</mat-icon>
                 {{ 'accountingPeriods' | translate }}
               </h4>
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="autoGeneratePeriods()" [disabled]="!formdata.get('start_date')?.value">
-                <mat-icon class="align-middle me-1" style="font-size: 16px; width: 16px; height: 16px">auto_fix_high</mat-icon>
-                {{ 'Regenerate' | translate }}
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="autoGeneratePeriods()"
+                [disabled]="!formdata.get('start_date')?.value"
+              >
+                <mat-icon
+                  class="align-middle me-1"
+                  style="font-size: 16px; width: 16px; height: 16px"
+                  >auto_fix_high</mat-icon
+                >
+                {{ 'regenerate' | translate }}
               </button>
             </div>
             <div class="card-body p-0">
-              <div class="periods-table-container" style="height: 298px; overflow-y: auto">
-                <table class="table table-hover align-middle mb-0 custom-table-sm">
+              <div
+                class="periods-table-container"
+                style="height: 298px; overflow-y: auto"
+              >
+                <table
+                  class="table table-hover align-middle mb-0 custom-table-sm"
+                >
                   <thead class="bg-light sticky-top shadow-sm">
                     <tr>
-                      <th class="ps-3" style="width: 150px">Code</th>
-                      <th>Name</th>
-                      <th style="width: 130px">Start</th>
-                      <th style="width: 130px">End</th>
-                      <th style="width: 110px">Status</th>
+                      <th class="ps-3" style="width: 150px">
+                        {{ 'code' | translate }}
+                      </th>
+                      <th>{{ 'name' | translate }}</th>
+                      <th style="width: 130px">{{ 'start' | translate }}</th>
+                      <th style="width: 130px">{{ 'end' | translate }}</th>
+                      <th style="width: 110px">{{ 'status' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody formArrayName="periods">
-                    <tr *ngFor="let p of periodsFormArray.controls; let i = index" [formGroupName]="i">
+                    <tr
+                      *ngFor="let p of periodsFormArray.controls; let i = index"
+                      [formGroupName]="i"
+                    >
                       <td class="ps-3">
-                        <input type="text" formControlName="period_code" class="form-control form-control-sm text-uppercase bg-transparent border-0 fw-bold" readonly />
+                        <input
+                          type="text"
+                          formControlName="period_code"
+                          class="form-control form-control-sm text-uppercase bg-transparent border-0 fw-bold"
+                          readonly
+                        />
                       </td>
                       <td>
-                        <input type="text" formControlName="period_name" class="form-control form-control-sm bg-transparent border-0" />
+                        <input
+                          type="text"
+                          formControlName="period_name"
+                          class="form-control form-control-sm bg-transparent border-0"
+                        />
                       </td>
-                      <td><span class="small">{{ p.get('start_date')?.value | date: 'mediumDate' }}</span></td>
-                      <td><span class="small">{{ p.get('end_date')?.value | date: 'mediumDate' }}</span></td>
                       <td>
-                        <select formControlName="status" class="form-select form-select-sm border-0 bg-light">
+                        <span class="small">{{
+                          p.get('start_date')?.value | date: 'mediumDate'
+                        }}</span>
+                      </td>
+                      <td>
+                        <span class="small">{{
+                          p.get('end_date')?.value | date: 'mediumDate'
+                        }}</span>
+                      </td>
+                      <td>
+                        <select
+                          formControlName="status"
+                          class="form-select form-select-sm border-0 bg-light"
+                        >
                           <option value="Open">Open</option>
                           <option value="Closed">Closed</option>
                         </select>
@@ -170,28 +264,39 @@
               <div class="field-group mb-3">
                 <div class="custom--checkbox">
                   <mat-checkbox formControlName="is_current" color="primary">
-                    <label class="field-label mb-0" style="cursor: pointer">{{ 'Current Financial Year' | translate }}</label>
+                    <label class="field-label mb-0" style="cursor: pointer">{{
+                      'currentFinancialYear' | translate
+                    }}</label>
                   </mat-checkbox>
                 </div>
               </div>
               <div class="field-group">
                 <label class="field-label">{{ 'status' | translate }}</label>
-                <ng-select formControlName="status" class="custom-ng-select" [searchable]="false" [clearable]="false">
+                <ng-select
+                  formControlName="status"
+                  class="custom-ng-select"
+                  [searchable]="false"
+                  [clearable]="false"
+                >
                   @for (s of SYS_CONSTS.financialYearStatuses; track s.value) {
-                    <ng-option [value]="s.value">{{ s.label | translate }}</ng-option>
+                    <ng-option [value]="s.value">{{
+                      s.label | translate
+                    }}</ng-option>
                   }
                 </ng-select>
               </div>
             </div>
           </div>
 
-          <div class="form-section-card card bg-light-2d border-0 shadow-none mt-3">
+          <div class="form-section-card card bg-light-2d border-0 shadow-none">
             <div class="card-body">
-              <h6 class="fw-bold small text-uppercase mb-2">{{ 'Helpful Tips' | translate }}</h6>
+              <h6 class="fw-bold small text-uppercase mb-2">
+                {{ 'helpfulTips' | translate }}
+              </h6>
               <ul class="small text-secondary ps-3 mb-0">
-                <li>{{ 'Use standard formats like FY2025-26.' | translate }}</li>
-                <li>{{ 'Periods are auto-generated monthly.' | translate }}</li>
-                <li>{{ 'Closing a year locks all related entries.' | translate }}</li>
+                <li>{{ 'standardFormatTip' | translate }}</li>
+                <li>{{ 'autoGenerateTip' | translate }}</li>
+                <li>{{ 'lockYearTip' | translate }}</li>
               </ul>
             </div>
           </div>

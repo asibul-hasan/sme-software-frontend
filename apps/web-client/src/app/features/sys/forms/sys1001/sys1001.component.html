@@ -1,9 +1,6 @@
 <app-page-form-layout
   [title]="'companyManagement' | translate"
-  [subtitle]="
-    'Manage global enterprise settings, branding, and legal identifiers'
-      | translate
-  "
+  [subtitle]="'manageGlobalSettings' | translate"
   [icon]="'business'"
   [hasSidebar]="false"
   (save)="onSave()"
@@ -35,19 +32,12 @@
                     <label class="field-label">{{
                       'companyCode' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px"
-                          >fingerprint</mat-icon
-                        ></span
-                      >
-                      <input
-                        type="text"
-                        formControlName="company_code"
-                        class="form-control bg-light fw-bold"
-                        readonly
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      formControlName="company_code"
+                      class="form-control bg-light fw-bold"
+                      readonly
+                    />
                   </div>
                 </div>
                 <div class="col-md-8">
@@ -59,7 +49,7 @@
                       type="text"
                       formControlName="company_name"
                       class="form-control form-control-lg fw-bold"
-                      placeholder="Legal company name"
+                      placeholder="{{ 'legalCompanyName' | translate }}"
                     />
                   </div>
                 </div>
@@ -72,7 +62,7 @@
                       type="text"
                       formControlName="company_name_local"
                       class="form-control"
-                      placeholder="Name in local language"
+                      placeholder="{{ 'localNamePlaceholder' | translate }}"
                     />
                   </div>
                 </div>
@@ -86,7 +76,7 @@
                       [items]="sysConstants.companyTypes"
                       bindLabel="label"
                       bindValue="value"
-                      placeholder="Select Type"
+                      placeholder="{{ 'selectType' | translate }}"
                     ></ng-select>
                   </div>
                 </div>
@@ -95,11 +85,11 @@
           </div>
 
           <!-- Address & Contact -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">place</mat-icon>
-                {{ 'Address & Contact' | translate }}
+                {{ 'addressAndContact' | translate }}
               </h4>
             </div>
             <div class="card-body">
@@ -114,7 +104,7 @@
                       type="text"
                       formControlName="address_line1"
                       class="form-control"
-                      placeholder="Street address, building, etc."
+                      placeholder="{{ 'addressLine1Placeholder' | translate }}"
                     />
                   </div>
                 </div>
@@ -127,7 +117,7 @@
                       type="text"
                       formControlName="address_line2"
                       class="form-control"
-                      placeholder="Suite, floor, etc."
+                      placeholder="{{ 'addressLine2Placeholder' | translate }}"
                     />
                   </div>
                 </div>
@@ -185,19 +175,12 @@
                     <label class="field-label">{{
                       'website' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px"
-                          >language</mat-icon
-                        ></span
-                      >
-                      <input
-                        type="url"
-                        formControlName="website"
-                        class="form-control"
-                        placeholder="https://..."
-                      />
-                    </div>
+                    <input
+                      type="url"
+                      formControlName="website"
+                      class="form-control"
+                      placeholder="https://..."
+                    />
                   </div>
                 </div>
 
@@ -207,17 +190,12 @@
                     <label class="field-label">{{
                       'primaryPhone' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px">call</mat-icon></span
-                      >
-                      <input
-                        type="text"
-                        formControlName="phone_primary"
-                        class="form-control"
-                        placeholder="Primary phone"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      formControlName="phone_primary"
+                      class="form-control"
+                      placeholder="Primary phone"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -225,17 +203,12 @@
                     <label class="field-label">{{
                       'secondaryPhone' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px">call</mat-icon></span
-                      >
-                      <input
-                        type="text"
-                        formControlName="phone_secondary"
-                        class="form-control"
-                        placeholder="Secondary phone"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      formControlName="phone_secondary"
+                      class="form-control"
+                      placeholder="Secondary phone"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -243,19 +216,12 @@
                     <label class="field-label">{{
                       'primaryEmail' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px"
-                          >alternate_email</mat-icon
-                        ></span
-                      >
-                      <input
-                        type="email"
-                        formControlName="email_primary"
-                        class="form-control"
-                        placeholder="Primary email"
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      formControlName="email_primary"
+                      class="form-control"
+                      placeholder="Primary email"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -263,19 +229,12 @@
                     <label class="field-label">{{
                       'secondaryEmail' | translate
                     }}</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0"
-                        ><mat-icon style="font-size: 18px"
-                          >alternate_email</mat-icon
-                        ></span
-                      >
-                      <input
-                        type="email"
-                        formControlName="email_secondary"
-                        class="form-control"
-                        placeholder="Secondary email"
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      formControlName="email_secondary"
+                      class="form-control"
+                      placeholder="Secondary email"
+                    />
                   </div>
                 </div>
               </div>
@@ -290,80 +249,17 @@
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">brush</mat-icon>
-                {{ 'Branding' | translate }}
+                {{ 'branding' | translate }}
               </h4>
             </div>
             <div class="card-body">
-              <div
-                class="logo-fixed-container d-flex flex-column align-items-center py-2"
-              >
-                <!-- Fixed Area Box -->
-                <div
-                  class="logo-box-fixed mb-3"
-                  [class.drag-active]="model.isDragActive()"
-                  [class.has-logo]="!!model.logoPreview()"
-                  (dragover)="onLogoDragOver($event)"
-                  (dragleave)="onLogoDragLeave()"
-                  (drop)="onLogoDrop($event)"
-                >
-                  <input
-                    #logoInput
-                    type="file"
-                    accept="image/*"
-                    class="file-input-overlay"
-                    (change)="onLogoSelected($event)"
-                  />
-
-                  @if (model.logoPreview()) {
-                    <img
-                      [src]="model.logoPreview()"
-                      alt="Logo preview"
-                      class="logo-img-contain"
-                    />
-                  } @else {
-                    <div class="logo-empty-state">
-                      <mat-icon>add_a_photo</mat-icon>
-                      <span class="placeholder-text">{{
-                        'selectLogoForUpload' | translate
-                      }}</span>
-                    </div>
-                  }
-                </div>
-
-                <!-- Integrated Action Bar -->
-                <div class="logo-action-bar-integrated">
-                  <div
-                    class="logo-file-name"
-                    [title]="
-                      model.logoFileName() ||
-                      ('selectLogoForUpload' | translate)
-                    "
-                  >
-                    {{
-                      model.logoFileName() ||
-                        ('selectLogoForUpload' | translate)
-                    }}
-                  </div>
-                  <button
-                    type="button"
-                    class="action-btn-icon"
-                    (click)="onLogoUploadClick(logoInput)"
-                    title="Upload"
-                  >
-                    <mat-icon>cloud_upload</mat-icon>
-                  </button>
-                  <div class="action-sep"></div>
-                  <button
-                    type="button"
-                    class="action-btn-icon text-danger"
-                    [disabled]="!model.logoPreview()"
-                    (click)="clearLogo(); $event.stopPropagation()"
-                    title="Delete"
-                  >
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </div>
+              <app-logo-upload
+                [previewUrl]="model.logoPreview()"
+                [fileName]="model.logoFileName()"
+                [isSaving]="model.isSaving()"
+                (fileSelected)="model.onLogoSelected($event)"
+                (clear)="model.clearLogo()"
+              ></app-logo-upload>
             </div>
           </div>
 

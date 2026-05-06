@@ -106,10 +106,10 @@ export class HeaderComponent implements OnInit {
 
   availableBranches = this.authService.availableBranches;
   
-  selectedBranch = computed(() => this.authService.user()?.branch_no?.toString() || '');
+  selectedBranchId = computed(() => this.authService.user()?.branch_no || null);
   
   currentBranchName = computed(() => {
-    const b = this.availableBranches().find((x) => (x.branch_no || x.id)?.toString() === this.selectedBranch());
+    const b = this.availableBranches().find((x) => (x.branch_no || x.id) === this.selectedBranchId());
     return b ? (b.branchName || b.name) : 'Select Branch';
   });
 
@@ -219,6 +219,8 @@ export class HeaderComponent implements OnInit {
 
   onBranchChange(branchId: number) {
     this.authService.switchBranch(branchId);
+    // Reload page to refresh all data for the new branch context
+    window.location.reload();
   }
 
   onNotifications() {

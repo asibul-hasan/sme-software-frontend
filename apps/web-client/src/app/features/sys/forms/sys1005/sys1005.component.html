@@ -1,6 +1,6 @@
 <app-page-form-layout
   [title]="'taxSetup' | translate"
-  [subtitle]="'Configure tax rules, VAT rates, and composite tax structures' | translate"
+  [subtitle]="'manageTaxSettings' | translate"
   [icon]="'account_balance_wallet'"
   [recordsCount]="model.filteredTaxRules().length"
   [sidebarTitle]="'taxSetup' | translate"
@@ -19,13 +19,15 @@
     <button
       *ngFor="let tax of model.filteredTaxRules()"
       type="button"
-      class="list-group-item list-group-item-action p-3"
+      class="list-group-item list-group-item-action"
       [class.active]="model.selectedTaxNo() === tax.tax_no"
       (click)="selectTax(tax)"
     >
       <div class="d-flex w-100 justify-content-between align-items-center mb-1">
         <h6 class="mb-0 fw-bold">{{ tax.tax_code }}</h6>
-        <span class="badge rounded-pill text-bg-light border small">{{ tax.tax_type }}</span>
+        <span class="badge rounded-pill text-bg-light border small">{{
+          tax.tax_type
+        }}</span>
       </div>
       <p class="mb-1 small fw-semibold opacity-75 text-truncate">
         {{ tax.tax_name }}
@@ -35,7 +37,7 @@
           class="badge rounded-pill"
           [ngClass]="{
             'text-bg-success': tax.status === 'Active',
-            'text-bg-secondary': tax.status === 'Inactive'
+            'text-bg-secondary': tax.status === 'Inactive',
           }"
           >{{ tax.status | translate }}</span
         >
@@ -43,8 +45,15 @@
       </div>
     </button>
 
-    <div *ngIf="model.filteredTaxRules().length === 0" class="p-4 text-center opacity-75">
-      <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">receipt_long</mat-icon>
+    <div
+      *ngIf="model.filteredTaxRules().length === 0"
+      class="p-4 text-center opacity-75"
+    >
+      <mat-icon
+        class="opacity-50 mb-2"
+        style="font-size: 32px; height: 32px; width: 32px"
+        >receipt_long</mat-icon
+      >
       <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
     </div>
   </div>
@@ -66,36 +75,77 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'taxCode' | translate }}</label>
-                    <input type="text" formControlName="tax_code" class="form-control text-uppercase" placeholder="e.g. VAT-15" />
+                    <label class="field-label required">{{
+                      'taxCode' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="tax_code"
+                      class="form-control text-uppercase"
+                      placeholder="e.g. VAT-15"
+                    />
                   </div>
                 </div>
                 <div class="col-md-8">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'taxName' | translate }}</label>
-                    <input type="text" formControlName="tax_name" class="form-control" placeholder="e.g. Value Added Tax (15%)" />
+                    <label class="field-label required">{{
+                      'taxName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      formControlName="tax_name"
+                      class="form-control"
+                      placeholder="e.g. Value Added Tax (15%)"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'taxType' | translate }}</label>
-                    <ng-select formControlName="tax_type" [searchable]="false" [clearable]="false" (change)="updateCompositeRate()">
+                    <label class="field-label required">{{
+                      'taxType' | translate
+                    }}</label>
+                    <ng-select
+                      formControlName="tax_type"
+                      [searchable]="false"
+                      [clearable]="false"
+                      (change)="updateCompositeRate()"
+                    >
                       @for (opt of SYS_CONSTS.taxTypes; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label | translate }}</ng-option>
+                        <ng-option [value]="opt.value">{{
+                          opt.label | translate
+                        }}</ng-option>
                       }
                     </ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'taxRate' | translate }} (%)</label>
-                    <input type="number" formControlName="tax_rate" class="form-control" [readonly]="formdata.get('tax_type')?.value === 'COMPOSITE'" />
+                    <label class="field-label required"
+                      >{{ 'taxRate' | translate }} (%)</label
+                    >
+                    <input
+                      type="number"
+                      formControlName="tax_rate"
+                      class="form-control"
+                      [readonly]="
+                        formdata.get('tax_type')?.value === 'COMPOSITE'
+                      "
+                    />
                   </div>
                 </div>
                 <div class="col-md-12">
                   <div class="field-group">
-                    <label class="field-label required">{{ 'assignedBranches' | translate }}</label>
-                    <ng-select [items]="model.branches()" bindLabel="branch_name" bindValue="branch_no" [multiple]="true" formControlName="branch_nos" placeholder="Select branches"></ng-select>
+                    <label class="field-label required">{{
+                      'assignedBranches' | translate
+                    }}</label>
+                    <ng-select
+                      [items]="model.branches()"
+                      bindLabel="branch_name"
+                      bindValue="branch_no"
+                      [multiple]="true"
+                      formControlName="branch_nos"
+                      placeholder="Select branches"
+                    ></ng-select>
                   </div>
                 </div>
               </div>
@@ -103,8 +153,13 @@
           </div>
 
           <!-- Composite Components (Only if Composite Tax) -->
-          <div class="form-section-card card mt-3" *ngIf="formdata.get('tax_type')?.value === 'COMPOSITE'">
-            <div class="card-header d-flex justify-content-between align-items-center">
+          <div
+            class="form-section-card card"
+            *ngIf="formdata.get('tax_type')?.value === 'COMPOSITE'"
+          >
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">account_tree</mat-icon>
                 {{ 'compositeComponents' | translate }}
@@ -112,32 +167,60 @@
               <ng-select
                 [items]="model.allTaxes()"
                 bindLabel="tax_name"
-                placeholder="Add Component Tax"
+                placeholder="{{ 'addComponentTax' | translate }}"
                 class="header-search-select"
                 style="width: 250px"
                 (change)="onChildTaxSelect($event)"
               >
                 <ng-template ng-option-tmp let-item="item">
                   <div class="small fw-bold">{{ item.tax_code }}</div>
-                  <div class="text-muted" style="font-size: 11px">{{ item.tax_name }} ({{ item.tax_rate }}%)</div>
+                  <div class="text-muted" style="font-size: 11px">
+                    {{ item.tax_name }} ({{ item.tax_rate }}%)
+                  </div>
                 </ng-template>
               </ng-select>
             </div>
             <div class="card-body">
-              <div class="composite-container" cdkDropList (cdkDropListDropped)="dropComponent($event)">
-                <div *ngFor="let comp of componentsFormArray.controls; let i = index" class="d-flex align-items-center gap-3 p-2 mb-2 bg-white border rounded shadow-sm" cdkDrag>
+              <div
+                class="composite-container"
+                cdkDropList
+                (cdkDropListDropped)="dropComponent($event)"
+              >
+                <div
+                  *ngFor="
+                    let comp of componentsFormArray.controls;
+                    let i = index
+                  "
+                  class="d-flex align-items-center gap-3 p-2 mb-2 bg-white border rounded shadow-sm"
+                  cdkDrag
+                >
                   <mat-icon class="drag-handle">drag_indicator</mat-icon>
                   <div class="flex-grow-1">
-                    <div class="fw-bold small">{{ comp.get('child_tax_code')?.value }}</div>
-                    <div class="text-secondary smaller" style="font-size: 12px">{{ comp.get('child_tax_name')?.value }}</div>
+                    <div class="fw-bold small">
+                      {{ comp.get('child_tax_code')?.value }}
+                    </div>
+                    <div class="text-secondary smaller" style="font-size: 12px">
+                      {{ comp.get('child_tax_name')?.value }}
+                    </div>
                   </div>
-                  <div class="fw-bold text-primary">{{ comp.get('tax_rate')?.value }}%</div>
-                  <button type="button" class="btn btn-link text-danger p-1" (click)="removeComponent(i)">
-                    <mat-icon style="font-size: 18px; width: 18px; height: 18px">delete_outline</mat-icon>
+                  <div class="fw-bold text-primary">
+                    {{ comp.get('tax_rate')?.value }}%
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-link text-danger p-1"
+                    (click)="removeComponent(i)"
+                  >
+                    <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+                      >delete_outline</mat-icon
+                    >
                   </button>
                 </div>
-                <div *ngIf="componentsFormArray.length === 0" class="text-center p-3 text-muted small">
-                  {{ 'No components added. Select from dropdown to add.' | translate }}
+                <div
+                  *ngIf="componentsFormArray.length === 0"
+                  class="text-center p-3 text-muted small"
+                >
+                  {{ 'noComponentsAdded' | translate }}
                 </div>
               </div>
             </div>
@@ -157,36 +240,55 @@
               <div class="row g-2">
                 <div class="col-6">
                   <div class="custom--checkbox h-auto p-2">
-                    <mat-checkbox formControlName="applies_to_sales" color="primary">
-                      <span class="small fw-semibold">{{ 'Sales' | translate }}</span>
+                    <mat-checkbox
+                      formControlName="applies_to_sales"
+                      color="primary"
+                    >
+                      <span class="small fw-semibold">{{
+                        'Sales' | translate
+                      }}</span>
                     </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="custom--checkbox h-auto p-2">
-                    <mat-checkbox formControlName="applies_to_purchase" color="primary">
-                      <span class="small fw-semibold">{{ 'Purchase' | translate }}</span>
+                    <mat-checkbox
+                      formControlName="applies_to_purchase"
+                      color="primary"
+                    >
+                      <span class="small fw-semibold">{{
+                        'Purchase' | translate
+                      }}</span>
                     </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="custom--checkbox h-auto p-2">
-                    <mat-checkbox formControlName="is_inclusive" color="primary">
-                      <span class="small fw-semibold">{{ 'Inclusive' | translate }}</span>
+                    <mat-checkbox
+                      formControlName="is_inclusive"
+                      color="primary"
+                    >
+                      <span class="small fw-semibold">{{
+                        'Inclusive' | translate
+                      }}</span>
                     </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="custom--checkbox h-auto p-2">
                     <mat-checkbox formControlName="is_compound" color="primary">
-                      <span class="small fw-semibold">{{ 'Compound' | translate }}</span>
+                      <span class="small fw-semibold">{{
+                        'Compound' | translate
+                      }}</span>
                     </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-12 mt-2">
                   <div class="custom--checkbox h-auto p-2">
                     <mat-checkbox formControlName="is_default" color="primary">
-                      <span class="small fw-semibold">{{ 'Default Tax Rule' | translate }}</span>
+                      <span class="small fw-semibold">{{
+                        'defaultTaxRule' | translate
+                      }}</span>
                     </mat-checkbox>
                   </div>
                 </div>
@@ -195,16 +297,34 @@
               <hr class="my-3 opacity-10" />
 
               <div class="field-group mb-3">
-                <label class="field-label required">{{ 'effectiveFrom' | translate }}</label>
-                <input type="date" formControlName="effective_from" class="form-control" />
+                <label class="field-label required">{{
+                  'effectiveFrom' | translate
+                }}</label>
+                <input
+                  type="date"
+                  formControlName="effective_from"
+                  class="form-control"
+                />
               </div>
               <div class="field-group mb-3">
-                <label class="field-label">{{ 'effectiveTo' | translate }}</label>
-                <input type="date" formControlName="effective_to" class="form-control" />
+                <label class="field-label">{{
+                  'effectiveTo' | translate
+                }}</label>
+                <input
+                  type="date"
+                  formControlName="effective_to"
+                  class="form-control"
+                />
               </div>
               <div class="field-group">
-                <label class="field-label required">{{ 'status' | translate }}</label>
-                <ng-select formControlName="status" [searchable]="false" [clearable]="false">
+                <label class="field-label required">{{
+                  'status' | translate
+                }}</label>
+                <ng-select
+                  formControlName="status"
+                  [searchable]="false"
+                  [clearable]="false"
+                >
                   <ng-option value="Active">Active</ng-option>
                   <ng-option value="Inactive">Inactive</ng-option>
                 </ng-select>
@@ -212,16 +332,30 @@
             </div>
           </div>
 
-          <div class="form-section-card card bg-light border-0 shadow-none mt-3">
+          <div class="form-section-card card bg-light border-0 shadow-none">
             <div class="card-body">
-              <h6 class="fw-bold small text-uppercase mb-2">{{ 'Reporting' | translate }}</h6>
+              <h6 class="fw-bold small text-uppercase mb-2">
+                {{ 'reporting' | translate }}
+              </h6>
               <div class="field-group mb-2">
-                <label class="field-label small">{{ 'Tax Authority' | translate }}</label>
-                <input type="text" formControlName="tax_authority" class="form-control form-control-sm" />
+                <label class="field-label small">{{
+                  'authority' | translate
+                }}</label>
+                <input
+                  type="text"
+                  formControlName="tax_authority"
+                  class="form-control form-control-sm"
+                />
               </div>
               <div class="field-group">
-                <label class="field-label small">{{ 'Reporting Code' | translate }}</label>
-                <input type="text" formControlName="reporting_code" class="form-control form-control-sm" />
+                <label class="field-label small">{{
+                  'reportingCode' | translate
+                }}</label>
+                <input
+                  type="text"
+                  formControlName="reporting_code"
+                  class="form-control form-control-sm"
+                />
               </div>
             </div>
           </div>

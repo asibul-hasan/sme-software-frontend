@@ -6,7 +6,8 @@
 
   // Restore fallbacks to prevent 'undefined' which causes relative path issues (like 4202/undefined)
   const localUrl = config.apiUrlLocal || 'http://localhost:8080/api';
-  const liveUrl = config.apiUrlLive || 'https://sme-software-backend.onrender.com/api';
+  const liveUrl =
+    config.apiUrlLive || 'https://sme-software-backend.onrender.com/api';
 
   console.log('Environment Debug: Config loaded:', config);
 

@@ -12,6 +12,7 @@ import { MenuItem } from './models/menu.model';
 import { PermissionService } from '../../../core/services/permission.service';
 import { MenuService } from './services/menu-builder.service';
 import { SharedModule } from '../../../shared';
+import { globalConstants } from '../../../core/constants/global.constants';
 
 @Component({
   selector: 'app-sidebar',

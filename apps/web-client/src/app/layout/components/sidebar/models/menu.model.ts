@@ -14,6 +14,7 @@ export interface MenuItem {
     badgeColor?: 'primary' | 'accent' | 'warn';
     expanded?: boolean;
     dividerAfter?: boolean; 
+    serial?: number;
 }
 // Module	Code	Submodule	Form ID	Form Name
 export const MENU_ITEMS: MenuItem[] = [

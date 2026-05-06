@@ -10,12 +10,19 @@ interface EnvConfig {
   providedIn: 'root',
 })
 export class AppConfigService {
+  private get env(): any {
+    return (window as any).__env || {};
+  }
+
   get apiUrl(): string {
-    const env = (window as any).__env;
-    return env?.apiUrl;
+    return this.env.apiUrl || 'http://localhost:8080/api/v1';
   }
 
   get production(): boolean {
-    return window.location.hostname !== 'localhost';
+    return this.env.production || window.location.hostname !== 'localhost';
+  }
+
+  get version(): string {
+    return this.env.version || '1.0.0';
   }
 }

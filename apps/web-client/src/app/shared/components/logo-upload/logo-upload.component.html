@@ -1,0 +1,43 @@
+<div class="logo-upload-container">
+  <div 
+    class="logo-box-fixed" 
+    [class.drag-active]="isDragActive()"
+    [class.has-logo]="!!previewUrl"
+    (drop)="onDrop($event)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+  >
+    <input 
+      type="file" 
+      class="file-input-overlay" 
+      accept="image/*" 
+      (change)="onFileChange($event)"
+      #fileInput
+    >
+    
+    <ng-container *ngIf="!previewUrl">
+      <div class="logo-empty-state">
+        <mat-icon>cloud_upload</mat-icon>
+        <span class="placeholder-text">{{ 'uploadLogo' | translate }}</span>
+      </div>
+    </ng-container>
+
+    <img *ngIf="previewUrl" [src]="previewUrl" class="logo-img-contain" alt="Company Logo">
+  </div>
+
+  <div class="logo-action-bar-integrated mt-3" *ngIf="previewUrl || fileName">
+    <div class="logo-file-name">
+      {{ fileName || 'company_logo' }}
+    </div>
+    
+    
+    <button 
+      type="button" 
+      class="action-btn-icon text-danger" 
+      (click)="clear.emit()"
+      [matTooltip]="'remove' | translate"
+    >
+      <mat-icon>delete_outline</mat-icon>
+    </button>
+  </div>
+</div>

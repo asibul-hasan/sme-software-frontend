@@ -1,0 +1,148 @@
+.logo-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-box-fixed {
+  width: 180px;
+  height: 180px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.logo-box-fixed:hover {
+  border-color: var(--indigo);
+  background: rgba(var(--indigo-rgb), 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--indigo-rgb), 0.08);
+}
+
+.action-btn-icon {
+  background: transparent;
+  border: none;
+  width: 42px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.action-btn-icon mat-icon {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+.action-btn-icon:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+}
+
+.action-btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.logo-box-fixed.drag-active {
+  border-color: var(--emerald);
+  background: rgba(16, 185, 129, 0.08);
+  transform: scale(1.02);
+}
+
+.logo-box-fixed.has-logo {
+  border-style: solid;
+  border-color: var(--border-color);
+  background: #fff;
+}
+
+.file-input-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.logo-img-contain {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0;
+  z-index: 1;
+}
+
+.logo-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.logo-box-fixed:hover .logo-empty-state {
+  opacity: 1;
+  color: var(--indigo);
+}
+
+.logo-empty-state mat-icon {
+  font-size: 54px;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 4px;
+}
+
+.logo-empty-state .placeholder-text {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.logo-action-bar-integrated {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  height: 42px;
+  overflow: hidden;
+  width: 180px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.logo-file-name {
+  flex: 1;
+  padding: 0 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 138px;
+  border-right: 1px solid var(--border-color);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.02);
+}
+

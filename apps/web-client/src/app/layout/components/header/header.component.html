@@ -34,6 +34,30 @@
 
   <!-- Right: Actions -->
   <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <!-- Branch switcher -->
+    <ng-select
+      class="branch-select-glass"
+      [items]="availableBranches()"
+      [bindLabel]="'branchName'"
+      [bindValue]="'branch_no'"
+      [clearable]="false"
+      [searchable]="false"
+      [ngModel]="selectedBranchId()"
+      [readonly]="availableBranches().length <= 1"
+      (change)="onBranchChange($event.branch_no || $event.id)"
+      placeholder="Select Branch"
+    >
+      <ng-template ng-label-tmp let-item="item">
+        <div class="d-flex align-items-center gap-2">
+          <mat-icon class="branch-icon">store</mat-icon>
+          <span class="branch-name">{{ item.branchName || item.name }}</span>
+        </div>
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item">
+        {{ item.branchName || item.name }}
+      </ng-template>
+    </ng-select>
+
     <!-- Quick Actions -->
     <button
       class="top-btn d-none d-lg-flex align-items-center justify-content-center"
@@ -52,48 +76,6 @@
         isFullScreen() ? 'fullscreen_exit' : 'fullscreen'
       }}</mat-icon>
     </button>
-
-    <!-- Branch switcher -->
-    <button
-      class="user-card branch-sw d-flex align-items-center justify-content-between gap-1 border-0 bg-transparent"
-      [matMenuTriggerFor]="branchMenu"
-      title="Switch Branch"
-    >
-      <div
-        class="d-flex align-items-center gap-1 overflow-hidden"
-        style="min-width: 0"
-      >
-        <mat-icon class="branch-icon">store</mat-icon>
-        <div class="user-info text-truncate">
-          <div class="user-name text-truncate">
-            {{ currentBranchName() }}
-          </div>
-        </div>
-      </div>
-      <mat-icon class="chevron-icon">expand_more</mat-icon>
-    </button>
-
-    <mat-menu #branchMenu="matMenu" class="custom-mat-menu">
-      @for (
-        branch of availableBranches();
-        track branch.branch_no || branch.id
-      ) {
-        <button
-          mat-menu-item
-          (click)="onBranchChange((branch.branch_no || branch.id) || 0)"
-          [ngClass]="{
-            'mdc-list-item--selected':
-              ((branch.branch_no || branch.id) || 0).toString() ===
-              selectedBranch(),
-            'mat-mdc-option-active':
-              ((branch.branch_no || branch.id) || 0).toString() ===
-              selectedBranch(),
-          }"
-        >
-          <span>{{ branch.branchName || branch.name }}</span>
-        </button>
-      }
-    </mat-menu>
 
     <!-- Notifications -->
     <button
@@ -122,7 +104,7 @@
       [matMenuTriggerFor]="userProfileMenu"
     >
       <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
-      <div class="user-info d-none d-md-block">
+      <div class="user-info d-none d-md-block text-start">
         <div class="user-name">{{ userName() }}</div>
         <div class="user-role">{{ userRole() }}</div>
       </div>

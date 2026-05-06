@@ -84,6 +84,33 @@ export class Sys1001ModelService {
   patchForm(data: ICompany): void {
     if (this.form && data) {
       this.form.patchValue(data);
+      if (data.logo_url) {
+        this.logoPreview.set(data.logo_url);
+      }
     }
+  }
+
+  onLogoSelected(file: File): void {
+    this.handleLogoFile(file);
+  }
+
+  clearLogo(): void {
+    this.form.patchValue({ logo_url: '' });
+    this.logoPreview.set('');
+    this.logoFileName.set('');
+  }
+
+  private handleLogoFile(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const value = e.target.result;
+      this.form.patchValue({ logo_url: value });
+      this.logoPreview.set(value);
+
+      const companyId = this.form.getRawValue().company_code || 'company';
+      const cleanId = companyId.toString().toLowerCase().replace(/\s+/g, '_');
+      this.logoFileName.set(`${cleanId}_logo`);
+    };
+    reader.readAsDataURL(file);
   }
 }

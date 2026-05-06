@@ -30,6 +30,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
+import { ValidationMessageDirective } from './directives';
+import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
+import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
+
 const MODULES = [
   CommonModule,
   FormsModule,
@@ -37,7 +41,6 @@ const MODULES = [
   RouterModule,
   TranslateModule,
   NgSelectModule,
-  // Material
   MatButtonModule,
   MatCardModule,
   MatIconModule,
@@ -64,7 +67,17 @@ const MODULES = [
 ];
 
 @NgModule({
-  imports: [MODULES],
-  exports: [MODULES],
+  imports: [
+    ...MODULES,
+    ValidationMessageDirective,
+    LogoUploadComponent,
+    PageFormLayoutComponent,
+  ],
+  exports: [
+    ...MODULES,
+    ValidationMessageDirective,
+    LogoUploadComponent,
+    PageFormLayoutComponent,
+  ],
 })
 export class SharedModule {}

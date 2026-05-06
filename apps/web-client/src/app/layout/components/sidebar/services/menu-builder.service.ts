@@ -14,6 +14,7 @@ export interface RawMenuForm {
   type: string;
   badge?: string;
   badgeColor?: string;
+  serial?: number;
 }
 
 @Injectable({
@@ -31,7 +32,7 @@ export class MenuService {
       subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'business',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1002',
@@ -43,7 +44,7 @@ export class MenuService {
       subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'business',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1003',
@@ -55,7 +56,7 @@ export class MenuService {
       subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'business',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1004',
@@ -67,7 +68,7 @@ export class MenuService {
       subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'business',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1005',
@@ -79,7 +80,7 @@ export class MenuService {
       subModule: 'Company Configuration',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'business',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1101',
@@ -91,7 +92,7 @@ export class MenuService {
       subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'security',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1102',
@@ -103,7 +104,7 @@ export class MenuService {
       subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'security',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1103',
@@ -115,7 +116,7 @@ export class MenuService {
       subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'security',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1104',
@@ -127,7 +128,7 @@ export class MenuService {
       subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'security',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1105',
@@ -139,7 +140,7 @@ export class MenuService {
       subModule: 'User & Security',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'security',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'SYS_1201',
@@ -151,7 +152,7 @@ export class MenuService {
       subModule: 'Menu Builder',
       moduleIcon: 'admin_panel_settings',
       subModuleIcon: 'menu',
-      serial: 1,
+      serial: 6,
     },
     {
       formId: 'INV_1001',
@@ -211,7 +212,7 @@ export class MenuService {
       subModule: 'POS',
       moduleIcon: 'point_of_sale',
       subModuleIcon: 'shopping_cart',
-      serial: 3,
+      serial: 4,
     },
     {
       formId: 'SAL_1002',
@@ -223,7 +224,7 @@ export class MenuService {
       subModule: 'POS',
       moduleIcon: 'point_of_sale',
       subModuleIcon: 'shopping_cart',
-      serial: 3,
+      serial: 4,
     },
     {
       formId: 'SAL_1003',
@@ -235,7 +236,7 @@ export class MenuService {
       subModule: 'POS',
       moduleIcon: 'point_of_sale',
       subModuleIcon: 'shopping_cart',
-      serial: 3,
+      serial: 4,
     },
     {
       formId: 'SAL_1101',
@@ -247,7 +248,7 @@ export class MenuService {
       subModule: 'Customer',
       moduleIcon: 'point_of_sale',
       subModuleIcon: 'group',
-      serial: 3,
+      serial: 4,
     },
     {
       formId: 'SAL_1102',
@@ -259,7 +260,7 @@ export class MenuService {
       subModule: 'Customer',
       moduleIcon: 'point_of_sale',
       subModuleIcon: 'group',
-      serial: 3,
+      serial: 4,
     },
     {
       formId: 'PUR_1001',
@@ -271,7 +272,7 @@ export class MenuService {
       subModule: 'Supplier',
       moduleIcon: 'shopping_bag',
       subModuleIcon: 'local_shipping',
-      serial: 4,
+      serial: 3,
     },
     {
       formId: 'PUR_1101',
@@ -283,7 +284,7 @@ export class MenuService {
       subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
       subModuleIcon: 'receipt_long',
-      serial: 4,
+      serial: 3,
     },
     {
       formId: 'PUR_1102',
@@ -295,7 +296,7 @@ export class MenuService {
       subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
       subModuleIcon: 'receipt_long',
-      serial: 4,
+      serial: 3,
     },
     {
       formId: 'PUR_1103',
@@ -307,7 +308,7 @@ export class MenuService {
       subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
       subModuleIcon: 'receipt_long',
-      serial: 4,
+      serial: 3,
     },
     {
       formId: 'PUR_1104',
@@ -319,7 +320,7 @@ export class MenuService {
       subModule: 'Purchase Workflow',
       moduleIcon: 'shopping_bag',
       subModuleIcon: 'receipt_long',
-      serial: 4,
+      serial: 3,
     },
     {
       formId: 'FIN_1001',
@@ -331,7 +332,7 @@ export class MenuService {
       subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
       subModuleIcon: 'account_tree',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1002',
@@ -343,7 +344,7 @@ export class MenuService {
       subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
       subModuleIcon: 'account_tree',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1003',
@@ -355,7 +356,7 @@ export class MenuService {
       subModule: 'Chart of Accounts',
       moduleIcon: 'account_balance',
       subModuleIcon: 'account_tree',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1101',
@@ -367,7 +368,7 @@ export class MenuService {
       subModule: 'Voucher System',
       moduleIcon: 'account_balance',
       subModuleIcon: 'receipt',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1102',
@@ -379,7 +380,7 @@ export class MenuService {
       subModule: 'Voucher System',
       moduleIcon: 'account_balance',
       subModuleIcon: 'receipt',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1103',
@@ -391,7 +392,7 @@ export class MenuService {
       subModule: 'Voucher System',
       moduleIcon: 'account_balance',
       subModuleIcon: 'receipt',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1104',
@@ -403,7 +404,7 @@ export class MenuService {
       subModule: 'Voucher System',
       moduleIcon: 'account_balance',
       subModuleIcon: 'receipt',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1201',
@@ -415,7 +416,7 @@ export class MenuService {
       subModule: 'Expense',
       moduleIcon: 'account_balance',
       subModuleIcon: 'money_off',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1202',
@@ -427,7 +428,7 @@ export class MenuService {
       subModule: 'Expense',
       moduleIcon: 'account_balance',
       subModuleIcon: 'money_off',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'INV_2301',
@@ -499,7 +500,7 @@ export class MenuService {
       subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
       subModuleIcon: 'store',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1302',
@@ -511,7 +512,7 @@ export class MenuService {
       subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
       subModuleIcon: 'store',
-      serial: 5,
+      serial: 1,
     },
     {
       formId: 'FIN_1303',
@@ -523,6 +524,126 @@ export class MenuService {
       subModule: 'Branch Finance',
       moduleIcon: 'account_balance',
       subModuleIcon: 'store',
+      serial: 1,
+    },
+    {
+      formId: 'HR_1001',
+      type: 'form',
+      formName: 'Employee Management',
+      icon: 'person_add',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Employee Setup',
+      moduleIcon: 'people',
+      subModuleIcon: 'person_search',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1002',
+      type: 'form',
+      formName: 'Department & Designation Setup',
+      icon: 'badge',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Employee Setup',
+      moduleIcon: 'people',
+      subModuleIcon: 'person_search',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1003',
+      type: 'form',
+      formName: 'Shift Setup',
+      icon: 'schedule',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Employee Setup',
+      moduleIcon: 'people',
+      subModuleIcon: 'person_search',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1101',
+      type: 'form',
+      formName: 'Manual Attendance',
+      icon: 'touch_app',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Attendance',
+      moduleIcon: 'people',
+      subModuleIcon: 'event_available',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1102',
+      type: 'form',
+      formName: 'Device Sync Attendance',
+      icon: 'devices',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Attendance',
+      moduleIcon: 'people',
+      subModuleIcon: 'event_available',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1103',
+      type: 'form',
+      formName: 'Attendance Adjustment',
+      icon: 'edit_calendar',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Attendance',
+      moduleIcon: 'people',
+      subModuleIcon: 'event_available',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1201',
+      type: 'form',
+      formName: 'Salary Structure Setup',
+      icon: 'payments',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Payroll',
+      moduleIcon: 'people',
+      subModuleIcon: 'monetization_on',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1202',
+      type: 'form',
+      formName: 'Salary Processing',
+      icon: 'reorder',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Payroll',
+      moduleIcon: 'people',
+      subModuleIcon: 'monetization_on',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1203',
+      type: 'report',
+      formName: 'Salary Sheet',
+      icon: 'description',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Payroll',
+      moduleIcon: 'people',
+      subModuleIcon: 'monetization_on',
+      serial: 5,
+    },
+    {
+      formId: 'HR_1204',
+      type: 'report',
+      formName: 'Payslip Generator',
+      icon: 'picture_as_pdf',
+      module: 'Human Resource',
+      code: 'HR',
+      subModule: 'Payroll',
+      moduleIcon: 'people',
+      subModuleIcon: 'monetization_on',
       serial: 5,
     },
   ];
@@ -539,6 +660,7 @@ export class MenuService {
       formName: string;
       icon: string;
       expanded: boolean;
+      serial: number;
       children: Record<string, SubModuleMap>;
     }
 
@@ -554,6 +676,7 @@ export class MenuService {
           formName: this.toCamelCaseRoute(moduleKey),
           icon: form.moduleIcon || 'folder',
           expanded: false,
+          serial: form.serial || 999,
           children: {},
         };
       }
@@ -577,7 +700,7 @@ export class MenuService {
         formName: this.toCamelCaseRoute(form.formName),
         icon: form.icon || 'description',
         route: `${this.toLowerCase(form.code)}/${form.type}/${this.toLowerCase(
-          form.formName
+          form.formName,
         )
           .replace(/[^a-z0-9\s]/g, '')
           .trim()
@@ -592,10 +715,15 @@ export class MenuService {
     });
 
     // Convert map → array
-    const menu: MenuItem[] = Object.values(moduleMap).map((m) => ({
-      ...m,
-      children: Object.values(m.children),
-    }) as MenuItem);
+    const menu: MenuItem[] = Object.values(moduleMap)
+      .map(
+        (m) =>
+          ({
+            ...m,
+            children: Object.values(m.children),
+          }) as MenuItem,
+      )
+      .sort((a, b) => (a.serial || 999) - (b.serial || 999));
 
     return menu;
   }

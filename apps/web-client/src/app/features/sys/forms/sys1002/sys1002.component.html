@@ -1,8 +1,6 @@
 <app-page-form-layout
   [title]="'branchSetup' | translate"
-  [subtitle]="
-    'Manage business locations, branch hierarchy, and office types' | translate
-  "
+  [subtitle]="'manageBranchSettings' | translate"
   [icon]="'business'"
   [recordsCount]="model.filteredBranches().length"
   [sidebarTitle]="'branchSetup' | translate"
@@ -23,7 +21,7 @@
         type="button"
         class="list-group-item list-group-item-action p-3"
         [class.active]="model.selectedBranchNo() === branch.branchNo"
-        (click)="selectBranch(branch)"
+        (click)="model.selectBranch(branch)"
       >
         <div
           class="d-flex w-100 justify-content-between align-items-center mb-1"
@@ -68,7 +66,7 @@
 
   <!-- Main Form Content -->
   <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
+    <form [formGroup]="model.form" autocomplete="off">
       <div class="row row-group">
         <!-- Branch Core Identity -->
         <div class="col-xl-8 col-lg-12">
@@ -112,7 +110,7 @@
                 <div class="col-md-12">
                   <div class="field-group">
                     <label class="field-label" for="branch_name_local">{{
-                      'Name in Local Language' | translate
+                      'localName' | translate
                     }}</label>
                     <input
                       type="text"
@@ -220,7 +218,7 @@
                   formControlName="address_line1"
                   class="form-control"
                   rows="4"
-                  placeholder="Complete physical address..."
+                  placeholder="{{ 'addressPlaceholder' | translate }}"
                 ></textarea>
               </div>
               <div class="field-group mb-3">

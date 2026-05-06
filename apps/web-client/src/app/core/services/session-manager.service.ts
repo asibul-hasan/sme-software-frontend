@@ -7,7 +7,8 @@ import {
   Subscription,
   BehaviorSubject,
 } from 'rxjs';
-import { switchMap, throttleTime, filter } from 'rxjs/operators';
+import { switchMap, throttleTime, filter, startWith } from 'rxjs/operators';
+import { timer } from 'rxjs';
 import { AuthService } from './auth.service';
 import { AuthContextService } from './auth-context.service';
 import { SessionLockComponent } from '../../layout/components/session-lock/session-lock.component';
@@ -67,24 +68,19 @@ export class SessionManagerService {
         fromEvent(window, 'keydown'),
         fromEvent(window, 'click'),
         fromEvent(window, 'scroll'),
-      ).pipe(throttleTime(1000));
+        fromEvent(window, 'touchstart'),
+      ).pipe(
+        throttleTime(2000), // Reduce frequency
+        startWith(null)
+      );
 
       this.inactivitySub = activity$
         .pipe(
-          switchMap(() =>
-            interval(this.INACTIVITY_TIMEOUT).pipe(
-              throttleTime(this.INACTIVITY_TIMEOUT),
-            ),
-          ),
+          switchMap(() => timer(this.INACTIVITY_TIMEOUT))
         )
         .subscribe(() => {
           this.zone.run(() => this.lockScreen());
         });
-
-      // Initial inactivity timer
-      this.inactivitySub = interval(this.INACTIVITY_TIMEOUT).subscribe(() => {
-        this.zone.run(() => this.lockScreen());
-      });
     });
   }
 
@@ -99,7 +95,10 @@ export class SessionManagerService {
     if (this.isLocked() || !this.authContext.isAuthenticated()) return;
 
     this.isLocked.set(true);
-    this.stopTimers();
+    // Note: We intentionally DO NOT stop refreshSub here.
+    // We want the token to stay fresh so the user doesn't get 401'd while locked.
+    this.inactivitySub?.unsubscribe();
+    this.inactivitySub = undefined;
 
     this.lockDialogRef = this.dialog.open(SessionLockComponent, {
       disableClose: true,
