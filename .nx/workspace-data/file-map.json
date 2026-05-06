@@ -6,44 +6,52 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": ".editorconfig",
-        "hash": "11532813898455409296"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "11751663399876450553"
-      },
-      {
         "file": ".prettierignore",
         "hash": "12269743867629339573"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "6820402234827505055"
-      },
-      {
-        "file": ".vscode/extensions.json",
-        "hash": "4305574964819615641"
       },
       {
         "file": ".vscode/settings.json",
         "hash": "1389868326933519382"
       },
       {
-        "file": "AI_INSTRUCTIONS.md",
-        "hash": "7145469653950562665"
+        "file": ".editorconfig",
+        "hash": "11532813898455409296"
       },
       {
-        "file": "README.md",
-        "hash": "5839997762649794868"
+        "file": "tsconfig.base.json",
+        "hash": "12471885200579325840"
+      },
+      {
+        "file": "AI_INSTRUCTIONS.md",
+        "hash": "7145469653950562665"
       },
       {
         "file": "db.md",
         "hash": "17786456305232670079"
       },
       {
+        "file": ".vscode/extensions.json",
+        "hash": "4305574964819615641"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "6820402234827505055"
+      },
+      {
+        "file": "package.json",
+        "hash": "91904586201240904"
+      },
+      {
+        "file": "README.md",
+        "hash": "5839997762649794868"
+      },
+      {
         "file": "eslint.config.mjs",
         "hash": "1750064783103198479"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "11751663399876450553"
       },
       {
         "file": "file_list.txt",
@@ -52,14 +60,6 @@
       {
         "file": "nx.json",
         "hash": "9648514650165378930"
-      },
-      {
-        "file": "package.json",
-        "hash": "7528620988385380627"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "12471885200579325840"
       }
     ],
     "projectFileMap": {
