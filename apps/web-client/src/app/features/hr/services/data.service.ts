@@ -1,34 +1,58 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AppConfigService } from '../../../core/services/app-config.service';
+import { BaseDataService } from '../../../core/services/base-data.service';
+import { ApiResponse } from '../../../core/models/response.model';
 
+/**
+ * HTTP gateway for the HR module (/api/v1/hr/...).
+ *
+ * Generic CRUD (getList, getDetails, create, update, delete) is
+ * inherited from BaseDataService.
+ *
+ * HR-domain methods previously scattered in SysDataService are
+ * consolidated here.
+ */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class HrDataService {
-  private get apiUrl() { return `${this.config.apiUrl}/hr`; }
+export class HrDataService extends BaseDataService {
+  protected override readonly modulePath = 'hr';
 
-  constructor(private http: HttpClient, private config: AppConfigService) { }
+  // ─── Designation ────────────────────────────────────────────────────────────
 
-  // Generic CRUD Methods
-  getList<T>(path: string): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${path}`);
+  getDesignations(): Observable<ApiResponse<any[]>> {
+    return this.getList<any[]>('settings/designation');
   }
 
-  getDetails<T>(path: string, params: any): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${path}`, { params });
+  createDesignation(data: object): Observable<ApiResponse<any>> {
+    return this.create<any>('settings/designation', data);
   }
 
-  create<T>(path: string, payload: any): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}/${path}`, payload);
+  updateDesignation(id: number, data: object): Observable<ApiResponse<any>> {
+    return this.update<any>(`settings/designation/${id}`, data);
   }
 
-  update<T>(path: string, payload: any): Observable<T> {
-    return this.http.put<T>(`${this.apiUrl}/${path}`, payload);
+  deleteDesignation(id: number): Observable<ApiResponse<any>> {
+    return this.delete<any>(`settings/designation/${id}`, {});
   }
 
-  delete<T>(path: string, params: any): Observable<T> {
-    return this.http.delete<T>(`${this.apiUrl}/${path}`, { params });
+  // ─── Role / Permission ───────────────────────────────────────────────────────
+
+  getPermissions(designationId: number): Observable<ApiResponse<any>> {
+    return this.getList<any>(`settings/permission/${designationId}`);
+  }
+
+  updatePermissions(designationId: number, permissions: object): Observable<ApiResponse<any>> {
+    return this.update<any>(`settings/permission/${designationId}`, permissions);
+  }
+
+  // ─── Module Toggle ───────────────────────────────────────────────────────────
+
+  getModules(): Observable<ApiResponse<any[]>> {
+    return this.getList<any[]>('settings/module-toggle');
+  }
+
+  toggleModule(moduleId: string, enabled: boolean): Observable<ApiResponse<any>> {
+    return this.create<any>('settings/module-toggle/toggle', { moduleId, enabled });
   }
 }
