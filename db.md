@@ -10,9 +10,6 @@ submodule_code is scoped globally unique (e.g. HR-SETUP, HR-PAYROLL)
 active_status = 0 on parent module cascades logically to all its submodules in the middleware (no DB cascade — middleware enforces this)
 sys_menu
 menu_type drives routing behavior: MODULE / SUBMODULE / MENU / FORM / REPORT / ACTION
-is_sidebar = 1 → render in nav tree; is_sidebar = 0 → route exists but not shown (e.g. detail pages)
-is_route = 1 → has an Angular route; is_route = 0 → grouping label only
-is_visible = 1 → shown to user after permission check; 0 → hidden even if permitted
 form_id is the unique form identifier used by permission engine (e.g. HR1001, SYS0001)
 level_no mirrors the tree depth: 0 = module, 1 = submodule, 2 = menu, 3 = form/report
 Backend permission check order: module active → submodule active → menu active → role permission on form_id

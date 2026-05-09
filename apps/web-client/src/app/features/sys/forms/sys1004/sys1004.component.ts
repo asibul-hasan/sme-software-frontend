@@ -35,9 +35,12 @@ export class Sys1004Component implements OnInit {
 
   ngOnInit(): void {
     this.model.initForm();
-    this.permissionService.loadPermissions('SYS_1004').subscribe();
-    this.model.loadBranches();
-    this.model.loadCurrencies();
+    // Move side-effects to next tick to avoid NG0100
+    setTimeout(() => {
+      this.permissionService.useLocalPermissions('SYS_1004');
+      this.model.loadBranches();
+      this.model.loadCurrencies();
+    });
   }
 
   onSearchTermChange(val: string): void {
@@ -68,7 +71,7 @@ export class Sys1004Component implements OnInit {
     });
   }
 
-  selectCurrency(currency: Currency, index: number): void {
+  selectCurrency(currency: Currency, index?: number): void {
     this.model.selectCurrency(currency, index);
   }
 

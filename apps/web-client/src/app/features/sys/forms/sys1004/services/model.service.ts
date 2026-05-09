@@ -2,13 +2,17 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
-import { ModalService } from 'apps/web-client/src/app/core/services/modal.service';
+import { ModalService } from '../../../../../core/services/modal.service';
 import { finalize } from 'rxjs';
 import { Sys1004DataService } from './data.service';
+import { BaseEntity } from '../../../../../core/models/base-entity.model';
+import { isSuccess } from '../../../../../core/models/response.model';
+
+import { IBranch } from '../../sys1002/services/model.service';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
 
-export interface Currency {
+export interface Currency extends BaseEntity {
   currency_no: number;
   currency_code: string;
   currency_name_en: string;
@@ -54,7 +58,7 @@ export class Sys1004ModelService {
 
   // ─── State ─────────────────────────────────────────────────────────────────
   currencies          = signal<Currency[]>([]);
-  branches            = signal<any[]>([]);
+  branches            = signal<IBranch[]>([]);
   rateHistory         = signal<RateHistory[]>([]);
   isLoading           = signal(false);
   isSaving            = signal(false);
@@ -100,7 +104,7 @@ export class Sys1004ModelService {
   loadBranches(): void {
     this.data.loadBranches().subscribe({
       next: (res) => {
-        if (res.success && res.data) this.branches.set(res.data);
+        if (isSuccess(res) && res.data) this.branches.set(res.data);
       },
     });
   }
@@ -112,7 +116,7 @@ export class Sys1004ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
+          if (isSuccess(res) && res.data) {
             this.currencies.set(res.data);
             if (res.data.length > 0) {
               const index =
@@ -139,23 +143,23 @@ export class Sys1004ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
-            const d = res.data as any;
+          if (isSuccess(res) && res.data) {
+            const d = res.data as unknown as Record<string, unknown>;
             this.form.patchValue({
-              currency_no:        d.currencyNo,
-              branch_nos:         d.branchNos || [],
-              currency_code:      d.currencyCode,
-              currency_name_en:   d.currencyNameEn,
-              currency_name_bn:   d.currencyNameBn,
-              currency_symbol:    d.currencySymbol,
-              fractional_unit_en: d.fractionalUnitEn,
-              fractional_unit_bn: d.fractionalUnitBn,
-              region:             d.region,
-              number_format:      d.numberFormat || 'International',
-              decimal_places:     d.decimalPlaces,
-              is_base_currency:   d.isBaseCurrency === 1 || d.isBaseCurrency === true,
-              exchange_rate:      d.exchangeRate,
-              rate_date:          this.datePipe.transform(d.rateDate, 'yyyy-MM-dd'),
+              currency_no:        d['currencyNo'],
+              branch_nos:         (d['branchNos'] as number[]) || [],
+              currency_code:      d['currencyCode'],
+              currency_name_en:   d['currencyNameEn'],
+              currency_name_bn:   d['currencyNameBn'],
+              currency_symbol:    d['currencySymbol'],
+              fractional_unit_en: d['fractionalUnitEn'],
+              fractional_unit_bn: d['fractionalUnitBn'],
+              region:             d['region'],
+              number_format:      d['numberFormat'] || 'International',
+              decimal_places:     d['decimalPlaces'],
+              is_base_currency:   d['isBaseCurrency'] === 1 || d['isBaseCurrency'] === true,
+              exchange_rate:      d['exchangeRate'],
+              rate_date:          this.datePipe.transform(d['rateDate'] as string, 'yyyy-MM-dd'),
             });
           }
         },
@@ -192,12 +196,12 @@ export class Sys1004ModelService {
     };
 
     const obs = isUpdate
-      ? this.data.updateCurrency(payload)
+      ? this.data.updateCurrency(this.selectedCurrencyNo()!, payload)
       : this.data.saveCurrency(payload);
 
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
-        if (res.success) {
+        if (isSuccess(res)) {
           this.toastr.success(isUpdate ? 'Currency updated' : 'Currency registered');
           this.loadCurrencies(isUpdate ? this.lastSelectedIndex : 0);
         } else {
@@ -218,7 +222,7 @@ export class Sys1004ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success) {
+          if (isSuccess(res)) {
             this.toastr.success('Currency deleted successfully');
             this.loadCurrencies();
             if (callback) callback();
@@ -240,7 +244,7 @@ export class Sys1004ModelService {
       .pipe(finalize(() => this.isHistoryLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
+          if (isSuccess(res) && res.data) {
             this.modalService.openDataList({
               title: `Rate History: ${currencyCode}`,
               width: 'lg',

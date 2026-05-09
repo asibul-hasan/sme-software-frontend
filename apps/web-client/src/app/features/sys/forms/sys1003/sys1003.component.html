@@ -10,70 +10,73 @@
   (new)="onNew()"
   (reset)="onReset()"
   (delete)="onDelete()"
-  [showDelete]="!!model.selectedYearNo()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedYearNo()"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
   <!-- Extra Header Action for Closing FY -->
   <div extraHeaderActions>
-    <button
-      *ngIf="model.selectedYearNo() && formdata.get('status')?.value === 'Open'"
-      type="button"
-      class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
-      (click)="onCloseFY()"
-    >
-      <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-        >lock_open</mat-icon
+    @if (permissionService.canUpdate() && model.selectedYearNo() && formdata.get('status')?.value === 'Open') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
+        (click)="onCloseFY()"
       >
-      <span class="small">{{ 'closeFy' | translate }}</span>
-    </button>
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+          >lock_open</mat-icon
+        >
+        <span class="small">{{ 'closeFy' | translate }}</span>
+      </button>
+    }
   </div>
 
   <!-- Sidebar List Content -->
   <div sidebarList>
-    <button
-      *ngFor="let year of model.filteredYears()"
-      type="button"
-      class="list-group-item list-group-item-action"
-      [class.active]="model.selectedYearNo() === year.fin_year_no"
-      (click)="selectYear(year)"
-    >
-      <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-        <h6 class="mb-0 fw-bold">{{ year.fin_year_code }}</h6>
-        <span
-          class="badge rounded-pill"
-          [ngClass]="{
-            'text-bg-success': year.status === 'Open',
-            'text-bg-secondary': year.status === 'Closed',
-          }"
-          >{{ year.status }}</span
-        >
-      </div>
-      <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-        {{ year.fin_year_name }}
-      </p>
-      <div class="d-flex gap-2 mt-1 opacity-50 small">
-        <mat-icon style="font-size: 14px; width: 14px; height: 14px"
-          >event</mat-icon
-        >
-        <span
-          >{{ year.start_date | date: 'shortDate' }} -
-          {{ year.end_date | date: 'shortDate' }}</span
-        >
-      </div>
-    </button>
-
-    <div
-      *ngIf="model.filteredYears().length === 0"
-      class="p-4 text-center opacity-75"
-    >
-      <mat-icon
-        class="opacity-50 mb-2"
-        style="font-size: 32px; height: 32px; width: 32px"
-        >event_busy</mat-icon
+    @for (year of model.filteredYears(); track year.fin_year_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedYearNo() === year.fin_year_no"
+        (click)="selectYear(year)"
       >
-      <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
-    </div>
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold">{{ year.fin_year_code }}</h6>
+          <span
+            class="badge rounded-pill"
+            [ngClass]="{
+              'text-bg-success': year.status === 'Open',
+              'text-bg-secondary': year.status === 'Closed',
+            }"
+            >{{ year.status }}</span
+          >
+        </div>
+        <p class="mb-1 small fw-semibold opacity-75 text-truncate">
+          {{ year.fin_year_name }}
+        </p>
+        <div class="d-flex gap-2 mt-1 opacity-50 small">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+            >event</mat-icon
+          >
+          <span
+            >{{ year.start_date | date: 'shortDate' }} -
+            {{ year.end_date | date: 'shortDate' }}</span
+          >
+        </div>
+      </button>
+    }
+
+    @if (model.filteredYears().length === 0) {
+      <div class="p-4 text-center opacity-75">
+        <mat-icon
+          class="opacity-50 mb-2"
+          style="font-size: 32px; height: 32px; width: 32px"
+          >event_busy</mat-icon
+        >
+        <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
+      </div>
+    }
   </div>
 
   <!-- Main Form Content -->
@@ -93,11 +96,12 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label class="field-label required" for="fin_year_code">{{
                       'fyCode' | translate
                     }}</label>
                     <input
                       type="text"
+                      id="fin_year_code"
                       formControlName="fin_year_code"
                       class="form-control text-uppercase"
                       placeholder="e.g. FY2025-26"
@@ -106,11 +110,12 @@
                 </div>
                 <div class="col-md-8">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label class="field-label required" for="fin_year_name">{{
                       'fyName' | translate
                     }}</label>
                     <input
                       type="text"
+                      id="fin_year_name"
                       formControlName="fin_year_name"
                       class="form-control"
                       placeholder="e.g. Financial Year 2025-2026"
@@ -119,26 +124,34 @@
                 </div>
                 <div class="col-md-12">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label class="field-label required" for="branch_nos">{{
                       'assignedBranches' | translate
                     }}</label>
                     <ng-select
-                      [items]="model.branches()"
+                      id="branch_nos"
+                      labelForId="branch_nos"
+                      formControlName="branch_nos"
+                      [multiple]="true"
                       bindLabel="branch_name"
                       bindValue="branch_no"
-                      [multiple]="true"
-                      formControlName="branch_nos"
-                      placeholder="Select branches"
-                    ></ng-select>
+                      placeholder="{{ 'selectBranches' | translate }}"
+                    >
+                      @for (branch of model.branches(); track branch.branch_no) {
+                        <ng-option [value]="branch.branch_no">
+                          {{ branch.branch_name }}
+                        </ng-option>
+                      }
+                    </ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label class="field-label required" for="start_date">{{
                       'startDate' | translate
                     }}</label>
                     <input
                       type="date"
+                      id="start_date"
                       formControlName="start_date"
                       class="form-control"
                       (change)="autoGeneratePeriods()"
@@ -147,11 +160,12 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label class="field-label required" for="end_date">{{
                       'endDate' | translate
                     }}</label>
                     <input
                       type="date"
+                      id="end_date"
                       formControlName="end_date"
                       class="form-control"
                       (change)="autoGeneratePeriods()"
@@ -205,45 +219,44 @@
                     </tr>
                   </thead>
                   <tbody formArrayName="periods">
-                    <tr
-                      *ngFor="let p of periodsFormArray.controls; let i = index"
-                      [formGroupName]="i"
-                    >
-                      <td class="ps-3">
-                        <input
-                          type="text"
-                          formControlName="period_code"
-                          class="form-control form-control-sm text-uppercase bg-transparent border-0 fw-bold"
-                          readonly
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          formControlName="period_name"
-                          class="form-control form-control-sm bg-transparent border-0"
-                        />
-                      </td>
-                      <td>
-                        <span class="small">{{
-                          p.get('start_date')?.value | date: 'mediumDate'
-                        }}</span>
-                      </td>
-                      <td>
-                        <span class="small">{{
-                          p.get('end_date')?.value | date: 'mediumDate'
-                        }}</span>
-                      </td>
-                      <td>
-                        <select
-                          formControlName="status"
-                          class="form-select form-select-sm border-0 bg-light"
-                        >
-                          <option value="Open">Open</option>
-                          <option value="Closed">Closed</option>
-                        </select>
-                      </td>
-                    </tr>
+                    @for (p of periodsFormArray.controls; track i; let i = $index) {
+                      <tr [formGroupName]="i">
+                        <td class="ps-3">
+                          <input
+                            type="text"
+                            formControlName="period_code"
+                            class="form-control form-control-sm text-uppercase bg-transparent border-0 fw-bold"
+                            readonly
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            formControlName="period_name"
+                            class="form-control form-control-sm bg-transparent border-0"
+                          />
+                        </td>
+                        <td>
+                          <span class="small">{{
+                            p.get('start_date')?.value | date: 'mediumDate'
+                          }}</span>
+                        </td>
+                        <td>
+                          <span class="small">{{
+                            p.get('end_date')?.value | date: 'mediumDate'
+                          }}</span>
+                        </td>
+                        <td>
+                          <select
+                            formControlName="status"
+                            class="form-select form-select-sm border-0 bg-light"
+                          >
+                            <option value="Open">Open</option>
+                            <option value="Closed">Closed</option>
+                          </select>
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
@@ -264,24 +277,26 @@
               <div class="field-group mb-3">
                 <div class="custom--checkbox">
                   <mat-checkbox formControlName="is_current" color="primary">
-                    <label class="field-label mb-0" style="cursor: pointer">{{
+                    <span class="field-label mb-0" style="cursor: pointer">{{
                       'currentFinancialYear' | translate
-                    }}</label>
+                    }}</span>
                   </mat-checkbox>
                 </div>
               </div>
               <div class="field-group">
-                <label class="field-label">{{ 'status' | translate }}</label>
+                <label class="field-label" for="status">{{ 'status' | translate }}</label>
                 <ng-select
+                  id="status"
+                  labelForId="status"
                   formControlName="status"
-                  class="custom-ng-select"
-                  [searchable]="false"
-                  [clearable]="false"
+                  bindLabel="label"
+                  bindValue="value"
+                  placeholder="{{ 'selectStatus' | translate }}"
                 >
                   @for (s of SYS_CONSTS.financialYearStatuses; track s.value) {
-                    <ng-option [value]="s.value">{{
-                      s.label | translate
-                    }}</ng-option>
+                    <ng-option [value]="s.value">
+                      {{ s.label | translate }}
+                    </ng-option>
                   }
                 </ng-select>
               </div>

@@ -5,10 +5,11 @@
   [hasSidebar]="false"
   (save)="onSave()"
   [isSaving]="model.isSaving()"
-  [showNew]="false"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
   [showReset]="true"
   (reset)="onReset()"
-  [showDelete]="false"
+  [showDelete]="permissionService.canDelete()"
 >
   <!-- Extra Header Action for Last Updated -->
 
@@ -29,12 +30,13 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="company_id" class="field-label">{{
                       'companyCode' | translate
                     }}</label>
                     <input
+                      id="company_id"
                       type="text"
-                      formControlName="company_code"
+                      formControlName="company_id"
                       class="form-control bg-light fw-bold"
                       readonly
                     />
@@ -42,10 +44,11 @@
                 </div>
                 <div class="col-md-8">
                   <div class="field-group">
-                    <label class="field-label required">{{
+                    <label for="company_name" class="field-label required">{{
                       'companyName' | translate
                     }}</label>
                     <input
+                      id="company_name"
                       type="text"
                       formControlName="company_name"
                       class="form-control form-control-lg fw-bold"
@@ -53,14 +56,29 @@
                     />
                   </div>
                 </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="short_name" class="field-label">{{
+                      'shortName' | translate
+                    }}</label>
+                    <input
+                      id="short_name"
+                      type="text"
+                      formControlName="short_name"
+                      class="form-control form-control-lg"
+                      placeholder="{{ 'shortName' | translate }}"
+                    />
+                  </div>
+                </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="company_name_nls" class="field-label">{{
                       'localName' | translate
                     }}</label>
                     <input
+                      id="company_name_nls"
                       type="text"
-                      formControlName="company_name_local"
+                      formControlName="company_name_nls"
                       class="form-control"
                       placeholder="{{ 'localNamePlaceholder' | translate }}"
                     />
@@ -68,16 +86,28 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="company_type" class="field-label">{{
                       'companyType' | translate
                     }}</label>
                     <ng-select
+                      id="company_type"
+                      labelForId="company_type"
                       formControlName="company_type"
-                      [items]="sysConstants.companyTypes"
                       bindLabel="label"
                       bindValue="value"
                       placeholder="{{ 'selectType' | translate }}"
-                    ></ng-select>
+                    >
+                      <ng-option [value]="null">Select</ng-option>
+
+                      @for (
+                        type of sysConstants.companyTypes;
+                        track type.value
+                      ) {
+                        <ng-option [value]="type.value">
+                          {{ type.label }}
+                        </ng-option>
+                      }
+                    </ng-select>
                   </div>
                 </div>
               </div>
@@ -97,12 +127,13 @@
                 <!-- Addresses -->
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="address1" class="field-label">{{
                       'addressLine1' | translate
                     }}</label>
                     <input
+                      id="address1"
                       type="text"
-                      formControlName="address_line1"
+                      formControlName="address1"
                       class="form-control"
                       placeholder="{{ 'addressLine1Placeholder' | translate }}"
                     />
@@ -110,12 +141,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="address2" class="field-label">{{
                       'addressLine2' | translate
                     }}</label>
                     <input
+                      id="address2"
                       type="text"
-                      formControlName="address_line2"
+                      formControlName="address2"
                       class="form-control"
                       placeholder="{{ 'addressLine2Placeholder' | translate }}"
                     />
@@ -125,8 +157,11 @@
                 <!-- Location Details -->
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label">{{ 'city' | translate }}</label>
+                    <label for="city" class="field-label">{{
+                      'city' | translate
+                    }}</label>
                     <input
+                      id="city"
                       type="text"
                       formControlName="city"
                       class="form-control"
@@ -135,10 +170,11 @@
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="state_province" class="field-label">{{
                       'stateProvince' | translate
                     }}</label>
                     <input
+                      id="state_province"
                       type="text"
                       formControlName="state_province"
                       class="form-control"
@@ -147,35 +183,46 @@
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="post_code" class="field-label">{{
                       'postalCode' | translate
                     }}</label>
                     <input
+                      id="post_code"
                       type="text"
-                      formControlName="postal_code"
+                      formControlName="post_code"
                       class="form-control"
                     />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="country" class="field-label">{{
                       'country' | translate
                     }}</label>
                     <ng-select
-                      formControlName="country_code"
-                      [items]="SYS_CONSTS.countries"
+                      id="country"
+                      labelForId="country"
+                      formControlName="country"
                       bindLabel="label"
                       bindValue="value"
-                    ></ng-select>
+                      placeholder="{{ 'selectCountry' | translate }}"
+                    >
+                      <ng-option [value]="null">Select</ng-option>
+                      @for (country of sysConstants.countries; track country.value) {
+                        <ng-option [value]="country.value">
+                          {{ country.label }}
+                        </ng-option>
+                      }
+                    </ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="website" class="field-label">{{
                       'website' | translate
                     }}</label>
                     <input
+                      id="website"
                       type="url"
                       formControlName="website"
                       class="form-control"
@@ -187,12 +234,13 @@
                 <!-- Contact Info -->
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="mobile_number" class="field-label">{{
                       'primaryPhone' | translate
                     }}</label>
                     <input
+                      id="mobile_number"
                       type="text"
-                      formControlName="phone_primary"
+                      formControlName="mobile_number"
                       class="form-control"
                       placeholder="Primary phone"
                     />
@@ -200,12 +248,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="phone_number" class="field-label">{{
                       'secondaryPhone' | translate
                     }}</label>
                     <input
+                      id="phone_number"
                       type="text"
-                      formControlName="phone_secondary"
+                      formControlName="phone_number"
                       class="form-control"
                       placeholder="Secondary phone"
                     />
@@ -213,30 +262,19 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="email" class="field-label">{{
                       'primaryEmail' | translate
                     }}</label>
                     <input
+                      id="email"
                       type="email"
-                      formControlName="email_primary"
+                      formControlName="email"
                       class="form-control"
                       placeholder="Primary email"
                     />
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label">{{
-                      'secondaryEmail' | translate
-                    }}</label>
-                    <input
-                      type="email"
-                      formControlName="email_secondary"
-                      class="form-control"
-                      placeholder="Secondary email"
-                    />
-                  </div>
-                </div>
+                  <!-- email_secondary removed per strict DB alignment -->
               </div>
             </div>
           </div>
@@ -275,22 +313,24 @@
               <div class="row row-group">
                 <div class="col-12">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="reg_no" class="field-label">{{
                       'registrationNo' | translate
                     }}</label>
                     <input
+                      id="reg_no"
                       type="text"
-                      formControlName="registration_no"
+                      formControlName="reg_no"
                       class="form-control"
                     />
                   </div>
                 </div>
                 <div class="col-12">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="trade_license_no" class="field-label">{{
                       'tradeLicense' | translate
                     }}</label>
                     <input
+                      id="trade_license_no"
                       type="text"
                       formControlName="trade_license_no"
                       class="form-control"
@@ -299,10 +339,11 @@
                 </div>
                 <div class="col-12">
                   <div class="field-group">
-                    <label class="field-label">{{
+                    <label for="vat_reg_no" class="field-label">{{
                       'vatReg' | translate
                     }}</label>
                     <input
+                      id="vat_reg_no"
                       type="text"
                       formControlName="vat_reg_no"
                       class="form-control"
@@ -311,8 +352,9 @@
                 </div>
                 <div class="col-6">
                   <div class="field-group">
-                    <label class="field-label">TIN</label>
+                    <label for="tin_no" class="field-label">TIN</label>
                     <input
+                      id="tin_no"
                       type="text"
                       formControlName="tin_no"
                       class="form-control"
@@ -321,8 +363,9 @@
                 </div>
                 <div class="col-6">
                   <div class="field-group">
-                    <label class="field-label">BIN</label>
+                    <label for="bin_no" class="field-label">BIN</label>
                     <input
+                      id="bin_no"
                       type="text"
                       formControlName="bin_no"
                       class="form-control"

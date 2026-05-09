@@ -44,16 +44,23 @@ export class Sys1003Component implements OnInit {
 
   ngOnInit(): void {
     this.model.initForm();
-    this.permissionService.loadPermissions('SYS_1003').subscribe();
-    this.model.loadBranches();
-    this.model.loadFinancialYears();
+    // Use setTimeout to ensure change detection cycles don't collide with async data loads
+    setTimeout(() => {
+      this.permissionService.useLocalPermissions('SYS_1003');
+      this.model.loadBranches();
+      this.model.loadFinancialYears();
+    });
   }
 
   onSearchTermChange(val: string): void {
     this.model.searchTerm.set(val);
   }
 
-  /** Expose FormArray accessor to template */
+  /** Expose Form and FormArray accessor to template */
+  get formdata() {
+    return this.model.form;
+  }
+
   get periodsFormArray() {
     return this.model.periodsFormArray;
   }
@@ -94,7 +101,7 @@ export class Sys1003Component implements OnInit {
       });
   }
 
-  selectYear(year: FinancialYear, index: number): void {
-    this.model.selectYear(year, index);
+  selectYear(year: FinancialYear): void {
+    this.model.selectYear(year);
   }
 }

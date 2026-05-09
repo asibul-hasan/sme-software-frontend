@@ -10,43 +10,45 @@
   (new)="onNew()"
   (reset)="onReset()"
   (delete)="onDelete()"
-  [showDelete]="!!model.selectedBranchNo()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedBranchNo()"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
   <!-- Sidebar List Content -->
   <div sidebarList>
-    @for (branch of model.filteredBranches(); track branch.branchNo) {
+    @for (branch of model.filteredBranches(); track branch.branch_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action p-3"
-        [class.active]="model.selectedBranchNo() === branch.branchNo"
+        [class.active]="model.selectedBranchNo() === branch.branch_no"
         (click)="model.selectBranch(branch)"
       >
         <div
           class="d-flex w-100 justify-content-between align-items-center mb-1"
         >
-          <h6 class="mb-0 fw-bold">{{ branch.branchCode }}</h6>
-          @if (branch.isHeadOffice) {
+          <h6 class="mb-0 fw-bold">{{ branch.branch_id }}</h6>
+          @if (branch.branch_type === 'Head Office') {
             <span class="badge text-bg-primary">{{
               'isHeadOffice' | translate
             }}</span>
           }
         </div>
         <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-          {{ branch.branchName }}
+          {{ branch.branch_name }}
         </p>
         <div class="d-flex justify-content-between align-items-center mt-2">
           <span class="badge rounded-pill bg-light text-dark border small">{{
-            branch.branchType
+            branch.branch_type
           }}</span>
           <span
             class="badge rounded-pill"
             [ngClass]="{
-              'text-bg-success': branch.status === 'Active',
-              'text-bg-secondary': branch.status === 'Inactive',
+              'text-bg-success': branch.active_status === 1,
+              'text-bg-secondary': branch.active_status === 0,
             }"
-            >{{ branch.status | translate }}</span
+            >{{ (branch.active_status === 1 ? 'active' : 'inactive') | translate }}</span
           >
         </div>
       </button>
@@ -128,16 +130,17 @@
                     }}</label>
                     <ng-select
                       id="branch_type"
+                      labelForId="branch_type"
                       formControlName="branch_type"
-                      class="custom-ng-select"
-                      [searchable]="true"
-                      [clearable]="true"
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="{{ 'selectType' | translate }}"
                     >
-                      <ng-option value="">— Select —</ng-option>
+                      <ng-option [value]="null">Select</ng-option>
                       @for (opt of sysConstants.branchTypes; track opt.value) {
-                        <ng-option [value]="opt.value">{{
-                          opt.label | translate
-                        }}</ng-option>
+                        <ng-option [value]="opt.value">
+                          {{ opt.label | translate }}
+                        </ng-option>
                       }
                     </ng-select>
                   </div>
@@ -164,18 +167,17 @@
                     }}</label>
                     <ng-select
                       id="manager_user_no"
+                      labelForId="manager_user_no"
                       formControlName="manager_user_no"
-                      class="custom-ng-select"
-                      [searchable]="true"
-                      [clearable]="true"
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="{{ 'selectManager' | translate }}"
                     >
-                      @for (
-                        opt of sysConstants.branchManagers;
-                        track opt.value
-                      ) {
-                        <ng-option [value]="opt.value">{{
-                          opt.label | translate
-                        }}</ng-option>
+                      <ng-option [value]="null">Select</ng-option>
+                      @for (opt of sysConstants.branchManagers; track opt.value) {
+                        <ng-option [value]="opt.value">
+                          {{ opt.label | translate }}
+                        </ng-option>
                       }
                     </ng-select>
                   </div>
@@ -239,17 +241,14 @@
                 }}</label>
                 <ng-select
                   id="status"
+                  labelForId="status"
                   formControlName="status"
-                  class="custom-ng-select"
-                  [searchable]="false"
-                  [clearable]="false"
+                  bindLabel="label"
+                  bindValue="value"
+                  placeholder="{{ 'selectStatus' | translate }}"
                 >
-                  <ng-option value="Active">{{
-                    'active' | translate
-                  }}</ng-option>
-                  <ng-option value="Inactive">{{
-                    'inactive' | translate
-                  }}</ng-option>
+                  <ng-option [value]="1">{{ 'active' | translate }}</ng-option>
+                  <ng-option [value]="0">{{ 'inactive' | translate }}</ng-option>
                 </ng-select>
               </div>
             </div>

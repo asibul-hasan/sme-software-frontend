@@ -1,42 +1,61 @@
-import { Directive, Input, TemplateRef, ViewContainerRef, effect } from '@angular/core';
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ViewContainerRef,
+  effect,
+  inject,
+} from '@angular/core';
 import { FormPermissionService } from '../services/form-permission.service';
 
+type FormAction = 'view' | 'insert' | 'update' | 'delete';
+
+/**
+ * Structural directive that renders its template only when the current user
+ * has the given action on the active form (as loaded by
+ * {@link FormPermissionService}).
+ *
+ * @example
+ * ```html
+ * <button *appHasPermission="'insert'" (click)="onSave()">Save</button>
+ * <button *appHasPermission="'delete'" (click)="onDelete()">Delete</button>
+ * ```
+ */
 @Directive({
   selector: '[appHasPermission]',
-  standalone: true
+  standalone: true,
 })
 export class HasPermissionDirective {
-  private permissionAction: 'create' | 'update' | 'delete' | 'view' | null = null;
-  private hasView = false;
+  private readonly templateRef   = inject(TemplateRef<unknown>);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly permissions   = inject(FormPermissionService);
 
-  constructor(
-    private templateRef: TemplateRef<any>,
-    private viewContainer: ViewContainerRef,
-    private formPermissionService: FormPermissionService
-  ) {
+  private action: FormAction | null = null;
+  private rendered = false;
+
+  constructor() {
+    // Re-evaluate whenever the underlying permission signal flips.
     effect(() => {
-      // Re-evaluate whenever the signal changes
-      this.formPermissionService.currentPermission();
+      this.permissions.permission();
       this.updateView();
     });
   }
 
-  @Input() set appHasPermission(action: 'create' | 'update' | 'delete' | 'view') {
-    this.permissionAction = action;
+  @Input() set appHasPermission(action: FormAction) {
+    this.action = action;
     this.updateView();
   }
 
-  private updateView() {
-    if (!this.permissionAction) return;
+  private updateView(): void {
+    if (!this.action) return;
 
-    const hasPermission = this.formPermissionService.hasPermission(this.permissionAction);
-
-    if (hasPermission && !this.hasView) {
+    const allowed = this.permissions.hasPermission(this.action);
+    if (allowed && !this.rendered) {
       this.viewContainer.createEmbeddedView(this.templateRef);
-      this.hasView = true;
-    } else if (!hasPermission && this.hasView) {
+      this.rendered = true;
+    } else if (!allowed && this.rendered) {
       this.viewContainer.clear();
-      this.hasView = false;
+      this.rendered = false;
     }
   }
 }

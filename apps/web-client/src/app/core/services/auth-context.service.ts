@@ -1,100 +1,102 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { globalConstants } from '../constants/global.constants';
 import { User } from '../models/user.model';
 import { IPermissionConfig } from '../models/permission.model';
 import { StorageService } from './storage.service';
+import { Branch } from '../../features/auth/services/data.service';
 
+/**
+ * Application-wide reactive auth/tenant context.
+ *
+ * Owns: current user, permission map, flat menu list, and the list of
+ * branches the user can switch into. Persisted to LocalStorage so a hard
+ * reload doesn't kick the user back to the login screen while the access
+ * token is still valid.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthContextService {
-  private helper = new JwtHelperService();
-  private storageService = inject(StorageService);
+  private readonly jwt     = new JwtHelperService();
+  private readonly storage = inject(StorageService);
 
-  // Signals for state management
-  user = signal<User | null>(null);
-  permissions = signal<IPermissionConfig | null>(null);
-  menu = signal<unknown[]>([]);
-  availableBranches = signal<import('../../features/auth/services/data.service').Branch[]>([]);
+  readonly user              = signal<User | null>(null);
+  readonly permissions       = signal<IPermissionConfig | null>(null);
+  readonly menu              = signal<unknown[]>([]);
+  readonly availableBranches = signal<Branch[]>([]);
 
-  // Computed state
-  isAuthenticated = computed(() => !!this.user());
+  readonly isAuthenticated = computed(() => !!this.user());
 
-  // Decode JWT token to get claims if needed
+  // ─── Token utilities ─────────────────────────────────────────────────────
   decodeToken(token: string): unknown {
     try {
-      return this.helper.decodeToken(token);
-    } catch (e) {
-      console.error('Error decoding token', e);
+      return this.jwt.decodeToken(token);
+    } catch {
       return null;
     }
   }
 
   isTokenExpired(token: string): boolean {
     try {
-      return this.helper.isTokenExpired(token);
-    } catch (e) {
+      return this.jwt.isTokenExpired(token);
+    } catch {
       return true;
     }
   }
 
-  // Encrypt and store data
-  encryptAndStore(key: string, data: unknown): void {
-    this.storageService.setSecureItem(key, data);
-  }
-
-  // Retrieve and decrypt data
-  decryptAndRetrieve<T>(key: string): T | null {
-    return this.storageService.getSecureItem<T>(key);
-  }
-
-  // Populate state from login response
-  populateFromLogin(userPayload: User | null, permissionsPayload: IPermissionConfig | null, menuPayload: unknown[]) {
-    if (userPayload) {
-      this.user.set(userPayload);
-      this.encryptAndStore(globalConstants.storageKeys.userData, userPayload);
+  // ─── State mutators ──────────────────────────────────────────────────────
+  populateFromLogin(user: User | null, permissions: IPermissionConfig | null, menu: unknown[]): void {
+    if (user) {
+      this.user.set(user);
+      this.storage.setItem(globalConstants.storageKeys.userData, user);
     }
-    
-    if (permissionsPayload) {
-      this.permissions.set(permissionsPayload);
-      this.encryptAndStore(globalConstants.storageKeys.userPermissions, permissionsPayload);
+    if (permissions) {
+      this.permissions.set(permissions);
+      this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions);
     }
-
-    if (menuPayload && menuPayload.length > 0) {
-      this.menu.set(menuPayload);
-      this.encryptAndStore(globalConstants.storageKeys.userMenu, menuPayload);
+    if (menu?.length) {
+      this.menu.set(menu);
+      this.storage.setItem(globalConstants.storageKeys.userMenu, menu);
     }
   }
 
-  setAvailableBranches(branches: import('../../features/auth/services/data.service').Branch[]) {
+  setAvailableBranches(branches: Branch[]): void {
     this.availableBranches.set(branches);
-    this.encryptAndStore(globalConstants.storageKeys.availableBranches, branches);
+    this.storage.setItem(globalConstants.storageKeys.availableBranches, branches);
   }
 
-  // Load state from local storage on initialization
+  /** Rehydrate state from storage on app boot. Returns true if a user was found. */
   loadFromStorage(): boolean {
-    const cachedUser = this.decryptAndRetrieve<User>(globalConstants.storageKeys.userData);
-    const cachedPerms = this.decryptAndRetrieve<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
-    const cachedMenu = this.decryptAndRetrieve<unknown[]>(globalConstants.storageKeys.userMenu);
-    const cachedBranches = this.decryptAndRetrieve<any[]>(globalConstants.storageKeys.availableBranches);
+    const cachedUser     = this.storage.getItem<User>(globalConstants.storageKeys.userData);
+    const cachedPerms    = this.storage.getItem<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
+    const cachedMenu     = this.storage.getItem<unknown[]>(globalConstants.storageKeys.userMenu);
+    const cachedBranches = this.storage.getItem<Branch[]>(globalConstants.storageKeys.availableBranches);
 
-    if (cachedUser) {
-      this.user.set(cachedUser);
-      this.permissions.set(cachedPerms || null);
-      this.menu.set(cachedMenu || []);
-      this.availableBranches.set(cachedBranches || []);
-      return true;
-    }
-    return false;
+    if (!cachedUser) return false;
+
+    this.user.set(cachedUser);
+    this.permissions.set(cachedPerms ?? null);
+    this.menu.set(cachedMenu ?? []);
+    this.availableBranches.set(cachedBranches ?? []);
+    return true;
   }
 
-  clear() {
+  /** Persist a partial user update (e.g. branch switch) without losing other state. */
+  updateUser(partial: Partial<User>): void {
+    const current = this.user();
+    if (!current) return;
+    const next = { ...current, ...partial };
+    this.user.set(next);
+    this.storage.setItem(globalConstants.storageKeys.userData, next);
+  }
+
+  clear(): void {
     this.user.set(null);
     this.permissions.set(null);
     this.menu.set([]);
     this.availableBranches.set([]);
-    this.storageService.removeItem(globalConstants.storageKeys.userData);
-    this.storageService.removeItem(globalConstants.storageKeys.userPermissions);
-    this.storageService.removeItem(globalConstants.storageKeys.userMenu);
-    this.storageService.removeItem(globalConstants.storageKeys.availableBranches);
+    this.storage.removeItem(globalConstants.storageKeys.userData);
+    this.storage.removeItem(globalConstants.storageKeys.userPermissions);
+    this.storage.removeItem(globalConstants.storageKeys.userMenu);
+    this.storage.removeItem(globalConstants.storageKeys.availableBranches);
   }
 }

@@ -1,62 +1,73 @@
+/**
+ * Module codes — must match `sys_module.module_code` in the backend DB.
+ *
+ * These are the canonical short codes used everywhere in the app
+ * (route prefixes, permission lookups, menu grouping).
+ */
 export enum ModuleEnum {
-  HR = 'HR',
-  INVENTORY = 'INVENTORY',
-  SALES = 'SALES',
-  REPORTS = 'REPORTS',
-  SETTINGS = 'SETTINGS',
+  SYS = 'SYS',  // System Administration
+  HR  = 'HR',   // Human Resources
+  INV = 'INV',  // Inventory
+  SAL = 'SAL',  // Sales / POS
+  PUR = 'PUR',  // Procurement
+  FIN = 'FIN',  // Financial Management
+  RPT = 'RPT',  // Reports
 }
 
-export enum FormEnum {
-  DEFAULT = 'DEFAULT',
-
-  // HR Forms (HR_1xxx)
-  HR_EMPLOYEE = 'HR_1001',
-  HR_ATTENDANCE = 'HR_1002',
-  HR_PAYROLL = 'HR_1003',
-  HR_LEAVE = 'HR_1004',
-
-  // Inventory Forms (IN_1xxx)
-  IN_PRODUCT = 'IN_1001',
-  IN_CATEGORY = 'IN_1002',
-  IN_STOCK = 'IN_1003',
-  IN_WAREHOUSE = 'IN_1004',
-
-  // Sales Forms (SL_1xxx)
-  SL_CUSTOMER = 'SL_1001',
-  SL_INVOICE = 'SL_1002',
-  SL_PAYMENT = 'SL_1003',
-  SL_RETURN = 'SL_1004',
-
-  // Settings Forms (ST_1xxx)
-  ST_USER = 'ST_1001',
-  ST_ROLE = 'ST_1002',
-  ST_PERMISSION = 'ST_1003',
-  ST_COMPANY = 'ST_1004',
-
-  // Reports (RP_1xxx)
-  RP_SALES = 'RP_1001',
-  RP_INVENTORY = 'RP_1002',
-}
-
+/**
+ * Action codes — must match the boolean columns on `sys_enroll_module_menu`
+ * (and `sys_role_permission`). Keeping these aligned with the DB column
+ * names lets us hand the backend's permission row straight into a check
+ * without translation.
+ */
 export enum ActionEnum {
-  CREATE = 'create',
-  READ = 'view', // Backend uses 'view'
-  UPDATE = 'edit', // Backend uses 'edit'
-  DELETE = 'delete',
-  APPROVE = 'approve',
-  REJECT = 'reject',
-  CANCEL = 'cancel',
-  PRINT = 'print',
-  IMPORT = 'import',
-  EXPORT = 'export',
+  VIEW    = 'can_view',
+  INSERT  = 'can_insert',
+  UPDATE  = 'can_update',
+  DELETE  = 'can_delete',
+  APPROVE = 'can_approve',
+  EXPORT  = 'can_export',
+}
+
+/** Per-form permission record. Flat keys so JSON from the API maps directly. */
+export interface IFormPermission {
+  can_view?:    boolean;
+  can_insert?:  boolean;
+  can_update?:  boolean;
+  can_delete?:  boolean;
+  can_approve?: boolean;
+  can_export?:  boolean;
 }
 
 export interface IModulePermission {
   module: ModuleEnum | string;
   enabled: boolean;
-  forms: Record<string, Record<string, boolean>>; // Use string keys for flexibility
+  /** Keyed by `form_id` (e.g. `'SYS_1001'`). */
+  forms: Record<string, IFormPermission>;
 }
 
 export interface IPermissionConfig {
   modules: IModulePermission[];
 }
+
+/**
+ * Raw menu form as received from the backend `LoginResponse.menu` array.
+ */
+export interface IRawMenuForm {
+  form_id: string;
+  type: string;
+  form_name: string;
+  icon?: string;
+  route?: string;
+  module: string;
+  code: string;
+  sub_module?: string;
+  module_icon?: string;
+  sub_module_icon?: string;
+  module_serial?: number;
+  can_insert?: boolean;
+  can_update?: boolean;
+  can_view?: boolean;
+  can_delete?: boolean;
+}
+

@@ -1,4 +1,5 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import {
@@ -8,7 +9,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../../core';
-import { AlertService } from '../../../core/services/alert.service';
 import { ToastrService } from 'ngx-toastr';
 import {
   AuthDataService,
@@ -16,7 +16,7 @@ import {
   Branch,
   UserContextResponse,
 } from '../services/data.service';
-import { catchError, of } from 'rxjs';
+import { catchError, interval, of, takeWhile } from 'rxjs';
 
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatIconModule } from '@angular/material/icon';
@@ -34,22 +34,21 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   showPassword = false;
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private authDataService = inject(AuthDataService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private alertService = inject(AlertService);
-  private toastr = inject(ToastrService);
+  private readonly fb              = inject(FormBuilder);
+  private readonly authService     = inject(AuthService);
+  private readonly authDataService = inject(AuthDataService);
+  private readonly router          = inject(Router);
+  private readonly route           = inject(ActivatedRoute);
+  private readonly toastr          = inject(ToastrService);
+  private readonly destroyRef      = inject(DestroyRef);
 
-  contexts: UserContextResponse[] = [];
+  contexts:  UserContextResponse[] = [];
   companies: Company[] = [];
-  branches: Branch[] = [];
+  branches:  Branch[] = [];
   lockedUntil: string | null = null;
   lockedRemainingSeconds = 0;
-  private timer: ReturnType<typeof setInterval> | null = null;
   private returnUrl = '/dashboard';
   currentYear = new Date().getFullYear();
 
@@ -81,25 +80,29 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       this.authDataService
         .getUserContexts(userName)
-        .pipe(catchError(() => of([])))
+        .pipe(
+          catchError(() => of([])),
+          takeUntilDestroyed(this.destroyRef),
+        )
         .subscribe((contexts: UserContextResponse[]) => {
-          this.isLoadingMetadata = false;
-          this.contexts = contexts;
+          // Defer state updates to next tick to avoid NG0100 in Angular 21
+          setTimeout(() => {
+            this.isLoadingMetadata = false;
+            this.contexts = contexts;
 
-          if (this.contexts && this.contexts.length > 0) {
-            this.companies = this.contexts.map((c) => ({
-              id: c.company_no,
-              company_no: c.company_no,
-              companyName: c.company_name,
-            }));
+            if (this.contexts && this.contexts.length > 0) {
+              this.companies = this.contexts.map((c) => ({
+                company_no: c.company_no,
+                company_name: c.company_name,
+              }));
 
-            const firstCompany =
-              this.companies[0].company_no || this.companies[0].id;
-            this.loginForm.get('company_no')?.setValue(firstCompany);
-            this.loginForm.get('company_no')?.enable();
+              const firstCompany = this.companies[0].company_no;
+              this.loginForm.get('company_no')?.setValue(firstCompany);
+              this.loginForm.get('company_no')?.enable();
 
-            this.onCompanyChange();
-          }
+              this.onCompanyChange();
+            }
+          });
         });
     }
   }
@@ -109,10 +112,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     const context = this.contexts.find((c) => c.company_no === companyNo);
 
     if (context) {
-      this.branches = context.branches.map((b) => ({
-        id: b.branch_no,
+      this.branches = context.branches.map((b: Branch) => ({
         branch_no: b.branch_no,
-        branchName: b.branch_name,
+        branch_name: b.branch_name,
       }));
 
       // We don't auto-select the branch anymore, user must select it
@@ -136,56 +138,54 @@ export class LoginComponent implements OnInit, OnDestroy {
         branch_no: Number(formValue.branch_no),
       };
 
-      this.authService.login(payload).subscribe({
-        next: () => {
-          this.isLoading = false;
-          // Save the current branches list to context so Header can show them
-          this.authService.setAvailableBranches(this.branches);
-
-          console.log(this.returnUrl);
-          this.toastr.success('Logged in successfully', 'Welcome');
-          this.router.navigateByUrl(this.returnUrl);
-        },
-        error: (err: {
-          error?: { locked_until?: string; message?: string };
-        }) => {
-          this.isLoading = false;
-
-          if (err.error && err.error.locked_until) {
-            this.lockedUntil = err.error.locked_until;
-            this.startLockTimer();
-          } else {
-            this.toastr.error(
-              err.error?.message || 'Invalid credentials',
-              'Login Failed',
-            );
-          }
-          console.error('Login error', err);
-        },
-      });
+      this.authService.login(payload)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            // Use setTimeout to ensure the view state is stable before navigation and toastr
+            setTimeout(() => {
+              this.isLoading = false;
+              // Save the current branches list to context so Header can show them
+              this.authService.setAvailableBranches(this.branches);
+              
+              this.toastr.success('Logged in successfully', 'Welcome');
+              this.router.navigateByUrl(this.returnUrl);
+            });
+          },
+          error: (err: { error?: { locked_until?: string; message?: string } }) => {
+            setTimeout(() => {
+              this.isLoading = false;
+              if (err.error?.locked_until) {
+                this.lockedUntil = err.error.locked_until;
+                this.startLockTimer();
+              } else {
+                this.toastr.error(err.error?.message || 'Invalid credentials', 'Login Failed');
+              }
+            });
+          },
+        });
     } else {
       this.loginForm.markAllAsTouched();
     }
   }
 
   startLockTimer() {
-    if (this.timer) clearInterval(this.timer);
-    const lockedDate = new Date(this.lockedUntil as string).getTime();
+    if (!this.lockedUntil) return;
+    const lockedAt = new Date(this.lockedUntil).getTime();
 
-    this.timer = setInterval(() => {
-      const now = new Date().getTime();
-      const diff = lockedDate - now;
-      if (diff <= 0) {
-        if (this.timer) clearInterval(this.timer);
-        this.lockedRemainingSeconds = 0;
-        this.lockedUntil = null;
-      } else {
-        this.lockedRemainingSeconds = Math.floor(diff / 1000);
-      }
-    }, 1000);
-  }
-
-  ngOnDestroy() {
-    if (this.timer) clearInterval(this.timer);
+    interval(1000)
+      .pipe(
+        takeWhile(() => Date.now() < lockedAt),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.lockedRemainingSeconds = Math.floor((lockedAt - Date.now()) / 1000);
+        },
+        complete: () => {
+          this.lockedRemainingSeconds = 0;
+          this.lockedUntil = null;
+        },
+      });
   }
 }

@@ -3,12 +3,16 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { AuthLayoutComponent } from './layout/auth-layout/auth-layout.component';
 
+/**
+ * Top-level route table.
+ *
+ * Module routes (sys, hr, inv, sal, pur, fin, rpt) are lazy-loaded under the
+ * authenticated `MainLayoutComponent`. Each module owns its own `*.routes.ts`
+ * so we never have a single mega-route file.
+ */
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full',
-  },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
   {
     path: 'auth',
     component: AuthLayoutComponent,
@@ -20,6 +24,7 @@ export const routes: Routes = [
       },
     ],
   },
+
   {
     path: '',
     component: MainLayoutComponent,
@@ -32,11 +37,6 @@ export const routes: Routes = [
             (m) => m.DASHBOARD_ROUTES,
           ),
       },
-      // {
-      //   path: 'hr',
-      //   loadChildren: () =>
-      //     import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
-      // },
       {
         path: 'sys',
         loadChildren: () =>
@@ -44,11 +44,27 @@ export const routes: Routes = [
             (m) => m.SETTINGS_ROUTES,
           ),
       },
-      // Add more protected routes here
+      // Module placeholders — each module's `routes.ts` registers its
+      // own forms/reports as the modules come online. Removing one of
+      // these without first removing the matching menu items from the
+      // backend will turn the sidebar into a stream of 404s.
+      // {
+      //   path: 'hr',
+      //   loadChildren: () =>
+      //     import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+      // },
+      // {
+      //   path: 'inv',
+      //   loadChildren: () =>
+      //     import('./features/inv/inventory.routes').then((m) => m.INVENTORY_ROUTES),
+      // },
+      // {
+      //   path: 'sal',
+      //   loadChildren: () =>
+      //     import('./features/sal/sales.routes').then((m) => m.SALES_ROUTES),
+      // },
     ],
   },
-  {
-    path: '**',
-    redirectTo: 'dashboard',
-  },
+
+  { path: '**', redirectTo: 'dashboard' },
 ];

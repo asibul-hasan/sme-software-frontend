@@ -1,13 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { sysConstants } from '../../constants/sys.constants';
 import { Sys1005ModelService, TaxRule } from './services/model.service';
 import { Sys1005DataService } from './services/data.service';
-import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
-import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
+import { FormPermissionService } from '../../../../core/services/form-permission.service';
+import { AlertService } from '../../../../core/services/alert.service';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
@@ -52,9 +52,12 @@ export class Sys1005Component implements OnInit {
 
   ngOnInit(): void {
     this.model.initForm();
-    this.permissionService.loadPermissions('SYS_1005').subscribe();
-    this.model.loadBranches();
-    this.model.loadTaxRules();
+    // Move side-effects to next tick to avoid NG0100
+    setTimeout(() => {
+      this.permissionService.useLocalPermissions('SYS_1005');
+      this.model.loadBranches();
+      this.model.loadTaxRules();
+    });
   }
 
   onSearchTermChange(val: string): void {
@@ -86,11 +89,11 @@ export class Sys1005Component implements OnInit {
     });
   }
 
-  selectTax(tax: TaxRule, index: number): void {
+  selectTax(tax: TaxRule, index?: number): void {
     this.model.selectTax(tax, index);
   }
 
-  addComponentRow(comp?: any): void {
+  addComponentRow(comp?: Partial<TaxRule>): void {
     this.model.addComponentRow(comp);
   }
 
@@ -98,11 +101,15 @@ export class Sys1005Component implements OnInit {
     this.model.removeComponent(index);
   }
 
-  dropComponent(event: CdkDragDrop<any[]>): void {
+  dropComponent(event: CdkDragDrop<FormGroup[]>): void {
     this.model.dropComponent(event);
   }
 
-  onChildTaxSelect(tax: any): void {
+  onChildTaxSelect(tax: TaxRule): void {
     this.model.onChildTaxSelect(tax);
+  }
+
+  updateCompositeRate(): void {
+    this.model.updateCompositeRate();
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
+import { IBranch } from '../../sys1002/services/model.service';
 import { Currency, RateHistory } from './model.service';
 
 /**
@@ -13,8 +14,8 @@ import { Currency, RateHistory } from './model.service';
 export class Sys1004DataService {
   private sysService = inject(SysDataService);
 
-  loadBranches(): Observable<ApiResponse<any[]>> {
-    return this.sysService.getList<any[]>('branch/list');
+  loadBranches(): Observable<ApiResponse<IBranch[]>> {
+    return this.sysService.getList<IBranch[]>('branch/list');
   }
 
   loadCurrencies(): Observable<ApiResponse<Currency[]>> {
@@ -22,22 +23,22 @@ export class Sys1004DataService {
   }
 
   loadCurrencyDetail(currencyNo: number): Observable<ApiResponse<Currency>> {
-    return this.sysService.getDetails<Currency>('currency/detail', { currency_no: currencyNo });
+    return this.sysService.getDtl<Currency>('currency', currencyNo);
   }
 
   loadRateHistory(currencyNo: number): Observable<ApiResponse<RateHistory[]>> {
-    return this.sysService.getDetails<RateHistory[]>('currency/rate-history', { currency_no: currencyNo });
+    return this.sysService.getList<RateHistory[]>('currency/rate-history', { currency_no: currencyNo });
   }
 
-  saveCurrency(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.create<any>('currency/create', payload);
+  saveCurrency(payload: object): Observable<ApiResponse<unknown>> {
+    return this.sysService.insert<unknown>('currency', payload);
   }
 
-  updateCurrency(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.update<any>('currency/update', payload);
+  updateCurrency(currencyNo: number, payload: object): Observable<ApiResponse<unknown>> {
+    return this.sysService.update<unknown>('currency', currencyNo, payload);
   }
 
-  deleteCurrency(currencyNo: number): Observable<ApiResponse<any>> {
-    return this.sysService.delete<any>('currency/delete', { currency_no: currencyNo });
+  deleteCurrency(currencyNo: number): Observable<ApiResponse<unknown>> {
+    return this.sysService.delete<unknown>('currency', currencyNo);
   }
 }

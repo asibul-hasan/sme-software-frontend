@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
+import { IBranch } from '../../sys1002/services/model.service';
 import { FinancialYear } from './model.service';
 
 /**
@@ -13,8 +14,8 @@ import { FinancialYear } from './model.service';
 export class Sys1003DataService {
   private sysService = inject(SysDataService);
 
-  loadBranches(): Observable<ApiResponse<any[]>> {
-    return this.sysService.getList<any[]>('branch/list');
+  loadBranches(): Observable<ApiResponse<IBranch[]>> {
+    return this.sysService.getList<IBranch[]>('branch/list');
   }
 
   loadFinancialYears(): Observable<ApiResponse<FinancialYear[]>> {
@@ -22,18 +23,18 @@ export class Sys1003DataService {
   }
 
   loadFinancialYearDetail(finYearNo: number): Observable<ApiResponse<FinancialYear>> {
-    return this.sysService.getDetails<FinancialYear>('finyear/detail', { fin_year_no: finYearNo });
+    return this.sysService.getDtl<FinancialYear>('finyear', finYearNo);
   }
 
-  saveFinancialYear(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.create<any>('finyear/create', payload);
+  saveFinancialYear(payload: object): Observable<ApiResponse<unknown>> {
+    return this.sysService.insert<unknown>('finyear', payload);
   }
 
-  updateFinancialYear(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.update<any>('finyear/update', payload);
+  updateFinancialYear(finYearNo: number, payload: object): Observable<ApiResponse<unknown>> {
+    return this.sysService.update<unknown>('finyear', finYearNo, payload);
   }
 
-  deleteFinancialYear(finYearNo: number): Observable<ApiResponse<any>> {
-    return this.sysService.delete<any>('finyear/delete', { fin_year_no: finYearNo });
+  deleteFinancialYear(finYearNo: number): Observable<ApiResponse<unknown>> {
+    return this.sysService.delete<unknown>('finyear', finYearNo);
   }
 }

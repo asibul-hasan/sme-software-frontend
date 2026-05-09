@@ -17,7 +17,7 @@
   // 2. Perform a "Connection Check" to Local API
   console.log('Environment: Checking connectivity to Local API...');
 
-  fetch(localUrl + '/auth/contexts?userName=ping', {
+  fetch(localUrl + '/auth/contexts?user_name=ping', {
     method: 'GET',
     mode: 'no-cors',
     cache: 'no-cache',

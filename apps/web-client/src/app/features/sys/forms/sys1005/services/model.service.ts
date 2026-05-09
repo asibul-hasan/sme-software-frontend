@@ -5,10 +5,14 @@ import { ToastrService } from 'ngx-toastr';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
 import { Sys1005DataService } from './data.service';
+import { BaseEntity } from '../../../../../core/models/base-entity.model';
+import { isSuccess } from '../../../../../core/models/response.model';
+import { IBranch } from '../../sys1002/services/model.service';
+import { CustomValidators } from '../../../../../core/validators/custom-validators';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
 
-export interface TaxComponent {
+export interface TaxComponent extends BaseEntity {
   child_tax_no: number;
   child_tax_code: string;
   child_tax_name: string;
@@ -16,7 +20,7 @@ export interface TaxComponent {
   sequence: number;
 }
 
-export interface TaxRule {
+export interface TaxRule extends BaseEntity {
   tax_no: number;
   tax_code: string;
   tax_name: string;
@@ -58,9 +62,9 @@ export class Sys1005ModelService {
 
   // ─── State ─────────────────────────────────────────────────────────────────
   taxRules          = signal<TaxRule[]>([]);
-  branches          = signal<any[]>([]);
-  accounts          = signal<any[]>([]); // GL Accounts — reserved for future mapping
-  allTaxes          = signal<any[]>([]); // For composite child selection
+  branches          = signal<IBranch[]>([]);
+  accounts          = signal<Record<string, unknown>[]>([]); // GL Accounts — reserved for future mapping
+  allTaxes          = signal<TaxRule[]>([]); // For composite child selection
   isLoading         = signal(false);
   isSaving          = signal(false);
   searchTerm        = signal('');
@@ -103,17 +107,20 @@ export class Sys1005ModelService {
       status:              ['Active', [Validators.required]],
       branch_nos:          [[], [Validators.required]],
       components:          this.fb.array([]),
+    }, {
+      validators: [CustomValidators.minMax('effective_from', 'effective_to')]
     });
   }
 
   // ─── FormArray Helpers ───────────────────────────────────────────────────────
-  addComponentRow(comp?: any): void {
+  addComponentRow(comp?: Partial<TaxComponent> | Partial<TaxRule>): void {
+    const c = comp as Record<string, unknown>;
     const group = this.fb.group({
-      child_tax_no:   [comp?.childTaxNo ?? comp?.tax_no ?? null, Validators.required],
-      child_tax_code: [{ value: comp?.childTaxCode ?? comp?.tax_code ?? '', disabled: true }],
-      child_tax_name: [{ value: comp?.childTaxName ?? comp?.tax_name ?? '', disabled: true }],
-      tax_rate:       [{ value: comp?.taxRate ?? comp?.tax_rate ?? 0, disabled: true }],
-      sequence:       [comp?.sequence ?? this.componentsFormArray.length + 1],
+      child_tax_no:   [c['childTaxNo'] ?? c['tax_no'] ?? null, Validators.required],
+      child_tax_code: [{ value: c['childTaxCode'] ?? c['tax_code'] ?? '', disabled: true }],
+      child_tax_name: [{ value: c['childTaxName'] ?? c['tax_name'] ?? '', disabled: true }],
+      tax_rate:       [{ value: c['taxRate'] ?? c['tax_rate'] ?? 0, disabled: true }],
+      sequence:       [c['sequence'] ?? this.componentsFormArray.length + 1],
     });
     this.componentsFormArray.push(group);
     this.updateCompositeRate();
@@ -125,14 +132,14 @@ export class Sys1005ModelService {
     this.updateCompositeRate();
   }
 
-  dropComponent(event: CdkDragDrop<any[]>): void {
+  dropComponent(event: CdkDragDrop<FormGroup[]>): void {
     moveItemInArray(this.componentsFormArray.controls, event.previousIndex, event.currentIndex);
     this.updateSequences();
   }
 
-  onChildTaxSelect(tax: any): void {
+  onChildTaxSelect(tax: TaxRule): void {
     const exists = this.componentsFormArray.value.some(
-      (c: any) => c.child_tax_no === tax.tax_no,
+      (c: TaxComponent) => c.child_tax_no === tax.tax_no,
     );
     if (exists) {
       this.toastr.warning('This tax is already added as a component.');
@@ -147,7 +154,7 @@ export class Sys1005ModelService {
     );
   }
 
-  private updateCompositeRate(): void {
+  updateCompositeRate(): void {
     if (this.form.get('tax_type')?.value === 'COMPOSITE') {
       const total = this.componentsFormArray.controls.reduce(
         (sum, ctrl) => sum + (ctrl.get('tax_rate')?.value || 0),
@@ -161,7 +168,7 @@ export class Sys1005ModelService {
   loadBranches(): void {
     this.data.loadBranches().subscribe({
       next: (res) => {
-        if (res.success) this.branches.set(res.data);
+        if (isSuccess(res)) this.branches.set(res.data);
       },
     });
   }
@@ -173,7 +180,7 @@ export class Sys1005ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
+          if (isSuccess(res) && res.data) {
             this.taxRules.set(res.data);
             this.allTaxes.set(res.data);
             if (res.data.length > 0) {
@@ -201,31 +208,32 @@ export class Sys1005ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
-            const d = res.data as any;
+          if (isSuccess(res) && res.data) {
+            const d = res.data as unknown as Record<string, unknown>;
             this.componentsFormArray.clear();
 
             this.form.patchValue({
-              tax_no:              d.taxNo,
-              tax_code:            d.taxCode,
-              tax_name:            d.taxName,
-              tax_type:            d.taxType,
-              tax_rate:            d.taxRate,
-              is_compound:         d.isCompound === 1 || d.isCompound === true,
-              applies_to_sales:    d.appliesToSales === 1 || d.appliesToSales === true,
-              applies_to_purchase: d.appliesToPurchase === 1 || d.appliesToPurchase === true,
-              is_inclusive:        d.isInclusive === 1 || d.isInclusive === true,
-              is_default:          d.isDefault === 1 || d.isDefault === true,
-              tax_authority:       d.taxAuthority,
-              reporting_code:      d.reportingCode,
-              effective_from:      this.datePipe.transform(d.effectiveFrom, 'yyyy-MM-dd'),
-              effective_to:        this.datePipe.transform(d.effectiveTo, 'yyyy-MM-dd'),
-              status:              d.status,
-              branch_nos:          d.branchNos || [],
+              tax_no:              d['taxNo'] ?? d['tax_no'],
+              tax_code:            d['taxCode'] ?? d['tax_code'],
+              tax_name:            d['taxName'] ?? d['tax_name'],
+              tax_type:            d['taxType'] ?? d['tax_type'],
+              tax_rate:            d['taxRate'] ?? d['tax_rate'],
+              is_compound:         d['isCompound'] === 1 || d['isCompound'] === true,
+              applies_to_sales:    d['appliesToSales'] === 1 || d['appliesToSales'] === true,
+              applies_to_purchase: d['appliesToPurchase'] === 1 || d['appliesToPurchase'] === true,
+              is_inclusive:        d['isInclusive'] === 1 || d['isInclusive'] === true,
+              is_default:          d['isDefault'] === 1 || d['isDefault'] === true,
+              tax_authority:       d['taxAuthority'] ?? d['tax_authority'],
+              reporting_code:      d['reportingCode'] ?? d['reporting_code'],
+              effective_from:      this.datePipe.transform((d['effectiveFrom'] ?? d['effective_from']) as string | number | Date, 'yyyy-MM-dd'),
+              effective_to:        this.datePipe.transform((d['effectiveTo'] ?? d['effective_to']) as string | number | Date, 'yyyy-MM-dd'),
+              status:              d['status'],
+              branch_nos:          (d['branchNos'] ?? d['branch_nos'] ?? []) as number[],
             });
 
-            if (d.components) {
-              d.components.forEach((c: any) => this.addComponentRow(c));
+            const components = d['components'] as TaxComponent[];
+            if (components) {
+              components.forEach((c: TaxComponent) => this.addComponentRow(c));
             }
           }
         },
@@ -255,12 +263,12 @@ export class Sys1005ModelService {
     };
 
     const obs = isUpdate
-      ? this.data.updateTaxRule(payload)
+      ? this.data.updateTaxRule(this.selectedTaxNo()!, payload)
       : this.data.saveTaxRule(payload);
 
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
-        if (res.success) {
+        if (isSuccess(res)) {
           this.toastr.success(isUpdate ? 'Tax updated' : 'Tax created');
           this.loadTaxRules(isUpdate ? this.lastSelectedIndex : 0);
         } else {
@@ -281,7 +289,7 @@ export class Sys1005ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success) {
+          if (isSuccess(res)) {
             this.toastr.success('Tax rule deleted');
             this.loadTaxRules();
             if (callback) callback();

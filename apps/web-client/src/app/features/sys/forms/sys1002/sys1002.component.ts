@@ -6,7 +6,7 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 import { sysConstants } from '../../constants/sys.constants';
 import { Sys1002ModelService } from './services/model.service';
 import { Sys1002DataService } from './services/data.service';
-import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
+import { AlertService } from '../../../../core/services/alert.service';
 import { DatePipe } from '@angular/common';
 
 @Component({
@@ -28,7 +28,7 @@ export class Sys1002Component implements OnInit {
 
   ngOnInit(): void {
     this.model.initForm();
-    this.permissionService.loadPermissions('SYS_1002').subscribe();
+    this.permissionService.useLocalPermissions('SYS_1002');
     this.model.loadBranches();
   }
 
@@ -47,7 +47,7 @@ export class Sys1002Component implements OnInit {
   onReset(): void {
     if (this.model.selectedBranchNo()) {
       const b = this.model.branches().find(
-        (x) => x.branchNo === this.model.selectedBranchNo(),
+        (x) => x.branch_no === this.model.selectedBranchNo(),
       );
       if (b) this.model.selectBranch(b);
     } else {

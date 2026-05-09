@@ -4,10 +4,15 @@ import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { Sys1003DataService } from './data.service';
+import { BaseEntity } from '../../../../../core/models/base-entity.model';
+import { isSuccess } from '../../../../../core/models/response.model';
+
+import { IBranch } from '../../sys1002/services/model.service';
+import { CustomValidators } from '../../../../../core/validators/custom-validators';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
 
-export interface FinancialYearPeriod {
+export interface FinancialYearPeriod extends BaseEntity {
   period_no?: number;
   period_code: string;
   period_name: string;
@@ -16,7 +21,7 @@ export interface FinancialYearPeriod {
   status: 'Open' | 'Closed' | 'Locked';
 }
 
-export interface FinancialYear {
+export interface FinancialYear extends BaseEntity {
   fin_year_no: number;
   fin_year_code: string;
   fin_year_name: string;
@@ -48,7 +53,7 @@ export class Sys1003ModelService {
 
   // ─── State ─────────────────────────────────────────────────────────────────
   financialYears    = signal<FinancialYear[]>([]);
-  branches          = signal<any[]>([]);
+  branches          = signal<IBranch[]>([]);
   isLoading         = signal(false);
   isSaving          = signal(false);
   searchTerm        = signal('');
@@ -83,6 +88,8 @@ export class Sys1003ModelService {
       status:       ['Open', [Validators.required]],
       is_current:   [false],
       periods:      this.fb.array([]),
+    }, {
+      validators: [CustomValidators.minMax('start_date', 'end_date')]
     });
   }
 
@@ -134,7 +141,7 @@ export class Sys1003ModelService {
   loadBranches(): void {
     this.data.loadBranches().subscribe({
       next: (res) => {
-        if (res.success && res.data) this.branches.set(res.data);
+        if (isSuccess(res) && res.data) this.branches.set(res.data);
       },
     });
   }
@@ -146,7 +153,7 @@ export class Sys1003ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
+          if (isSuccess(res) && res.data) {
             this.financialYears.set(res.data);
             if (res.data.length > 0) {
               const index =
@@ -173,30 +180,31 @@ export class Sys1003ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success && res.data) {
-            const d = res.data as any;
+          if (isSuccess(res) && res.data) {
+            const d = res.data as unknown as Record<string, unknown>;
             this.periodsFormArray.clear();
 
             this.form.patchValue({
-              fin_year_no:   d.finYearNo,
-              fin_year_code: d.finYearCode,
-              fin_year_name: d.finYearName,
-              branch_nos:    d.branchNos || [],
-              start_date:    this.datePipe.transform(d.startDate, 'yyyy-MM-dd'),
-              end_date:      this.datePipe.transform(d.endDate, 'yyyy-MM-dd'),
-              status:        d.status,
-              is_current:    d.isCurrent === 1 || d.isCurrent === true,
+              fin_year_no:   d['finYearNo'],
+              fin_year_code: d['finYearCode'],
+              fin_year_name: d['finYearName'],
+              branch_nos:    d['branchNos'] || [],
+              start_date:    this.datePipe.transform(d['startDate'] as string, 'yyyy-MM-dd'),
+              end_date:      this.datePipe.transform(d['endDate'] as string, 'yyyy-MM-dd'),
+              status:        d['status'],
+              is_current:    d['isCurrent'] === 1 || d['isCurrent'] === true,
             });
 
-            if (d.periods?.length) {
-              d.periods.forEach((p: any) =>
+            const periods = (d['periods'] as Record<string, unknown>[]) || [];
+            if (periods.length) {
+              periods.forEach((p) =>
                 this.addPeriodRow({
-                  period_no:   p.periodNo,
-                  period_code: p.periodCode,
-                  period_name: p.periodName,
-                  start_date:  this.datePipe.transform(p.startDate, 'yyyy-MM-dd')!,
-                  end_date:    this.datePipe.transform(p.endDate, 'yyyy-MM-dd')!,
-                  status:      p.status,
+                  period_no:   p['periodNo'] as number,
+                  period_code: p['periodCode'] as string,
+                  period_name: p['periodName'] as string,
+                  start_date:  this.datePipe.transform(p['startDate'] as string, 'yyyy-MM-dd') ?? '',
+                  end_date:    this.datePipe.transform(p['endDate'] as string, 'yyyy-MM-dd') ?? '',
+                  status:      p['status'] as 'Open' | 'Closed' | 'Locked',
                 }),
               );
             }
@@ -215,10 +223,10 @@ export class Sys1003ModelService {
 
     this.isSaving.set(true);
     const val      = this.form.value;
-    const isUpdate = !!this.selectedYearNo();
-
-    const payload = {
-      fin_year_no:   this.selectedYearNo(),
+    const yearNo   = this.selectedYearNo();
+    const isUpdate = !!yearNo;
+    const payload  = {
+      fin_year_no:   yearNo,
       fin_year_code: val.fin_year_code,
       fin_year_name: val.fin_year_name,
       branch_nos:    val.branch_nos,
@@ -226,23 +234,27 @@ export class Sys1003ModelService {
       end_date:      val.end_date,
       status:        val.status,
       is_current:    val.is_current ? 1 : 0,
-      periods:       val.periods.map((p: any) => ({
-        period_no:   p.period_no,
-        period_code: p.period_code,
-        period_name: p.period_name,
-        start_date:  p.start_date,
-        end_date:    p.end_date,
-        status:      p.status,
+      periods:       (val.periods as Record<string, unknown>[]).map((p) => ({
+        period_no:   p['period_no'],
+        period_code: p['period_code'],
+        period_name: p['period_name'],
+        start_date:  p['start_date'],
+        end_date:    p['end_date'],
+        status:      p['status'],
       })),
     };
 
-    const obs = isUpdate
-      ? this.data.updateFinancialYear(payload)
+    const obs = (isUpdate && yearNo !== null)
+      ? this.data.updateFinancialYear(yearNo, payload)
       : this.data.saveFinancialYear(payload);
+
+
+
+
 
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
-        if (res.success) {
+        if (isSuccess(res)) {
           this.toastr.success(isUpdate ? 'Financial Year updated' : 'Financial Year created');
           this.loadFinancialYears(isUpdate ? this.lastSelectedIndex : 0);
         } else {
@@ -263,7 +275,7 @@ export class Sys1003ModelService {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success) {
+          if (isSuccess(res)) {
             this.toastr.success('Financial Year deleted');
             this.loadFinancialYears();
             if (callback) callback();

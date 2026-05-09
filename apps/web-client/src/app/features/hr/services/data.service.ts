@@ -6,11 +6,8 @@ import { ApiResponse } from '../../../core/models/response.model';
 /**
  * HTTP gateway for the HR module (/api/v1/hr/...).
  *
- * Generic CRUD (getList, getDetails, create, update, delete) is
- * inherited from BaseDataService.
- *
- * HR-domain methods previously scattered in SysDataService are
- * consolidated here.
+ * Updated to use the standardized RESTful 5-API pattern via BaseDataService.
+ * Resources: departments, designations, employees.
  */
 @Injectable({
   providedIn: 'root',
@@ -18,41 +15,69 @@ import { ApiResponse } from '../../../core/models/response.model';
 export class HrDataService extends BaseDataService {
   protected override readonly modulePath = 'hr';
 
-  // ─── Designation ────────────────────────────────────────────────────────────
+  // ─── Departments ────────────────────────────────────────────────────────────
 
-  getDesignations(): Observable<ApiResponse<any[]>> {
-    return this.getList<any[]>('settings/designation');
+  getDepartments(): Observable<ApiResponse<unknown[]>> {
+    return this.getList<unknown[]>('departments');
   }
 
-  createDesignation(data: object): Observable<ApiResponse<any>> {
-    return this.create<any>('settings/designation', data);
+  getDepartmentDtl(no: number): Observable<ApiResponse<unknown>> {
+    return this.getDtl<unknown>('departments', no);
   }
 
-  updateDesignation(id: number, data: object): Observable<ApiResponse<any>> {
-    return this.update<any>(`settings/designation/${id}`, data);
+  insertDepartment(payload: object): Observable<ApiResponse<unknown>> {
+    return this.insert<unknown>('departments', payload);
   }
 
-  deleteDesignation(id: number): Observable<ApiResponse<any>> {
-    return this.delete<any>(`settings/designation/${id}`, {});
+  updateDepartment(no: number, payload: object): Observable<ApiResponse<unknown>> {
+    return this.update<unknown>('departments', no, payload);
   }
 
-  // ─── Role / Permission ───────────────────────────────────────────────────────
-
-  getPermissions(designationId: number): Observable<ApiResponse<any>> {
-    return this.getList<any>(`settings/permission/${designationId}`);
+  deleteDepartment(no: number): Observable<ApiResponse<void>> {
+    return this.delete<void>('departments', no);
   }
 
-  updatePermissions(designationId: number, permissions: object): Observable<ApiResponse<any>> {
-    return this.update<any>(`settings/permission/${designationId}`, permissions);
+  // ─── Designations ───────────────────────────────────────────────────────────
+
+  getDesignations(): Observable<ApiResponse<unknown[]>> {
+    return this.getList<unknown[]>('designations');
   }
 
-  // ─── Module Toggle ───────────────────────────────────────────────────────────
-
-  getModules(): Observable<ApiResponse<any[]>> {
-    return this.getList<any[]>('settings/module-toggle');
+  getDesignationDtl(no: number): Observable<ApiResponse<unknown>> {
+    return this.getDtl<unknown>('designations', no);
   }
 
-  toggleModule(moduleId: string, enabled: boolean): Observable<ApiResponse<any>> {
-    return this.create<any>('settings/module-toggle/toggle', { moduleId, enabled });
+  insertDesignation(payload: object): Observable<ApiResponse<unknown>> {
+    return this.insert<unknown>('designations', payload);
+  }
+
+  updateDesignation(no: number, payload: object): Observable<ApiResponse<unknown>> {
+    return this.update<unknown>('designations', no, payload);
+  }
+
+  deleteDesignation(no: number): Observable<ApiResponse<void>> {
+    return this.delete<void>('designations', no);
+  }
+
+  // ─── Employees ──────────────────────────────────────────────────────────────
+
+  getEmployees(): Observable<ApiResponse<unknown[]>> {
+    return this.getList<unknown[]>('employees');
+  }
+
+  getEmployeeDtl(no: number): Observable<ApiResponse<unknown>> {
+    return this.getDtl<unknown>('employees', no);
+  }
+
+  insertEmployee(payload: object): Observable<ApiResponse<unknown>> {
+    return this.insert<unknown>('employees', payload);
+  }
+
+  updateEmployee(no: number, payload: object): Observable<ApiResponse<unknown>> {
+    return this.update<unknown>('employees', no, payload);
+  }
+
+  deleteEmployee(no: number): Observable<ApiResponse<void>> {
+    return this.delete<void>('employees', no);
   }
 }

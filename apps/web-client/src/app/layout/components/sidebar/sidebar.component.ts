@@ -1,18 +1,19 @@
 import {
   Component,
-  signal,
-  computed,
   Input,
   Output,
   EventEmitter,
+  computed,
+  effect,
   inject,
+  signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem } from './models/menu.model';
-import { PermissionService } from '../../../core/services/permission.service';
 import { MenuService } from './services/menu-builder.service';
 import { SharedModule } from '../../../shared';
-import { globalConstants } from '../../../core/constants/global.constants';
+
+const SIDEBAR_EXPANDED_KEY = 'sme_sidebar_expanded';
 
 @Component({
   selector: 'app-sidebar',
@@ -22,11 +23,8 @@ import { globalConstants } from '../../../core/constants/global.constants';
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
-  private permissionService = inject(PermissionService);
-  private router = inject(Router);
-  private service = inject(MenuService);
-
-  menuItems = signal<MenuItem[]>([]);
+  private readonly router = inject(Router);
+  private readonly menuService = inject(MenuService);
 
   @Input() set collapsed(val: boolean) {
     this.isCollapsed.set(val);
@@ -34,149 +32,89 @@ export class SidebarComponent {
 
   @Output() toggleCollapse = new EventEmitter<void>();
 
-  isCollapsed = signal(false);
-  searchTerm = signal('');
+  readonly isCollapsed   = signal(false);
+  readonly searchTerm    = signal('');
+  readonly isAllExpanded = signal(false);
 
-  // Tracks if the global state is expanded or collapsed
-  isAllExpanded = signal(false);
+  /**
+   * Source-of-truth menu signal. Reactively rebuilt whenever the auth
+   * context's flat menu changes (login, branch switch, logout). On every
+   * rebuild we re-apply the persisted expanded-state set so the user's
+   * open/closed groups survive page reloads.
+   */
+  readonly menuItems = computed<MenuItem[]>(() => {
+    const tree = this.menuService.tree();
+    this.applyExpandedState(tree, this.loadExpandedState());
+    return tree;
+  });
 
-  // The filtered layout containing search matches and auto-expanding parents
-  filteredMenuItems = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
+  /**
+   * Filtered tree for the search input — pruned breadth-first; parents whose
+   * descendants match are auto-expanded so the result is reachable.
+   */
+  readonly filteredMenuItems = computed<MenuItem[]>(() => {
+    const term  = this.searchTerm().toLowerCase().trim();
     const items = this.menuItems();
+    if (!term) return items;
 
-    if (!term) {
-      return items;
-    }
-
-    // Deep copy and filter function
-    const filterNodes = (nodes: MenuItem[]): MenuItem[] => {
-      const result: MenuItem[] = [];
-
+    const filter = (nodes: MenuItem[]): MenuItem[] => {
+      const out: MenuItem[] = [];
       for (const node of nodes) {
-        // Create a copy to avoid mutating the original signal object
-        const n = { ...node };
-        let matchFound = false;
+        const copy = { ...node };
+        let matched = !!copy.formName?.toLowerCase().includes(term);
 
-        // Does this node itself match?
-        if (n.formName && n.formName.toLowerCase().includes(term)) {
-          matchFound = true;
-        }
-
-        // Recursively filter children
-        if (n.children && n.children.length > 0) {
-          const filteredChildren = filterNodes(n.children);
-          if (filteredChildren.length > 0) {
-            n.children = filteredChildren;
-            n.expanded = true; // Auto-expand because a child matched
-            matchFound = true;
+        if (copy.children?.length) {
+          const kids = filter(copy.children);
+          if (kids.length) {
+            copy.children = kids;
+            copy.expanded = true;
+            matched = true;
           } else {
-            n.children = [];
+            copy.children = [];
           }
         }
 
-        // Keep this node if it matched or if any of its descendants matched
-        if (matchFound) {
-          result.push(n);
-        }
+        if (matched) out.push(copy);
       }
-
-      return result;
+      return out;
     };
 
-    return filterNodes(items);
+    return filter(items);
   });
 
   constructor() {
-    const builtMap = this.service.buildMenu(this.service.menu);
-    // Restore expanded structures from localStorage
-    const savedStr = localStorage.getItem('sme_sidebar_expanded');
-    if (savedStr) {
-      try {
-        const expandedIds = new Set<string>(JSON.parse(savedStr));
-        this.restoreExpandedState(builtMap, expandedIds);
-      } catch (e) {
-        console.error('Failed to parse sidebar state', e);
-      }
-    }
-    this.menuItems.set(builtMap);
+    // Persist expanded-state set whenever the menu changes shape.
+    effect(() => {
+      const items = this.menuItems();
+      this.persistExpandedState(items);
+    });
   }
 
-  public toggleNode(node: MenuItem, event: Event) {
+  // ─── Public actions ────────────────────────────────────────────────────────
+  toggleNode(node: MenuItem, event: Event): void {
     event.stopPropagation();
     node.expanded = !node.expanded;
-    this.saveExpandedState();
+    this.persistExpandedState(this.menuItems());
   }
 
-  private saveExpandedState(nodes?: MenuItem[]) {
-    if (!nodes) nodes = this.menuItems();
-    const expandedIds = new Set<string>();
-    const extract = (items: MenuItem[]) => {
-      for (const item of items) {
-        if (item.expanded && item.formName) expandedIds.add(item.formName);
-        if (item.children) extract(item.children);
-      }
-    };
-    extract(nodes);
-    localStorage.setItem(
-      'sme_sidebar_expanded',
-      JSON.stringify(Array.from(expandedIds)),
-    );
-  }
-
-  private restoreExpandedState(nodes: MenuItem[], expandedIds: Set<string>) {
-    for (const node of nodes) {
-      if (node.formName && expandedIds.has(node.formName)) {
-        node.expanded = true;
-      }
-      if (node.children) this.restoreExpandedState(node.children, expandedIds);
-    }
-  }
-
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.toggleCollapse.emit();
   }
 
-  toggleExpandAll() {
-    const newState = !this.isAllExpanded();
-    this.isAllExpanded.set(newState);
+  toggleExpandAll(): void {
+    const next = !this.isAllExpanded();
+    this.isAllExpanded.set(next);
 
-    const toggleNodes = (nodes: MenuItem[]) => {
+    const apply = (nodes: MenuItem[]): void => {
       for (const node of nodes) {
-        node.expanded = newState;
-        if (node.children) {
-          toggleNodes(node.children);
-        }
+        node.expanded = next;
+        if (node.children?.length) apply(node.children);
       }
     };
+    apply(this.menuItems());
+    this.persistExpandedState(this.menuItems());
 
-    // Mutate the original items to open/close them
-    const items = [...this.menuItems()];
-    toggleNodes(items);
-    this.menuItems.set(items);
-    this.saveExpandedState(items);
-
-    // If collapsing, also clear search
-    if (!newState) {
-      this.searchTerm.set('');
-    }
-  }
-
-  private filterMenuItems() {
-    // const filtered = MENU_ITEMS.filter(item => this.canShowMenuItem(item))
-    //   .map(item => ({
-    //     ...item,
-    //     children: item.children?.filter(child => this.canShowMenuItem(child))
-    //   }));
-    // this.menuItems.set(filtered);
-  }
-
-  private canShowMenuItem(item: MenuItem): boolean {
-    // If no module requirement, show it
-    if (!item.module) return true;
-
-    // Check if user has access to the module
-    return this.permissionService.hasModule(item.module);
+    if (!next) this.searchTerm.set('');
   }
 
   isActive(route?: string): boolean {
@@ -185,7 +123,36 @@ export class SidebarComponent {
   }
 
   hasActiveChild(item: MenuItem): boolean {
-    if (!item.children) return false;
-    return item.children.some((child) => this.isActive(child.route));
+    return !!item.children?.some((child) => this.isActive(child.route));
+  }
+
+  // ─── Persistence helpers ───────────────────────────────────────────────────
+  private loadExpandedState(): Set<string> {
+    const raw = localStorage.getItem(SIDEBAR_EXPANDED_KEY);
+    if (!raw) return new Set();
+    try {
+      return new Set<string>(JSON.parse(raw));
+    } catch {
+      return new Set();
+    }
+  }
+
+  private applyExpandedState(nodes: MenuItem[], ids: Set<string>): void {
+    for (const node of nodes) {
+      if (node.formName && ids.has(node.formName)) node.expanded = true;
+      if (node.children?.length) this.applyExpandedState(node.children, ids);
+    }
+  }
+
+  private persistExpandedState(nodes: MenuItem[]): void {
+    const ids = new Set<string>();
+    const collect = (items: MenuItem[]): void => {
+      for (const item of items) {
+        if (item.expanded && item.formName) ids.add(item.formName);
+        if (item.children?.length) collect(item.children);
+      }
+    };
+    collect(nodes);
+    localStorage.setItem(SIDEBAR_EXPANDED_KEY, JSON.stringify([...ids]));
   }
 }

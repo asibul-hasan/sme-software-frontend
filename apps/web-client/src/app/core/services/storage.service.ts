@@ -1,102 +1,47 @@
 import { Injectable } from '@angular/core';
-import * as CryptoJS from 'crypto-js';
-import { globalConstants } from '../constants/global.constants';
 
-@Injectable({
-  providedIn: 'root'
-})
+type StorageScope = 'local' | 'session';
+
+/**
+ * Thin, strictly-typed wrapper around browser storage with JSON
+ * serialisation. We intentionally do NOT roll our own encryption — keeping
+ * a "secret key" in the JS bundle gives no real protection against an
+ * attacker with browser access. If at-rest secrecy is required, store
+ * sensitive values server-side and use HttpOnly Secure cookies.
+ */
+@Injectable({ providedIn: 'root' })
 export class StorageService {
-  private secretKey = globalConstants.encryption.secretKey;
 
-  /**
-   * Saves a value to local storage. Objects will be stringified automatically.
-   */
-  setItem(key: string, value: any, useSession = false): void {
+  setItem<T>(key: string, value: T | null | undefined, scope: StorageScope = 'local'): void {
     if (value === undefined || value === null) {
-      this.removeItem(key, useSession);
+      this.removeItem(key, scope);
       return;
     }
-    const storage = useSession ? sessionStorage : localStorage;
-    const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-    storage.setItem(key, stringValue);
+    const storage = this.storage(scope);
+    const payload = typeof value === 'string' ? value : JSON.stringify(value);
+    storage.setItem(key, payload);
   }
 
-  /**
-   * Retrieves a value from local storage. Automatically parses JSON strings.
-   */
-  getItem<T>(key: string, useSession = false): T | null {
-    const storage = useSession ? sessionStorage : localStorage;
-    const item = storage.getItem(key);
-    if (!item) {
-      return null;
-    }
-
+  getItem<T>(key: string, scope: StorageScope = 'local'): T | null {
+    const raw = this.storage(scope).getItem(key);
+    if (raw === null) return null;
     try {
-      // Return parsed JSON object or fallback to raw string if parsing fails
-      return JSON.parse(item) as T;
-    } catch (e) {
-      return item as unknown as T;
+      return JSON.parse(raw) as T;
+    } catch {
+      // Stored as a plain string (e.g. a JWT) — return as-is.
+      return raw as unknown as T;
     }
   }
 
-  /**
-   * Encrypts and saves a value to local storage.
-   */
-  setSecureItem(key: string, value: any, useSession = false): void {
-    if (value === undefined || value === null) {
-      this.removeItem(key, useSession);
-      return;
-    }
-    try {
-      /* Commented out encryption for now
-      const jsonStr = JSON.stringify(value);
-      const encrypted = CryptoJS.AES.encrypt(jsonStr, this.secretKey).toString();
-      this.setItem(key, encrypted, useSession);
-      */
-      
-      // Using plain setItem for now
-      this.setItem(key, value, useSession);
-    } catch (e) {
-      console.error('Encryption failed', e);
-    }
+  removeItem(key: string, scope: StorageScope = 'local'): void {
+    this.storage(scope).removeItem(key);
   }
 
-  /**
-   * Retrieves and decrypts a value from local storage.
-   */
-  getSecureItem<T>(key: string, useSession = false): T | null {
-    /* Commented out decryption for now
-    const encrypted = this.getItem<string>(key, useSession);
-    if (!encrypted) return null;
-
-    try {
-      const bytes = CryptoJS.AES.decrypt(encrypted, this.secretKey);
-      const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-      if (!decryptedStr) return null;
-      return JSON.parse(decryptedStr) as T;
-    } catch (e) {
-      console.error('Decryption failed', e);
-      return null;
-    }
-    */
-
-    // Using plain getItem for now
-    return this.getItem<T>(key, useSession);
+  clear(scope: StorageScope = 'local'): void {
+    this.storage(scope).clear();
   }
 
-  /**
-   * Removes an item from storage based on its key.
-   */
-  removeItem(key: string, useSession = false): void {
-    const storage = useSession ? sessionStorage : localStorage;
-    storage.removeItem(key);
+  private storage(scope: StorageScope): Storage {
+    return scope === 'session' ? sessionStorage : localStorage;
   }
-
-  /**
-   * Clears all items from storage.
-   */
-  clear(useSession = false): void {
-    const storage = useSession ? sessionStorage : localStorage;
-    storage.clear();
-  }
-}
+}

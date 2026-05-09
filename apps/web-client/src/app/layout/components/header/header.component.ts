@@ -12,6 +12,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService, ThemeService, LanguageService } from '../../../core';
 import { MenuService } from '../sidebar/services/menu-builder.service';
+import { MenuItem } from '../sidebar/models/menu.model';
 import { SharedModule } from '../../../shared';
 
 export interface BreadcrumbItem {
@@ -109,8 +110,8 @@ export class HeaderComponent implements OnInit {
   selectedBranchId = computed(() => this.authService.user()?.branch_no || null);
   
   currentBranchName = computed(() => {
-    const b = this.availableBranches().find((x) => (x.branch_no || x.id) === this.selectedBranchId());
-    return b ? (b.branchName || b.name) : 'Select Branch';
+    const b = this.availableBranches().find((x) => x.branch_no === this.selectedBranchId());
+    return b ? b.branch_name : 'Select Branch';
   });
 
   private _sidebarCollapsed = signal(false);
@@ -146,30 +147,31 @@ export class HeaderComponent implements OnInit {
     url = url.split('?')[0].split('#')[0];
 
     // Attempt to match current URL against defined menu forms
-    const matchingForm = this.menuService.menu.find((m) => {
-      const formRoute = `/${this.menuService.toLowerCase(m.code)}/${m.type}/${this.menuService.toLowerCase(m.formId)}`;
-      return url === formRoute || url.startsWith(formRoute + '/');
-    });
+    let matchedModule: MenuItem | undefined;
+    let matchedSub: MenuItem | undefined;
+    let matchedForm: MenuItem | undefined;
 
-    if (matchingForm) {
+    for (const mod of this.menuService.tree()) {
+      for (const sub of mod.children || []) {
+        for (const form of sub.children || []) {
+          if (form.route && (url === form.route || url.startsWith(form.route + '/'))) {
+            matchedModule = mod;
+            matchedSub = sub;
+            matchedForm = form;
+            break;
+          }
+        }
+        if (matchedForm) break;
+      }
+      if (matchedForm) break;
+    }
+
+    if (matchedForm && matchedModule && matchedSub) {
       // If we found a match, create breadcrumbs showing: Module > Submodule > Form Name
       this.breadcrumbs.set([
-        {
-          label:
-            this.menuService.toCamelCaseRoute(matchingForm.module) ||
-            matchingForm.module,
-        },
-        {
-          label:
-            this.menuService.toCamelCaseRoute(matchingForm.subModule) ||
-            matchingForm.subModule,
-        },
-        {
-          label:
-            this.menuService.toCamelCaseRoute(matchingForm.formName) ||
-            matchingForm.formName,
-          url,
-        },
+        { label: matchedModule.formName },
+        { label: matchedSub.formName },
+        { label: matchedForm.formName, url },
       ]);
     } else {
       // Fallback: Use standard URL segmentation

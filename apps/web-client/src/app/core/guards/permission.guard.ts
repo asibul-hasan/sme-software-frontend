@@ -1,39 +1,37 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 import { PermissionService } from '../services/permission.service';
-import { ModuleEnum, FormEnum, ActionEnum } from '../models/permission.model';
+import { ActionEnum, ModuleEnum } from '../models/permission.model';
 
-@Injectable({ providedIn: 'root' })
-export class PermissionGuard implements CanActivate {
-  constructor(
-    private permissionService: PermissionService,
-    private router: Router
-  ) {}
+/**
+ * Functional route guard for permission-gated routes.
+ *
+ * Configure on a route via `data`:
+ * ```ts
+ * { path: '...', canActivate: [permissionGuard],
+ *   data: { module: ModuleEnum.SYS, formId: 'SYS_1001', action: ActionEnum.VIEW } }
+ * ```
+ *
+ * - Without `formId`: only checks that the user is enrolled in the module.
+ * - With `formId` + `action`: checks the per-form action flag.
+ * On denial, redirects to `/dashboard`.
+ */
+export const permissionGuard: CanActivateFn = (route) => {
+  const permissions = inject(PermissionService);
+  const router      = inject(Router);
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const requiredModule = route.data['module'] as ModuleEnum;
-    
-    // If no module required, allow access
-    if (!requiredModule) {
-      return true;
-    }
+  const requiredModule = route.data['module'] as ModuleEnum | undefined;
+  const requiredForm   = route.data['formId'] as string      | undefined;
+  const requiredAction = route.data['action'] as ActionEnum  | undefined;
 
-    const requiredForm = route.data['form'] as FormEnum;
-    const requiredAction = route.data['action'] as ActionEnum;
+  if (!requiredModule) return true;
 
-    // Check specific permission if form/action defined
-    if (requiredForm && requiredAction) {
-      if (this.permissionService.hasPermission(requiredModule, requiredForm, requiredAction)) {
-        return true;
-      }
-    } 
-    // Otherwise check module access
-    else if (this.permissionService.hasModule(requiredModule)) {
-      return true;
-    }
+  const allowed = requiredForm
+    ? permissions.hasPermission(requiredModule, requiredForm, requiredAction ?? ActionEnum.VIEW)
+    : permissions.hasModule(requiredModule);
 
-    // Redirect to dashboard or unauthorized page
-    this.router.navigate(['/dashboard']);
-    return false;
-  }
-}
+  if (allowed) return true;
+
+  router.navigate(['/dashboard']);
+  return false;
+};

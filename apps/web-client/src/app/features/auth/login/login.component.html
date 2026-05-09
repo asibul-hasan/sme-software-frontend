@@ -404,30 +404,33 @@
                   </label>
                   <ng-select
                     id="login-company"
-                    [items]="companies"
-                    bindLabel="companyName"
-                    bindValue="company_no"
+                    labelForId="login-company"
                     formControlName="company_no"
+                    bindLabel="company_name"
+                    bindValue="company_no"
                     placeholder="Select Company"
                     (change)="onCompanyChange()"
                     [clearable]="false"
                     [loading]="isLoadingMetadata"
                     class="ng-select-aidly"
                   >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div class="d-flex align-items-center gap-2">
-                        <mat-icon
-                          style="
-                            font-size: 16px;
-                            width: 16px;
-                            height: 16px;
-                            color: var(--text-secondary);
-                          "
-                          >business</mat-icon
-                        >
-                        {{ item.companyName }}
-                      </div>
-                    </ng-template>
+                    <ng-option [value]="null">Select Company</ng-option>
+                    @for (item of companies; track item.company_no) {
+                      <ng-option [value]="item.company_no">
+                        <div class="d-flex align-items-center gap-2">
+                          <mat-icon
+                            style="
+                              font-size: 16px;
+                              width: 16px;
+                              height: 16px;
+                              color: var(--text-secondary);
+                            "
+                            >business</mat-icon
+                          >
+                          {{ item.company_name }}
+                        </div>
+                      </ng-option>
+                    }
                   </ng-select>
                 </div>
 
@@ -447,28 +450,31 @@
                   </label>
                   <ng-select
                     id="login-branch"
-                    [items]="branches"
-                    bindLabel="branchName"
-                    bindValue="branch_no"
+                    labelForId="login-branch"
                     formControlName="branch_no"
+                    bindLabel="branch_name"
+                    bindValue="branch_no"
                     placeholder="Select Branch"
                     [clearable]="false"
                     class="ng-select-aidly"
                   >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div class="d-flex align-items-center gap-2">
-                        <mat-icon
-                          style="
-                            font-size: 16px;
-                            width: 16px;
-                            height: 16px;
-                            color: var(--text-secondary);
-                          "
-                          >storefront</mat-icon
-                        >
-                        {{ item.branchName }}
-                      </div>
-                    </ng-template>
+                    <ng-option [value]="null">Select Branch</ng-option>
+                    @for (item of branches; track item.branch_no) {
+                      <ng-option [value]="item.branch_no">
+                        <div class="d-flex align-items-center gap-2">
+                          <mat-icon
+                            style="
+                              font-size: 16px;
+                              width: 16px;
+                              height: 16px;
+                              color: var(--text-secondary);
+                            "
+                            >storefront</mat-icon
+                          >
+                          {{ item.branch_name }}
+                        </div>
+                      </ng-option>
+                    }
                   </ng-select>
                   @if (
                     loginForm.get('branch_no')?.touched &&

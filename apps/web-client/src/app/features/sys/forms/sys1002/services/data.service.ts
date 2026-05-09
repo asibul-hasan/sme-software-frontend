@@ -1,37 +1,42 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SysDataService } from '../../../services/data.service';
+import { CoreDataService } from '../../../../../core/services/core-data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { Branch } from './model.service';
+import { IBranch } from './model.service';
 
 /**
  * Form-level HTTP service for SYS1002 – Branch Setup.
  *
- * Delegates all network calls to SysDataService and is responsible
- * ONLY for constructing the correct endpoint paths and payloads.
- * State management lives in Sys1002ModelService.
+ * Updated to use the standardized RESTful 5-API pattern:
+ * - list:   GET /api/v1/branches
+ * - detail: GET /api/v1/branches/{no}
+ * - insert: POST /api/v1/branches
+ * - update: PUT /api/v1/branches/{no}
+ * - delete: DELETE /api/v1/branches/{no}
  */
 @Injectable()
 export class Sys1002DataService {
-  private sysService = inject(SysDataService);
+  private coreService = inject(CoreDataService);
 
-  loadBranches(): Observable<ApiResponse<Branch[]>> {
-    return this.sysService.getList<Branch[]>('branch/list');
+  loadBranches(): Observable<ApiResponse<IBranch[]>> {
+    return this.coreService.getList<IBranch[]>('branches');
   }
 
-  loadBranchDetail(branchNo: number): Observable<ApiResponse<Branch>> {
-    return this.sysService.getDetails<Branch>('branch/detail', { branch_no: branchNo });
+  loadBranchDetail(branchNo: number): Observable<ApiResponse<IBranch>> {
+    return this.coreService.getDtl<IBranch>('branches', branchNo);
   }
 
-  saveBranch(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.create<any>('branch/create', payload);
+  saveBranch(payload: Partial<IBranch>): Observable<ApiResponse<IBranch>> {
+    return this.coreService.insert<IBranch>('branches', payload);
   }
 
-  updateBranch(payload: object): Observable<ApiResponse<any>> {
-    return this.sysService.update<any>('branch/update', payload);
+  updateBranch(payload: Partial<IBranch>): Observable<ApiResponse<IBranch>> {
+    const branchNo = payload.branch_no;
+    if (!branchNo) throw new Error('branch_no is required for update');
+    return this.coreService.update<IBranch>('branches', branchNo, payload);
   }
 
-  deleteBranch(branchNo: number): Observable<ApiResponse<any>> {
-    return this.sysService.delete<any>('branch/delete', { branch_no: branchNo });
+  deleteBranch(branchNo: number): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.coreService.delete<Record<string, unknown>>('branches', branchNo);
   }
 }
