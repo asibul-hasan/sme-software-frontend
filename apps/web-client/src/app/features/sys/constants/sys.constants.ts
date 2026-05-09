@@ -1,14 +1,14 @@
 export interface SelectOption {
   label: string;
-  value: any;
+  value: unknown;
 }
 
 export const sysConstants = {
   companyTypes: [
-    { label: 'Proprietorship', value: 1 },
-    { label: 'LLC', value: 2 },
-    { label: 'Partnership', value: 3 },
-    { label: 'Others', value: 4 },
+    { label: 'Proprietorship', value: '1' },
+    { label: 'LLC', value: '2' },
+    { label: 'Partnership', value: '3' },
+    { label: 'Others', value: '4' },
   ],
   countries: [
     { label: 'Afghanistan', value: 'AF' },

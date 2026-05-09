@@ -6,10 +6,10 @@
   (save)="onSave()"
   [isSaving]="model.isSaving()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
+  [showNew]="false"
   [showReset]="true"
   (reset)="onReset()"
-  [showDelete]="permissionService.canDelete()"
+  [showDelete]="false"
 >
   <!-- Extra Header Action for Last Updated -->
 
@@ -208,7 +208,10 @@
                       placeholder="{{ 'selectCountry' | translate }}"
                     >
                       <ng-option [value]="null">Select</ng-option>
-                      @for (country of sysConstants.countries; track country.value) {
+                      @for (
+                        country of sysConstants.countries;
+                        track country.value
+                      ) {
                         <ng-option [value]="country.value">
                           {{ country.label }}
                         </ng-option>
@@ -253,7 +256,7 @@
                     }}</label>
                     <input
                       id="phone_number"
-                      type="text"
+                      type="number"
                       formControlName="phone_number"
                       class="form-control"
                       placeholder="Secondary phone"
@@ -274,7 +277,7 @@
                     />
                   </div>
                 </div>
-                  <!-- email_secondary removed per strict DB alignment -->
+                <!-- email_secondary removed per strict DB alignment -->
               </div>
             </div>
           </div>
