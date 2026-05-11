@@ -6,6 +6,7 @@ import { Hr1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
+import { makePaginator } from '../../../../../core/utils/paginator';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService } from '../../../../../shared/services/common-data.service';
@@ -89,6 +90,10 @@ export class Hr1002ModelService {
         d.designation_id.toLowerCase().includes(term),
     );
   });
+
+  // Pagination — one paginator per tab.
+  deptPager  = makePaginator<IDepartment>(this.filteredDepts);
+  desigPager = makePaginator<IDesignation>(this.filteredDesigs);
 
   deptForm!: FormGroup;
   desigForm!: FormGroup;

@@ -45,7 +45,7 @@
 }
 
 .action-btn-icon:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--sidebar-hover);
   color: var(--text-primary);
 }
 
@@ -56,14 +56,14 @@
 
 .logo-box-fixed.drag-active {
   border-color: var(--emerald);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(var(--success-rgb), 0.08);
   transform: scale(1.02);
 }
 
 .logo-box-fixed.has-logo {
   border-style: solid;
   border-color: var(--border-color);
-  background: #fff;
+  background: var(--card-bg);
 }
 
 .file-input-overlay {
@@ -118,7 +118,7 @@
 .logo-action-bar-integrated {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--card-bg);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -143,6 +143,6 @@
   height: 100%;
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--bg-secondary);
 }
 

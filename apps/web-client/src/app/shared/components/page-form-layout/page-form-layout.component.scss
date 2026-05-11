@@ -1,7 +1,11 @@
 /* Reusable Page Form Layout specific styles */
 
+/*
+ * Fills the route container provided by the app-shell's `.content-scroll`.
+ * The shell already accounts for header + footer height, so we just claim 100%.
+ */
 .page-card {
-  height: calc(100vh - 75px) !important;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -38,6 +42,28 @@
  */
 .sidebar-scroll-area {
   min-height: 0;
+}
+
+/* Sidebar search input — magnifying glass icon inside the input */
+.sidebar-search {
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  &__input {
+    padding-left: 36px !important;
+  }
 }
 
 /* ── Logo / Branding upload styles (shared via this component) ── */

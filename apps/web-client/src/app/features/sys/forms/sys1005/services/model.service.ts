@@ -9,6 +9,7 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { IBranch } from '../../sys1002/services/model.service';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
+import { makePaginator } from '../../../../../core/utils/paginator';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
 
@@ -80,6 +81,9 @@ export class Sys1005ModelService {
         t.tax_code.toLowerCase().includes(term),
     );
   });
+
+  // Pagination over the filtered list (see core/utils/paginator).
+  pager = makePaginator(this.filteredTaxRules);
 
   // ─── Form ───────────────────────────────────────────────────────────────────
   form!: FormGroup;

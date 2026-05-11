@@ -6,6 +6,7 @@ import { Hr1001DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
+import { makePaginator } from '../../../../../core/utils/paginator';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService } from '../../../../../shared/services/common-data.service';
@@ -116,6 +117,9 @@ export class Hr1001ModelService {
         (e.mobile_number || '').includes(term),
     );
   });
+
+  // Pagination over the filtered list (see core/utils/paginator).
+  pager = makePaginator<IEmployee>(this.filteredEmployees);
 
   form!: FormGroup;
 

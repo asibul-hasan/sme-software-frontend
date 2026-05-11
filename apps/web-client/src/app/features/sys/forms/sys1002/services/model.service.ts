@@ -7,6 +7,7 @@ import { Sys1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
+import { makePaginator } from '../../../../../core/utils/paginator';
 import { CommonDataService } from '@app/shared/services/common-data.service';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
@@ -80,6 +81,9 @@ export class Sys1002ModelService {
         (b.branch_id || '').toLowerCase().includes(term),
     );
   });
+
+  // Pagination over the filtered list (see core/utils/paginator).
+  pager = makePaginator<IBranch>(this.filteredBranches);
 
   loadEmployees(): void {
     this.commApi.getEmployeeList({ active_status: 1 }).subscribe((res) => {

@@ -9,6 +9,7 @@ import { isSuccess } from '../../../../../core/models/response.model';
 
 import { IBranch } from '../../sys1002/services/model.service';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
+import { makePaginator } from '../../../../../core/utils/paginator';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
 
@@ -69,6 +70,9 @@ export class Sys1003ModelService {
         y.fin_year_code.toLowerCase().includes(term),
     );
   });
+
+  // Pagination over the filtered list (see core/utils/paginator).
+  pager = makePaginator(this.filteredYears);
 
   // ─── Form ───────────────────────────────────────────────────────────────────
   form!: FormGroup;

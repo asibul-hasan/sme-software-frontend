@@ -1,58 +1,49 @@
 .inventory-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
 }
 
 .total-items-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .trend-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
 }
 
 .stat-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid transparent;
-    text-align: center;
-    
-    &.border-warning-2d { border-bottom: 3px solid #f59e0b; }
-    &.border-danger-2d  { border-bottom: 3px solid #ef4444; }
+  background-color: var(--bg-secondary);
+  border: 1px solid transparent;
+  text-align: center;
+
+  &.border-warning-2d { border-bottom: 3px solid var(--warning); }
+  &.border-danger-2d  { border-bottom: 3px solid var(--danger);  }
 }
 
 .stock-value-box {
-    background: linear-gradient(135deg, var(--bg-secondary), var(--card-bg));
-    border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--card-bg));
+  border: 1px solid var(--border-color);
 }
 
 .icon-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
 }
-
-.bg-success-light { background-color: rgba(16, 185, 129, 0.1); }
-.bg-primary-light { background-color: rgba(59, 130, 246, 0.1); }
-
-.text-success { color: #10b981 !important; }
-.text-warning { color: #f59e0b !important; }
-.text-danger  { color: #ef4444 !important; }
-.text-primary { color: #3b82f6 !important; }
-.text-muted   { color: var(--text-secondary) !important; }
 
 .fw-black { font-weight: 900; }
 .xx-small { font-size: 0.65rem; }
-.small { font-size: 0.8rem; }
+.small    { font-size: 0.8rem; }

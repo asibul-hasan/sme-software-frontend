@@ -87,10 +87,11 @@
             >{{ recordsCount }} {{ 'records' | translate }}</span
           >
         </div>
-        <div class="field-group mb-0">
+        <div class="field-group mb-0 sidebar-search">
+          <mat-icon class="sidebar-search__icon">search</mat-icon>
           <input
             type="text"
-            class="form-control"
+            class="form-control sidebar-search__input"
             [placeholder]="'search' | translate"
             [ngModel]="searchTerm"
             (ngModelChange)="onSearchChange($event)"
@@ -109,6 +110,9 @@
           <ng-content select="[sidebarList]"></ng-content>
         </div>
       </div>
+
+      <!-- Fixed: optional footer (e.g. pagination) -->
+      <ng-content select="[sidebarFooter]"></ng-content>
     </div>
 
     <!-- RIGHT SIDE: FORM -->

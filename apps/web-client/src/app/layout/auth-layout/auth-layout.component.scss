@@ -1,0 +1,11 @@
+// Auth pages live outside the main app-shell, so they manage their own scroll.
+:host {
+  display: block;
+  height: 100%;
+}
+
+.auth-layout-wrapper {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

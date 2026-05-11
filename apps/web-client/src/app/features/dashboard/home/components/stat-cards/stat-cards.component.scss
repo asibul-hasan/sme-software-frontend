@@ -1,42 +1,23 @@
 .kpi-card-v1 {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
-    height: 100%;
-    box-shadow: var(--card-shadow);
-    color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  height: 100%;
+  box-shadow: var(--card-shadow);
+  color: var(--text-primary);
 }
 
 .icon-box-v1 {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
 }
-
-// Keep the light tints for icons but ensure they work in dark mode
-// In dark mode, these tints might need to be more subtle or use different logic
-// But for now, using the same tints with dark text is usually okay if the tint is light enough.
-// Alternatively, I can use rgba(var(--success-rgb), 0.1) if those variables exist.
-
-.bg-success-light { background-color: rgba(16, 185, 129, 0.1); }
-.bg-primary-light { background-color: rgba(59, 130, 246, 0.1); }
-.bg-warning-light { background-color: rgba(245, 158, 11, 0.1); }
-.bg-info-light    { background-color: rgba(6, 182, 212, 0.1); }
-.bg-danger-light  { background-color: rgba(239, 68, 68, 0.1); }
-
-.text-success { color: #10b981 !important; }
-.text-primary { color: #3b82f6 !important; }
-.text-warning { color: #f59e0b !important; }
-.text-info    { color: #0891b2 !important; }
-.text-danger  { color: #ef4444 !important; }
-
-.text-muted { color: var(--text-secondary) !important; }
 
 .fw-black { font-weight: 900; }
 .xx-small { font-size: 0.65rem; }
-.small { font-size: 0.8rem; }
+.small    { font-size: 0.8rem; }

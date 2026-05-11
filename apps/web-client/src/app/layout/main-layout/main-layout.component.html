@@ -1,36 +1,41 @@
 <div
-  class="main-layout h-100 w-100 position-relative"
-  style="background: var(--bg-primary)"
+  class="app-layout"
   [class.sidebar-collapsed]="sidebarCollapsed()"
 >
-  <!-- Sidebar -->
-  <app-sidebar
-    [collapsed]="sidebarCollapsed()"
-    (toggleCollapse)="toggleSidebar()"
-  ></app-sidebar>
-
-  <!-- Mobile Overlay -->
-  <div
-    *ngIf="!sidebarCollapsed()"
-    class="position-fixed top-0 start-0 w-100 h-100 bg-dark z-2 d-lg-none"
-    style="opacity: 0.5"
-    (click)="toggleSidebar()"
-  ></div>
-
-  <!-- Header -->
+  <!-- ── Fixed Top Header ─────────────────────────────────────── -->
   <app-header
+    class="app-header"
     [sidebarCollapsed]="sidebarCollapsed()"
     (toggleSidebar)="toggleSidebar()"
     (themeToggled)="onThemeToggle($event)"
-  >
-  </app-header>
+  ></app-header>
 
-  <!-- Main Content Area -->
-  <main class="main-content position-relative z-1">
-    <app-global-loader></app-global-loader>
-    <router-outlet></router-outlet>
-  </main>
+  <!-- ── Body: Sidebar + Scrollable Content ──────────────────── -->
+  <div class="app-body">
+    <app-sidebar
+      class="app-sidebar"
+      [collapsed]="sidebarCollapsed()"
+      (toggleCollapse)="toggleSidebar()"
+    ></app-sidebar>
 
-  <!-- Footer -->
-  <app-footer [sidebarCollapsed]="sidebarCollapsed()"></app-footer>
+    <!-- Mobile sidebar dim overlay -->
+    <div
+      *ngIf="!sidebarCollapsed()"
+      class="sidebar-overlay d-lg-none"
+      (click)="toggleSidebar()"
+    ></div>
+
+    <main class="app-content">
+      <app-global-loader></app-global-loader>
+      <div class="content-scroll">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Fixed Bottom Footer ─────────────────────────────────── -->
+  <app-footer
+    class="app-footer-host"
+    [sidebarCollapsed]="sidebarCollapsed()"
+  ></app-footer>
 </div>

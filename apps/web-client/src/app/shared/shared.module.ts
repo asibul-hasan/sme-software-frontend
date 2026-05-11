@@ -30,9 +30,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import { ValidationMessageDirective } from './directives';
+import { ValidationMessageDirective, CollapsibleCardDirective } from './directives';
 import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
+import { SidebarPaginationComponent } from './components/sidebar-pagination/sidebar-pagination.component';
 import { DateOnlyPipe } from './pipes/date-format.pipe';
 import { DateTimePipe } from './pipes/date-time.pipe';
 import { DateTimeGmtPipe } from './pipes/date-time-gmt.pipe';
@@ -81,15 +82,19 @@ const PIPES = [
   imports: [
     ...MODULES,
     ValidationMessageDirective,
+    CollapsibleCardDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
+    SidebarPaginationComponent,
     ...PIPES,
   ],
   exports: [
     ...MODULES,
     ValidationMessageDirective,
+    CollapsibleCardDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
+    SidebarPaginationComponent,
     ...PIPES,
   ],
 })

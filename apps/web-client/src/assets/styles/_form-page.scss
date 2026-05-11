@@ -9,10 +9,12 @@
 // PAGE CARD — master container
 // ─────────────────────────────────────────────────────────────────
 
+// Fills its parent (typically the app-shell's `.content-scroll`).
+// The shell sizes the container, so no viewport-relative math is needed.
 .page-card {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 73px);
+  height: 100%;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -177,6 +179,76 @@
 
   .card-body {
     padding: 0.5rem 0.75rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Collapsible card behaviour (applied globally via CollapsibleCardDirective).
+ *
+ *  - Header gets a chevron indicator that rotates when collapsed.
+ *  - Header becomes clickable (cursor + subtle hover background).
+ *  - Body collapses smoothly via the grid-template-rows trick — works for
+ *    any body height without knowing it in advance.
+ *
+ * Activation: the directive adds `.is-collapsible` to every card by default,
+ * and toggles `.is-collapsed` on the host element when clicked.
+ * ─────────────────────────────────────────────────────────────────── */
+.form-section-card.is-collapsible {
+  > .card-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: background-color 0.15s ease;
+    position: relative;
+    padding-right: 2.25rem; // make room for the chevron
+
+    &:hover {
+      background: rgba(var(--indigo-rgb), 0.04);
+    }
+
+    // Chevron indicator on the right. Default state = EXPANDED → up arrow.
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--text-secondary);
+      border-bottom: 2px solid var(--text-secondary);
+      transform: translateY(-35%) rotate(-135deg);  // points UP
+      transition: transform 0.25s ease;
+    }
+  }
+
+  // Body uses max-height for the collapse animation. This works regardless
+  // of how many direct children the body has — unlike the grid-rows trick,
+  // which silently breaks when the body contains multiple sibling elements
+  // (they collapse into the same grid row and overlap).
+  > .card-body {
+    overflow: hidden;
+    max-height: 2000px;  // generous upper bound for any realistic card
+    transition: max-height 0.3s ease, padding 0.25s ease, opacity 0.2s ease;
+  }
+
+  &.is-collapsed {
+    > .card-header {
+      border-bottom: 0;       // header looks attached when nothing is below
+
+      &::after {
+        transform: translateY(-65%) rotate(45deg);  // points DOWN (collapsed)
+      }
+    }
+
+    > .card-body {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 }
 
@@ -585,6 +657,47 @@
 }
 
 // ─────────────────────────────────────────────────────────────────
+// SEMANTIC STATUS UTILITIES (text + soft background variants)
+// Centralised so dashboards/widgets don't redeclare these per file.
+// All values come from theme tokens → auto-adapt in light/dark mode.
+// ─────────────────────────────────────────────────────────────────
+
+.text-success { color: var(--success) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-danger  { color: var(--danger)  !important; }
+.text-info    { color: var(--info)    !important; }
+.text-purple  { color: var(--purple)  !important; }
+.text-orange  { color: var(--orange)  !important; }
+.text-teal    { color: var(--teal)    !important; }
+
+// `.text-primary` intentionally NOT redeclared here because Bootstrap
+// already ships it. We override it once below to follow the theme token.
+.text-primary { color: var(--primary) !important; }
+
+.text-muted { color: var(--text-secondary) !important; }
+.text-dark  { color: var(--text-primary)   !important; }
+
+// Soft tinted backgrounds — adapt automatically via RGB tokens
+.bg-success-soft  { background-color: rgba(var(--success-rgb), 0.10); }
+.bg-warning-soft  { background-color: rgba(var(--warning-rgb), 0.10); }
+.bg-danger-soft   { background-color: rgba(var(--danger-rgb),  0.10); }
+.bg-info-soft     { background-color: rgba(var(--info-rgb),    0.10); }
+.bg-primary-soft  { background-color: rgba(var(--primary-rgb), 0.10); }
+.bg-purple-soft   { background-color: rgba(var(--purple-rgb),  0.10); }
+.bg-orange-soft   { background-color: rgba(var(--orange-rgb),  0.10); }
+.bg-teal-soft     { background-color: rgba(var(--teal-rgb),    0.10); }
+
+// Backwards-compatible aliases (the dashboard widgets currently use these)
+.bg-success-light { background-color: rgba(var(--success-rgb), 0.10); }
+.bg-warning-light { background-color: rgba(var(--warning-rgb), 0.10); }
+.bg-danger-light  { background-color: rgba(var(--danger-rgb),  0.10); }
+.bg-info-light    { background-color: rgba(var(--info-rgb),    0.10); }
+.bg-primary-light { background-color: rgba(var(--primary-rgb), 0.10); }
+.bg-purple-light  { background-color: rgba(var(--purple-rgb),  0.10); }
+.bg-orange-light  { background-color: rgba(var(--orange-rgb),  0.10); }
+.bg-teal-light    { background-color: rgba(var(--teal-rgb),    0.10); }
+
+// ─────────────────────────────────────────────────────────────────
 // UPLOAD / DROPZONE ZONES
 // ─────────────────────────────────────────────────────────────────
 
@@ -898,6 +1011,7 @@ select option,
     align-items: center;
     box-shadow: none !important;
     border: 1px solid var(--input-border) !important;
+    background-color: var(--input-bg) !important;
   }
 
   .ng-value-container {
@@ -909,36 +1023,58 @@ select option,
     width: 100%;
   }
 
+  // Placeholder styling to match global inputs
+  .ng-placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.6 !important;
+    font-weight: 400 !important;
+    transition: opacity 0.2s ease;
+    user-select: none;
+    pointer-events: none;
+  }
+
   // Ghosting fix: Hide the selected value when user starts searching/typing
   &.ng-select-opened .ng-value {
     visibility: hidden !important;
     opacity: 0 !important;
   }
 
+  // Ghosting fix: Fade placeholder when focused/opened to avoid overlap with cursor
+  &.ng-select-focused:not(.ng-select-has-value) .ng-placeholder,
+  &.ng-select-opened:not(.ng-select-has-value) .ng-placeholder {
+    opacity: 0.25 !important;
+  }
+
   &.ng-select-has-value .ng-placeholder {
     display: none !important;
   }
 
-  .ng-input {
+  // Keep the search input's styling but leave its size/position to ng-select.
+  .ng-input input {
+    font-size: 13.5px !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
     padding: 0 !important;
-    input {
-      font-size: 13.5px !important;
-      color: var(--text-primary) !important;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      background: transparent !important;
-      padding: 0 !important;
-    }
   }
 
-  // Center search input for single selects
-  &:not(.ng-select-multiple) .ng-input {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    left: 0 !important;
-    width: 100% !important;
+  /*
+   * Click-anywhere toggle.
+   * ng-select's default layout makes `.ng-input` cover the entire
+   * `.ng-select-container` via absolute positioning. Its click handler
+   * only toggles when the click target IS the container — clicks on the
+   * input itself just focus it. Result: you can open but not close by
+   * clicking the visible area.
+   *
+   * Fix: while the dropdown is open, disable pointer-events on the input
+   * wrapper so the click falls through to the container behind it, which
+   * then toggles closed. The input is already focused when the dropdown
+   * opens, so the user can still type to search immediately.
+   */
+  &.ng-select-opened.ng-select-single .ng-input {
+    pointer-events: none;
   }
 
   .ng-arrow-wrapper {
@@ -961,33 +1097,10 @@ select option,
     border-width: 0 5px 5px 5px !important;
   }
 
-  .ng-dropdown-panel {
-    background: var(--card-bg) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: var(--card-shadow) !important;
-    margin-top: 8px;
-    overflow: hidden;
-    z-index: 1050;
-
-    .ng-option {
-      padding: 12px 16px !important;
-      font-size: 13.5px;
-      color: var(--text-primary);
-      transition: all 0.2s;
-
-      &.ng-option-marked {
-        background: var(--select-bg) !important;
-        color: var(--indigo) !important;
-      }
-
-      &.ng-option-selected {
-        background: var(--indigo) !important;
-        color: #fff !important;
-        font-weight: 600;
-      }
-    }
-  }
+  // NOTE: `.ng-dropdown-panel` is intentionally NOT styled here —
+  // ng-select renders it as a sibling of `<body>` (appendTo body), so
+  // descendant selectors like `.ng-select .ng-dropdown-panel` never match
+  // at runtime. The panel styling lives at top-level below.
 }
 
 /* ── DATEPICKER WRAPPER ── */
@@ -1069,4 +1182,24 @@ select option,
   font-weight: 700 !important;
   margin-left: 2px !important;
   display: inline-block !important;
+}
+
+/* ng-select dropdown panel — themed so the bg follows light/dark mode */
+.ng-dropdown-panel {
+  background: var(--card-bg) !important;
+}
+
+.ng-dropdown-panel .ng-option {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.ng-dropdown-panel .ng-option.ng-option-marked {
+  background: var(--select-bg) !important;
+  color: var(--indigo) !important;
+}
+
+.ng-dropdown-panel .ng-option.ng-option-selected {
+  background: var(--indigo) !important;
+  color: #fff !important;
 }

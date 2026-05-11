@@ -37,7 +37,7 @@
 
   <!-- Sidebar List -->
   <div sidebarList>
-    @for (curr of model.filteredCurrencies(); track curr.currency_no) {
+    @for (curr of model.pager.paged(); track curr.currency_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action"
@@ -307,4 +307,7 @@
       </div>
     </form>
   </div>
+
+  <!-- Pagination footer -->
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

@@ -6,7 +6,7 @@
     [recordsCount]="model.filteredDepts().length"
     sidebarTitle="Departments"
     [searchTerm]="model.searchDeptTerm()"
-    (searchTermChange)="model.searchDeptTerm.set($event)"
+    (searchTermChange)="model.searchDeptTerm.set($event); model.deptPager.reset()"
     (save)="onDeptSave()"
     (new)="onDeptNew()"
     (reset)="onDeptReset()"
@@ -36,7 +36,7 @@
 
     <!-- Sidebar List -->
     <div sidebarList>
-      @for (dept of model.filteredDepts(); track dept.department_no) {
+      @for (dept of model.deptPager.paged(); track dept.department_no) {
         <button
           type="button"
           class="list-group-item list-group-item-action p-3"
@@ -63,6 +63,9 @@
         </div>
       }
     </div>
+
+    <!-- Pagination footer -->
+    <app-sidebar-pagination sidebarFooter [pager]="model.deptPager"></app-sidebar-pagination>
 
     <!-- Department Form -->
     <div formContent>
@@ -179,7 +182,7 @@
     [recordsCount]="model.filteredDesigs().length"
     sidebarTitle="Designations"
     [searchTerm]="model.searchDesigTerm()"
-    (searchTermChange)="model.searchDesigTerm.set($event)"
+    (searchTermChange)="model.searchDesigTerm.set($event); model.desigPager.reset()"
     (save)="onDesigSave()"
     (new)="onDesigNew()"
     (reset)="onDesigReset()"
@@ -209,7 +212,7 @@
 
     <!-- Sidebar List -->
     <div sidebarList>
-      @for (desig of model.filteredDesigs(); track desig.designation_no) {
+      @for (desig of model.desigPager.paged(); track desig.designation_no) {
         <button
           type="button"
           class="list-group-item list-group-item-action p-3"
@@ -236,6 +239,9 @@
         </div>
       }
     </div>
+
+    <!-- Pagination footer -->
+    <app-sidebar-pagination sidebarFooter [pager]="model.desigPager"></app-sidebar-pagination>
 
     <!-- Designation Form -->
     <div formContent>

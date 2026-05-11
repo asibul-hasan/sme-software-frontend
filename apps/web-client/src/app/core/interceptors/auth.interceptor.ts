@@ -3,44 +3,117 @@ import {
   HttpInterceptor, HttpRequest, HttpHandler,
   HttpEvent, HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { AuthContextService } from '../services/auth-context.service';
 
 /**
- * HTTP interceptor that:
- *  1. Attaches the access token + tenant headers to every outgoing request.
- *  2. On a 401 response, calls {@code POST /auth/refresh} with the stored
- *     refresh token, stores the rotated token pair, and retries the
- *     original request — at most once per concurrent burst.
- *  3. If the refresh also fails the user is logged out.
+ * HTTP interceptor responsible for the access-token lifecycle on every
+ * outgoing request:
+ *
+ *  1. **Pre-flight expiry check.** If the access token is already expired
+ *     locally (by decoding its `exp` claim), refresh BEFORE sending —
+ *     don't waste a backend round-trip + DB lookup just to receive a 401.
+ *
+ *  2. **Header attachment.** Adds `Authorization` and tenant identity
+ *     headers to authenticated requests.
+ *
+ *  3. **Reactive 401 handling.** If the server still returns 401 despite
+ *     our local checks (e.g. token revoked server-side), attempt a single
+ *     refresh and replay the request.
+ *
+ *  4. **Single-flight refresh.** Concurrent bursts share one refresh call;
+ *     queued requests resume with the new token once it arrives.
+ *
+ *  5. **Hard failure → logout.** If the refresh itself fails (refresh
+ *     token expired or backend unreachable), force a logout so the user
+ *     lands on the login screen instead of spamming the server.
  */
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private readonly authService = inject(AuthService);
+  private readonly authContext = inject(AuthContextService);
 
+  /** True while a `/auth/refresh` round-trip is in flight. */
   private isRefreshing = false;
+
+  /**
+   * Emits the new access token when refresh succeeds, or `null` to signal
+   * a fresh attempt is starting. Used by queued requests to wait their turn.
+   */
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token   = this.authService.getToken();
-    const authReq = token ? this.addAuthHeaders(req, token) : req;
+    // Auth endpoints must NEVER recurse through this interceptor's
+    // refresh logic — otherwise an expired refresh token would loop forever.
+    if (this.isAuthEndpoint(req.url)) {
+      return next.handle(req);
+    }
 
-    return next.handle(authReq).pipe(
+    const token = this.authService.getToken();
+
+    // Unauthenticated request (no token at all) — let it through unmodified.
+    if (!token) {
+      return next.handle(req).pipe(catchError(err => throwError(() => err)));
+    }
+
+    // Pre-flight: token already expired? Refresh before sending.
+    if (this.authContext.isTokenExpired(token)) {
+      return this.refreshAndSend(req, next);
+    }
+
+    // Happy path: fresh token, fire and only fall through to refresh
+    // if the server still says 401 (e.g. token was revoked).
+    return next.handle(this.addAuthHeaders(req, token)).pipe(
       catchError(error => {
-        if (
-          error instanceof HttpErrorResponse &&
-          error.status === 401 &&
-          !req.url.includes('/auth/login') &&
-          !req.url.includes('/auth/logout') &&
-          !req.url.includes('/auth/refresh')
-        ) {
-          return this.handle401Error(authReq, next);
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          return this.refreshAndSend(req, next);
         }
         return throwError(() => error);
       })
     );
   }
+
+  // ─── Refresh-and-replay (single-flight) ────────────────────────────────
+
+  private refreshAndSend(
+    request: HttpRequest<unknown>,
+    next: HttpHandler
+  ): Observable<HttpEvent<unknown>> {
+
+    // If a refresh is already running, queue until it emits a new token
+    // (or null = failed, which is mapped to a logout below).
+    if (this.isRefreshing) {
+      return this.refreshTokenSubject.pipe(
+        filter(t => t !== null),
+        take(1),
+        switchMap(t => next.handle(this.addAuthHeaders(request, t as string)))
+      );
+    }
+
+    // No refresh in flight — start one.
+    this.isRefreshing = true;
+    this.refreshTokenSubject.next(null);
+
+    return this.authService.refreshToken().pipe(
+      switchMap(newToken => {
+        this.isRefreshing = false;
+        this.refreshTokenSubject.next(newToken);
+        return next.handle(this.addAuthHeaders(request, newToken));
+      }),
+      catchError(err => {
+        // Refresh failed → session is unrecoverable. Log out so the user
+        // doesn't keep firing failing requests at the backend.
+        this.isRefreshing = false;
+        this.refreshTokenSubject.next(null);
+        this.authService.logout();
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ─── Helpers ────────────────────────────────────────────────────────────
 
   private addAuthHeaders(request: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
     const user = this.authService.user();
@@ -49,41 +122,17 @@ export class AuthInterceptor implements HttpInterceptor {
     if (user) {
       if (user.company_no) headers['X-Company-No'] = user.company_no.toString();
       if (user.branch_no)  headers['X-Branch-No']  = user.branch_no.toString();
-      if (user.user_no)    headers['X-User-No']     = user.user_no.toString();
+      if (user.user_no)    headers['X-User-No']    = user.user_no.toString();
     }
 
     return request.clone({ setHeaders: headers });
   }
 
-  private handle401Error(
-    request: HttpRequest<unknown>,
-    next: HttpHandler
-  ): Observable<HttpEvent<unknown>> {
-
-    if (!this.isRefreshing) {
-      this.isRefreshing = true;
-      this.refreshTokenSubject.next(null);
-
-      return this.authService.refreshToken().pipe(
-        switchMap((newAccessToken: string) => {
-          this.isRefreshing = false;
-          this.refreshTokenSubject.next(newAccessToken);
-          return next.handle(this.addAuthHeaders(request, newAccessToken));
-        }),
-        catchError(err => {
-          this.isRefreshing = false;
-          this.refreshTokenSubject.next(null);
-          this.authService.logout();
-          return throwError(() => err);
-        })
-      );
-    }
-
-    // Another request is already refreshing — queue until new token is ready
-    return this.refreshTokenSubject.pipe(
-      filter((token): token is string => token !== null),
-      take(1),
-      switchMap(token => next.handle(this.addAuthHeaders(request, token)))
+  private isAuthEndpoint(url: string): boolean {
+    return (
+      url.includes('/auth/login')   ||
+      url.includes('/auth/logout')  ||
+      url.includes('/auth/refresh')
     );
   }
 }

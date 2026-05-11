@@ -54,6 +54,7 @@ export class Sys1003Component implements OnInit {
 
   onSearchTermChange(val: string): void {
     this.model.searchTerm.set(val);
+    this.model.pager.reset();
   }
 
   /** Expose Form and FormArray accessor to template */

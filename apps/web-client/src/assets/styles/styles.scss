@@ -26,6 +26,12 @@
 html,
 body {
   height: 100%;
+  overflow: hidden;        // app-shell: only .content-scroll scrolls
+}
+
+app-root {
+  display: block;
+  height: 100%;
 }
 
 body {
@@ -98,29 +104,10 @@ body {
 
 /* ----------------------------------------- */
 /* MAIN LAYOUT specific styles               */
+/* (App-shell handles header/footer/sidebar  */
+/*  positioning via flexbox — see            */
+/*  main-layout.component.scss.)             */
 /* ----------------------------------------- */
-
-.main-content {
-  padding-top: 52px;
-  padding-bottom: 40px;
-  padding-left: 4px;
-  padding-right: 4px;
-  margin-left: 250px;
-  min-height: 100vh;
-  z-index: 1;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.main-layout.sidebar-collapsed {
-  .topbar,
-  .app-footer {
-    left: 72px;
-  }
-  .main-content {
-    margin-left: 72px;
-  }
-}
 
 /* ── CUSTOM DROPDOWN MENUS (NOTIF & PROFILE) ── */
 .custom-mat-menu {
@@ -497,24 +484,13 @@ body {
 /* ── Mobile Responsive Overrides (Using Bootstrap Breakpoints) ── */
 
 @media (max-width: 991.98px) {
-  /* Reset Topbar, Footer, and Main Content for mobile overlay */
-  .topbar,
-  .app-footer {
-    left: 0 !important;
-    width: 100% !important;
-  }
-
-  .main-content {
-    margin-left: 0 !important;
-  }
-
-  .main-layout.sidebar-collapsed .topbar,
-  .main-layout.sidebar-collapsed .app-footer {
-    left: 0 !important;
-  }
-
-  .main-layout.sidebar-collapsed .main-content {
-    margin-left: 0 !important;
+  /* On mobile, the sidebar floats above the content instead of taking layout space */
+  .app-body > .app-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
   }
 }
 

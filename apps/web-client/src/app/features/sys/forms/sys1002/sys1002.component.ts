@@ -35,6 +35,7 @@ export class Sys1002Component implements OnInit {
 
   onSearchTermChange(val: string): void {
     this.model.searchTerm.set(val);
+    this.model.pager.reset();
   }
 
   onSave(): void {

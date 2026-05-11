@@ -23,7 +23,7 @@
         bindLabel="department_name"
         bindValue="department_no"
         [ngModel]="model.filterDeptNo()"
-        (ngModelChange)="model.filterDeptNo.set($event); model.filterDesigNo.set(null)"
+        (ngModelChange)="model.filterDeptNo.set($event); model.filterDesigNo.set(null); model.pager.reset()"
         placeholder="All Departments"
         [clearable]="true"
       ></ng-select>
@@ -34,7 +34,7 @@
         bindLabel="designation_name"
         bindValue="designation_no"
         [ngModel]="model.filterDesigNo()"
-        (ngModelChange)="model.filterDesigNo.set($event)"
+        (ngModelChange)="model.filterDesigNo.set($event); model.pager.reset()"
         placeholder="All Designations"
         [clearable]="true"
       ></ng-select>
@@ -42,7 +42,7 @@
     <div class="field-group mb-0">
       <ng-select
         [ngModel]="model.filterStatus()"
-        (ngModelChange)="model.filterStatus.set($event)"
+        (ngModelChange)="model.filterStatus.set($event); model.pager.reset()"
         placeholder="All Status"
         [clearable]="true"
       >
@@ -54,8 +54,8 @@
 
   <!-- Sidebar Content (scrollable employee list) -->
   <div sidebarList>
-    <!-- Employee List -->
-    @for (emp of model.filteredEmployees(); track emp.employee_no) {
+    <!-- Employee List (current page only) -->
+    @for (emp of model.pager.paged(); track emp.employee_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action p-3"
@@ -80,6 +80,9 @@
       </div>
     }
   </div>
+
+  <!-- Sidebar Footer: pagination (fixed at the bottom of the sidebar) -->
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 
   <!-- Main Form -->
   <div formContent>

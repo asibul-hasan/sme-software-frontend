@@ -19,7 +19,7 @@
 
   <!-- Sidebar List Content -->
   <div sidebarList>
-    @for (branch of model.filteredBranches(); track branch.branch_no) {
+    @for (branch of model.pager.paged(); track branch.branch_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action p-3"
@@ -321,4 +321,7 @@
       </div>
     </form>
   </div>
+
+  <!-- Pagination footer -->
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

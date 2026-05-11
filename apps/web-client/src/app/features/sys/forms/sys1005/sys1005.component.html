@@ -18,7 +18,7 @@
 >
   <!-- Sidebar List -->
   <div sidebarList>
-    @for (tax of model.filteredTaxRules(); track tax.tax_no) {
+    @for (tax of model.pager.paged(); track tax.tax_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action"
@@ -386,4 +386,7 @@
       </div>
     </form>
   </div>
+
+  <!-- Pagination footer -->
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>
