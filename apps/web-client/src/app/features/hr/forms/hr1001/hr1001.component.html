@@ -1,0 +1,572 @@
+<app-page-form-layout
+  title="Employee Setup"
+  icon="people"
+  [recordsCount]="model.filteredEmployees().length"
+  sidebarTitle="Employees"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="model.searchTerm.set($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedEmployeeNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <!-- Sidebar Filters (fixed — stays above the scrollable list) -->
+  <div sidebarFilters class="px-2 pb-2 flex-shrink-0 border-bottom">
+    <div class="field-group mb-2">
+      <ng-select
+        [items]="model.departments()"
+        bindLabel="department_name"
+        bindValue="department_no"
+        [ngModel]="model.filterDeptNo()"
+        (ngModelChange)="model.filterDeptNo.set($event); model.filterDesigNo.set(null)"
+        placeholder="All Departments"
+        [clearable]="true"
+      ></ng-select>
+    </div>
+    <div class="field-group mb-2">
+      <ng-select
+        [items]="model.designations()"
+        bindLabel="designation_name"
+        bindValue="designation_no"
+        [ngModel]="model.filterDesigNo()"
+        (ngModelChange)="model.filterDesigNo.set($event)"
+        placeholder="All Designations"
+        [clearable]="true"
+      ></ng-select>
+    </div>
+    <div class="field-group mb-0">
+      <ng-select
+        [ngModel]="model.filterStatus()"
+        (ngModelChange)="model.filterStatus.set($event)"
+        placeholder="All Status"
+        [clearable]="true"
+      >
+        <ng-option [value]="1">Active</ng-option>
+        <ng-option [value]="0">Inactive</ng-option>
+      </ng-select>
+    </div>
+  </div>
+
+  <!-- Sidebar Content (scrollable employee list) -->
+  <div sidebarList>
+    <!-- Employee List -->
+    @for (emp of model.filteredEmployees(); track emp.employee_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedEmployeeNo() === emp.employee_no"
+        (click)="model.selectEmployee(emp)"
+      >
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate" style="max-width:120px">{{ emp.employee_id }}</h6>
+          <span
+            class="badge rounded-pill"
+            [ngClass]="emp.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary'"
+          >{{ emp.active_status === 1 ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ emp.full_name }}</p>
+        <p class="mb-0 small opacity-50 text-truncate">{{ emp.mobile_number }}</p>
+      </button>
+    }
+    @if (model.filteredEmployees().length === 0) {
+      <div class="p-4 text-center opacity-75">
+        <mat-icon style="font-size:32px;height:32px;width:32px" class="opacity-50 mb-2">people</mat-icon>
+        <p class="mb-0 small">No employees found</p>
+      </div>
+    }
+  </div>
+
+  <!-- Main Form -->
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+
+        <!-- ── LEFT COLUMN ─────────────────────────────────────────── -->
+        <div class="col-xl-8 col-lg-12">
+
+          <!-- Basic Information -->
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">person</mat-icon>
+                Basic Information
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="employee_id">Employee ID</label>
+                    <input type="text" id="employee_id" formControlName="employee_id"
+                      class="form-control text-uppercase" placeholder="e.g. EMP-001" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="first_name">First Name</label>
+                    <input type="text" id="first_name" formControlName="first_name"
+                      class="form-control" placeholder="First name" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="last_name">Last Name</label>
+                    <input type="text" id="last_name" formControlName="last_name"
+                      class="form-control" placeholder="Last name" />
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="full_name">Full Name</label>
+                    <input type="text" id="full_name" formControlName="full_name"
+                      class="form-control" placeholder="Full legal name" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="first_name_nls">First Name (Local)</label>
+                    <input type="text" id="first_name_nls" formControlName="first_name_nls"
+                      class="form-control" placeholder="প্রথম নাম" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="last_name_nls">Last Name (Local)</label>
+                    <input type="text" id="last_name_nls" formControlName="last_name_nls"
+                      class="form-control" placeholder="শেষ নাম" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="date_of_birth">Date of Birth</label>
+                    <input type="date" id="date_of_birth" formControlName="date_of_birth"
+                      class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="gender">Gender</label>
+                    <ng-select id="gender" labelForId="gender"
+                      formControlName="gender"
+                      [items]="genderOptions"
+                      bindLabel="label" bindValue="value"
+                      placeholder="Select gender" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="marital_status">Marital Status</label>
+                    <ng-select id="marital_status" labelForId="marital_status"
+                      formControlName="marital_status"
+                      [items]="maritalStatusOptions"
+                      bindLabel="label" bindValue="value"
+                      placeholder="Select" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="blood_group">Blood Group</label>
+                    <ng-select id="blood_group" labelForId="blood_group"
+                      formControlName="blood_group"
+                      [items]="bloodGroups"
+                      placeholder="Select" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Identity Documents -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">badge</mat-icon>
+                Identity Documents
+              </h4>
+            </div>
+            <div class="card-body">
+              @if (model.form.hasError('atLeastOne')) {
+                <div class="alert alert-warning py-2 small mb-3">
+                  At least one of NID or Passport Number is required.
+                </div>
+              }
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="nid_number">NID Number</label>
+                    <input type="text" id="nid_number" formControlName="nid_number"
+                      class="form-control" placeholder="National ID Number" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="passport_number">Passport Number</label>
+                    <input type="text" id="passport_number" formControlName="passport_number"
+                      class="form-control" placeholder="Passport Number" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="birth_certificate_no">Birth Certificate No.</label>
+                    <input type="text" id="birth_certificate_no" formControlName="birth_certificate_no"
+                      class="form-control" placeholder="Birth Certificate No." />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="tin_number">TIN Number</label>
+                    <input type="text" id="tin_number" formControlName="tin_number"
+                      class="form-control" placeholder="Tax Identification Number" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employment Details -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">work</mat-icon>
+                Employment Details
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="department_no">Department</label>
+                    <ng-select id="department_no" labelForId="department_no"
+                      formControlName="department_no"
+                      [items]="model.departments()"
+                      bindLabel="department_name" bindValue="department_no"
+                      placeholder="Select department" [clearable]="false">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="designation_no">Designation</label>
+                    <ng-select id="designation_no" labelForId="designation_no"
+                      formControlName="designation_no"
+                      [items]="model.formDesignations()"
+                      bindLabel="designation_name" bindValue="designation_no"
+                      placeholder="Select designation" [clearable]="false">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="reporting_to">Reporting To</label>
+                    <ng-select id="reporting_to" labelForId="reporting_to"
+                      formControlName="reporting_to"
+                      [items]="model.employees()"
+                      bindLabel="full_name" bindValue="employee_no"
+                      placeholder="Select supervisor" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="joining_date">Joining Date</label>
+                    <input type="date" id="joining_date" formControlName="joining_date"
+                      class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="confirmation_date">Confirmation Date</label>
+                    <input type="date" id="confirmation_date" formControlName="confirmation_date"
+                      class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="employment_type">Employment Type</label>
+                    <ng-select id="employment_type" labelForId="employment_type"
+                      formControlName="employment_type"
+                      [items]="employmentTypeOptions"
+                      bindLabel="label" bindValue="value"
+                      placeholder="Select type" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">home</mat-icon>
+                Address
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-10">
+                  <div class="field-group">
+                    <label class="field-label required" for="present_address">Present Address</label>
+                    <textarea id="present_address" formControlName="present_address"
+                      class="form-control" rows="2" placeholder="Current living address"></textarea>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="field-group">
+                    <label class="field-label" for="present_post_code">Post Code</label>
+                    <input type="text" id="present_post_code" formControlName="present_post_code"
+                      class="form-control" placeholder="1207" />
+                  </div>
+                </div>
+                <div class="col-md-10">
+                  <div class="field-group">
+                    <label class="field-label" for="permanent_address">Permanent Address</label>
+                    <textarea id="permanent_address" formControlName="permanent_address"
+                      class="form-control" rows="2" placeholder="Permanent / hometown address"></textarea>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="field-group">
+                    <label class="field-label" for="permanent_post_code">Post Code</label>
+                    <input type="text" id="permanent_post_code" formControlName="permanent_post_code"
+                      class="form-control" placeholder="1000" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Salary & Contract -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">payments</mat-icon>
+                Salary &amp; Contract
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="basic_salary">Basic Salary</label>
+                    <input type="number" id="basic_salary" formControlName="basic_salary"
+                      class="form-control" placeholder="0.00" min="0" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="gross_salary">Gross Salary</label>
+                    <input type="number" id="gross_salary" formControlName="gross_salary"
+                      class="form-control" placeholder="0.00" min="0" />
+                    @if (model.form.hasError('minMax')) {
+                      <div class="field-error">Gross salary must be ≥ basic salary</div>
+                    }
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="contract_start_date">Contract Start</label>
+                    <input type="date" id="contract_start_date" formControlName="contract_start_date"
+                      class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="contract_end_date">Contract End</label>
+                    <input type="date" id="contract_end_date" formControlName="contract_end_date"
+                      class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="contract_amount">Contract Amount</label>
+                    <input type="number" id="contract_amount" formControlName="contract_amount"
+                      class="form-control" placeholder="0.00" min="0" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="contract_notes">Contract Notes</label>
+                    <input type="text" id="contract_notes" formControlName="contract_notes"
+                      class="form-control" placeholder="Optional notes" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banking Details -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">account_balance</mat-icon>
+                Banking Details
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="bank_name">Bank Name</label>
+                    <input type="text" id="bank_name" formControlName="bank_name"
+                      class="form-control" placeholder="e.g. BRAC Bank" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="bank_branch">Bank Branch</label>
+                    <input type="text" id="bank_branch" formControlName="bank_branch"
+                      class="form-control" placeholder="Branch name" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="bank_account_number">Account Number</label>
+                    <input type="text" id="bank_account_number" formControlName="bank_account_number"
+                      class="form-control" placeholder="Account number" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="routing_number">Routing Number</label>
+                    <input type="text" id="routing_number" formControlName="routing_number"
+                      class="form-control" placeholder="Routing / SWIFT" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="mfs_provider">MFS Provider</label>
+                    <ng-select id="mfs_provider" labelForId="mfs_provider"
+                      formControlName="mfs_provider"
+                      [items]="mfsProviders"
+                      placeholder="bKash, Nagad…" [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="mfs_number">MFS Number</label>
+                    <input type="text" id="mfs_number" formControlName="mfs_number"
+                      class="form-control" placeholder="Mobile wallet number" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT COLUMN ────────────────────────────────────────── -->
+        <div class="col-xl-4 col-lg-12">
+
+          <!-- Contact & Communication -->
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">contact_phone</mat-icon>
+                Contact
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group mb-3">
+                <label class="field-label required" for="mobile_number">Mobile Number</label>
+                <input type="text" id="mobile_number" formControlName="mobile_number"
+                  class="form-control" placeholder="+880 1XXX-XXXXXX" />
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label" for="alternative_mobile_number">Alt. Mobile</label>
+                <input type="text" id="alternative_mobile_number" formControlName="alternative_mobile_number"
+                  class="form-control" placeholder="Alternative number" />
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label" for="official_email">Official Email</label>
+                <input type="email" id="official_email" formControlName="official_email"
+                  class="form-control" placeholder="name@company.com" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="personal_email">Personal Email</label>
+                <input type="email" id="personal_email" formControlName="personal_email"
+                  class="form-control" placeholder="personal@email.com" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency Contact -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">emergency</mat-icon>
+                Emergency Contact
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group mb-3">
+                <label class="field-label required" for="emergency_contact_name">Name</label>
+                <input type="text" id="emergency_contact_name" formControlName="emergency_contact_name"
+                  class="form-control" placeholder="Contact person name" />
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label required" for="emergency_contact_number">Phone</label>
+                <input type="text" id="emergency_contact_number" formControlName="emergency_contact_number"
+                  class="form-control" placeholder="Emergency phone number" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="emergency_contact_relation">Relation</label>
+                <input type="text" id="emergency_contact_relation" formControlName="emergency_contact_relation"
+                  class="form-control" placeholder="e.g. Spouse, Parent" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">settings</mat-icon>
+                Settings
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group mb-3">
+                <label class="field-label required" for="employee_status">Employee Status</label>
+                <ng-select id="employee_status" labelForId="employee_status"
+                  formControlName="employee_status"
+                  [items]="employeeStatusOptions"
+                  bindLabel="label" bindValue="value"
+                  [clearable]="false">
+                </ng-select>
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label required" for="active_status">Record Status</label>
+                <ng-select id="active_status" labelForId="active_status"
+                  formControlName="active_status" [clearable]="false">
+                  <ng-option [value]="1">Active</ng-option>
+                  <ng-option [value]="0">Inactive</ng-option>
+                </ng-select>
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label" for="display_sl">Display Order</label>
+                <input type="number" id="display_sl" formControlName="display_sl"
+                  class="form-control" placeholder="e.g. 1" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="remarks">Remarks</label>
+                <textarea id="remarks" formControlName="remarks"
+                  class="form-control" rows="3" placeholder="Optional remarks"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</app-page-form-layout>

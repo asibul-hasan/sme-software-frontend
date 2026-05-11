@@ -6,6 +6,9 @@ import { finalize } from 'rxjs';
 import { Sys1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
+import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
+import { CommonDataService } from '@app/shared/services/common-data.service';
+import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 // ─── Domain Interface ────────────────────────────────────────────────────────
 
@@ -30,10 +33,9 @@ export interface IBranch extends BaseEntity {
   manager_no?: number | null;
   company_no: number;
   active_status: number;
-  display_sl?: number | null;
+  display_sl?: number;
   remarks?: string | null;
   description?: string | null;
-  row_version?: number | null;
 }
 
 // ─── Service ─────────────────────────────────────────────────────────────────
@@ -50,18 +52,20 @@ export interface IBranch extends BaseEntity {
  */
 @Injectable()
 export class Sys1002ModelService {
-  private fb        = inject(FormBuilder);
-  private data      = inject(Sys1002DataService);
-  private toastr    = inject(ToastrService);
-  private datePipe  = inject(DatePipe);
+  private fb = inject(FormBuilder);
+  private data = inject(Sys1002DataService);
+  private toastr = inject(ToastrService);
+  private datePipe = inject(DatePipe);
+  private commApi = inject(CommonDataService);
+  private authCtx = inject(AuthContextService);
 
   // ─── State ─────────────────────────────────────────────────────────────────
-  branches            = signal<IBranch[]>([]);
-  isLoading           = signal(false);
-  isSaving            = signal(false);
-  searchTerm          = signal('');
-  selectedBranchNo    = signal<number | null>(null);
-  lastSelectedBranchIndex = 0;
+  branches = signal<IBranch[]>([]);
+  isLoading = signal(false);
+  isSaving = signal(false);
+  searchTerm = signal('');
+  selectedBranchNo = signal<number | null>(null);
+  employees = signal<any[]>([]);
 
   form!: FormGroup;
 
@@ -77,33 +81,39 @@ export class Sys1002ModelService {
     );
   });
 
+  loadEmployees(): void {
+    this.commApi.getEmployeeList({ active_status: 1 }).subscribe((res) => {
+      this.employees.set(res.data);
+    });
+  }
+
   // ─── Form ───────────────────────────────────────────────────────────────────
   initForm(): void {
     this.form = this.fb.group({
-      branch_no:         [null],
-      branch_id:         ['', [Validators.required, Validators.maxLength(50)]],
-      branch_name:       ['', [Validators.required, Validators.maxLength(200)]],
-      branch_name_nls:   [''],
-      branch_type:       [''],
-      address1:          [''],
-      address2:          [''],
-      city:              [''],
-      state_province:    [''],
-      post_code:         [''],
-      mobile_number:     [''],
-      phone_number:      [''],
-      email:             ['', Validators.email],
-      manager_no:        [null],
-      company_no:        [null, Validators.required],
-      active_status:     [1, Validators.required],
-      display_sl:        [null],
-      remarks:           [''],
-      description:       [''],
+      branch_no: [null],
+      branch_id: [''],
+      branch_name: ['', [Validators.required, Validators.maxLength(200)]],
+      branch_name_nls: [''],
+      branch_type: ['', [Validators.required]],
+      address1: [''],
+      address2: [''],
+      city: ['', [Validators.required]],
+      state_province: [''],
+      post_code: [''],
+      mobile_number: ['', [Validators.required]],
+      phone_number: [''],
+      email: ['', Validators.email],
+      manager_no: [null],
+      company_no: [this.authCtx.user()?.company_no ?? null],
+      active_status: [1, Validators.required],
+      display_sl: [null],
+      remarks: [''],
+      description: [''],
     });
   }
 
   // ─── CRUD ───────────────────────────────────────────────────────────────────
-  loadBranches(reselectIndex?: number): void {
+  loadBranches(reselectNo: number | null = null): void {
     this.isLoading.set(true);
     this.data
       .loadBranches()
@@ -112,23 +122,18 @@ export class Sys1002ModelService {
         next: (res) => {
           if (isSuccess(res) && res.data) {
             this.branches.set(res.data);
-            if (res.data.length > 0) {
-              const index =
-                reselectIndex !== undefined && reselectIndex < res.data.length
-                  ? reselectIndex
-                  : 0;
-              this.selectBranch(res.data[index], index);
-            } else {
-              this.onNew();
-            }
+            const resolved = resolvePostReloadSelection(
+              res.data,
+              (b) => b.branch_no,
+              reselectNo,
+            );
+            resolved ? this.selectBranch(resolved.item) : this.onNew();
           }
         },
-        error: () => this.toastr.error('Failed to load branches'),
       });
   }
 
-  selectBranch(branch: IBranch, index?: number): void {
-    if (index !== undefined) this.lastSelectedBranchIndex = index;
+  selectBranch(branch: IBranch): void {
     this.selectedBranchNo.set(branch.branch_no);
     this.isLoading.set(true);
 
@@ -140,25 +145,25 @@ export class Sys1002ModelService {
           if (isSuccess(res) && res.data) {
             const d = res.data as unknown as Record<string, unknown>;
             this.form.patchValue({
-              branch_no:         d['branch_no'] ?? d['branchNo'],
-              branch_id:         d['branch_id'] ?? d['branchId'],
-              branch_name:       d['branch_name'] ?? d['branchName'],
-              branch_name_nls:   d['branch_name_nls'] ?? d['branchNameLocal'],
-              branch_type:       d['branch_type'] ?? d['branchType'],
-              address1:          d['address1'] ?? d['addressLine1'],
-              address2:          d['address2'] ?? d['addressLine2'],
-              city:              d['city'],
-              state_province:    d['state_province'] ?? d['stateProvince'],
-              post_code:         d['post_code'] ?? d['postCode'],
-              mobile_number:     d['mobile_number'] ?? d['phonePrimary'],
-              phone_number:      d['phone_number'],
-              email:             d['email'],
-              manager_no:        d['manager_no'] ?? d['managerUserNo'],
-              company_no:        d['company_no'] ?? d['companyNo'],
-              active_status:     d['active_status'] ?? d['status'] ?? 1,
-              display_sl:        d['display_sl'] ?? d['displaySl'],
-              remarks:           d['remarks'],
-              description:       d['description'],
+              branch_no: d['branch_no'] ?? d['branchNo'],
+              branch_id: d['branch_id'] ?? d['branchId'],
+              branch_name: d['branch_name'] ?? d['branchName'],
+              branch_name_nls: d['branch_name_nls'] ?? d['branchNameLocal'],
+              branch_type: d['branch_type'] ?? d['branchType'],
+              address1: d['address1'] ?? d['addressLine1'],
+              address2: d['address2'] ?? d['addressLine2'],
+              city: d['city'],
+              state_province: d['state_province'] ?? d['stateProvince'],
+              post_code: d['post_code'] ?? d['postCode'],
+              mobile_number: d['mobile_number'] ?? d['phonePrimary'],
+              phone_number: d['phone_number'],
+              email: d['email'],
+              manager_no: d['manager_no'] ?? d['managerUserNo'],
+              company_no: d['company_no'] ?? d['companyNo'],
+              active_status: d['active_status'] ?? d['status'] ?? 1,
+              display_sl: d['display_sl'] ?? d['displaySl'],
+              remarks: d['remarks'],
+              description: d['description'],
             });
           }
         },
@@ -173,12 +178,17 @@ export class Sys1002ModelService {
     }
 
     this.isSaving.set(true);
-    const val     = this.form.getRawValue();
+    const val = this.form.getRawValue();
     const isUpdate = !!this.selectedBranchNo();
-    const payload  = {
+    const payload = {
       ...val,
-      branch_no:     this.selectedBranchNo(),
-      active_status: val.active_status === true ? 1 : (val.active_status === false ? 0 : val.active_status),
+      branch_no: this.selectedBranchNo(),
+      active_status:
+        val.active_status === true
+          ? 1
+          : val.active_status === false
+            ? 0
+            : val.active_status,
     };
 
     const obs = isUpdate
@@ -189,13 +199,10 @@ export class Sys1002ModelService {
       next: (res) => {
         if (isSuccess(res)) {
           this.toastr.success(isUpdate ? 'Branch updated' : 'Branch created');
-          this.loadBranches(isUpdate ? this.lastSelectedBranchIndex : 0);
+          this.loadBranches(isUpdate ? this.selectedBranchNo() : null);
           if (callback) callback();
-        } else {
-          this.toastr.error(res.message || 'Save failed');
         }
       },
-      error: () => this.toastr.error('Server error during save'),
     });
   }
 
@@ -213,16 +220,16 @@ export class Sys1002ModelService {
             this.toastr.success('Branch deleted successfully');
             this.loadBranches();
             if (callback) callback();
-          } else {
-            this.toastr.error(res.message || 'Delete failed');
           }
         },
-        error: () => this.toastr.error('Server error during delete'),
       });
   }
 
   onNew(): void {
     this.selectedBranchNo.set(null);
-    this.form.reset({ active_status: 1 });
+    this.form.reset({
+      active_status: 1,
+      company_no: this.authCtx.user()?.company_no ?? null,
+    });
   }
 }

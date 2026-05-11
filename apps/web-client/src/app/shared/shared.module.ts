@@ -33,6 +33,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { ValidationMessageDirective } from './directives';
 import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
+import { DateOnlyPipe } from './pipes/date-format.pipe';
+import { DateTimePipe } from './pipes/date-time.pipe';
+import { DateTimeGmtPipe } from './pipes/date-time-gmt.pipe';
+import { NumberFormatPipe } from './pipes/number-format.pipe';
 
 const MODULES = [
   CommonModule,
@@ -66,18 +70,27 @@ const MODULES = [
   DragDropModule,
 ];
 
+const PIPES = [
+  DateOnlyPipe,
+  DateTimePipe,
+  DateTimeGmtPipe,
+  NumberFormatPipe,
+];
+
 @NgModule({
   imports: [
     ...MODULES,
     ValidationMessageDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
+    ...PIPES,
   ],
   exports: [
     ...MODULES,
     ValidationMessageDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
+    ...PIPES,
   ],
 })
 export class SharedModule {}

@@ -34,32 +34,33 @@
 
   <!-- Right: Actions -->
   <div class="d-flex align-items-center gap-2 flex-shrink-0">
-    <!-- Branch switcher -->
-    <ng-select
-      id="header-branch-select"
-      labelForId="header-branch-select"
-      class="branch-select-glass"
-      bindLabel="branchName"
-      bindValue="branch_no"
-      [clearable]="false"
-      [searchable]="false"
-      [ngModel]="selectedBranchId()"
-      [readonly]="availableBranches().length <= 1"
-      (change)="onBranchChange($event.branch_no || $event.id)"
-      placeholder="Select Branch"
-    >
-      <ng-template ng-label-tmp let-item="item">
-        <div class="d-flex align-items-center gap-2">
-          <mat-icon class="branch-icon">store</mat-icon>
-          <span class="branch-name">{{ item.branch_name }}</span>
-        </div>
-      </ng-template>
-      @for (item of availableBranches(); track item.branch_no) {
-        <ng-option [value]="item.branch_no">
+    <!-- Branch switcher — only rendered when user has at least one branch -->
+    @if (availableBranches().length > 0) {
+      <ng-select
+        id="header-branch-select"
+        labelForId="header-branch-select"
+        class="branch-select-glass"
+        [items]="availableBranches()"
+        bindLabel="branch_name"
+        bindValue="branch_no"
+        [clearable]="false"
+        [searchable]="false"
+        [ngModel]="selectedBranchId()"
+        [disabled]="availableBranches().length <= 1"
+        (change)="onBranchChange($event?.branch_no)"
+        placeholder="Select Branch"
+      >
+        <ng-template ng-label-tmp let-item="item">
+          <div class="d-flex align-items-center gap-2">
+            <mat-icon class="branch-icon">store</mat-icon>
+            <span class="branch-name">{{ item.branch_name }}</span>
+          </div>
+        </ng-template>
+        <ng-template ng-option-tmp let-item="item">
           {{ item.branch_name }}
-        </ng-option>
-      }
-    </ng-select>
+        </ng-template>
+      </ng-select>
+    }
 
     <!-- Quick Actions -->
     <button

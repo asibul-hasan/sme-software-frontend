@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -43,6 +43,7 @@ export class LoginComponent implements OnInit {
   private readonly route           = inject(ActivatedRoute);
   private readonly toastr          = inject(ToastrService);
   private readonly destroyRef      = inject(DestroyRef);
+  private readonly cdr             = inject(ChangeDetectorRef);
 
   contexts:  UserContextResponse[] = [];
   companies: Company[] = [];
@@ -59,8 +60,8 @@ export class LoginComponent implements OnInit {
     password: ['', Validators.required],
   });
 
-  isLoading = false;
-  isLoadingMetadata = false;
+  isLoading = signal(false);
+  isLoadingMetadata = signal(false);
 
   ngOnInit() {
     this.returnUrl =
@@ -70,7 +71,7 @@ export class LoginComponent implements OnInit {
   onUserNameBlur() {
     const userName = this.loginForm.get('userName')?.value;
     if (userName) {
-      this.isLoadingMetadata = true;
+      this.isLoadingMetadata.set(true);
       this.loginForm.get('company_no')?.setValue(null);
       this.loginForm.get('company_no')?.disable();
       this.loginForm.get('branch_no')?.setValue(null);
@@ -87,7 +88,6 @@ export class LoginComponent implements OnInit {
         .subscribe((contexts: UserContextResponse[]) => {
           // Defer state updates to next tick to avoid NG0100 in Angular 21
           setTimeout(() => {
-            this.isLoadingMetadata = false;
             this.contexts = contexts;
 
             if (this.contexts && this.contexts.length > 0) {
@@ -102,6 +102,9 @@ export class LoginComponent implements OnInit {
 
               this.onCompanyChange();
             }
+            
+            this.isLoadingMetadata.set(false);
+            this.cdr.detectChanges();
           });
         });
     }
@@ -123,11 +126,12 @@ export class LoginComponent implements OnInit {
       this.branches = [];
       this.loginForm.get('branch_no')?.setValue(null);
     }
+    this.cdr.markForCheck();
   }
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
       this.lockedUntil = null;
 
       const formValue = this.loginForm.getRawValue();
@@ -144,23 +148,25 @@ export class LoginComponent implements OnInit {
           next: () => {
             // Use setTimeout to ensure the view state is stable before navigation and toastr
             setTimeout(() => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               // Save the current branches list to context so Header can show them
               this.authService.setAvailableBranches(this.branches);
               
               this.toastr.success('Logged in successfully', 'Welcome');
               this.router.navigateByUrl(this.returnUrl);
+              this.cdr.detectChanges();
             });
           },
           error: (err: { error?: { locked_until?: string; message?: string } }) => {
             setTimeout(() => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               if (err.error?.locked_until) {
                 this.lockedUntil = err.error.locked_until;
                 this.startLockTimer();
               } else {
                 this.toastr.error(err.error?.message || 'Invalid credentials', 'Login Failed');
               }
+              this.cdr.detectChanges();
             });
           },
         });
@@ -181,11 +187,14 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: () => {
           this.lockedRemainingSeconds = Math.floor((lockedAt - Date.now()) / 1000);
+          this.cdr.markForCheck();
         },
         complete: () => {
           this.lockedRemainingSeconds = 0;
           this.lockedUntil = null;
+          this.cdr.markForCheck();
         },
       });
   }
 }
+

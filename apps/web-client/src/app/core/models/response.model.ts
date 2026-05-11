@@ -22,3 +22,7 @@ export interface ApiResponse<T> {
 export function isSuccess<T>(res: ApiResponse<T> | null | undefined): boolean {
   return !!res && res.status_code >= 200 && res.status_code < 300;
 }
+
+export function isError<T>(res: ApiResponse<T> | null | undefined): boolean {
+  return !!res && res.status_code >= 400;
+}

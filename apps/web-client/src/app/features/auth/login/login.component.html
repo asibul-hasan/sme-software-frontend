@@ -373,7 +373,7 @@
                         color: var(--text-primary);
                       "
                     />
-                    @if (isLoadingMetadata) {
+                    @if (isLoadingMetadata()) {
                       <span
                         class="position-absolute top-50 translate-middle-y spinner-border spinner-border-sm"
                         style="
@@ -411,7 +411,7 @@
                     placeholder="Select Company"
                     (change)="onCompanyChange()"
                     [clearable]="false"
-                    [loading]="isLoadingMetadata"
+                    [loading]="isLoadingMetadata()"
                     class="ng-select-aidly"
                   >
                     <ng-option [value]="null">Select Company</ng-option>
@@ -595,7 +595,7 @@
                     <button
                       type="submit"
                       class="btn btn-lg fw-bold d-flex align-items-center justify-content-center gap-2"
-                      [disabled]="isLoading || loginForm.invalid"
+                      [disabled]="isLoading() || loginForm.invalid"
                       style="
                         height: 46px;
                         background: var(--indigo);
@@ -610,7 +610,7 @@
                         box-shadow: 0 4px 14px rgba(var(--indigo-rgb), 0.32);
                       "
                     >
-                      @if (!isLoading) {
+                      @if (!isLoading()) {
                         Sign In
                         <mat-icon
                           style="font-size: 18px; width: 18px; height: 18px"

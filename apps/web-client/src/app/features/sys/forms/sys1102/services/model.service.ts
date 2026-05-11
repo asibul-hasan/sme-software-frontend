@@ -20,7 +20,6 @@ export interface IRole extends BaseEntity {
   active_status: number;
   display_sl?: number | null;
   remarks?: string | null;
-  row_version?: number | null;
 }
 
 @Injectable()
@@ -33,7 +32,6 @@ export class Sys1102ModelService {
   selectedRole = signal<IRole | null>(null);
 
   form!: FormGroup;
-
 
   initForm(): void {
     this.form = this.fb.group({

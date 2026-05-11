@@ -44,6 +44,11 @@ export const routes: Routes = [
             (m) => m.SETTINGS_ROUTES,
           ),
       },
+      {
+        path: 'hr',
+        loadChildren: () =>
+          import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+      },
       // Module placeholders — each module's `routes.ts` registers its
       // own forms/reports as the modules come online. Removing one of
       // these without first removing the matching menu items from the

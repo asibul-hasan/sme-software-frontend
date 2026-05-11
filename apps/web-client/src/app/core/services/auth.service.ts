@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of, catchError, switchMap, throwError, map, tap } from 'rxjs';
+import { Observable, of, catchError, switchMap, throwError, map, tap, finalize } from 'rxjs';
 import {
   LoginRequest, RegisterRequest, RegisterCompanyRequest,
   LoginResponse, AuthDataService, Branch
@@ -101,11 +101,16 @@ export class AuthService {
   }
 
   logout(): void {
-    this.storageService.removeItem(globalConstants.storageKeys.accessToken);
-    this.storageService.removeItem(globalConstants.storageKeys.refreshToken);
-    this.authContext.clear();
-    this.permissionService.clearPermissions();
-    this.router.navigate(['/auth/login']);
+    this.authDataService.logout().pipe(
+      catchError(() => of(void 0)),
+      finalize(() => {
+        this.storageService.removeItem(globalConstants.storageKeys.accessToken);
+        this.storageService.removeItem(globalConstants.storageKeys.refreshToken);
+        this.authContext.clear();
+        this.permissionService.clearPermissions();
+        this.router.navigate(['/auth/login']);
+      })
+    ).subscribe();
   }
 
   register(userData: RegisterRequest): Observable<unknown> {

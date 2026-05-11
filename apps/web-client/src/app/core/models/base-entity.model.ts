@@ -6,5 +6,5 @@ export interface BaseEntity {
   is_deleted?: number | null;
   deleted_by?: number | null;
   deleted_at?: string | null;
-  row_version?: number | null;
+  row_version?: number | 0;
 }

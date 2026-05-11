@@ -5,6 +5,7 @@ import { User } from '../models/user.model';
 import { IPermissionConfig } from '../models/permission.model';
 import { StorageService } from './storage.service';
 import { Branch } from '../../features/auth/services/data.service';
+import { AppGlobals } from '../app-globals';
 
 /**
  * Application-wide reactive auth/tenant context.
@@ -47,6 +48,7 @@ export class AuthContextService {
   populateFromLogin(user: User | null, permissions: IPermissionConfig | null, menu: unknown[]): void {
     if (user) {
       this.user.set(user);
+      AppGlobals.user = user;
       this.storage.setItem(globalConstants.storageKeys.userData, user);
     }
     if (permissions) {
@@ -74,6 +76,7 @@ export class AuthContextService {
     if (!cachedUser) return false;
 
     this.user.set(cachedUser);
+    AppGlobals.user = cachedUser;
     this.permissions.set(cachedPerms ?? null);
     this.menu.set(cachedMenu ?? []);
     this.availableBranches.set(cachedBranches ?? []);
@@ -86,11 +89,13 @@ export class AuthContextService {
     if (!current) return;
     const next = { ...current, ...partial };
     this.user.set(next);
+    AppGlobals.user = next;
     this.storage.setItem(globalConstants.storageKeys.userData, next);
   }
 
   clear(): void {
     this.user.set(null);
+    AppGlobals.user = {} as User;
     this.permissions.set(null);
     this.menu.set([]);
     this.availableBranches.set([]);

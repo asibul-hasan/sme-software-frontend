@@ -20,16 +20,17 @@ import { DatePipe } from '@angular/common';
   styles: [],
 })
 export class Sys1002Component implements OnInit {
-  public model              = inject(Sys1002ModelService);
-  readonly sysConstants     = sysConstants;
+  public model = inject(Sys1002ModelService);
+  readonly sysConstants = sysConstants;
 
-  public permissionService  = inject(FormPermissionService);
-  private alertService      = inject(AlertService);
+  public permissionService = inject(FormPermissionService);
+  private alertService = inject(AlertService);
 
   ngOnInit(): void {
     this.model.initForm();
     this.permissionService.useLocalPermissions('SYS_1002');
     this.model.loadBranches();
+    this.model.loadEmployees();
   }
 
   onSearchTermChange(val: string): void {
@@ -46,9 +47,9 @@ export class Sys1002Component implements OnInit {
 
   onReset(): void {
     if (this.model.selectedBranchNo()) {
-      const b = this.model.branches().find(
-        (x) => x.branch_no === this.model.selectedBranchNo(),
-      );
+      const b = this.model
+        .branches()
+        .find((x) => x.branch_no === this.model.selectedBranchNo());
       if (b) this.model.selectBranch(b);
     } else {
       this.onNew();

@@ -166,6 +166,12 @@ export class AuthDataService extends BaseDataService {
     });
   }
 
+  logout(): Observable<void> {
+    return this.http
+      .post<ApiResponse<void>>(`${this.baseUrl}/logout`, {})
+      .pipe(map(() => void 0));
+  }
+
   register(userData: RegisterRequest): Observable<unknown> {
     return this.http.post<ApiResponse<unknown>>(`${this.baseUrl}/register`, userData).pipe(map(res => res.data));
   }

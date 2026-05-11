@@ -1,26 +1,46 @@
 /* Reusable Page Form Layout specific styles */
+
 .page-card {
   height: calc(100vh - 75px) !important;
+  overflow: hidden;
 }
 
+/* Header never scrolls; flex-shrink:0 prevents compression */
 .page-card-header {
-    min-height: 60px;
+  min-height: 60px;
+  flex-shrink: 0;
 }
 
+/*
+ * flex-grow-1 (Bootstrap class on the element) drives the height.
+ * min-height:0 is required so a flex child can shrink below its
+ * content size and let the overflow-auto inside actually scroll.
+ */
 .form-content-row {
-    height: calc(100% - 60px);
+  min-height: 0;
 }
 
-/* Ensure sidebar and form content fill height */
+/*
+ * Each column must clip its own overflow so the inner scroll area
+ * (sidebar list, form body) is the ONLY thing that scrolls —
+ * not the whole panel.
+ */
 .form-content-col {
-    height: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.btn-action-group {
-    padding-right: 10px;
+/*
+ * The scrollable sidebar list container.
+ * min-height:0 is critical here: without it, flex-grow:1 in a flex
+ * column still respects the content's intrinsic min-height (auto),
+ * which means the element grows to its content instead of scrolling.
+ */
+.sidebar-scroll-area {
+  min-height: 0;
 }
 
-/* Branding & Logo Upload Styles */
+/* ── Logo / Branding upload styles (shared via this component) ── */
 .branding-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
 }
@@ -41,12 +61,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
 
-.logo-dropzone:hover, .logo-dropzone.active {
-  border-color: var(--bs-primary);
-  background: rgba(var(--bs-primary-rgb), 0.05);
-  transform: translateY(-2px);
+  &:hover, &.active {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    transform: translateY(-2px);
+  }
 }
 
 .logo-preview-wrapper {
@@ -70,10 +90,8 @@
 
 .logo-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,0.4);
   color: white;
   display: flex;
@@ -104,5 +122,5 @@
 }
 
 .smaller {
-    font-size: 0.75rem;
+  font-size: 0.75rem;
 }

@@ -64,6 +64,9 @@
     </div>
   </div>
 
+  <!-- ── OPTIONAL TAB BAR (fixed, inside the page height) ── -->
+  <ng-content select="[tabBarContent]"></ng-content>
+
   <!-- ── SPLIT BODY ──────────────────── -->
   <div class="row g-0 flex-grow-1 form-content-row overflow-hidden">
     <!-- LEFT SIDEBAR -->
@@ -71,7 +74,8 @@
       *ngIf="hasSidebar"
       class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
     >
-      <div class="p-2">
+      <!-- Fixed: title + badge + search -->
+      <div class="p-2 flex-shrink-0">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6
             class="m-0 fw-bold text-uppercase opacity-75 small"
@@ -94,7 +98,11 @@
         </div>
       </div>
 
-      <div class="p-2 pt-0 flex-grow-1 overflow-auto">
+      <!-- Fixed: optional extra filters (e.g. department / status dropdowns) -->
+      <ng-content select="[sidebarFilters]"></ng-content>
+
+      <!-- Scrollable: list content -->
+      <div class="flex-grow-1 overflow-auto sidebar-scroll-area px-2 pb-2">
         <div
           class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
         >

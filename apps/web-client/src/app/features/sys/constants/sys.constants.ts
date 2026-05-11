@@ -291,9 +291,11 @@ export const sysConstants = {
     { label: 'Carol Davis (Supervisor)', value: 103 },
   ],
   branchTypes: [
-    { label: 'Main Branch', value: 'Main' },
-    { label: 'Sub Branch', value: 'Sub' },
-    { label: 'Sales Center', value: 'Sales' },
+    { label: 'Head Office', value: 'ho' },
+    { label: 'Branch Office', value: 'br' },
+    { label: 'Warehouse', value: 'wh' },
+    { label: 'Retail Store', value: 'rs' },
+    { label: 'Service Center', value: 'sc' },
   ],
   financialYearStatuses: [
     { label: 'Open', value: 'Open' },

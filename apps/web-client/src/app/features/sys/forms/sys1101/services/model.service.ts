@@ -17,7 +17,6 @@ export interface IUser extends BaseEntity {
   is_locked: number;
   active_status: number;
   remarks?: string | null;
-  row_version?: number | null;
 }
 
 @Injectable()
@@ -30,7 +29,6 @@ export class Sys1101ModelService {
   selectedUser = signal<IUser | null>(null);
 
   form!: FormGroup;
-
 
   initForm(): void {
     this.form = this.fb.group({
