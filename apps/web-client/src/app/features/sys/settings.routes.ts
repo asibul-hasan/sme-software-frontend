@@ -26,4 +26,14 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/sys1005/sys1005.component').then((m) => m.Sys1005Component),
   },
+  {
+    path: 'form/user-management',
+    loadComponent: () =>
+      import('./forms/sys1101/sys1101.component').then((m) => m.Sys1101Component),
+  },
+  {
+    path: 'user-management',
+    loadComponent: () =>
+      import('./forms/sys1101/sys1101.component').then((m) => m.Sys1101Component),
+  },
 ];

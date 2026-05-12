@@ -521,27 +521,13 @@ role_no BIGSERIAL PRIMARY KEY,
     role_name               VARCHAR(150)        NOT NULL,
     role_desc               TEXT,
 
-    -- -------------------------------------------------------------------------
-    -- Default Permission Flags
-    -- -------------------------------------------------------------------------
-    can_insert              SMALLINT,
-    can_update              SMALLINT,
-    can_view                SMALLINT,
-    can_delete              SMALLINT,
-    -- 1 = Allowed | 0 = Denied
-
-    -- -------------------------------------------------------------------------
-    -- Tenant Scoping
-    -- -------------------------------------------------------------------------
-    company_no              BIGINT              NOT NULL,
     branch_no               BIGINT              NOT NULL,
+    company_no              BIGINT              NOT NULL,
 
     -- -------------------------------------------------------------------------
     -- Status
     -- -------------------------------------------------------------------------
     active_status           SMALLINT            NOT NULL,
-    display_sl              INTEGER,
-    remarks                 TEXT,
 
     -- -------------------------------------------------------------------------
     -- Audit
@@ -567,11 +553,6 @@ role_no BIGSERIAL PRIMARY KEY,
 
     CONSTRAINT chk_role_is_deleted
         CHECK (is_deleted IN (0, 1)),
-
-    CONSTRAINT chk_role_can_insert  CHECK (can_insert  IN (0, 1)),
-    CONSTRAINT chk_role_can_update  CHECK (can_update  IN (0, 1)),
-    CONSTRAINT chk_role_can_view    CHECK (can_view    IN (0, 1)),
-    CONSTRAINT chk_role_can_delete  CHECK (can_delete  IN (0, 1)),
 
     CONSTRAINT fk_role_company
         FOREIGN KEY (company_no)
@@ -1087,8 +1068,10 @@ user_role_no BIGSERIAL PRIMARY KEY,
     CONSTRAINT chk_user_role_active_status
         CHECK (active_status IN (0, 1)),
 
-    CONSTRAINT chk_user_role_is_deleted
-        CHECK (is_deleted IN (0, 1)),
+CONSTRAINT uq_user_role
+UNIQUE(user_no, role_no)
+CONSTRAINT chk_user_role_is_deleted
+CHECK (is_deleted IN (0, 1)),
 
     CONSTRAINT chk_user_role_primary
         CHECK (primary_role IN (0, 1)),
@@ -1104,7 +1087,37 @@ user_role_no BIGSERIAL PRIMARY KEY,
         ON DELETE RESTRICT
 
 );
+CREATE TABLE sys_user_role_branch (
 
+    user_role_branch_no BIGSERIAL PRIMARY KEY,
+
+    user_role_no BIGINT NOT NULL,
+    branch_no BIGINT NOT NULL,
+    active_status SMALLINT NOT NULL DEFAULT 1,
+    is_deleted SMALLINT NOT NULL DEFAULT 0
+
+    created_by         BIGINT NOT NULL,
+    created_at         TIMESTAMPTZ NOT NULL,
+    updated_by         BIGINT,
+    updated_at         TIMESTAMPTZ,
+
+    is_deleted         SMALLINT NOT NULL DEFAULT 0,
+    deleted_by         BIGINT,
+    deleted_at         TIMESTAMPTZ,
+
+    row_version        BIGINT,
+    CONSTRAINT fk_user_role_branch_user_role
+        FOREIGN KEY (user_role_no)
+        REFERENCES sys_user_role(user_role_no),
+
+    CONSTRAINT fk_user_role_branch_branch
+        FOREIGN KEY (branch_no)
+        REFERENCES sys_branch(branch_no),
+
+    CONSTRAINT uq_user_role_branch
+        UNIQUE(user_role_no, branch_no)
+
+);
 -- ============================================================================
 -- SYS_ENROLL_MODULE
 -- ============================================================================
@@ -1200,22 +1213,10 @@ enrl_module_menu_no BIGSERIAL PRIMARY KEY,
     -- -------------------------------------------------------------------------
     enrl_module_no          BIGINT              NOT NULL,
     menu_no                 BIGINT              NOT NULL,
-
-    -- -------------------------------------------------------------------------
-    -- Per-Menu Permission Overrides
-    -- -------------------------------------------------------------------------
-    can_insert              SMALLINT,
-    can_update              SMALLINT,
-    can_view                SMALLINT,
-    can_delete              SMALLINT,
-
-    -- 1 = Allowed | 0 = Denied
-
     -- -------------------------------------------------------------------------
     -- Status
     -- -------------------------------------------------------------------------
     active_status           SMALLINT            NOT NULL,
-    remarks                 TEXT,
 
     -- -------------------------------------------------------------------------
     -- Audit
@@ -1241,11 +1242,6 @@ enrl_module_menu_no BIGSERIAL PRIMARY KEY,
     CONSTRAINT chk_enrl_menu_is_deleted
         CHECK (is_deleted IN (0, 1)),
 
-    CONSTRAINT chk_enrl_menu_can_insert  CHECK (can_insert  IN (0, 1)),
-    CONSTRAINT chk_enrl_menu_can_update  CHECK (can_update  IN (0, 1)),
-    CONSTRAINT chk_enrl_menu_can_view    CHECK (can_view    IN (0, 1)),
-    CONSTRAINT chk_enrl_menu_can_delete  CHECK (can_delete  IN (0, 1)),
-
     CONSTRAINT fk_enrl_module_menu_enroll
         FOREIGN KEY (enrl_module_no)
         REFERENCES sys_enroll_module(enrl_module_no)
@@ -1258,6 +1254,61 @@ enrl_module_menu_no BIGSERIAL PRIMARY KEY,
 
 );
 
+CREATE TABLE sys_role_permission (
+
+    role_permission_no BIGSERIAL PRIMARY KEY,
+
+    role_no            BIGINT NOT NULL,
+    menu_no            BIGINT NOT NULL,
+
+    can_insert         SMALLINT DEFAULT 0,
+    can_update         SMALLINT DEFAULT 0,
+    can_view           SMALLINT DEFAULT 0,
+    can_delete         SMALLINT DEFAULT 0,
+
+    active_status      SMALLINT NOT NULL DEFAULT 1,
+
+    created_by         BIGINT NOT NULL,
+    created_at         TIMESTAMPTZ NOT NULL,
+    updated_by         BIGINT,
+    updated_at         TIMESTAMPTZ,
+
+    is_deleted         SMALLINT NOT NULL DEFAULT 0,
+    deleted_by         BIGINT,
+    deleted_at         TIMESTAMPTZ,
+
+    row_version        BIGINT,
+
+    CONSTRAINT uq_role_menu
+        UNIQUE(role_no, menu_no),
+
+    CONSTRAINT fk_role_permission_role
+        FOREIGN KEY (role_no)
+        REFERENCES sys_role(role_no),
+
+    CONSTRAINT fk_role_permission_menu
+        FOREIGN KEY (menu_no)
+        REFERENCES sys_menu(menu_no),
+
+    CONSTRAINT chk_role_permission_insert
+        CHECK (can_insert IN (0,1)),
+
+    CONSTRAINT chk_role_permission_update
+        CHECK (can_update IN (0,1)),
+
+    CONSTRAINT chk_role_permission_view
+        CHECK (can_view IN (0,1)),
+
+    CONSTRAINT chk_role_permission_delete
+        CHECK (can_delete IN (0,1)),
+
+    CONSTRAINT chk_role_permission_active
+        CHECK (active_status IN (0,1)),
+
+    CONSTRAINT chk_role_permission_deleted
+        CHECK (is_deleted IN (0,1))
+
+);
 -- ============================================================================
 -- CIRCULAR FK RESOLUTIONS (applied after both tables exist)
 -- ============================================================================

@@ -85,8 +85,16 @@ export class CoreDataService extends BaseDataService {
     return this.getList<unknown[]>('users');
   }
 
+  searchUsers(params?: Record<string, string | number | boolean>): Observable<ApiResponse<unknown[]>> {
+    return this.getList<unknown[]>('users', params);
+  }
+
   getUserDtl(no: number): Observable<ApiResponse<unknown>> {
     return this.getDtl<unknown>('users', no);
+  }
+
+  getUserByEmployeeNo(employeeNo: number): Observable<ApiResponse<unknown>> {
+    return this.http.get<ApiResponse<unknown>>(`${this.baseUrl}/users/employee/${employeeNo}`);
   }
 
   insertUser(payload: object): Observable<ApiResponse<unknown>> {
@@ -99,5 +107,15 @@ export class CoreDataService extends BaseDataService {
 
   deleteUser(no: number): Observable<ApiResponse<void>> {
     return this.delete<void>('users', no);
+  }
+
+  setUserLocked(no: number, locked: number): Observable<ApiResponse<unknown>> {
+    return this.http.patch<ApiResponse<unknown>>(`${this.baseUrl}/users/${no}/lock`, null, {
+      params: { locked },
+    });
+  }
+
+  resetUserPassword(no: number, payload: object): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/users/${no}/reset-password`, payload);
   }
 }

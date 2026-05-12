@@ -87,6 +87,11 @@ export interface RegisterCompanyRequest {
   address?: string;
 }
 
+export interface ChangePasswordPayload {
+  old_password: string;
+  new_password: string;
+}
+
 export interface UserContextResponse {
   company_no: number;
   company_name: string;
@@ -170,6 +175,10 @@ export class AuthDataService extends BaseDataService {
     return this.http
       .post<ApiResponse<void>>(`${this.baseUrl}/logout`, {})
       .pipe(map(() => void 0));
+  }
+
+  changePassword(payload: ChangePasswordPayload): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
 
   register(userData: RegisterRequest): Observable<unknown> {
