@@ -215,20 +215,6 @@
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="employee_no"
-                      >Employee</label
-                    >
-                    <input
-                      id="employee_no"
-                      type="text"
-                      class="form-control"
-                      formControlName="employee_no"
-                      readonly
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
                     <label class="field-label required" for="user_name"
                       >Username</label
                     >
@@ -240,7 +226,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="login_id">Login ID</label>
                     <input
@@ -250,8 +236,8 @@
                       formControlName="login_id"
                     />
                   </div>
-                </div>
-                <div class="col-md-6">
+                </div> -->
+                <!-- <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="email">Email</label>
                     <input
@@ -261,8 +247,8 @@
                       formControlName="email"
                     />
                   </div>
-                </div>
-                <div class="col-md-6">
+                </div> -->
+                <!-- <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="mobile">Mobile</label>
                     <input
@@ -272,7 +258,7 @@
                       formControlName="mobile"
                     />
                   </div>
-                </div>
+                </div> -->
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label required" for="active_status"
@@ -289,7 +275,7 @@
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label required" for="is_locked"
                       >Lock Status</label
@@ -304,7 +290,7 @@
                       <ng-option [value]="1">Locked</ng-option>
                     </ng-select>
                   </div>
-                </div>
+                </div> -->
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="failed_login_count"
@@ -319,7 +305,7 @@
                     />
                   </div>
                 </div>
-                @if (!model.selectedUserNo()) {
+                <!-- @if (!model.selectedUserNo()) {
                   <div class="col-md-6">
                     <div class="field-group">
                       <label class="field-label required" for="password"
@@ -333,7 +319,7 @@
                       />
                     </div>
                   </div>
-                }
+                } -->
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="last_login_at"
@@ -509,7 +495,7 @@
                     formControlName="temporary_password"
                   />
                 </div>
-                <div class="row row-group mb-3">
+                <!-- <div class="row row-group mb-3">
                   <div class="col-md">
                     <label class="custom--checkbox mb-0">
                       <input
@@ -520,13 +506,13 @@
                       Force Password Change
                     </label>
                   </div>
-                  <!-- <div class="col-md-6">
+                  <div class="col-md-6">
                     <div class="field-group">
                       <label class="field-label" for="password_expiry">Password Expiry</label>
                       <input id="password_expiry" type="date" class="form-control" formControlName="password_expiry" />
                     </div>
-                  </div> -->
-                </div>
+                  </div>
+                </div> -->
                 <button
                   type="button"
                   class="btn-action btn-reset w-100 mb-3"
@@ -550,27 +536,37 @@
                     formControlName="old_password"
                   />
                 </div>
-                <div class="field-group mb-3">
-                  <label class="field-label" for="new_password"
-                    >New Password</label
-                  >
-                  <input
-                    id="new_password"
-                    type="password"
-                    class="form-control"
-                    formControlName="new_password"
-                  />
-                </div>
-                <div class="field-group mb-3">
-                  <label class="field-label" for="confirm_password"
-                    >Confirm Password</label
-                  >
-                  <input
-                    id="confirm_password"
-                    type="password"
-                    class="form-control"
-                    formControlName="confirm_password"
-                  />
+                <div class="row row-group">
+                  <div class="col-md-6">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="new_password">
+                        New Password
+                        <mat-icon
+                          class="ms-1 align-middle text-muted cursor-help"
+                          style="font-size: 14px; width: 14px; height: 14px"
+                          matTooltip="Password will be minimum of 6 characters"
+                          >info_outline</mat-icon
+                        >
+                      </label>
+                      <input
+                        id="new_password"
+                        type="password"
+                        class="form-control"
+                        formControlName="new_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="confirm_password">Confirm Password</label>
+                      <input
+                        id="confirm_password"
+                        type="password"
+                        class="form-control"
+                        formControlName="confirm_password"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="button"

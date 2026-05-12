@@ -93,7 +93,9 @@ export class AuthService {
     return this.authDataService.refresh({ refresh_token: refreshToken }).pipe(
       tap(response => {
         this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token);
-        this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
+        if (response.refresh_token) {
+          this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
+        }
       }),
       map(response => response.access_token),
       catchError(err => throwError(() => err))

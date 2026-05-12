@@ -161,7 +161,7 @@ export class Sys1101ModelService {
 
     this.changePasswordForm = this.fb.group({
       old_password: ['', [Validators.required]],
-      new_password: ['', [Validators.required, Validators.minLength(8)]],
+      new_password: ['', [Validators.required, Validators.minLength(6)]],
       confirm_password: ['', [Validators.required]],
     });
 

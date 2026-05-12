@@ -1,7 +1,7 @@
 import { Injectable, NgZone, effect, inject, signal } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subscription, fromEvent, merge, timer } from 'rxjs';
-import { switchMap, throttleTime } from 'rxjs/operators';
+import { switchMap, throttleTime, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AuthContextService } from './auth-context.service';
 import { SessionLockComponent } from '../../layout/components/session-lock/session-lock.component';
@@ -9,15 +9,10 @@ import { SessionLockComponent } from '../../layout/components/session-lock/sessi
 /**
  * Manages two ambient session behaviours for authenticated users:
  *
- *  1. Sliding token refresh — refreshes the JWT every {@link REFRESH_INTERVAL}
- *     so users never get a hard 401 mid-action.
+ *  1. Dynamic token refresh — schedules a refresh request based on the JWT 'exp'
+ *     claim so users never get a hard 401 mid-action.
  *  2. Inactivity lock — after {@link INACTIVITY_TIMEOUT} of no input we open
- *     a blocking lock dialog. The user must re-enter their password to unlock,
- *     or session is terminated.
- *
- * The previous implementation polled `interval(1000)` indefinitely to watch
- * the auth state. This version uses a single Angular `effect()` that reacts
- * to changes in the `isAuthenticated` signal — zero polling.
+ *     a blocking lock dialog.
  */
 @Injectable({ providedIn: 'root' })
 export class SessionManagerService {
@@ -26,7 +21,6 @@ export class SessionManagerService {
   private readonly dialog       = inject(MatDialog);
   private readonly zone         = inject(NgZone);
 
-  private readonly REFRESH_INTERVAL  = 5  * 60 * 1000;  // 5 minutes
   private readonly INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 
   private refreshSub?:    Subscription;
@@ -36,8 +30,6 @@ export class SessionManagerService {
   readonly isLocked = signal(false);
 
   constructor() {
-    // Single reactive subscription wired up once at service construction.
-    // Replaces the previous `interval(1000)` polling pair.
     effect(() => {
       const authed = this.authContext.isAuthenticated();
       const locked = this.isLocked();
@@ -50,24 +42,52 @@ export class SessionManagerService {
     });
   }
 
-  /**
-   * Marker hook for {@link APP_INITIALIZER} — ensures the service is
-   * eagerly instantiated at app boot so the constructor effect activates
-   * before any component subscribes.
-   */
   init(): void {
-    // Intentionally empty — work is done by the constructor effect above.
+    // Work done by constructor effect.
   }
 
   private startTimers(): void {
     this.stopTimers();
+    this.scheduleNextRefresh();
+    this.startInactivityTimer();
+  }
 
-    // 1. Sliding token refresh — rotates both tokens before the AT expires.
-    this.refreshSub = timer(this.REFRESH_INTERVAL, this.REFRESH_INTERVAL)
-      .pipe(switchMap(() => this.authService.refreshToken()))
-      .subscribe();
+  /**
+   * Calculates the delay until the access token expires and schedules
+   * a refresh request. We refresh 30 seconds before the actual 'exp'
+   * claim to account for network latency and clock skew.
+   */
+  private scheduleNextRefresh(): void {
+    this.refreshSub?.unsubscribe();
 
-    // 2. Inactivity detection — runs outside Angular zone to avoid spurious CD.
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    const expiryDate = this.authContext.getTokenExpirationDate(token);
+    if (!expiryDate) return;
+
+    const now = new Date().getTime();
+    const expiry = expiryDate.getTime();
+
+    // Schedule refresh 30 seconds before expiry, or immediately if already near/past.
+    const buffer = 30 * 1000;
+    const delay = Math.max(0, expiry - now - buffer);
+
+    console.debug(`[SessionManager] Next token refresh scheduled in ${Math.round(delay / 1000)}s`);
+
+    this.refreshSub = timer(delay).pipe(
+      switchMap(() => this.authService.refreshToken()),
+      tap(() => this.scheduleNextRefresh()) // Recursively schedule the next one
+    ).subscribe({
+      error: (err) => {
+        console.error('[SessionManager] Token refresh failed:', err);
+        // If refresh fails (e.g. refresh token also expired), we logout.
+        this.authService.logout();
+      }
+    });
+  }
+
+  private startInactivityTimer(): void {
     this.zone.runOutsideAngular(() => {
       const activity$ = merge(
         fromEvent(window, 'mousemove'),
@@ -94,9 +114,6 @@ export class SessionManagerService {
     if (this.isLocked() || !this.authContext.isAuthenticated()) return;
 
     this.isLocked.set(true);
-
-    // Note: refresh timer keeps running while locked so the user does not
-    // come back to a 401 storm after unlocking.
     this.inactivitySub?.unsubscribe();
     this.inactivitySub = undefined;
 

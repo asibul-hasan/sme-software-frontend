@@ -44,6 +44,14 @@ export class AuthContextService {
     }
   }
 
+  getTokenExpirationDate(token: string): Date | null {
+    try {
+      return this.jwt.getTokenExpirationDate(token);
+    } catch {
+      return null;
+    }
+  }
+
   // ─── State mutators ──────────────────────────────────────────────────────
   populateFromLogin(user: User | null, permissions: IPermissionConfig | null, menu: unknown[]): void {
     if (user) {
