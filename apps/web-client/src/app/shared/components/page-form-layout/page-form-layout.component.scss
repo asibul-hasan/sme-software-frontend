@@ -66,6 +66,30 @@
   }
 }
 
+/* ── Sidebar Filters Grid ──────────────────── */
+.sidebar-filters-section {
+  ::ng-deep [sidebarFilters] {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px 8px 0 8px;
+
+    /* Reset consumer-provided spacing that conflicts with our grid */
+    &.px-2 { padding-left: 8px !important; padding-right: 8px !important; }
+    &.pb-2 { padding-bottom: 0 !important; }
+    &.border-bottom { border-bottom: none !important; }
+
+    .field-group {
+      margin-bottom: 0 !important;
+    }
+
+    /* Fallback to 1 column if only one filter is present */
+    &:has(> :only-child) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
 /* ── Logo / Branding upload styles (shared via this component) ── */
 .branding-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);

@@ -22,7 +22,11 @@
         bindLabel="department_name"
         bindValue="department_no"
         [ngModel]="model.filterDeptNo()"
-        (ngModelChange)="model.filterDeptNo.set($event); model.filterDesigNo.set(null); model.pager.reset()"
+        (ngModelChange)="
+          model.filterDeptNo.set($event);
+          model.filterDesigNo.set(null);
+          model.pager.reset()
+        "
         placeholder="All Departments"
         [clearable]="true"
       ></ng-select>
@@ -41,7 +45,9 @@
     <div class="field-group mb-0">
       <ng-select
         [ngModel]="model.filterUserStatus()"
-        (ngModelChange)="model.filterUserStatus.set($event); model.pager.reset()"
+        (ngModelChange)="
+          model.filterUserStatus.set($event); model.pager.reset()
+        "
         placeholder="All User Status"
         [clearable]="true"
       >
@@ -57,42 +63,74 @@
       <button
         type="button"
         class="list-group-item list-group-item-action p-3"
-        [class.active]="model.selectedEmployee()?.employee_no === emp.employee_no"
+        [class.active]="
+          model.selectedEmployee()?.employee_no === emp.employee_no
+        "
         (click)="model.selectEmployee(emp)"
       >
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate" style="max-width: 130px">{{ emp.employee_id }}</h6>
+          <h6 class="mb-0 fw-bold text-truncate" style="max-width: 130px">
+            {{ emp.employee_id }}
+          </h6>
           <span
             class="badge rounded-pill"
-            [ngClass]="user ? (user.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary') : 'text-bg-warning'"
-          >{{ user ? (user.active_status === 1 ? 'User Active' : 'Inactive') : 'No User' }}</span>
+            [ngClass]="
+              user
+                ? user.active_status === 1
+                  ? 'text-bg-success'
+                  : 'text-bg-secondary'
+                : 'text-bg-warning'
+            "
+            >{{
+              user
+                ? user.active_status === 1
+                  ? 'User Active'
+                  : 'Inactive'
+                : 'No User'
+            }}</span
+          >
         </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ emp.full_name }}</p>
-        <p class="mb-0 small opacity-50 text-truncate">{{ emp.department_name || 'No department' }}</p>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
+          {{ emp.full_name }}
+        </p>
+        <p class="mb-0 small opacity-50 text-truncate">
+          {{ emp.department_name || 'No department' }}
+        </p>
       </button>
     }
     @if (model.filteredEmployees().length === 0) {
       <div class="p-4 text-center opacity-75">
-        <mat-icon style="font-size:32px;height:32px;width:32px" class="opacity-50 mb-2">people</mat-icon>
+        <mat-icon
+          style="font-size: 32px; height: 32px; width: 32px"
+          class="opacity-50 mb-2"
+          >people</mat-icon
+        >
         <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
       </div>
     }
   </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
       <div class="row row-group">
         <div class="col-12">
           <div class="form-section-card card employee-summary-card">
-            <div class="card-header d-flex align-items-center justify-content-between">
+            <div
+              class="card-header d-flex align-items-center justify-content-between"
+            >
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">badge</mat-icon>
                 Employee Summary
               </h4>
               <span class="security-pill">
-                <mat-icon class="icon-small">{{ model.selectedUserNo() ? 'verified_user' : 'person_add' }}</mat-icon>
+                <mat-icon class="icon-small">{{
+                  model.selectedUserNo() ? 'verified_user' : 'person_add'
+                }}</mat-icon>
                 {{ model.selectedUserNo() ? 'Mapped User' : 'Pending User' }}
               </span>
             </div>
@@ -108,52 +146,65 @@
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Employee Code</div>
-                    <div class="summary-value">{{ emp?.employee_id || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.employee_id || '-' }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Department</div>
-                    <div class="summary-value">{{ emp?.department_name || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.department_name || '-' }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Designation</div>
-                    <div class="summary-value">{{ emp?.designation_name || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.designation_name || '-' }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Employment Status</div>
-                    <div class="summary-value">{{ model.employeeStatusLabel(emp?.employee_status) }}</div>
+                    <div class="summary-value">
+                      {{ model.employeeStatusLabel(emp?.employee_status) }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Joining Date</div>
-                    <div class="summary-value">{{ emp?.joining_date || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.joining_date || '-' }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Work Email</div>
-                    <div class="summary-value">{{ emp?.official_email || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.official_email || '-' }}
+                    </div>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="summary-item">
                     <div class="summary-label">Contact Number</div>
-                    <div class="summary-value">{{ emp?.mobile_number || '-' }}</div>
+                    <div class="summary-value">
+                      {{ emp?.mobile_number || '-' }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
         <div class="col-xl-7 col-lg-12">
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">manage_accounts</mat-icon>
@@ -164,38 +215,75 @@
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="employee_no">Employee</label>
-                    <input id="employee_no" type="text" class="form-control" formControlName="employee_no" readonly />
+                    <label class="field-label required" for="employee_no"
+                      >Employee</label
+                    >
+                    <input
+                      id="employee_no"
+                      type="text"
+                      class="form-control"
+                      formControlName="employee_no"
+                      readonly
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="user_name">Username</label>
-                    <input id="user_name" type="text" class="form-control" formControlName="user_name" />
+                    <label class="field-label required" for="user_name"
+                      >Username</label
+                    >
+                    <input
+                      id="user_name"
+                      type="text"
+                      class="form-control"
+                      formControlName="user_name"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="login_id">Login ID</label>
-                    <input id="login_id" type="text" class="form-control" formControlName="login_id" />
+                    <input
+                      id="login_id"
+                      type="text"
+                      class="form-control"
+                      formControlName="login_id"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="email">Email</label>
-                    <input id="email" type="email" class="form-control" formControlName="email" />
+                    <input
+                      id="email"
+                      type="email"
+                      class="form-control"
+                      formControlName="email"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="mobile">Mobile</label>
-                    <input id="mobile" type="text" class="form-control" formControlName="mobile" />
+                    <input
+                      id="mobile"
+                      type="text"
+                      class="form-control"
+                      formControlName="mobile"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="active_status">Active Status</label>
-                    <ng-select id="active_status" labelForId="active_status" formControlName="active_status" [clearable]="false">
+                    <label class="field-label required" for="active_status"
+                      >Active Status</label
+                    >
+                    <ng-select
+                      id="active_status"
+                      labelForId="active_status"
+                      formControlName="active_status"
+                      [clearable]="false"
+                    >
                       <ng-option [value]="1">Active</ng-option>
                       <ng-option [value]="0">Inactive</ng-option>
                     </ng-select>
@@ -203,8 +291,15 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="is_locked">Lock Status</label>
-                    <ng-select id="is_locked" labelForId="is_locked" formControlName="is_locked" [clearable]="false">
+                    <label class="field-label required" for="is_locked"
+                      >Lock Status</label
+                    >
+                    <ng-select
+                      id="is_locked"
+                      labelForId="is_locked"
+                      formControlName="is_locked"
+                      [clearable]="false"
+                    >
                       <ng-option [value]="0">Normal</ng-option>
                       <ng-option [value]="1">Locked</ng-option>
                     </ng-select>
@@ -212,44 +307,80 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="failed_login_count">Failed Login Attempts</label>
-                    <input id="failed_login_count" type="number" class="form-control" formControlName="failed_login_count" min="0" />
+                    <label class="field-label" for="failed_login_count"
+                      >Failed Login Attempts</label
+                    >
+                    <input
+                      id="failed_login_count"
+                      type="number"
+                      class="form-control"
+                      formControlName="failed_login_count"
+                      min="0"
+                    />
                   </div>
                 </div>
                 @if (!model.selectedUserNo()) {
                   <div class="col-md-6">
                     <div class="field-group">
-                      <label class="field-label required" for="password">Initial Password</label>
-                      <input id="password" type="password" class="form-control" formControlName="password" />
+                      <label class="field-label required" for="password"
+                        >Initial Password</label
+                      >
+                      <input
+                        id="password"
+                        type="password"
+                        class="form-control"
+                        formControlName="password"
+                      />
                     </div>
                   </div>
                 }
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="last_login_at">Last Login At</label>
-                    <input id="last_login_at" type="text" class="form-control" formControlName="last_login_at" />
+                    <label class="field-label" for="last_login_at"
+                      >Last Login At</label
+                    >
+                    <input
+                      id="last_login_at"
+                      type="text"
+                      class="form-control"
+                      formControlName="last_login_at"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="password_changed_at">Password Changed At</label>
-                    <input id="password_changed_at" type="text" class="form-control" formControlName="password_changed_at" />
+                    <label class="field-label" for="password_changed_at"
+                      >Password Changed At</label
+                    >
+                    <input
+                      id="password_changed_at"
+                      type="text"
+                      class="form-control"
+                      formControlName="password_changed_at"
+                    />
                   </div>
                 </div>
                 <div class="col-md-12">
                   <div class="field-group">
                     <label class="field-label" for="remarks">Remarks</label>
-                    <textarea id="remarks" class="form-control" rows="2" formControlName="remarks"></textarea>
+                    <textarea
+                      id="remarks"
+                      class="form-control"
+                      rows="2"
+                      formControlName="remarks"
+                    ></textarea>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">admin_panel_settings</mat-icon>
+                <mat-icon class="me-2 align-middle"
+                  >admin_panel_settings</mat-icon
+                >
                 Role &amp; Access Information
               </h4>
             </div>
@@ -270,19 +401,34 @@
                   </div>
                 </div>
                 <div class="col-md-4">
-                  <button type="button" class="btn-action btn-new w-100" (click)="model.addRole(model.roleToAdd()); model.roleToAdd.set(null)">
+                  <button
+                    type="button"
+                    class="btn-action btn-new w-100"
+                    (click)="
+                      model.addRole(model.roleToAdd());
+                      model.roleToAdd.set(null)
+                    "
+                  >
                     <mat-icon>add</mat-icon>
                     <span class="btn-action-label">Add Role</span>
                   </button>
                 </div>
               </div>
 
-              @for (role of model.roleMappings(); track role.role_no; let i = $index) {
+              @for (
+                role of model.roleMappings();
+                track role.role_no;
+                let i = $index
+              ) {
                 <div class="role-row mb-2">
                   <div class="row row-group align-items-center">
                     <div class="col-md-4">
-                      <div class="fw-bold">{{ role.role_name || ('Role #' + role.role_no) }}</div>
-                      <div class="small text-muted">Access level from sys_user_role</div>
+                      <div class="fw-bold">
+                        {{ role.role_name || 'Role #' + role.role_no }}
+                      </div>
+                      <div class="small text-muted">
+                        Access level from sys_user_role
+                      </div>
                     </div>
                     <div class="col-md-3">
                       <input
@@ -290,7 +436,9 @@
                         class="form-control"
                         [ngModel]="role.access_branch"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="model.updateRole(i, { access_branch: $event })"
+                        (ngModelChange)="
+                          model.updateRole(i, { access_branch: $event })
+                        "
                         placeholder="Branches or blank"
                       />
                     </div>
@@ -309,7 +457,9 @@
                       <ng-select
                         [ngModel]="role.active_status"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="model.updateRole(i, { active_status: $event })"
+                        (ngModelChange)="
+                          model.updateRole(i, { active_status: $event })
+                        "
                         [clearable]="false"
                       >
                         <ng-option [value]="1">Active</ng-option>
@@ -317,7 +467,12 @@
                       </ng-select>
                     </div>
                     <div class="col-md-1 text-end">
-                      <button type="button" class="btn-action btn-delete" (click)="model.removeRole(i)" matTooltip="Remove role">
+                      <button
+                        type="button"
+                        class="btn-action btn-delete"
+                        (click)="model.removeRole(i)"
+                        matTooltip="Remove role"
+                      >
                         <mat-icon>close</mat-icon>
                       </button>
                     </div>
@@ -325,14 +480,16 @@
                 </div>
               }
               @if (model.roleMappings().length === 0) {
-                <div class="text-center text-muted small py-3">No roles assigned</div>
+                <div class="text-center text-muted small py-3">
+                  No roles assigned
+                </div>
               }
             </div>
           </div>
         </div>
 
         <div class="col-xl-5 col-lg-12">
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">lock_reset</mat-icon>
@@ -342,24 +499,40 @@
             <div class="card-body">
               <div [formGroup]="model.passwordForm">
                 <div class="field-group mb-3">
-                  <label class="field-label" for="temporary_password">Temporary Password</label>
-                  <input id="temporary_password" type="password" class="form-control" formControlName="temporary_password" />
+                  <label class="field-label" for="temporary_password"
+                    >Temporary Password</label
+                  >
+                  <input
+                    id="temporary_password"
+                    type="password"
+                    class="form-control"
+                    formControlName="temporary_password"
+                  />
                 </div>
                 <div class="row row-group mb-3">
-                  <div class="col-md-6">
+                  <div class="col-md">
                     <label class="custom--checkbox mb-0">
-                      <input type="checkbox" class="form-check-input me-2" formControlName="force_password_change" />
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        formControlName="force_password_change"
+                      />
                       Force Password Change
                     </label>
                   </div>
-                  <div class="col-md-6">
+                  <!-- <div class="col-md-6">
                     <div class="field-group">
                       <label class="field-label" for="password_expiry">Password Expiry</label>
                       <input id="password_expiry" type="date" class="form-control" formControlName="password_expiry" />
                     </div>
-                  </div>
+                  </div> -->
                 </div>
-                <button type="button" class="btn-action btn-reset w-100 mb-3" [disabled]="!model.selectedUserNo()" (click)="model.resetPassword()">
+                <button
+                  type="button"
+                  class="btn-action btn-reset w-100 mb-3"
+                  [disabled]="!model.selectedUserNo()"
+                  (click)="model.resetPassword()"
+                >
                   <mat-icon>password</mat-icon>
                   <span class="btn-action-label">Reset Password</span>
                 </button>
@@ -367,18 +540,43 @@
 
               <div [formGroup]="model.changePasswordForm">
                 <div class="field-group mb-3">
-                  <label class="field-label" for="old_password">Current Password</label>
-                  <input id="old_password" type="password" class="form-control" formControlName="old_password" />
+                  <label class="field-label" for="old_password"
+                    >Current Password</label
+                  >
+                  <input
+                    id="old_password"
+                    type="password"
+                    class="form-control"
+                    formControlName="old_password"
+                  />
                 </div>
                 <div class="field-group mb-3">
-                  <label class="field-label" for="new_password">New Password</label>
-                  <input id="new_password" type="password" class="form-control" formControlName="new_password" />
+                  <label class="field-label" for="new_password"
+                    >New Password</label
+                  >
+                  <input
+                    id="new_password"
+                    type="password"
+                    class="form-control"
+                    formControlName="new_password"
+                  />
                 </div>
                 <div class="field-group mb-3">
-                  <label class="field-label" for="confirm_password">Confirm Password</label>
-                  <input id="confirm_password" type="password" class="form-control" formControlName="confirm_password" />
+                  <label class="field-label" for="confirm_password"
+                    >Confirm Password</label
+                  >
+                  <input
+                    id="confirm_password"
+                    type="password"
+                    class="form-control"
+                    formControlName="confirm_password"
+                  />
                 </div>
-                <button type="button" class="btn-action btn-save w-100" (click)="model.changePassword()">
+                <button
+                  type="button"
+                  class="btn-action btn-save w-100"
+                  (click)="model.changePassword()"
+                >
                   <mat-icon>vpn_key</mat-icon>
                   <span class="btn-action-label">Change Password</span>
                 </button>
@@ -386,7 +584,7 @@
             </div>
           </div>
 
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">security</mat-icon>
@@ -395,11 +593,21 @@
             </div>
             <div class="card-body">
               <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn-action btn-delete" [disabled]="!model.selectedUserNo()" (click)="model.lockSelected(1)">
+                <button
+                  type="button"
+                  class="btn-action btn-delete"
+                  [disabled]="!model.selectedUserNo()"
+                  (click)="model.lockSelected(1)"
+                >
                   <mat-icon>lock</mat-icon>
                   <span class="btn-action-label">Lock Account</span>
                 </button>
-                <button type="button" class="btn-action btn-new" [disabled]="!model.selectedUserNo()" (click)="model.lockSelected(0)">
+                <button
+                  type="button"
+                  class="btn-action btn-new"
+                  [disabled]="!model.selectedUserNo()"
+                  (click)="model.lockSelected(0)"
+                >
                   <mat-icon>lock_open</mat-icon>
                   <span class="btn-action-label">Unlock Account</span>
                 </button>

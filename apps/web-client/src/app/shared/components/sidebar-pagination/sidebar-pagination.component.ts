@@ -62,25 +62,49 @@ import { PaginatorState } from '../../../core/utils/paginator';
         </button>
       </div>
 
-      <ng-select
-        class="pager-size"
-        [items]="pager.pageSizeOptions"
-        [ngModel]="pager.pageSize()"
-        (ngModelChange)="pager.setPageSize($event)"
-        [clearable]="false"
-        [searchable]="false"
-      >
-        <ng-template ng-label-tmp let-item="item">{{ item }} / page</ng-template>
-        <ng-template ng-option-tmp let-item="item">{{ item }} / page</ng-template>
-      </ng-select>
+      <div class="d-flex align-items-center gap-2">
+        <span class="pager-total"
+          >{{ pager.totalItems() }} <small>Records</small></span
+        >
+        <ng-select
+          class="pager-size"
+          [items]="pager.pageSizeOptions"
+          [ngModel]="pager.pageSize()"
+          (ngModelChange)="pager.setPageSize($event)"
+          [clearable]="false"
+          [searchable]="false"
+        >
+          <ng-template ng-label-tmp let-item="item"
+            >{{ item }} / page</ng-template
+          >
+          <ng-template ng-option-tmp let-item="item"
+            >{{ item }} / page</ng-template
+          >
+        </ng-select>
+      </div>
     </div>
   `,
-  styles: [`
-    :host { display: block; }
+  styles: [
+    `
+      :host {
+        display: block;
+      }
 
-    .sidebar-pager {
-      background: var(--card-bg);
-    }
+      .sidebar-pager {
+        background: var(--card-bg);
+      }
+
+      .pager-total {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        opacity: 0.8;
+        background: var(--bg-secondary);
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
 
     .pager-btn {
       width: 28px;

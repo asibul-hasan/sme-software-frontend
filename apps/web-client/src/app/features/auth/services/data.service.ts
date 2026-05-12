@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BaseDataService } from '../../../core/services/base-data.service';
 import { ApiResponse } from '../../../core/models/response.model';
 import { IPermissionConfig } from '../../../core/models/permission.model';
+import { SKIP_LOADER } from '../../../core/interceptors/loader.interceptor';
 
 export interface LoginRequest {
   user_name: string;
@@ -147,7 +149,9 @@ export class AuthDataService extends BaseDataService {
    */
   refresh(request: RefreshTokenRequest): Observable<RefreshResponse> {
     return this.http
-      .post<ApiResponse<RefreshResponse>>(`${this.baseUrl}/refresh`, request)
+      .post<ApiResponse<RefreshResponse>>(`${this.baseUrl}/refresh`, request, {
+        context: new HttpContext().set(SKIP_LOADER, true)
+      })
       .pipe(map(res => res.data));
   }
 

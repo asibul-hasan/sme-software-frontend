@@ -74,36 +74,27 @@
       *ngIf="hasSidebar"
       class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
     >
-      <!-- Fixed: title + badge + search -->
-      <div class="p-2 flex-shrink-0">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6
-            class="m-0 fw-bold text-uppercase opacity-75 small"
-            style="letter-spacing: 0.5px"
-          >
-            {{ sidebarTitle }}
-          </h6>
-          <span class="badge rounded-pill text-bg-secondary"
-            >{{ recordsCount }} {{ 'records' | translate }}</span
-          >
-        </div>
-        <div class="field-group mb-0 sidebar-search">
-          <mat-icon class="sidebar-search__icon">search</mat-icon>
-          <input
-            type="text"
-            class="form-control sidebar-search__input"
-            [placeholder]="'search' | translate"
-            [ngModel]="searchTerm"
-            (ngModelChange)="onSearchChange($event)"
-          />
+
+      <!-- Fixed: optional extra filters + search at bottom of section -->
+      <div class="sidebar-filters-section flex-shrink-0 border-bottom">
+        <ng-content select="[sidebarFilters]"></ng-content>
+
+        <div class="px-2 py-2">
+          <div class="field-group mb-0 sidebar-search">
+            <mat-icon class="sidebar-search__icon">search</mat-icon>
+            <input
+              type="text"
+              class="form-control sidebar-search__input"
+              [placeholder]="'search' | translate"
+              [ngModel]="searchTerm"
+              (ngModelChange)="onSearchChange($event)"
+            />
+          </div>
         </div>
       </div>
 
-      <!-- Fixed: optional extra filters (e.g. department / status dropdowns) -->
-      <ng-content select="[sidebarFilters]"></ng-content>
-
       <!-- Scrollable: list content -->
-      <div class="flex-grow-1 overflow-auto sidebar-scroll-area px-2 pb-2">
+      <div class="flex-grow-1 overflow-auto sidebar-scroll-area p-2">
         <div
           class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
         >
@@ -112,7 +103,9 @@
       </div>
 
       <!-- Fixed: optional footer (e.g. pagination) -->
-      <ng-content select="[sidebarFooter]"></ng-content>
+      <div class="sidebar-footer flex-shrink-0">
+        <ng-content select="[sidebarFooter]"></ng-content>
+      </div>
     </div>
 
     <!-- RIGHT SIDE: FORM -->
