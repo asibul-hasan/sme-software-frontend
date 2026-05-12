@@ -10,7 +10,7 @@ interface Branch {
   id: number;
   name: string;
   code: string;
-  is_primary?: boolean;
+  company?: string;
 }
 
 @Component({
@@ -37,8 +37,8 @@ interface Branch {
                 @if (branch.code) {
                   <span class="branch-code">({{ branch.code }})</span>
                 }
-                @if (branch.is_primary) {
-                  <mat-icon class="primary-icon">verified</mat-icon>
+                @if (branch.company) {
+                  <span class="branch-code">{{ branch.company }}</span>
                 }
               </div>
             </mat-option>
@@ -97,19 +97,15 @@ export class BranchSwitcherComponent implements OnInit {
 
   private loadBranches() {
     const user = this.authService.user();
-    if (user?.branch_ids) {
-      // In real app, fetch branch details from API
-      // For now, mock data
-      const mockBranches: Branch[] = user.branch_ids.map((id: number, index: number) => ({
-        id,
-        name: `Branch ${index + 1}`,
-        code: `BR${index + 1}`,
-        is_primary: index === 0
-      }));
+    const branches = this.authService.availableBranches().map((branch) => ({
+      id: branch.branch_no,
+      name: branch.branch_name,
+      code: branch.branch_no?.toString() ?? '',
+      company: branch.company_name,
+    }));
 
-      this.branches.set(mockBranches);
-      this.selectedBranch.set(user.branch_no || mockBranches[0]?.id || 0);
-    }
+    this.branches.set(branches);
+    this.selectedBranch.set(user?.branch_no || branches[0]?.id || 0);
   }
 
   onBranchChange(branchId: number) {

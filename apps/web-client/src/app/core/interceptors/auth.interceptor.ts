@@ -7,6 +7,8 @@ import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { AuthContextService } from '../services/auth-context.service';
+import { Router } from '@angular/router';
+import { IRawMenuForm } from '../models/permission.model';
 
 /**
  * HTTP interceptor responsible for the access-token lifecycle on every
@@ -34,6 +36,7 @@ import { AuthContextService } from '../services/auth-context.service';
 export class AuthInterceptor implements HttpInterceptor {
   private readonly authService = inject(AuthService);
   private readonly authContext = inject(AuthContextService);
+  private readonly router = inject(Router);
 
   /** True while a `/auth/refresh` round-trip is in flight. */
   private isRefreshing = false;
@@ -125,14 +128,27 @@ export class AuthInterceptor implements HttpInterceptor {
       if (user.user_no)    headers['X-User-No']    = user.user_no.toString();
     }
 
+    const formId = this.resolveActiveFormId();
+    if (formId) headers['X-Form-Id'] = formId;
+
     return request.clone({ setHeaders: headers });
   }
 
   private isAuthEndpoint(url: string): boolean {
     return (
       url.includes('/auth/login')   ||
-      url.includes('/auth/logout')  ||
+      url.includes('/auth/contexts') ||
       url.includes('/auth/refresh')
     );
+  }
+
+  private resolveActiveFormId(): string | null {
+    const currentUrl = (this.router.url || '').split('?')[0];
+    const menu = (this.authContext.menu() as IRawMenuForm[]) ?? [];
+    const match = menu.find(item => {
+      const route = item.route?.startsWith('/') ? item.route : item.route ? `/${item.route}` : '';
+      return !!route && (currentUrl === route || currentUrl.endsWith(route));
+    });
+    return match?.form_id ?? null;
   }
 }

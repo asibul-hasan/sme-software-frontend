@@ -37,6 +37,8 @@ export interface Company {
 export interface Branch {
   branch_no: number;
   branch_name: string;
+  company_no?: number;
+  company_name?: string;
 }
 
 /**
@@ -65,11 +67,12 @@ export interface LoginResponse {
   company_name?: string;
   branch_no:     number;
   branch_name?:  string;
+  available_branches?: Branch[];
+  role_nos?: number[];
 
   // Sidebar menu (flat list — see `menu-builder.service.ts` for shape).
   menu?: unknown[];
 
-  /** Reserved for a future backend addition; currently always undefined. */
   permissions?: IPermissionConfig;
 }
 
@@ -175,6 +178,12 @@ export class AuthDataService extends BaseDataService {
     return this.http
       .post<ApiResponse<void>>(`${this.baseUrl}/logout`, {})
       .pipe(map(() => void 0));
+  }
+
+  switchBranch(branchNo: number): Observable<LoginResponse> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(`${this.baseUrl}/switch-branch`, { branch_no: branchNo })
+      .pipe(map(res => res.data));
   }
 
   changePassword(payload: ChangePasswordPayload): Observable<ApiResponse<void>> {

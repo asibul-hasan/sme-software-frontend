@@ -102,30 +102,41 @@ export class MenuService {
     }
 
     return Object.values(moduleMap)
-      .map(
-        (m) =>
-          ({
-            ...m,
-            children: Object.values(m.children),
-          }) as MenuItem,
-      )
+      .map((m) => {
+        // Sort forms within each submodule by formId
+        const subModules = Object.values(m.children).map((sub) => {
+          sub.children.sort((a, b) => a.formId.localeCompare(b.formId));
+          return sub;
+        });
+
+        // Sort submodules by the formId of their first child
+        subModules.sort((a, b) => {
+          const aFirstId = a.children[0]?.formId || '';
+          const bFirstId = b.children[0]?.formId || '';
+          return aFirstId.localeCompare(bFirstId);
+        });
+
+        return {
+          ...m,
+          children: subModules,
+        } as MenuItem;
+      })
       .sort((a, b) => (a.module_serial ?? 999) - (b.module_serial ?? 999));
   }
 
   /**
-   * Prefer the backend-supplied `route` if present; otherwise derive a slug
-   * from form code + type + name. Stable, deterministic, works on legacy data.
+   * Always creates a route in the format /code/type/form-name-slug
    */
   private buildRoute(form: RawMenuForm): string {
-    // if (form.route && form.route.trim().length > 0) {
-    //   return form.route.startsWith('/') ? form.route : `/${form.route}`;
-    // }
+    const code = (form.code || 'unknown').toLowerCase();
+    const type = (form.type || 'general').toLowerCase();
     const slug = (form.form_name || '')
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .trim()
       .replace(/\s+/g, '-');
-    return `/${(form.code || '').toLowerCase()}/${(form.type || '').toLowerCase()}/${slug}`;
+
+    return `/${code}/${type}/${slug}`;
   }
 
   private toCamelCaseRoute(value: string): string {

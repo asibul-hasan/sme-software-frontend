@@ -45,13 +45,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'user-management',
-        loadComponent: () =>
-          import('./features/sys/forms/sys1101/sys1101.component').then(
-            (m) => m.Sys1101Component,
-          ),
-      },
-      {
         path: 'hr',
         loadChildren: () =>
           import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),

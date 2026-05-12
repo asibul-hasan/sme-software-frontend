@@ -21,10 +21,14 @@ active_status = 0 suspends all branches and users under the company (middleware 
 sys_branch
 A branch must always have a valid company_no
 manager_no references hr_employee.employee_no — added as deferred FK post employee table creation
-Branch-level access is controlled via sys_user_role.access_branch
+Branch-level access is controlled via sys_user_role_branch
 sys_role
-can*_ flags are default role-level permissions; per-menu overrides live in sys*enroll_module_menu
+Stores role master information only; form permissions live in sys_role_permission
 A user can have multiple roles via sys_user_role; primary_role = 1 determines the default context
+sys_role_permission
+Stores role + menu CRUD permissions (can_view, can_insert, can_update, can_delete)
+sys_user_role_branch
+Maps each assigned user role to the branches it can access
 sys_user
 user_no maps 1-to-1 with hr_employee.employee_no via employee_no FK — user is sourced from employee
 Password must be stored as bcrypt/argon2 hash — never plain text
@@ -34,9 +38,9 @@ Defines which modules are licensed/activated per branch with date range enforcem
 enrl_st_date and enrl_end_date must be checked by middleware on every request to validate module access
 Expired enrollments (enrl_end_date < TODAY) must be treated as inactive even if active_status = 1
 sys_enroll_module_menu
-Per-menu permission record scoped to an enrolled module
-Overrides the role-level can*_ defaults for specific menus
-Backend resolves: enroll active → menu visible → role permission → enroll_menu permission (most restrictive wins)
+Controls only which menus/forms are enrolled for a company/branch
+No role permission logic is stored here
+Backend resolves: branch access → active roles → role permissions → enrolled forms filter
 hr_department
 parent_department_no is self-referencing — build tree with recursive CTE in backend
 department_head_no FK to hr_employee is DEFERRABLE to break circular dependency with employee table
@@ -58,6 +62,8 @@ basic_salary >= 0 and gross_salary >= basic_salary enforced at DB and middleware
 -- ============================================================================
 DROP TABLE IF EXISTS sys_enroll_module_menu CASCADE;
 DROP TABLE IF EXISTS sys_enroll_module CASCADE;
+DROP TABLE IF EXISTS sys_role_permission CASCADE;
+DROP TABLE IF EXISTS sys_user_role_branch CASCADE;
 DROP TABLE IF EXISTS sys_user_role CASCADE;
 DROP TABLE IF EXISTS sys_user CASCADE;
 DROP TABLE IF EXISTS sys_menu CASCADE;
@@ -1087,35 +1093,46 @@ CHECK (is_deleted IN (0, 1)),
         ON DELETE RESTRICT
 
 );
+-- ============================================================================
+-- SYS_USER_ROLE_BRANCH
+-- ============================================================================
 CREATE TABLE sys_user_role_branch (
 
     user_role_branch_no BIGSERIAL PRIMARY KEY,
 
-    user_role_no BIGINT NOT NULL,
-    branch_no BIGINT NOT NULL,
-    active_status SMALLINT NOT NULL DEFAULT 1,
-    is_deleted SMALLINT NOT NULL DEFAULT 0
+    user_role_no        BIGINT NOT NULL,
+    branch_no           BIGINT NOT NULL,
 
-    created_by         BIGINT NOT NULL,
-    created_at         TIMESTAMPTZ NOT NULL,
-    updated_by         BIGINT,
-    updated_at         TIMESTAMPTZ,
+    active_status       SMALLINT NOT NULL DEFAULT 1,
+    remarks             TEXT,
 
-    is_deleted         SMALLINT NOT NULL DEFAULT 0,
-    deleted_by         BIGINT,
-    deleted_at         TIMESTAMPTZ,
+    created_by          BIGINT NOT NULL,
+    created_at          TIMESTAMPTZ NOT NULL,
+    updated_by          BIGINT,
+    updated_at          TIMESTAMPTZ,
+    is_deleted          SMALLINT NOT NULL DEFAULT 0,
+    deleted_by          BIGINT,
+    deleted_at          TIMESTAMPTZ,
+    row_version         BIGINT,
 
-    row_version        BIGINT,
+    CONSTRAINT uq_user_role_branch
+        UNIQUE(user_role_no, branch_no),
+
+    CONSTRAINT chk_user_role_branch_active
+        CHECK (active_status IN (0, 1)),
+
+    CONSTRAINT chk_user_role_branch_deleted
+        CHECK (is_deleted IN (0, 1)),
+
     CONSTRAINT fk_user_role_branch_user_role
         FOREIGN KEY (user_role_no)
-        REFERENCES sys_user_role(user_role_no),
+        REFERENCES sys_user_role(user_role_no)
+        ON DELETE RESTRICT,
 
     CONSTRAINT fk_user_role_branch_branch
         FOREIGN KEY (branch_no)
-        REFERENCES sys_branch(branch_no),
-
-    CONSTRAINT uq_user_role_branch
-        UNIQUE(user_role_no, branch_no)
+        REFERENCES sys_branch(branch_no)
+        ON DELETE RESTRICT
 
 );
 -- ============================================================================
@@ -1361,6 +1378,14 @@ CREATE INDEX idx_user_active ON sys_user(active_status);
 -- sys_user_role
 CREATE INDEX idx_user_role_user ON sys_user_role(user_no) WHERE is_deleted = 0;
 CREATE INDEX idx_user_role_role ON sys_user_role(role_no) WHERE is_deleted = 0;
+
+-- sys_user_role_branch
+CREATE INDEX idx_user_role_branch_role ON sys_user_role_branch(user_role_no) WHERE is_deleted = 0;
+CREATE INDEX idx_user_role_branch_branch ON sys_user_role_branch(branch_no) WHERE is_deleted = 0;
+
+-- sys_role_permission
+CREATE INDEX idx_role_permission_role ON sys_role_permission(role_no) WHERE is_deleted = 0;
+CREATE INDEX idx_role_permission_menu ON sys_role_permission(menu_no) WHERE is_deleted = 0;
 
 -- sys_enroll_module
 CREATE INDEX idx_enrl_module_branch ON sys_enroll_module(branch_no) WHERE is_deleted = 0;

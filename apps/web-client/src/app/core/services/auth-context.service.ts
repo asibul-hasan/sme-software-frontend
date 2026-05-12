@@ -51,14 +51,15 @@ export class AuthContextService {
       AppGlobals.user = user;
       this.storage.setItem(globalConstants.storageKeys.userData, user);
     }
+    this.permissions.set(permissions);
     if (permissions) {
-      this.permissions.set(permissions);
       this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions);
+    } else {
+      this.storage.removeItem(globalConstants.storageKeys.userPermissions);
     }
-    if (menu?.length) {
-      this.menu.set(menu);
-      this.storage.setItem(globalConstants.storageKeys.userMenu, menu);
-    }
+
+    this.menu.set(menu ?? []);
+    this.storage.setItem(globalConstants.storageKeys.userMenu, menu ?? []);
   }
 
   setAvailableBranches(branches: Branch[]): void {

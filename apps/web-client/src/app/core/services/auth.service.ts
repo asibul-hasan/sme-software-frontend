@@ -122,7 +122,9 @@ export class AuthService {
   }
 
   switchBranch(branchId: number): void {
-    this.authContext.updateUser({ branch_no: branchId });
+    this.authDataService.switchBranch(branchId).subscribe((response) => {
+      this.setSession(response);
+    });
   }
 
   setAvailableBranches(branches: Branch[]): void {
@@ -147,9 +149,12 @@ export class AuthService {
     };
 
     this.authContext.populateFromLogin(user, response.permissions ?? null, response.menu ?? []);
+    this.authContext.setAvailableBranches(response.available_branches ?? []);
 
     if (response.permissions) {
       this.permissionService.setPermissions(response.permissions);
+    } else {
+      this.permissionService.clearPermissions();
     }
   }
 
