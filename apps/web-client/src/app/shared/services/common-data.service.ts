@@ -53,13 +53,13 @@ export class CommonDataService extends BaseDataService {
    * Fetches active branches.
    */
   getBranchList(): Observable<ApiResponse<any[]>> {
-    return this.getList<any[]>('branches');
+    return this.getList<any[]>('sys/branches');
   }
 
   /**
    * Fetches active companies.
    */
   getCompanyList(): Observable<ApiResponse<any[]>> {
-    return this.getList<any[]>('companies');
+    return this.getList<any[]>('sys/companies');
   }
 }

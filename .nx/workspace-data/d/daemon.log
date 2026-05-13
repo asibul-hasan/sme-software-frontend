@@ -1099,3 +1099,1693 @@ Time for 'nx/core/project-json:createNodes' 2.1027999999932945
 [NX v22.4.3 Daemon Server] - 2026-05-12T18:01:07.593Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
 [NX v22.4.3 Daemon Server] - 2026-05-12T18:01:07.593Z - Time taken for 'total execution time for createProjectGraph()' 13.367899999953806ms
 Time for 'build typescript dependencies' 4.961200000252575
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:07.760Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:07.767Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:07.769Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.174Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.174Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.174Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.178Z - Time taken for 'hash changed files from watcher' 1.1266999999061227ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.14969999995082617
+Time for 'nx/core/project-json:createNodes' 1.2631999999284744
+Time for 'nx/core/package-json:createNodes' 1.8176999995484948
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.187Z - Time taken for 'build-project-configs' 5.945999999996275ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.190Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.191Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.191Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:14.191Z - Time taken for 'total execution time for createProjectGraph()' 6.0547000002115965ms
+Time for 'build typescript dependencies' 1.0483999997377396
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:35.087Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:35.087Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:35.088Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:39.256Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.494Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.494Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.494Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10839999979361892
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.498Z - Time taken for 'hash changed files from watcher' 1.208600000012666ms
+Time for 'nx/core/package-json:createNodes' 1.168599999975413
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.507Z - Time taken for 'build-project-configs' 3.8218000000342727ms
+Time for 'nx/core/project-json:createNodes' 0.877099999692291
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.510Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.511Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.512Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:41.512Z - Time taken for 'total execution time for createProjectGraph()' 7.724599999841303ms
+Time for 'build typescript dependencies' 1.034599999897182
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:44.832Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:44.832Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:44.832Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.244Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.244Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.244Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1217000000178814
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.251Z - Time taken for 'hash changed files from watcher' 0.7730000000447035ms
+Time for 'nx/core/package-json:createNodes' 0.8908999999985099
+Time for 'nx/core/project-json:createNodes' 0.9983999999240041
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.262Z - Time taken for 'build-project-configs' 6.482000000309199ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.268Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.269Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.270Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:14:51.270Z - Time taken for 'total execution time for createProjectGraph()' 10.318900000303984ms
+Time for 'build typescript dependencies' 1.5131000000983477
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:06.612Z - [WATCHER]: 0 file(s) created or restored, 3 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:06.613Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:06.613Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:09.298Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.014Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.015Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html,apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss,apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.015Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1051000002771616
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.019Z - Time taken for 'hash changed files from watcher' 0.9317000000737607ms
+Time for 'nx/core/package-json:createNodes' 1.3968000002205372
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.024Z - Time taken for 'build-project-configs' 4.258400000166148ms
+Time for 'nx/core/project-json:createNodes' 1.4878000002354383
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.026Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.027Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.027Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:13.027Z - Time taken for 'total execution time for createProjectGraph()' 3.9250000002793968ms
+Time for 'build typescript dependencies' 0.5304000000469387
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:53.468Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:53.468Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:53.468Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:54.353Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.886Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.886Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.886Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.16649999981746078
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.894Z - Time taken for 'hash changed files from watcher' 1.7484999997541308ms
+Time for 'nx/core/package-json:createNodes' 1.871199999935925
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.906Z - Time taken for 'build-project-configs' 8.152900000102818ms
+Time for 'nx/core/project-json:createNodes' 2.6255000000819564
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.910Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.911Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.911Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:17:59.911Z - Time taken for 'total execution time for createProjectGraph()' 7.6011999999172986ms
+Time for 'build typescript dependencies' 0.8858000002801418
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:06.240Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:06.242Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:06.242Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:08.309Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.670Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.671Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.671Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4356000004336238
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.724Z - Time taken for 'hash changed files from watcher' 7.872200000099838ms
+Time for 'nx/core/package-json:createNodes' 8.640199999790639
+Time for 'nx/core/project-json:createNodes' 16.350200000219047
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.777Z - Time taken for 'build-project-configs' 53.8894000002183ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.782Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.783Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.783Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:18:12.783Z - Time taken for 'total execution time for createProjectGraph()' 14.887699999846518ms
+Time for 'build typescript dependencies' 1.878800000064075
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:14.793Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:14.794Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:14.794Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.209Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.209Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.209Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09409999940544367
+Time for 'nx/core/package-json:createNodes' 0.6091999998316169
+Time for 'nx/core/project-json:createNodes' 0.6295999996364117
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.217Z - Time taken for 'hash changed files from watcher' 0.6502000000327826ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.218Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.219Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.219Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:21.219Z - Time taken for 'total execution time for createProjectGraph()' 3.6980000007897615ms
+Time for 'build typescript dependencies' 0.516499999910593
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:22.473Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:22.478Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:22.483Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:24.364Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.887Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.888Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.888Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.06389999948441982
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.892Z - Time taken for 'hash changed files from watcher' 1.4233999997377396ms
+Time for 'nx/core/package-json:createNodes' 0.7546000005677342
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.898Z - Time taken for 'build-project-configs' 3.2943000001832843ms
+Time for 'nx/core/project-json:createNodes' 0.777900000102818
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.901Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.901Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.901Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:24:28.902Z - Time taken for 'total execution time for createProjectGraph()' 5.55530000012368ms
+Time for 'build typescript dependencies' 0.8481000000610948
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:06.572Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:06.574Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:06.574Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:12.987Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:12.988Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:12.988Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.2473999997600913
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.000Z - Time taken for 'hash changed files from watcher' 1.4223000006750226ms
+Time for 'nx/core/package-json:createNodes' 1.2786999996751547
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.010Z - Time taken for 'build-project-configs' 9.191600000485778ms
+Time for 'nx/core/project-json:createNodes' 2.7559000002220273
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.039Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.041Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.042Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 13.93099999986589
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:40:13.042Z - Time taken for 'total execution time for createProjectGraph()' 34.052600000053644ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:23.325Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:23.326Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:23.326Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:25.697Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:29.897Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:29.897Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:29.898Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1744999997317791
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:29.949Z - Time taken for 'hash changed files from watcher' 14.159899999387562ms
+Time for 'nx/core/package-json:createNodes' 6.457000000402331
+Time for 'nx/core/project-json:createNodes' 12.01630000025034
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:30.067Z - Time taken for 'build-project-configs' 97.37619999982417ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:30.231Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:30.237Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:30.240Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 14.927500000223517
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:30.242Z - Time taken for 'total execution time for createProjectGraph()' 199.26239999942482ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:39.054Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:39.055Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:39.056Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:40.940Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.470Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.470Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.470Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.07660000026226044
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.475Z - Time taken for 'hash changed files from watcher' 1.2713000001385808ms
+Time for 'nx/core/package-json:createNodes' 1.1222999999299645
+Time for 'nx/core/project-json:createNodes' 1.2197000002488494
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.487Z - Time taken for 'build-project-configs' 5.362100000493228ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.491Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.492Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.492Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:43:45.492Z - Time taken for 'total execution time for createProjectGraph()' 10.108799999579787ms
+Time for 'build typescript dependencies' 0.9226999999955297
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:47:54.420Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:47:54.421Z - [WATCHER]: apps/web-client/src/app/shared/components/sidebar-pagination/sidebar-pagination.component.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:47:54.421Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:47:56.665Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.829Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.829Z - [REQUEST]: apps/web-client/src/app/shared/components/sidebar-pagination/sidebar-pagination.component.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.829Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09040000010281801
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.832Z - Time taken for 'hash changed files from watcher' 1.1003999998793006ms
+Time for 'nx/core/package-json:createNodes' 0.6169000007212162
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.838Z - Time taken for 'build-project-configs' 2.9348999997600913ms
+Time for 'nx/core/project-json:createNodes' 0.7822000002488494
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.880Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.880Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.880Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:00.880Z - Time taken for 'total execution time for createProjectGraph()' 44.05830000061542ms
+Time for 'build typescript dependencies' 39.52029999997467
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:02.908Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:02.915Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:02.940Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:04.758Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.326Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.326Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.326Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.084799999371171
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.330Z - Time taken for 'hash changed files from watcher' 0.8319999994710088ms
+Time for 'nx/core/package-json:createNodes' 0.7198000000789762
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.339Z - Time taken for 'build-project-configs' 4.78139999974519ms
+Time for 'nx/core/project-json:createNodes' 0.6232000002637506
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.342Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.343Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.343Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 0.6825000001117587
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:48:09.343Z - Time taken for 'total execution time for createProjectGraph()' 6.810500000603497ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:25.951Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:25.952Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:25.961Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:27.313Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.369Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.370Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.370Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1148000005632639
+Time for 'nx/core/package-json:createNodes' 0.9987000003457069
+Time for 'nx/core/project-json:createNodes' 0.8623999999836087
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.384Z - Time taken for 'hash changed files from watcher' 1.3827000008895993ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.388Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.388Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.389Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:32.389Z - Time taken for 'total execution time for createProjectGraph()' 7.732300000265241ms
+Time for 'build typescript dependencies' 1.178600000217557
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:37.089Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:37.090Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:37.090Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.521Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.522Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.522Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.5484000006690621
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.590Z - Time taken for 'hash changed files from watcher' 6.813099999912083ms
+Time for 'nx/core/project-json:createNodes' 7.373799999244511
+Time for 'nx/core/package-json:createNodes' 15.801399999298155
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.675Z - Time taken for 'build-project-configs' 77.54740000050515ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.716Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.717Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.717Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 8.594200000166893
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:49:43.717Z - Time taken for 'total execution time for createProjectGraph()' 68.51889999955893ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:02.954Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:02.954Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:02.955Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:05.546Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.386Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.387Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.scss
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.387Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.098000000230968
+Time for 'nx/core/package-json:createNodes' 1.61670000012964
+Time for 'nx/core/project-json:createNodes' 1.783699999563396
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.406Z - Time taken for 'hash changed files from watcher' 5.55629999935627ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.410Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.411Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.411Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:09.411Z - Time taken for 'total execution time for createProjectGraph()' 8.125ms
+Time for 'build typescript dependencies' 1.2225000001490116
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:12.171Z - [WATCHER]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:12.172Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:12.172Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.579Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.579Z - [REQUEST]: apps/web-client/src/app/shared/components/page-form-layout/page-form-layout.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.579Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09169999975711107
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.584Z - Time taken for 'hash changed files from watcher' 0.9394000004976988ms
+Time for 'nx/core/package-json:createNodes' 0.8885000003501773
+Time for 'nx/core/project-json:createNodes' 1.2376000005751848
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.594Z - Time taken for 'build-project-configs' 5.477500000037253ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.599Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.600Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.600Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:51:18.600Z - Time taken for 'total execution time for createProjectGraph()' 10.226300000213087ms
+Time for 'build typescript dependencies' 1.0886000003665686
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:21.969Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:21.970Z - [WATCHER]: apps/web-client/src/app/features/auth/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:21.970Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:24.874Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.386Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.386Z - [REQUEST]: apps/web-client/src/app/features/auth/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.386Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.0625
+Time for 'nx/core/project-json:createNodes' 0.5559000000357628
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.390Z - Time taken for 'hash changed files from watcher' 0.8599000005051494ms
+Time for 'nx/core/package-json:createNodes' 1.5982999997213483
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.395Z - Time taken for 'build-project-configs' 3.366799999959767ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.397Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.398Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.398Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:28.398Z - Time taken for 'total execution time for createProjectGraph()' 5.094200000166893ms
+Time for 'build typescript dependencies' 1.0899000000208616
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:44.254Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:44.254Z - [WATCHER]: apps/web-client/src/app/features/auth/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:44.255Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:46.306Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.662Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.662Z - [REQUEST]: apps/web-client/src/app/features/auth/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.662Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4732999997213483
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.685Z - Time taken for 'hash changed files from watcher' 5.279399999417365ms
+Time for 'nx/core/project-json:createNodes' 4.833799999207258
+Time for 'nx/core/package-json:createNodes' 5.652800000272691
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.757Z - Time taken for 'build-project-configs' 32.82139999978244ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.876Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.905Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.911Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:53:50.911Z - Time taken for 'total execution time for createProjectGraph()' 152.3302999995649ms
+Time for 'build typescript dependencies' 90.09119999967515
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:12.232Z - [WATCHER]: apps/web-client/src/app/features/auth/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:12.233Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:12.234Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:13.803Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.650Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.650Z - [REQUEST]: apps/web-client/src/app/features/auth/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.650Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10670000035315752
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.661Z - Time taken for 'hash changed files from watcher' 1.2001000000163913ms
+Time for 'nx/core/package-json:createNodes' 0.9402000000700355
+Time for 'nx/core/project-json:createNodes' 0.9484000001102686
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.672Z - Time taken for 'build-project-configs' 6.94510000012815ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.710Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.711Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.711Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:18.711Z - Time taken for 'total execution time for createProjectGraph()' 42.92269999999553ms
+Time for 'build typescript dependencies' 35.42489999998361
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:31.773Z - [WATCHER]: apps/web-client/src/app/features/auth/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:31.773Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:31.773Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:33.993Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.187Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.187Z - [REQUEST]: apps/web-client/src/app/features/auth/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.187Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.05329999979585409
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.189Z - Time taken for 'hash changed files from watcher' 0.5075000002980232ms
+Time for 'nx/core/package-json:createNodes' 0.5814999993890524
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.193Z - Time taken for 'build-project-configs' 1.9230000004172325ms
+Time for 'nx/core/project-json:createNodes' 0.525000000372529
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.200Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.201Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.201Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:38.201Z - Time taken for 'total execution time for createProjectGraph()' 9.187700000591576ms
+Time for 'build typescript dependencies' 5.3449000008404255
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:44.540Z - [WATCHER]: apps/web-client/src/app/features/auth/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:44.541Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:44.549Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:45.561Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:50.956Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:50.956Z - [REQUEST]: apps/web-client/src/app/features/auth/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:50.956Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11129999998956919
+Time for 'nx/core/package-json:createNodes' 0.9071000004187226
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:50.983Z - Time taken for 'hash changed files from watcher' 2.305100000463426ms
+Time for 'nx/core/project-json:createNodes' 1.8992999996989965
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:50.994Z - Time taken for 'build-project-configs' 13.387199999764562ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:51.016Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:51.018Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:51.018Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 14.488199999555945
+[NX v22.4.3 Daemon Server] - 2026-05-12T18:54:51.018Z - Time taken for 'total execution time for createProjectGraph()' 26.53440000023693ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:38.336Z - [WATCHER]: apps/web-client/src/app/core/services/auth-context.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:38.337Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:38.337Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:40.541Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:44.841Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:44.842Z - [REQUEST]: apps/web-client/src/app/core/services/auth-context.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:44.843Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.183699999935925
+Time for 'nx/core/package-json:createNodes' 1.824800000526011
+Time for 'nx/core/project-json:createNodes' 1.8114000000059605
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:45.577Z - Time taken for 'hash changed files from watcher' 12.244299999438226ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:45.605Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:45.606Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:45.606Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 24.05709999985993
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:45.607Z - Time taken for 'total execution time for createProjectGraph()' 49.9945000000298ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:59.407Z - [WATCHER]: apps/web-client/src/app/core/services/auth-context.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:59.408Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:04:59.409Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:00.853Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.020Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.021Z - [REQUEST]: apps/web-client/src/app/core/services/auth-context.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.021Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11450000014156103
+Time for 'nx/core/project-json:createNodes' 1.2861000001430511
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.172Z - Time taken for 'hash changed files from watcher' 29.440700000151992ms
+Time for 'nx/core/package-json:createNodes' 2.749400000087917
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.185Z - Time taken for 'build-project-configs' 5.885800000280142ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.251Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.258Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.260Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 32.839800000190735
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:06.268Z - Time taken for 'total execution time for createProjectGraph()' 69.15519999992102ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:21.237Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:21.239Z - [WATCHER]: apps/web-client/src/app/core/services/auth.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:21.252Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:22.551Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.660Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.660Z - [REQUEST]: apps/web-client/src/app/core/services/auth.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.660Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.07119999919086695
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.662Z - Time taken for 'hash changed files from watcher' 0.8088999995961785ms
+Time for 'nx/core/package-json:createNodes' 0.5931000001728535
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.668Z - Time taken for 'build-project-configs' 3.6913999998942018ms
+Time for 'nx/core/project-json:createNodes' 0.49509999994188547
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.676Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.677Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.677Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:05:27.677Z - Time taken for 'total execution time for createProjectGraph()' 10.371199999935925ms
+Time for 'build typescript dependencies' 5.420700000599027
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:06:55.570Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:06:55.571Z - [WATCHER]: apps/web-client/src/app/core/services/session-manager.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:06:55.571Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:06:57.412Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.973Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.973Z - [REQUEST]: apps/web-client/src/app/core/services/session-manager.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.973Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10220000054687262
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.976Z - Time taken for 'hash changed files from watcher' 1.192200000397861ms
+Time for 'nx/core/package-json:createNodes' 0.9204000001773238
+Time for 'nx/core/project-json:createNodes' 0.9925000006332994
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.984Z - Time taken for 'build-project-configs' 3.371799999848008ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.998Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.999Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.999Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:01.999Z - Time taken for 'total execution time for createProjectGraph()' 18.394400000572205ms
+Time for 'build typescript dependencies' 12.460099999792874
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:27.693Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:27.693Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:27.693Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.109Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.109Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.109Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08880000002682209
+Time for 'nx/core/project-json:createNodes' 0.866100000217557
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.123Z - Time taken for 'hash changed files from watcher' 0.990400000475347ms
+Time for 'nx/core/package-json:createNodes' 0.96030000038445
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.126Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.127Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.128Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:07:34.128Z - Time taken for 'total execution time for createProjectGraph()' 7.043899999931455ms
+Time for 'build typescript dependencies' 1.036799999885261
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:06.115Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:06.115Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:06.115Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:07.116Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.524Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.524Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.524Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09049999993294477
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.527Z - Time taken for 'hash changed files from watcher' 1.0917000006884336ms
+Time for 'nx/core/package-json:createNodes' 0.77210000064224
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.532Z - Time taken for 'build-project-configs' 2.761099999770522ms
+Time for 'nx/core/project-json:createNodes' 0.8907000003382564
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.534Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.534Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.534Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:10:12.534Z - Time taken for 'total execution time for createProjectGraph()' 4.21889999974519ms
+Time for 'build typescript dependencies' 0.6273999996483326
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:19.281Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:19.281Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:19.282Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:20.663Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.690Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.690Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.690Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.692Z - Time taken for 'hash changed files from watcher' 1.1693000001832843ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11270000040531158
+Time for 'nx/core/package-json:createNodes' 0.8263999996706843
+Time for 'nx/core/project-json:createNodes' 0.7222000006586313
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.698Z - Time taken for 'build-project-configs' 3.1004999997094274ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.714Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.715Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.715Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:25.715Z - Time taken for 'total execution time for createProjectGraph()' 18.567300000227988ms
+Time for 'build typescript dependencies' 14.500599999912083
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:28.151Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:28.152Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:28.153Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.568Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.568Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.568Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1401000004261732
+Time for 'nx/core/package-json:createNodes' 1.619399999268353
+Time for 'nx/core/project-json:createNodes' 1.178299999795854
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.597Z - Time taken for 'hash changed files from watcher' 1.3821999998763204ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.601Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.602Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.602Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:13:34.602Z - Time taken for 'total execution time for createProjectGraph()' 8.343399999663234ms
+Time for 'build typescript dependencies' 1.3716000001877546
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:16.705Z - [WATCHER]: apps/web-client/src/app/core/services/core-data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:16.706Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:16.706Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:17.602Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.126Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.126Z - [REQUEST]: apps/web-client/src/app/core/services/core-data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.127Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.8811999997124076
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.156Z - Time taken for 'hash changed files from watcher' 7.003900000825524ms
+Time for 'nx/core/package-json:createNodes' 6.778900000266731
+Time for 'nx/core/project-json:createNodes' 11.398699999786913
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.209Z - Time taken for 'build-project-configs' 34.03959999978542ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.261Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.267Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.269Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:23.269Z - Time taken for 'total execution time for createProjectGraph()' 72.95860000047833ms
+Time for 'build typescript dependencies' 36.205699999816716
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:31.424Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:31.424Z - [WATCHER]: apps/web-client/src/app/core/services/core-data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:31.424Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:33.221Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.831Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.831Z - [REQUEST]: apps/web-client/src/app/core/services/core-data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.831Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.06599999964237213
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.838Z - Time taken for 'hash changed files from watcher' 4.088699999265373ms
+Time for 'nx/core/package-json:createNodes' 0.6868000002577901
+Time for 'nx/core/project-json:createNodes' 2.3070000000298023
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.845Z - Time taken for 'build-project-configs' 6.733199999667704ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.850Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.850Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.850Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:37.850Z - Time taken for 'total execution time for createProjectGraph()' 7.243300000205636ms
+Time for 'build typescript dependencies' 3.2523999996483326
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:56.436Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:56.437Z - [WATCHER]: apps/web-client/src/app/shared/services/common-data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:56.437Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:25:58.380Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:02.914Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:02.914Z - [REQUEST]: apps/web-client/src/app/shared/services/common-data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:02.914Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.16110000014305115
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:02.923Z - Time taken for 'hash changed files from watcher' 1.6765999998897314ms
+Time for 'nx/core/package-json:createNodes' 0.9611999997869134
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:02.937Z - Time taken for 'build-project-configs' 7.209300000220537ms
+Time for 'nx/core/project-json:createNodes' 3.0601999992504716
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:03.012Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:03.018Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:03.022Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:26:03.025Z - Time taken for 'total execution time for createProjectGraph()' 81.19570000004023ms
+Time for 'build typescript dependencies' 61.4938999991864
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:28.234Z - [WATCHER]: apps/web-client/src/app/features/sys/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:28.234Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:28.234Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:29.985Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.636Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.636Z - [REQUEST]: apps/web-client/src/app/features/sys/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.636Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08040000032633543
+Time for 'nx/core/package-json:createNodes' 0.5167999994009733
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.641Z - Time taken for 'hash changed files from watcher' 0.8155000004917383ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.647Z - Time taken for 'build-project-configs' 5.0353000005707145ms
+Time for 'nx/core/project-json:createNodes' 1.017799999564886
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.655Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.655Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.655Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:34.655Z - Time taken for 'total execution time for createProjectGraph()' 10.06209999974817ms
+Time for 'build typescript dependencies' 6.297300000675023
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:35.964Z - [WATCHER]: apps/web-client/src/app/core/services/core-data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:35.965Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:35.966Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:36.866Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.381Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.381Z - [REQUEST]: apps/web-client/src/app/core/services/core-data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.381Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08129999972879887
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.386Z - Time taken for 'hash changed files from watcher' 0.674800000153482ms
+Time for 'nx/core/package-json:createNodes' 0.7849000003188848
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.391Z - Time taken for 'build-project-configs' 3.560899999924004ms
+Time for 'nx/core/project-json:createNodes' 1.1359999999403954
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.396Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.397Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.397Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:42.397Z - Time taken for 'total execution time for createProjectGraph()' 8.139899999834597ms
+Time for 'build typescript dependencies' 2.945400000549853
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:57.328Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:57.328Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:57.328Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:28:59.381Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:03.129Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:03.129Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:03.129Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.072Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.072Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.073Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.5773999998345971
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.689Z - Time taken for 'hash changed files from watcher' 36.65760000050068ms
+Time for 'nx/core/project-json:createNodes' 3.3100000005215406
+Time for 'nx/core/package-json:createNodes' 54.260199999436736
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.729Z - Time taken for 'build-project-configs' 127.14170000050217ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.754Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.756Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.757Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.757Z - Time taken for 'total execution time for createProjectGraph()' 38.558000000193715ms
+Time for 'build typescript dependencies' 22.692599999718368
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:04.811Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:20.518Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1001/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:20.520Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:20.521Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:21.892Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.933Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.933Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1001/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.933Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1294999998062849
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.938Z - Time taken for 'hash changed files from watcher' 1.2699999995529652ms
+Time for 'nx/core/project-json:createNodes' 1.3227999992668629
+Time for 'nx/core/package-json:createNodes' 1.0487999999895692
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.950Z - Time taken for 'build-project-configs' 5.747000000439584ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.961Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.963Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.963Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:26.963Z - Time taken for 'total execution time for createProjectGraph()' 15.809299999848008ms
+Time for 'build typescript dependencies' 8.07949999999255
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:37.826Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1002/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:37.827Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:37.828Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:39.282Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.238Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.238Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1002/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.238Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09889999963343143
+Time for 'nx/core/package-json:createNodes' 1.0388000002130866
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.257Z - Time taken for 'hash changed files from watcher' 1.298899999819696ms
+Time for 'nx/core/project-json:createNodes' 1.4985999995842576
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.269Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.270Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.270Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:44.271Z - Time taken for 'total execution time for createProjectGraph()' 15.47609999962151ms
+Time for 'build typescript dependencies' 9.349100000225008
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:54.277Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:54.277Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:54.277Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:29:56.171Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.685Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.686Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.686Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.20280000008642673
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.693Z - Time taken for 'hash changed files from watcher' 1.9891999997198582ms
+Time for 'nx/core/project-json:createNodes' 1.4347999999299645
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.700Z - Time taken for 'build-project-configs' 5.393099999986589ms
+Time for 'nx/core/package-json:createNodes' 2.8306999998167157
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.710Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.711Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.712Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:00.712Z - Time taken for 'total execution time for createProjectGraph()' 13.964000000618398ms
+Time for 'build typescript dependencies' 8.216900000348687
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:05.942Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:05.942Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:05.942Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:07.728Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.357Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.357Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.357Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.05329999979585409
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.360Z - Time taken for 'hash changed files from watcher' 0.5973999993875623ms
+Time for 'nx/core/package-json:createNodes' 0.568299999460578
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.365Z - Time taken for 'build-project-configs' 3.8218999998643994ms
+Time for 'nx/core/project-json:createNodes' 2.3580000000074506
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.375Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.375Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.375Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:12.375Z - Time taken for 'total execution time for createProjectGraph()' 10.955700000748038ms
+Time for 'build typescript dependencies' 7.334299999289215
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:13.254Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:13.257Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:13.261Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:15.370Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.663Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.663Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.663Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11700000055134296
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.668Z - Time taken for 'hash changed files from watcher' 1.423899999819696ms
+Time for 'nx/core/package-json:createNodes' 0.9928000001236796
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.677Z - Time taken for 'build-project-configs' 4.421699999831617ms
+Time for 'nx/core/project-json:createNodes' 1.4678999995812774
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.686Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.686Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.686Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:19.686Z - Time taken for 'total execution time for createProjectGraph()' 12.40580000076443ms
+Time for 'build typescript dependencies' 5.885099999606609
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:21.758Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:21.758Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:21.759Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:23.601Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.172Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.173Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.173Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.06660000048577785
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.176Z - Time taken for 'hash changed files from watcher' 1.553299999795854ms
+Time for 'nx/core/package-json:createNodes' 0.7746000001206994
+Time for 'nx/core/project-json:createNodes' 1.1227000001817942
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.188Z - Time taken for 'build-project-configs' 4.415300000458956ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.200Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.201Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.201Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:30:28.202Z - Time taken for 'total execution time for createProjectGraph()' 19.509899999946356ms
+Time for 'build typescript dependencies' 9.286599999293685
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:32:54.282Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:32:54.283Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:32:54.284Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.693Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.694Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.694Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.13860000018030405
+Time for 'nx/core/package-json:createNodes' 0.9607999995350838
+Time for 'nx/core/project-json:createNodes' 1.1277999999001622
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.735Z - Time taken for 'hash changed files from watcher' 1.6273999996483326ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.743Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.744Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.745Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:00.745Z - Time taken for 'total execution time for createProjectGraph()' 20.70920000039041ms
+Time for 'build typescript dependencies' 3.4296000003814697
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:12.217Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:12.228Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:12.228Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:13.881Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.643Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.644Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.644Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.07600000035017729
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.647Z - Time taken for 'hash changed files from watcher' 1.044400000013411ms
+Time for 'nx/core/package-json:createNodes' 0.6284000007435679
+Time for 'nx/core/project-json:createNodes' 0.6874000001698732
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.652Z - Time taken for 'build-project-configs' 3.3652999997138977ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.655Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.655Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.655Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:18.655Z - Time taken for 'total execution time for createProjectGraph()' 4.16469999961555ms
+Time for 'build typescript dependencies' 0.6160000003874302
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:32.064Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:32.065Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:32.065Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:32.729Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.499Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.499Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.499Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.07399999909102917
+Time for 'nx/core/package-json:createNodes' 1.2471999991685152
+Time for 'nx/core/project-json:createNodes' 0.9824999999254942
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.511Z - Time taken for 'hash changed files from watcher' 1.0047000013291836ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.514Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.515Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.515Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:33:38.515Z - Time taken for 'total execution time for createProjectGraph()' 7.160499999299645ms
+Time for 'build typescript dependencies' 0.611600000411272
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.920Z - [WATCHER]: 0 file(s) created or restored, 3 file(s) modified, 0 file(s) deleted
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.921Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.921Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.974Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.974Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:02.974Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:05.186Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.335Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.335Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts,apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts,apps/web-client/src/app/features/sys/forms/sys1002/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.335Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08300000056624413
+Time for 'nx/core/project-json:createNodes' 1.111099999397993
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.343Z - Time taken for 'hash changed files from watcher' 1.3394000008702278ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.357Z - Time taken for 'build-project-configs' 16.56000000052154ms
+Time for 'nx/core/package-json:createNodes' 3.4233999997377396
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.397Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.397Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.398Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 38.045599998906255
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:34:09.398Z - Time taken for 'total execution time for createProjectGraph()' 41.92310000024736ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:26.685Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:26.685Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:26.685Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.089Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.089Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.089Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08090000040829182
+Time for 'nx/core/package-json:createNodes' 0.7133000008761883
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.092Z - Time taken for 'hash changed files from watcher' 0.9794999994337559ms
+Time for 'nx/core/project-json:createNodes' 0.6736999992281199
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.095Z - Time taken for 'build-project-configs' 2.3604000005871058ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.097Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.098Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.098Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:33.098Z - Time taken for 'total execution time for createProjectGraph()' 3.9301999993622303ms
+Time for 'build typescript dependencies' 0.594700001180172
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:53.458Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:53.458Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:53.459Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:54.231Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.862Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.862Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.862Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.06000000052154064
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.864Z - Time taken for 'hash changed files from watcher' 0.5230000000447035ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.870Z - Time taken for 'build-project-configs' 3.929500000551343ms
+Time for 'nx/core/project-json:createNodes' 2.2816000003367662
+Time for 'nx/core/package-json:createNodes' 2.224200000986457
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.872Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.873Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.873Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:37:59.873Z - Time taken for 'total execution time for createProjectGraph()' 3.700100000947714ms
+Time for 'build typescript dependencies' 0.45220000110566616
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:31.568Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:31.568Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:31.569Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:32.337Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:37.983Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:37.983Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:37.983Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11809999868273735
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:37.990Z - Time taken for 'hash changed files from watcher' 1.2796000000089407ms
+Time for 'nx/core/project-json:createNodes' 1.3224999997764826
+Time for 'nx/core/package-json:createNodes' 1.5245999991893768
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:37.999Z - Time taken for 'build-project-configs' 5.964999999850988ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:38.002Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:38.003Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:38.003Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:38.003Z - Time taken for 'total execution time for createProjectGraph()' 8.089600000530481ms
+Time for 'build typescript dependencies' 1.0080999992787838
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:53.425Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:53.426Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:53.428Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:54.745Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.844Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.845Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.845Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10610000044107437
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.853Z - Time taken for 'hash changed files from watcher' 2.28349999897182ms
+Time for 'nx/core/package-json:createNodes' 1.1801000013947487
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.859Z - Time taken for 'build-project-configs' 4.292999999597669ms
+Time for 'nx/core/project-json:createNodes' 1.3385000005364418
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.867Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.868Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.868Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:38:59.868Z - Time taken for 'total execution time for createProjectGraph()' 11.219699999317527ms
+Time for 'build typescript dependencies' 6.410299999639392
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:13.438Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1002/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:13.439Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:13.449Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:14.372Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.849Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.849Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1002/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.850Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.38139999844133854
+Time for 'nx/core/package-json:createNodes' 9.512099999934435
+Time for 'nx/core/project-json:createNodes' 8.824400000274181
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.931Z - Time taken for 'hash changed files from watcher' 5.8507000003010035ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.985Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.992Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.993Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:19.993Z - Time taken for 'total execution time for createProjectGraph()' 73.30979999899864ms
+Time for 'build typescript dependencies' 36.81840000115335
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:21.252Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:21.252Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:21.252Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:21.952Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.654Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.654Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1102/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.654Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.0970000009983778
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.658Z - Time taken for 'hash changed files from watcher' 1.2143999990075827ms
+Time for 'nx/core/package-json:createNodes' 1.176799999549985
+Time for 'nx/core/project-json:createNodes' 1.1974999997764826
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.668Z - Time taken for 'build-project-configs' 5.291600000113249ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.676Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.677Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.677Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:27.677Z - Time taken for 'total execution time for createProjectGraph()' 12.005099998787045ms
+Time for 'build typescript dependencies' 5.598900001496077
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:46.514Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:46.515Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:46.515Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:52.936Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:52.936Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:52.936Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4135999996215105
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:52.958Z - Time taken for 'hash changed files from watcher' 9.272900000214577ms
+Time for 'nx/core/project-json:createNodes' 7.769500000402331
+Time for 'nx/core/package-json:createNodes' 7.704499999061227
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:53.016Z - Time taken for 'build-project-configs' 25.341799998655915ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:53.030Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:53.035Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:53.036Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:53.037Z - Time taken for 'total execution time for createProjectGraph()' 38.62760000117123ms
+Time for 'build typescript dependencies' 4.3586999997496605
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:57.378Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:57.378Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:57.378Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:39:59.182Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.797Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.797Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.797Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.16260000132024288
+Time for 'nx/core/package-json:createNodes' 1.648199999704957
+Time for 'nx/core/project-json:createNodes' 1.9801000002771616
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.817Z - Time taken for 'hash changed files from watcher' 1.9453999996185303ms
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.822Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.823Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.824Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-12T19:40:03.824Z - Time taken for 'total execution time for createProjectGraph()' 10.02449999935925ms
+Time for 'build typescript dependencies' 1.287100000306964
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.488Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.489Z - Closed a connection. Number of open connections: 0
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.547Z - [WATCHER]: Stopping the watcher for C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (sources)
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.684Z - [WATCHER]: Stopping the watcher for C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (outputs)
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.743Z - [NX-CONSOLE]: Cleaning up latest Nx installation from C:\Users\Asibul\AppData\Local\Temp\tmp-17976-hsgLFU1k6afD
+[NX v22.4.3 Daemon Server] - 2026-05-12T22:56:43.793Z - Server stopped because: "10800000ms of inactivity"
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:54:57.594Z - [Client] Starting new daemon server in background
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:54:57.616Z - [Client] Waiting for server (max: 6000 attempts, 10ms interval)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.221Z - New daemon starting from: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server\server.js
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.223Z - New daemon __dirname: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.223Z - New daemon nxVersion: 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.224Z - New daemon getInstalledNxVersion(): 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.230Z - [Server] Starting outdated check interval (20ms)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.236Z - Started listening on: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\996154a1b2fa77aa6870\d.sock
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.281Z - [WATCHER]: Subscribed to changes within: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (native)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:00.284Z - [NX-CONSOLE]: Pulling latest Nx (latest) to check console status...
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.289Z - [Client] Server available after 140 attempts
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.290Z - [Client] Daemon server started, pid=23324
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.292Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.293Z - [Messenger] listen() complete
+Fetching nx...
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.508Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:00.510Z - [Messenger] Message sent
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 16260, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-0-3524.4735.sock)
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 32628, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-1-3549.5397.sock)
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 32936, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-2-3571.814.sock)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:01.245Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:01.246Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:01.252Z - Closed a connection. Number of open connections: 1
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 32628) after 11 attempt(s)
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 32936) after 11 attempt(s)
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 32936) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-2-3571.814.sock
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 32936) connected
+Time for 'plugin worker 32936 code loading' 47.98310000000001
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 32628) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-1-3549.5397.sock
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 32628) connected
+Time for 'plugin worker 32628 code loading' 52.5805
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 16260) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin23324-0-3524.4735.sock
+Time for 'plugin worker 16260 code loading' 53.738500000000016
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:01.480Z - Time taken for 'start-plugin-worker:C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 274.61749999999984ms
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 16260) after 13 attempt(s)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:01.482Z - Time taken for 'start-plugin-worker:C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js' 307.9644000000003ms
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 16260) connected
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 32936) loaded successfully
+[plugin-pool] loaded plugin "nx/core/project-json" from worker (pid: 32936)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:02.759Z - Time taken for 'Load Nx Plugin: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json' 1590.7540000000004ms
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 32628) loaded successfully
+[plugin-pool] loaded plugin "nx/core/package-json" from worker (pid: 32628)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:02.856Z - Time taken for 'Load Nx Plugin: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 1691.3705ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:02.929Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:02.929Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:02.930Z - [REQUEST]: Client Request for Project Graph Received
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 16260) loaded successfully
+[plugin-pool] loaded plugin "nx/js/dependencies-and-lockfile" from worker (pid: 16260)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.637Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.637Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.637Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.642Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.653Z - Time taken for 'loadDefaultNxPlugins' 2474.2445999999995ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.42689999999993233
+Time for 'nx/core/package-json:createNodes' 2.7445999999999913
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:03.932Z - Time taken for 'build-project-configs' 192.3127000000004ms
+Time for 'nx/core/project-json:createNodes' 34.44470000000001
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.665Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.680Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.680Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.681Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.681Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.681Z - Time taken for 'total for creating and serializing project graph' 3750.3704000000007ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:06.684Z - [Messenger] Received message, length: 12859
+Time for 'build typescript dependencies' 2725.6422
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.685Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.685Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 3750. Response time: 5.
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:06.695Z - [Messenger] Sending message type: PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:06.696Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.696Z - Received raw message of length 985
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.696Z - Received json message of type PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.701Z - Serializing response for PRE_TASKS_EXECUTION message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.701Z - Responding to PRE_TASKS_EXECUTION message
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.701Z - [REQUEST]: Responding to the client. handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.702Z - Time taken for 'preTasksExecution' 3.3145999999997002ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:06.703Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.705Z - Done responding to the client handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:06.705Z - Handled json message PRE_TASKS_EXECUTION. Handling time: 4. Response time: 4.
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.405Z - [Messenger] Sending message type: HASH_TASKS
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.406Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.407Z - Received raw message of length 6017
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.408Z - Received json message of type HASH_TASKS
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.410Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.421Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+DEBUG nx::native::tasks::hash_planner: get_plans_internal COMPLETED in 3.234ms - processed 1 tasks (setup: 35.4µs, parallel_planning: 3.1855ms)
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "11751663399876450553" (".gitignore") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "9648514650165378930" ("nx.json") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Hash Value: "2780446381656172549"
+DEBUG nx::native::tasks::task_hasher: hash_plans COMPLETED in 6.8166ms - processed 1 plans (setup: 410.2µs, hashing: 5.9646ms, assembly: 88.6µs)
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.446Z - Serializing response for HASH_TASKS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.446Z - Responding to HASH_TASKS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.446Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.447Z - Time taken for 'write cache' 10.854499999999462ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.448Z - [Messenger] Received message, length: 487
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.451Z - Done responding to the client handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.451Z - Handled json message HASH_TASKS. Handling time: 38. Response time: 5.
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.476Z - [Messenger] Sending message type: GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.478Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.491Z - Received raw message of length 121
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.492Z - Received json message of type GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.535Z - Serializing response for GET_ESTIMATED_TASK_TIMINGS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.535Z - Responding to GET_ESTIMATED_TASK_TIMINGS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.535Z - [REQUEST]: Responding to the client. handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:08.537Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.539Z - Done responding to the client handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:08.539Z - Handled json message GET_ESTIMATED_TASK_TIMINGS. Handling time: 43. Response time: 4.
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:56.449Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:56.453Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:56.453Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:56.454Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:56.457Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:56.462Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:56.464Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.517Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.517Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.517Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.518Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.529Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.529Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.529Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.529Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.530Z - Time taken for 'total for creating and serializing project graph' 12.338599999995495ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.530Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:55:57.530Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 12. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T11:55:57.533Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:56:03.560Z - [NX-CONSOLE]: Successfully pulled latest Nx to C:\Users\Asibul\AppData\Local\Temp\tmp-23324-AMvR7urx40zz
+[NX v22.7.1 Daemon Server] - 2026-05-13T11:56:23.474Z - [NX-CONSOLE]: Using local implementation (NX_USE_LOCAL=true or inner call)
+DEBUG nx::native::ide::install: Detected editor: Unknown
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:56:23.543Z - [NX-CONSOLE]: Console status check completed, shouldPrompt: false
+[NX v22.4.3 Daemon Server] - 2026-05-13T11:56:46.536Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:22.268Z - [Client] Starting new daemon server in background
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:22.285Z - [Client] Waiting for server (max: 6000 attempts, 10ms interval)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.102Z - New daemon starting from: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server\server.js
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.104Z - New daemon __dirname: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.104Z - New daemon nxVersion: 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.105Z - New daemon getInstalledNxVersion(): 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.110Z - [Server] Starting outdated check interval (20ms)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.114Z - Started listening on: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\0346d64ee214b9ea304b\d.sock
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.133Z - [Client] Server available after 130 attempts
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.134Z - [Client] Daemon server started, pid=11888
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.135Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.136Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.138Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:25.140Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.153Z - [WATCHER]: Subscribed to changes within: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (native)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:25.155Z - [NX-CONSOLE]: Pulling latest Nx (latest) to check console status...
+Fetching nx...
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 17632, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-0-3846.6665.sock)
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 3484, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-1-3939.5032.sock)
+[plugin-pool] spawned worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 16808, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-2-4081.0072.sock)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:26.569Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:26.581Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:26.648Z - Closed a connection. Number of open connections: 1
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 17632) after 12 attempt(s)
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 16808) after 12 attempt(s)
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 17632) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-0-3846.6665.sock
+Time for 'plugin worker 17632 code loading' 58.89770000000004
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 17632) connected
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 16808) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-2-4081.0072.sock
+Time for 'plugin worker 16808 code loading' 61.41760000000001
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 16808) connected
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:26.950Z - Time taken for 'start-plugin-worker:C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js' 796.3948000000005ms
+[plugin-pool] connected to worker for "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 3484) after 13 attempt(s)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:26.951Z - Time taken for 'start-plugin-worker:C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 706.0724999999998ms
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 3484) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin11888-1-3939.5032.sock
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 3484) connected
+Time for 'plugin worker 3484 code loading' 84.23729999999998
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:27.617Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:27.617Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:27.618Z - [REQUEST]: Client Request for Project Graph Received
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 3484) loaded successfully
+[plugin-pool] loaded plugin "nx/core/package-json" from worker (pid: 3484)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:27.752Z - Time taken for 'Load Nx Plugin: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json' 1762.4440000000004ms
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 16808) loaded successfully
+[plugin-pool] loaded plugin "nx/core/project-json" from worker (pid: 16808)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:27.758Z - Time taken for 'Load Nx Plugin: C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json' 1637.3592000000003ms
+[plugin-worker] "C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 17632) loaded successfully
+[plugin-pool] loaded plugin "nx/js/dependencies-and-lockfile" from worker (pid: 17632)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.410Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.410Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.410Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.412Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.418Z - Time taken for 'loadDefaultNxPlugins' 2442.9497ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.20299999999997453
+Time for 'nx/core/package-json:createNodes' 1.5316000000000258
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.531Z - Time taken for 'build-project-configs' 88.10779999999977ms
+Time for 'nx/core/project-json:createNodes' 19.381099999999833
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.535Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.545Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.545Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.546Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.546Z - [REQUEST]: Responding to the client. project-graph
+Time for 'build typescript dependencies' 0.1572000000001026
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.546Z - Time taken for 'total for creating and serializing project graph' 927.3782000000001ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.546Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.546Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 927. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.547Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.551Z - [Messenger] Sending message type: PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.552Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.554Z - Received raw message of length 985
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.554Z - Received json message of type PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.556Z - Serializing response for PRE_TASKS_EXECUTION message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.556Z - Responding to PRE_TASKS_EXECUTION message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.556Z - [REQUEST]: Responding to the client. handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.556Z - Time taken for 'preTasksExecution' 1.6158000000004904ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.557Z - Done responding to the client handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.557Z - Handled json message PRE_TASKS_EXECUTION. Handling time: 2. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.556Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.640Z - [Messenger] Sending message type: HASH_TASKS
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.641Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.642Z - Received raw message of length 6878
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.642Z - Received json message of type HASH_TASKS
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.643Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.650Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+DEBUG nx::native::tasks::hash_planner: get_plans_internal COMPLETED in 141.2µs - processed 1 tasks (setup: 21.7µs, parallel_planning: 110.8µs)
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "11751663399876450553" (".gitignore") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "9648514650165378930" ("nx.json") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Hash Value: "2780446381656172549"
+DEBUG nx::native::tasks::task_hasher: hash_plans COMPLETED in 1.0148ms - processed 1 plans (setup: 39.3µs, hashing: 971.5µs, assembly: 51.4µs)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.654Z - Serializing response for HASH_TASKS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.654Z - Responding to HASH_TASKS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.654Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.655Z - Time taken for 'write cache' 6.935699999999997ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.655Z - Done responding to the client handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.655Z - Handled json message HASH_TASKS. Handling time: 12. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.654Z - [Messenger] Received message, length: 487
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.665Z - [Messenger] Sending message type: GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.666Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.670Z - Received raw message of length 121
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.670Z - Received json message of type GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.687Z - Serializing response for GET_ESTIMATED_TASK_TIMINGS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.688Z - Responding to GET_ESTIMATED_TASK_TIMINGS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.688Z - [REQUEST]: Responding to the client. handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:28.688Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.689Z - Done responding to the client handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:28.690Z - Handled json message GET_ESTIMATED_TASK_TIMINGS. Handling time: 17. Response time: 3.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.261Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.261Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.263Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.263Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.263Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.262Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.264Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.267Z - [Messenger] Sending message type: GET_NX_CONSOLE_STATUS
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.268Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.715Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.715Z - Received json message of type GET_NX_CONSOLE_STATUS
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.715Z - Serializing response for GET_NX_CONSOLE_STATUS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.715Z - Responding to GET_NX_CONSOLE_STATUS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.715Z - [REQUEST]: Responding to the client. handleGetNxConsoleStatus
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.716Z - Done responding to the client handleGetNxConsoleStatus
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.716Z - Handled json message GET_NX_CONSOLE_STATUS. Handling time: 0. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.718Z - [Messenger] Received message, length: 22
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.805Z - [Client] Starting new daemon server in background
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.821Z - [Client] Waiting for server (max: 6000 attempts, 10ms interval)
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.836Z - [Client] Server available after 1 attempts
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.836Z - [Client] Daemon server started, pid=20044
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.849Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.850Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.850Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.895Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.895Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:41.896Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.895Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.896Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.899Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:41.901Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.408Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.409Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.409Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.410Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.421Z - Wrote project graph cache to C:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.422Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.422Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.422Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.422Z - Time taken for 'total for creating and serializing project graph' 13.081900000001042ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:42.422Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.424Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.425Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 13. Response time: 3.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:42.425Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:42.426Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.428Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.428Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.429Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.430Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.430Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.430Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.430Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 1. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:07:42.430Z - [Messenger] Received message, length: 31554
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.459Z - New daemon starting from: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server\server.js
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.461Z - New daemon __dirname: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\daemon\server
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.461Z - New daemon nxVersion: 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.462Z - New daemon getInstalledNxVersion(): 22.4.3
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.466Z - [Server] Starting outdated check interval (20ms)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.470Z - Started listening on: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\f7ef500bd5572f8d7a9c\d.sock
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.474Z - [WATCHER]: Subscribed to changes within: c:\pridesys\apps\sme\aidlyErp\sme-software-frontend (native)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.476Z - [NX-CONSOLE]: Pulling latest Nx (latest) to check console status...
+Fetching nx...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.502Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.502Z - Closed a connection. Number of open connections: 0
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.502Z - [WATCHER]: Stopping the watcher for C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (sources)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.503Z - [WATCHER]: Stopping the watcher for C:\pridesys\apps\sme\aidlyErp\sme-software-frontend (outputs)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:42.507Z - Server stopped because: "this process is no longer the current daemon (native)"
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 20560, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-0-1465.1443.sock)
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 19160, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-1-1485.8815.sock)
+[plugin-pool] spawned worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 7952, socket: \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-2-1505.2371.sock)
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 20560) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-0-1465.1443.sock
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 20560) after 8 attempt(s)
+Time for 'plugin worker 20560 code loading' 53.7842
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 20560) connected
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 19160) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-1-1485.8815.sock
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 19160) after 9 attempt(s)
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 19160) connected
+Time for 'plugin worker 19160 code loading' 38.463899999999995
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 7952) listening on \\.\pipe\nx\C:\Users\Asibul\AppData\Local\Temp\plugin20044-2-1505.2371.sock
+[plugin-pool] connected to worker for "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 7952) after 9 attempt(s)
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 7952) connected
+Time for 'plugin worker 7952 code loading' 36.1164
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\package-json" (pid: 19160) loaded successfully
+[plugin-pool] loaded plugin "nx/core/package-json" from worker (pid: 19160)
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\project-json\build-nodes\project-json" (pid: 7952) loaded successfully
+[plugin-pool] loaded plugin "nx/core/project-json" from worker (pid: 7952)
+[plugin-worker] "c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\node_modules\nx\src\plugins\js" (pid: 20560) loaded successfully
+[plugin-pool] loaded plugin "nx/js/dependencies-and-lockfile" from worker (pid: 20560)
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:44.319Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:44.319Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:44.320Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.40980000000001837
+Time for 'nx/core/package-json:createNodes' 2.950300000000084
+Time for 'nx/core/project-json:createNodes' 2.038099999999986
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:07:44.428Z - [SYNC]: collect registered sync generators
+Time for 'build typescript dependencies' 0.3929000000000542
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:06.669Z - [NX-CONSOLE]: Successfully pulled latest Nx to C:\Users\Asibul\AppData\Local\Temp\tmp-20044-DeUEYq2gZxWI
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:08:12.064Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:08:12.066Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:08:12.070Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:08:12.072Z - [Messenger] Message sent
+[NX v22.7.1 Daemon Server] - 2026-05-13T15:08:17.529Z - [NX-CONSOLE]: Using local implementation (NX_USE_LOCAL=true or inner call)
+DEBUG nx::native::ide::install: Detected editor: Unknown
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.544Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.545Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.545Z - [NX-CONSOLE]: Console status check completed, shouldPrompt: false
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.545Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.546Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.546Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.546Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.547Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.558Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.559Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.559Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.559Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.560Z - Time taken for 'total for creating and serializing project graph' 12.627599999999802ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:08:17.560Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.563Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:17.563Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 13. Response time: 4.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:08:46.404Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.644Z - [WATCHER]: apps/web-client/src/app/features/sys/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.645Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.645Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.922Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.923Z - [REQUEST]: apps/web-client/src/app/features/sys/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:55.923Z - [REQUEST]: 
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:56.439Z - Time taken for 'hash changed files from watcher' 12.356999999843538ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 78.5077999997884
+Time for 'nx/core/package-json:createNodes' 134.21009999979287
+Time for 'nx/core/project-json:createNodes' 406.81640000035986
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:56.940Z - Time taken for 'build-project-configs' 506.41889999993145ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:58.481Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:58.482Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:58.482Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:58.482Z - Time taken for 'total execution time for createProjectGraph()' 1554.75810000021ms
+Time for 'build typescript dependencies' 1534.3371999999508
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:43:58.748Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.335Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.335Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.335Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.573Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.573Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.574Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.12140000006183982
+Time for 'nx/core/package-json:createNodes' 1.4152000001631677
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.644Z - Time taken for 'hash changed files from watcher' 2.750200000125915ms
+Time for 'nx/core/project-json:createNodes' 1.633400000166148
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.660Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.662Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.662Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:03.662Z - Time taken for 'total execution time for createProjectGraph()' 20.85980000020936ms
+Time for 'build typescript dependencies' 11.757299999706447
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:04.437Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:10.654Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:10.655Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:10.655Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.069Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.069Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.069Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1444000001065433
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.080Z - Time taken for 'hash changed files from watcher' 1.1471000001765788ms
+Time for 'nx/core/package-json:createNodes' 1.9020000002346933
+Time for 'nx/core/project-json:createNodes' 2.254399999976158
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.091Z - Time taken for 'build-project-configs' 7.340199999976903ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.101Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.103Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.103Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.104Z - Time taken for 'total execution time for createProjectGraph()' 16.572000000160187ms
+Time for 'build typescript dependencies' 7.166300000157207
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:11.452Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.675Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.675Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.676Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.676Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.677Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.676Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.678Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.678Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.680Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.682Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.684Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.684Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.685Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.697Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.698Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.698Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.698Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.698Z - Time taken for 'total for creating and serializing project graph' 13.657700000330806ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.698Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.699Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.700Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.700Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 14. Response time: 2.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.700Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.701Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.701Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.703Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.704Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.704Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.704Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:21.704Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 1. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T15:44:21.704Z - [Messenger] Received message, length: 31554
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:27.992Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:27.992Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:27.992Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.095Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.095Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.095Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1482000001706183
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.099Z - Time taken for 'hash changed files from watcher' 0.9632999999448657ms
+Time for 'nx/core/package-json:createNodes' 1.0276999999769032
+Time for 'nx/core/project-json:createNodes' 1.0566999996080995
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.107Z - Time taken for 'build-project-configs' 5.2691999999806285ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.128Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.129Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.129Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.129Z - Time taken for 'total execution time for createProjectGraph()' 23.981800000183284ms
+Time for 'build typescript dependencies' 18.54949999973178
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:28.887Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:47.906Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:47.906Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:47.909Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.143Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.143Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.143Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10570000018924475
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.164Z - Time taken for 'hash changed files from watcher' 1.164300000295043ms
+Time for 'nx/core/package-json:createNodes' 0.9243000000715256
+Time for 'nx/core/project-json:createNodes' 1.0550999999977648
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.175Z - Time taken for 'build-project-configs' 6.3393000001087785ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.201Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.202Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.204Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 11.16910000005737
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:48.204Z - Time taken for 'total execution time for createProjectGraph()' 29.27059999993071ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T15:44:50.036Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.053Z - [WATCHER]: apps/web-client/src/app/features/sys/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.056Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.059Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.469Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.469Z - [REQUEST]: apps/web-client/src/app/features/sys/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.469Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.24659999972209334
+Time for 'nx/core/package-json:createNodes' 3.8952000001445413
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.482Z - Time taken for 'hash changed files from watcher' 1.4377999999560416ms
+Time for 'nx/core/project-json:createNodes' 2.237300000153482
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.499Z - Time taken for 'build-project-configs' 15.94829999981448ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.514Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.515Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.515Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 6.506099999882281
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:43.515Z - Time taken for 'total execution time for createProjectGraph()' 19.851100000087172ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:44.172Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.034Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.034Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.034Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.851Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.851Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/data.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.851Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11869999999180436
+Time for 'nx/core/package-json:createNodes' 1.720499999821186
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.912Z - Time taken for 'hash changed files from watcher' 1.2524999999441206ms
+Time for 'nx/core/project-json:createNodes' 1.1547999996691942
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.970Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.979Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.980Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 34.6351999999024
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:52.982Z - Time taken for 'total execution time for createProjectGraph()' 93.7722000000067ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:05:53.917Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.047Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.048Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.047Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.048Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.049Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.051Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.051Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.051Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.084Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.091Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.092Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.100Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.104Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.115Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.123Z - Time taken for 'total for creating and serializing project graph' 39.89339999994263ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.123Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.155Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.157Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 40. Response time: 66.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.159Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.160Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.175Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.268Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.269Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:03.272Z - [Messenger] Received message, length: 31555
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.294Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:03.294Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 15. Response time: 119.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.170Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.170Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.170Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.283Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.283Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.283Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.1063000001013279
+Time for 'nx/core/project-json:createNodes' 1.0019999998621643
+Time for 'nx/core/package-json:createNodes' 0.9023000001907349
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.294Z - Time taken for 'hash changed files from watcher' 0.7511999998241663ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.305Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.306Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.306Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:11.306Z - Time taken for 'total execution time for createProjectGraph()' 13.478799999691546ms
+Time for 'build typescript dependencies' 7.689100000075996
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:13.058Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:18.994Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:18.994Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:18.994Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.214Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.215Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.215Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4753999998793006
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.243Z - Time taken for 'hash changed files from watcher' 4.767599999904633ms
+Time for 'nx/core/package-json:createNodes' 5.606799999717623
+Time for 'nx/core/project-json:createNodes' 4.877399999648333
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.330Z - Time taken for 'build-project-configs' 42.344500000122935ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.455Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.464Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.465Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+Time for 'build typescript dependencies' 100.9265000000596
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:19.466Z - Time taken for 'total execution time for createProjectGraph()' 164.1473000003025ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:20.407Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.145Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.145Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.145Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.145Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.147Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.147Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.147Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.148Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.159Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.160Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.160Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.160Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.160Z - Time taken for 'total for creating and serializing project graph' 12.749600000213832ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.160Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.162Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.162Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.162Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 13. Response time: 2.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.162Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.164Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.164Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.166Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.166Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.166Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.166Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:30.167Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 1.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:30.166Z - [Messenger] Received message, length: 31554
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.451Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.454Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.455Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.625Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.626Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.626Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.30719999969005585
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.645Z - Time taken for 'hash changed files from watcher' 62.170699999667704ms
+Time for 'nx/core/package-json:createNodes' 4.246499999891967
+Time for 'nx/core/project-json:createNodes' 5.685500000137836
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.690Z - Time taken for 'build-project-configs' 23.588800000026822ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.709Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.715Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.716Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:42.718Z - Time taken for 'total execution time for createProjectGraph()' 38.95750000001863ms
+Time for 'build typescript dependencies' 4.744200000073761
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.472Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.473Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.473Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.474Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.477Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.477Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.477Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.478Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.566Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.672Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.672Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.681Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.687Z - Time taken for 'total for creating and serializing project graph' 89.8727000001818ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.688Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.745Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.761Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.770Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 194. Response time: 99.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.757Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.816Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.816Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.829Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.831Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.855Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:06:53.860Z - [Messenger] Received message, length: 31555
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.872Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:06:53.878Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 12. Response time: 49.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.166Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.167Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.167Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.283Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.283Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/sys1101.component.html
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.283Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11799999978393316
+Time for 'nx/core/package-json:createNodes' 1.491599999833852
+Time for 'nx/core/project-json:createNodes' 1.2648000000044703
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.297Z - Time taken for 'hash changed files from watcher' 1.2865999997593462ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.300Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.301Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.302Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.302Z - Time taken for 'total execution time for createProjectGraph()' 6.611999999731779ms
+Time for 'build typescript dependencies' 0.9448000001721084
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:11.916Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:14.872Z - [WATCHER]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts was modified
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:14.872Z - [SYNC]: clearing sync generators cache due to file changes
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:14.873Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:15.366Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:15.366Z - [REQUEST]: apps/web-client/src/app/features/sys/forms/sys1101/services/model.service.ts
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:15.366Z - [REQUEST]: 
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10600000014528632
+Time for 'nx/core/package-json:createNodes' 1.2254999997094274
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:15.999Z - Time taken for 'hash changed files from watcher' 6.403700000140816ms
+Time for 'nx/core/project-json:createNodes' 1.6008000001311302
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:16.019Z - Time taken for 'build-project-configs' 18.72719999961555ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:16.034Z - [SYNC]: collect registered sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:16.035Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:16.036Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:16.036Z - Time taken for 'total execution time for createProjectGraph()' 19.587200000416487ms
+Time for 'build typescript dependencies' 12.219599999953061
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:17.234Z - [WATCHER]: Processing file changes in outputs
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.198Z - Established a connection. Number of open connections: 3
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.198Z - Closed a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.198Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.201Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.203Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.203Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.203Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.203Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.213Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - Time taken for 'total for creating and serializing project graph' 10.815399999730289ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.214Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 11. Response time: 0.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.214Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.215Z - [Messenger] Sending message type: GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.218Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.219Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.219Z - Received json message of type GET_CONTEXT_FILE_DATA
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.220Z - Serializing response for GET_CONTEXT_FILE_DATA message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.220Z - Responding to GET_CONTEXT_FILE_DATA message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.220Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:07:26.221Z - [Messenger] Received message, length: 31553
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.223Z - Done responding to the client handleContextFileData
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:07:26.223Z - Handled json message GET_CONTEXT_FILE_DATA. Handling time: 1. Response time: 3.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:08:49.100Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:08:49.883Z - Closed a connection. Number of open connections: 0
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:28.721Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:28.722Z - Closed a connection. Number of open connections: 0
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:28.723Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:28.724Z - Closed a connection. Number of open connections: 0
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:28.724Z - Established a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:28.724Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:28.725Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:28.754Z - [Messenger] Sending message type: GET_NX_CONSOLE_STATUS
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:28.755Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.006Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.006Z - Received json message of type GET_NX_CONSOLE_STATUS
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.007Z - Serializing response for GET_NX_CONSOLE_STATUS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.007Z - Responding to GET_NX_CONSOLE_STATUS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.007Z - [REQUEST]: Responding to the client. handleGetNxConsoleStatus
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.007Z - Done responding to the client handleGetNxConsoleStatus
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:29.007Z - Handled json message GET_NX_CONSOLE_STATUS. Handling time: 0. Response time: 0.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:29.008Z - [Messenger] Received message, length: 22
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.288Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.293Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.308Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.308Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.309Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.313Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.478Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.479Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.479Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.480Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.489Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.488Z - Time taken for 'total for creating and serializing project graph' 170.29180000023916ms
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.516Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.517Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 170. Response time: 38.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.518Z - [Messenger] Sending message type: PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.524Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.554Z - Received raw message of length 984
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.555Z - Received json message of type PRE_TASKS_EXECUTION
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.585Z - Serializing response for PRE_TASKS_EXECUTION message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.586Z - Responding to PRE_TASKS_EXECUTION message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.586Z - [REQUEST]: Responding to the client. handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.587Z - Time taken for 'preTasksExecution' 24.682199999690056ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:32.588Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.608Z - Done responding to the client handleRunPreTasksExecution
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:32.609Z - Handled json message PRE_TASKS_EXECUTION. Handling time: 30. Response time: 24.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.234Z - [Messenger] Sending message type: HASH_TASKS
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.235Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.236Z - Received raw message of length 6044
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.237Z - Received json message of type HASH_TASKS
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.238Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.248Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+DEBUG nx::native::tasks::hash_planner: get_plans_internal COMPLETED in 2.4513ms - processed 1 tasks (setup: 32.3µs, parallel_planning: 2.4059ms)
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "11751663399876450553" (".gitignore") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Adding "9648514650165378930" ("nx.json") to hash
+DEBUG nx::native::tasks::hashers::hash_workspace_files: Hashing workspace fileset{cache_key="nx.json,.gitignore,.nxignore"}: Hash Value: "2780446381656172549"
+DEBUG nx::native::tasks::task_hasher: hash_plans COMPLETED in 6.1245ms - processed 1 plans (setup: 363µs, hashing: 5.7508ms, assembly: 72.5µs)
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.266Z - Serializing response for HASH_TASKS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.267Z - Responding to HASH_TASKS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.267Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.267Z - Time taken for 'write cache' 10.13079999992624ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.267Z - [Messenger] Received message, length: 489
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.269Z - Done responding to the client handleHashTasks
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.269Z - Handled json message HASH_TASKS. Handling time: 29. Response time: 3.
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.280Z - [Messenger] Sending message type: GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.281Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.286Z - Received raw message of length 121
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.286Z - Received json message of type GET_ESTIMATED_TASK_TIMINGS
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.334Z - Serializing response for GET_ESTIMATED_TASK_TIMINGS message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.334Z - Responding to GET_ESTIMATED_TASK_TIMINGS message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.334Z - [REQUEST]: Responding to the client. handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:12:34.335Z - [Messenger] Received message, length: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.336Z - Done responding to the client handleGetEstimatedTaskTimings
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:12:34.336Z - Handled json message GET_ESTIMATED_TASK_TIMINGS. Handling time: 47. Response time: 2.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:03.853Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:03.855Z - Closed a connection. Number of open connections: 1
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:03.856Z - Established a connection. Number of open connections: 2
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:13:03.856Z - [Messenger] Setting up socket listeners
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:13:03.858Z - [Messenger] listen() complete
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:13:03.860Z - [Messenger] Sending message type: REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:13:03.861Z - [Messenger] Message sent
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.101Z - Received raw message of length 32
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.101Z - Received json message of type REQUEST_PROJECT_GRAPH
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.101Z - [REQUEST]: Client Request for Project Graph Received
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.102Z - Reusing in-memory cached project graph because no files changed.
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.116Z - Wrote project graph cache to c:\pridesys\apps\sme\aidlyErp\sme-software-frontend\.nx\workspace-data\project-graph.json
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.117Z - Serializing response for REQUEST_PROJECT_GRAPH message in json mode
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.117Z - Responding to REQUEST_PROJECT_GRAPH message
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.123Z - [REQUEST]: Responding to the client. project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.124Z - Time taken for 'total for creating and serializing project graph' 15.840400000102818ms
+[NX v22.4.3 Daemon Client] - 2026-05-13T16:13:04.129Z - [Messenger] Received message, length: 12859
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.139Z - Done responding to the client project-graph
+[NX v22.4.3 Daemon Server] - 2026-05-13T16:13:04.144Z - Handled json message REQUEST_PROJECT_GRAPH. Handling time: 16. Response time: 27.

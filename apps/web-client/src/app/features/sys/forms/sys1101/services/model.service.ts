@@ -1,4 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import {
+  Injectable,
+  computed,
+  inject,
+  signal,
+  effect,
+  untracked,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
@@ -6,7 +13,7 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { CommonDataService } from '../../../../../shared/services/common-data.service';
-import { CoreDataService } from '../../../../../core/services/core-data.service';
+import { SysDataService } from '../../../services/data.service';
 import { AuthDataService } from '../../../../auth/services/data.service';
 import { Sys1101DataService } from './data.service';
 
@@ -18,7 +25,6 @@ export interface IUserRole extends BaseEntity {
   access_branch?: string | null;
   primary_role?: number | null;
   active_status?: number | null;
-  remarks?: string | null;
 }
 
 export interface IUser extends BaseEntity {
@@ -31,7 +37,6 @@ export interface IUser extends BaseEntity {
   failed_login_count?: number | null;
   is_locked: number;
   active_status: number;
-  remarks?: string | null;
 
   employee_id?: string | null;
   employee_name?: string | null;
@@ -75,7 +80,7 @@ export class Sys1101ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Sys1101DataService);
   private commonApi = inject(CommonDataService);
-  private coreApi = inject(CoreDataService);
+  private sysApi = inject(SysDataService);
   private authApi = inject(AuthDataService);
   private toastr = inject(ToastrService);
 
@@ -103,33 +108,15 @@ export class Sys1101ModelService {
     return this.designations().filter((d: any) => d.department_no === deptNo);
   });
 
-  filteredEmployees = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const deptNo = this.filterDeptNo();
-    const desigNo = this.filterDesigNo();
-    const userStatus = this.filterUserStatus();
-    const usersByEmployee = new Map(this.users().map((u) => [u.employee_no, u]));
+  pager = makePaginator<IUser>(this.users);
 
-    let list = this.employees();
-    if (deptNo) list = list.filter((e) => e.department_no === deptNo);
-    if (desigNo) list = list.filter((e) => e.designation_no === desigNo);
-    if (userStatus !== null && userStatus !== undefined) {
-      list = list.filter((e) => usersByEmployee.get(e.employee_no)?.active_status === userStatus);
-    }
-    if (!term) return list;
-    return list.filter((e) => {
-      const user = usersByEmployee.get(e.employee_no);
-      return (
-        (e.full_name || '').toLowerCase().includes(term) ||
-        (e.employee_id || '').toLowerCase().includes(term) ||
-        (e.mobile_number || '').includes(term) ||
-        (e.official_email || '').toLowerCase().includes(term) ||
-        (user?.user_name || '').toLowerCase().includes(term)
-      );
+  constructor() {
+    effect(() => {
+      const term = this.searchTerm();
+      const status = this.filterUserStatus();
+      untracked(() => this.loadUsersSummary(term, status));
     });
-  });
-
-  pager = makePaginator<IEmployeeSummary>(this.filteredEmployees);
+  }
 
   form!: FormGroup;
   passwordForm!: FormGroup;
@@ -148,7 +135,6 @@ export class Sys1101ModelService {
       failed_login_count: [0],
       last_login_at: [{ value: '', disabled: true }],
       password_changed_at: [{ value: '', disabled: true }],
-      remarks: [''],
       row_version: [0],
       password: ['', [Validators.minLength(8)]],
     });
@@ -173,28 +159,62 @@ export class Sys1101ModelService {
   loadInitial(): void {
     this.isLoading.set(true);
     forkJoin({
-      users: this.data.loadUsers().pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
-      employees: this.commonApi.getEmployeeList().pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
-      departments: this.commonApi.getDepartmentList().pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
-      designations: this.commonApi.getDesignationList().pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
-      roles: this.coreApi.getRoles().pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
+      employees: this.commonApi
+        .getEmployeeList()
+        .pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
+      departments: this.commonApi
+        .getDepartmentList()
+        .pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
+      designations: this.commonApi
+        .getDesignationList()
+        .pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
+      roles: this.sysApi
+        .getRoles()
+        .pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe(({ users, employees, departments, designations, roles }) => {
-        if (isSuccess(users) && users.data) this.users.set(users.data as IUser[]);
-        if (isSuccess(employees) && employees.data) this.employees.set(employees.data as IEmployeeSummary[]);
-        if (isSuccess(departments) && departments.data) this.departments.set(departments.data);
-        if (isSuccess(designations) && designations.data) this.designations.set(designations.data);
-        if (isSuccess(roles) && roles.data) this.roles.set(roles.data as IRole[]);
+      .subscribe(({ employees, departments, designations, roles }) => {
+        if (isSuccess(employees) && employees.data)
+          this.employees.set(employees.data as IEmployeeSummary[]);
+        if (isSuccess(departments) && departments.data)
+          this.departments.set(departments.data);
+        if (isSuccess(designations) && designations.data)
+          this.designations.set(designations.data);
+        if (isSuccess(roles) && roles.data)
+          this.roles.set(roles.data as IRole[]);
 
-        const first = this.employees()[0];
-        first ? this.selectEmployee(first) : this.onNew();
+        // users are loaded by the effect
       });
+  }
+
+  loadUsersSummary(term?: string, status?: number | null): void {
+    const params: any = {};
+    if (term) params.search = term;
+    if (status !== null && status !== undefined) params.activeStatus = status;
+
+    this.data.loadUsersSummary(params).subscribe((res) => {
+      if (isSuccess(res) && res.data) {
+        this.users.set(res.data as IUser[]);
+        const first = res.data[0];
+        if (first) this.selectUser(first as IUser);
+      }
+    });
+  }
+
+  selectUser(user: IUser): void {
+    this.selectedUserNo.set(user.user_no ?? null);
+    const emp = this.employees().find(
+      (e) => e.employee_no === user.employee_no,
+    );
+    if (emp) this.selectedEmployee.set(emp);
+    this.loadUserDetail(user.user_no!);
   }
 
   selectEmployee(emp: IEmployeeSummary): void {
     this.selectedEmployee.set(emp);
-    const existing = this.users().find((u) => u.employee_no === emp.employee_no);
+    const existing = this.users().find(
+      (u) => u.employee_no === emp.employee_no,
+    );
     if (existing?.user_no) {
       this.loadUserDetail(existing.user_no);
       return;
@@ -204,10 +224,21 @@ export class Sys1101ModelService {
 
   loadUserDetail(userNo: number): void {
     this.isLoading.set(true);
-    this.data.loadUserDetail(userNo)
+    forkJoin({
+      detail: this.data.loadUserDetail(userNo).pipe(catchError(() => of(null))),
+      roles: this.data
+        .loadUserRoles(userNo)
+        .pipe(catchError(() => of({ status_code: 200, data: [] } as any))),
+    })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe((res) => {
-        if (isSuccess(res) && res.data) this.patchUser(res.data);
+      .subscribe(({ detail, roles }) => {
+        if (detail && isSuccess(detail) && detail.data) {
+          const user = detail.data;
+          if (isSuccess(roles) && roles.data) {
+            user.role_mappings = roles.data;
+          }
+          this.patchUser(user);
+        }
       });
   }
 
@@ -228,14 +259,15 @@ export class Sys1101ModelService {
       active_status: val.active_status,
       is_locked: val.is_locked,
       failed_login_count: val.failed_login_count,
-      remarks: val.remarks,
       row_version: val.row_version,
       role_mappings: this.roleMappings(),
     };
     if (!isUpdate) payload.password = val.password;
 
     this.isSaving.set(true);
-    const request = isUpdate ? this.data.updateUser(payload) : this.data.saveUser(payload);
+    const request = isUpdate
+      ? this.data.updateUser(payload)
+      : this.data.saveUser(payload);
     request.pipe(finalize(() => this.isSaving.set(false))).subscribe((res) => {
       if (isSuccess(res) && res.data) {
         this.toastr.success(isUpdate ? 'User updated' : 'User created');
@@ -248,13 +280,17 @@ export class Sys1101ModelService {
     const userNo = this.selectedUserNo();
     if (!userNo) return;
     this.isLoading.set(true);
-    this.data.deleteUser(userNo)
+    this.data
+      .deleteUser(userNo)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe((res) => {
         if (isSuccess(res)) {
           this.toastr.success('User deleted');
           const employee = this.selectedEmployee();
-          this.refreshUsers(null, () => employee && this.patchNewUserForEmployee(employee));
+          this.refreshUsers(
+            null,
+            () => employee && this.patchNewUserForEmployee(employee),
+          );
         }
       });
   }
@@ -284,12 +320,17 @@ export class Sys1101ModelService {
       return;
     }
     this.isSaving.set(true);
-    this.data.resetPassword(userNo, pwd)
+    this.data
+      .resetPassword(userNo, pwd)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe((res) => {
         if (isSuccess(res)) {
           this.toastr.success('Password reset');
-          this.passwordForm.reset({ temporary_password: '', force_password_change: false, password_expiry: '' });
+          this.passwordForm.reset({
+            temporary_password: '',
+            force_password_change: false,
+            password_expiry: '',
+          });
           this.loadUserDetail(userNo);
         }
       });
@@ -306,10 +347,11 @@ export class Sys1101ModelService {
       return;
     }
     this.isSaving.set(true);
-    this.authApi.changePassword({
-      old_password: val.old_password,
-      new_password: val.new_password,
-    })
+    this.authApi
+      .changePassword({
+        old_password: val.old_password,
+        new_password: val.new_password,
+      })
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe(() => {
         this.toastr.success('Password changed');
@@ -321,7 +363,8 @@ export class Sys1101ModelService {
     const userNo = this.selectedUserNo();
     if (!userNo) return;
     this.isSaving.set(true);
-    this.data.setLocked(userNo, locked)
+    this.data
+      .setLocked(userNo, locked)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe((res) => {
         if (isSuccess(res) && res.data) {
@@ -333,7 +376,8 @@ export class Sys1101ModelService {
   }
 
   addRole(roleNo: number | null): void {
-    if (!roleNo || this.roleMappings().some((r) => r.role_no === roleNo)) return;
+    if (!roleNo || this.roleMappings().some((r) => r.role_no === roleNo))
+      return;
     const role = this.roles().find((r) => r.role_no === roleNo);
     const first = this.roleMappings().length === 0;
     this.roleMappings.update((items) => [
@@ -353,11 +397,15 @@ export class Sys1101ModelService {
   }
 
   setPrimaryRole(index: number): void {
-    this.roleMappings.update((items) => items.map((r, i) => ({ ...r, primary_role: i === index ? 1 : 0 })));
+    this.roleMappings.update((items) =>
+      items.map((r, i) => ({ ...r, primary_role: i === index ? 1 : 0 })),
+    );
   }
 
   updateRole(index: number, changes: Partial<IUserRole>): void {
-    this.roleMappings.update((items) => items.map((r, i) => i === index ? { ...r, ...changes } : r));
+    this.roleMappings.update((items) =>
+      items.map((r, i) => (i === index ? { ...r, ...changes } : r)),
+    );
   }
 
   userForEmployee(employeeNo: number): IUser | undefined {
@@ -365,19 +413,31 @@ export class Sys1101ModelService {
   }
 
   employeeStatusLabel(status?: number | null): string {
-    return ({ 1: 'Active', 2: 'Resigned', 3: 'Terminated', 4: 'Retired' } as Record<number, string>)[status ?? 0] || 'N/A';
+    return (
+      (
+        { 1: 'Active', 2: 'Resigned', 3: 'Terminated', 4: 'Retired' } as Record<
+          number,
+          string
+        >
+      )[status ?? 0] || 'N/A'
+    );
   }
 
-  private refreshUsers(reselectUserNo: number | null, after?: () => void): void {
-    this.data.loadUsers().subscribe((res) => {
-      if (isSuccess(res) && res.data) this.users.set(res.data);
+  private refreshUsers(
+    reselectUserNo: number | null,
+    after?: () => void,
+  ): void {
+    this.data.loadUsersSummary().subscribe((res) => {
+      if (isSuccess(res) && res.data) this.users.set(res.data as IUser[]);
       if (reselectUserNo) this.loadUserDetail(reselectUserNo);
       else after?.();
     });
   }
 
   private patchUser(user: IUser): void {
-    const employee = this.employees().find((e) => e.employee_no === user.employee_no) ?? this.selectedEmployee();
+    const employee =
+      this.employees().find((e) => e.employee_no === user.employee_no) ??
+      this.selectedEmployee();
     this.selectedEmployee.set(employee);
     this.selectedUserNo.set(user.user_no ?? null);
     this.roleMappings.set(user.role_mappings ?? []);
@@ -393,7 +453,6 @@ export class Sys1101ModelService {
       failed_login_count: user.failed_login_count ?? 0,
       last_login_at: user.last_login_at ?? '',
       password_changed_at: user.password_changed_at ?? '',
-      remarks: user.remarks ?? '',
       row_version: user.row_version ?? 0,
       password: '',
     });
@@ -417,11 +476,14 @@ export class Sys1101ModelService {
       failed_login_count: 0,
       last_login_at: '',
       password_changed_at: '',
-      remarks: '',
       row_version: 0,
       password: '',
     });
-    this.passwordForm.reset({ temporary_password: '', force_password_change: false, password_expiry: '' });
+    this.passwordForm.reset({
+      temporary_password: '',
+      force_password_change: false,
+      password_expiry: '',
+    });
     this.syncPasswordValidators();
   }
 
@@ -429,7 +491,12 @@ export class Sys1101ModelService {
     this.selectedUserNo.set(null);
     this.selectedEmployee.set(null);
     this.roleMappings.set([]);
-    this.form.reset({ active_status: 1, is_locked: 0, failed_login_count: 0, row_version: 0 });
+    this.form.reset({
+      active_status: 1,
+      is_locked: 0,
+      failed_login_count: 0,
+      row_version: 0,
+    });
   }
 
   private syncPasswordValidators(): void {

@@ -1,5 +1,5 @@
 Business Rules Reference (Middleware / Backend)
-sys*module
+sys\*module
 module_code is the unique programmatic key (e.g. HR, INV, ACC) — used by backend for permission resolution
 active_status = 1 means the module is visible and accessible; 0 hides it entirely
 order_sl controls sidebar render order
@@ -528,7 +528,6 @@ role_no BIGSERIAL PRIMARY KEY,
     role_desc               TEXT,
 
     branch_no               BIGINT              NOT NULL,
-    company_no              BIGINT              NOT NULL,
 
     -- -------------------------------------------------------------------------
     -- Status
@@ -1041,14 +1040,11 @@ user_role_no BIGSERIAL PRIMARY KEY,
     -- -------------------------------------------------------------------------
     user_no                 BIGINT              NOT NULL,
     role_no                 BIGINT              NOT NULL,
-    access_branch           TEXT,
-    -- NULL = all branches | comma separated values = scoped access
 
     -- -------------------------------------------------------------------------
     -- Role Context
     -- -------------------------------------------------------------------------
     primary_role            SMALLINT,
-    -- 1 = Primary (default on login) | 0 = Secondary
 
     -- -------------------------------------------------------------------------
     -- Status

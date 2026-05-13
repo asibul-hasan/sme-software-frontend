@@ -1,8 +1,8 @@
 <app-page-form-layout
   [title]="'userManagement' | translate"
   icon="manage_accounts"
-  [recordsCount]="model.filteredEmployees().length"
-  sidebarTitle="Employees"
+  [recordsCount]="model.users().length"
+  sidebarTitle="Users"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="model.searchTerm.set($event); model.pager.reset()"
   (save)="onSave()"
@@ -16,32 +16,6 @@
   [isLoading]="model.isLoading()"
 >
   <div sidebarFilters class="px-2 pb-2 flex-shrink-0 border-bottom">
-    <div class="field-group mb-2">
-      <ng-select
-        [items]="model.departments()"
-        bindLabel="department_name"
-        bindValue="department_no"
-        [ngModel]="model.filterDeptNo()"
-        (ngModelChange)="
-          model.filterDeptNo.set($event);
-          model.filterDesigNo.set(null);
-          model.pager.reset()
-        "
-        placeholder="All Departments"
-        [clearable]="true"
-      ></ng-select>
-    </div>
-    <div class="field-group mb-2">
-      <ng-select
-        [items]="model.filteredDesignations()"
-        bindLabel="designation_name"
-        bindValue="designation_no"
-        [ngModel]="model.filterDesigNo()"
-        (ngModelChange)="model.filterDesigNo.set($event); model.pager.reset()"
-        placeholder="All Designations"
-        [clearable]="true"
-      ></ng-select>
-    </div>
     <div class="field-group mb-0">
       <ng-select
         [ngModel]="model.filterUserStatus()"
@@ -58,47 +32,35 @@
   </div>
 
   <div sidebarList>
-    @for (emp of model.pager.paged(); track emp.employee_no) {
-      @let user = model.userForEmployee(emp.employee_no);
+    @for (user of model.pager.paged(); track user.user_no) {
       <button
         type="button"
         class="list-group-item list-group-item-action p-3"
-        [class.active]="
-          model.selectedEmployee()?.employee_no === emp.employee_no
-        "
-        (click)="model.selectEmployee(emp)"
+        [class.active]="model.selectedUserNo() === user.user_no"
+        (click)="model.selectUser(user)"
       >
         <div class="d-flex justify-content-between align-items-center mb-1">
           <h6 class="mb-0 fw-bold text-truncate" style="max-width: 130px">
-            {{ emp.employee_id }}
+            {{ user.user_name }}
           </h6>
           <span
             class="badge rounded-pill"
             [ngClass]="
-              user
-                ? user.active_status === 1
-                  ? 'text-bg-success'
-                  : 'text-bg-secondary'
-                : 'text-bg-warning'
+              user.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary'
             "
-            >{{
-              user
-                ? user.active_status === 1
-                  ? 'User Active'
-                  : 'Inactive'
-                : 'No User'
-            }}</span
           >
+            {{ user.active_status === 1 ? 'Active' : 'Inactive' }}
+          </span>
         </div>
         <p class="mb-0 small fw-semibold opacity-75 text-truncate">
-          {{ emp.full_name }}
+          {{ user.employee_name }} ({{ user.employee_id }})
         </p>
         <p class="mb-0 small opacity-50 text-truncate">
-          {{ emp.department_name || 'No department' }}
+          User No: {{ user.user_no }} | Emp No: {{ user.employee_no }}
         </p>
       </button>
     }
-    @if (model.filteredEmployees().length === 0) {
+    @if (model.users().length === 0) {
       <div class="p-4 text-center opacity-75">
         <mat-icon
           style="font-size: 32px; height: 32px; width: 32px"
@@ -330,6 +292,7 @@
                       type="text"
                       class="form-control"
                       formControlName="last_login_at"
+                      readonly
                     />
                   </div>
                 </div>
@@ -346,17 +309,6 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label" for="remarks">Remarks</label>
-                    <textarea
-                      id="remarks"
-                      class="form-control"
-                      rows="2"
-                      formControlName="remarks"
-                    ></textarea>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -371,100 +323,45 @@
               </h4>
             </div>
             <div class="card-body">
-              <div class="row row-group align-items-end mb-2">
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label" for="rolePicker">Role</label>
-                    <ng-select
-                      [items]="model.roles()"
-                      bindLabel="role_name"
-                      bindValue="role_no"
-                      [ngModel]="model.roleToAdd()"
-                      [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="model.roleToAdd.set($event)"
-                      placeholder="Select role"
-                    ></ng-select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <button
-                    type="button"
-                    class="btn-action btn-new w-100"
-                    (click)="
-                      model.addRole(model.roleToAdd());
-                      model.roleToAdd.set(null)
-                    "
-                  >
-                    <mat-icon>add</mat-icon>
-                    <span class="btn-action-label">Add Role</span>
-                  </button>
-                </div>
+              <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>Role Name</th>
+                      <th>Branches</th>
+                      <th>Primary</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (role of model.roleMappings(); track role.role_no) {
+                      <tr>
+                        <td class="fw-bold">{{ role.role_name }}</td>
+                        <td>{{ role.access_branch || 'All' }}</td>
+                        <td>
+                          @if (role.primary_role === 1) {
+                            <mat-icon class="text-primary icon-small"
+                              >check_circle</mat-icon
+                            >
+                          }
+                        </td>
+                        <td>
+                          <span
+                            class="badge rounded-pill"
+                            [ngClass]="
+                              role.active_status === 1
+                                ? 'text-bg-success'
+                                : 'text-bg-secondary'
+                            "
+                          >
+                            {{ role.active_status === 1 ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
-
-              @for (
-                role of model.roleMappings();
-                track role.role_no;
-                let i = $index
-              ) {
-                <div class="role-row mb-2">
-                  <div class="row row-group align-items-center">
-                    <div class="col-md-4">
-                      <div class="fw-bold">
-                        {{ role.role_name || 'Role #' + role.role_no }}
-                      </div>
-                      <div class="small text-muted">
-                        Access level from sys_user_role
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <input
-                        type="text"
-                        class="form-control"
-                        [ngModel]="role.access_branch"
-                        [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="
-                          model.updateRole(i, { access_branch: $event })
-                        "
-                        placeholder="Branches or blank"
-                      />
-                    </div>
-                    <div class="col-md-2">
-                      <label class="custom--checkbox mb-0">
-                        <input
-                          type="checkbox"
-                          class="form-check-input me-2"
-                          [checked]="role.primary_role === 1"
-                          (change)="model.setPrimaryRole(i)"
-                        />
-                        Primary
-                      </label>
-                    </div>
-                    <div class="col-md-2">
-                      <ng-select
-                        [ngModel]="role.active_status"
-                        [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="
-                          model.updateRole(i, { active_status: $event })
-                        "
-                        [clearable]="false"
-                      >
-                        <ng-option [value]="1">Active</ng-option>
-                        <ng-option [value]="0">Inactive</ng-option>
-                      </ng-select>
-                    </div>
-                    <div class="col-md-1 text-end">
-                      <button
-                        type="button"
-                        class="btn-action btn-delete"
-                        (click)="model.removeRole(i)"
-                        matTooltip="Remove role"
-                      >
-                        <mat-icon>close</mat-icon>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              }
               @if (model.roleMappings().length === 0) {
                 <div class="text-center text-muted small py-3">
                   No roles assigned
@@ -558,7 +455,9 @@
                   </div>
                   <div class="col-md-6">
                     <div class="field-group mb-3">
-                      <label class="field-label" for="confirm_password">Confirm Password</label>
+                      <label class="field-label" for="confirm_password"
+                        >Confirm Password</label
+                      >
                       <input
                         id="confirm_password"
                         type="password"
