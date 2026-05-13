@@ -328,7 +328,6 @@
                   <thead>
                     <tr>
                       <th>Role Name</th>
-                      <th>Branches</th>
                       <th>Primary</th>
                       <th>Status</th>
                     </tr>
@@ -337,7 +336,6 @@
                     @for (role of model.roleMappings(); track role.role_no) {
                       <tr>
                         <td class="fw-bold">{{ role.role_name }}</td>
-                        <td>{{ role.access_branch || 'All' }}</td>
                         <td>
                           @if (role.primary_role === 1) {
                             <mat-icon class="text-primary icon-small"

@@ -22,7 +22,6 @@ export interface IUserRole extends BaseEntity {
   user_no?: number | null;
   role_no: number;
   role_name?: string | null;
-  access_branch?: string | null;
   primary_role?: number | null;
   active_status?: number | null;
 }
@@ -387,7 +386,6 @@ export class Sys1101ModelService {
         role_name: role?.role_name,
         primary_role: first ? 1 : 0,
         active_status: 1,
-        access_branch: null,
       },
     ]);
   }
