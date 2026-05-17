@@ -31,6 +31,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { ValidationMessageDirective, CollapsibleCardDirective } from './directives';
+import { UI_KIT } from './ui';
 import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
 import { SidebarPaginationComponent } from './components/sidebar-pagination/sidebar-pagination.component';
@@ -86,6 +87,7 @@ const PIPES = [
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,
+    ...UI_KIT,
     ...PIPES,
   ],
   exports: [
@@ -95,6 +97,7 @@ const PIPES = [
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,
+    ...UI_KIT,
     ...PIPES,
   ],
 })
