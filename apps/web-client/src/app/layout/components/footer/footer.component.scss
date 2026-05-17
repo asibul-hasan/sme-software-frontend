@@ -16,7 +16,7 @@
 }
 
 .footer-logo-area {
-  .navbar-brand {
+  .footer-brand {
     letter-spacing: -0.02em;
     font-size: 14px;
 
@@ -49,7 +49,7 @@
 }
 
 .version-chip {
-  font-family: var(--bs-font-monospace, monospace);
+  font-family: monospace;
   font-size: 10px;
   padding: 1px 10px;
   border-radius: 20px;
