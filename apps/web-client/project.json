@@ -22,6 +22,7 @@
         ],
         "styles": [
           "apps/web-client/src/assets/styles/tailwind.css",
+          "node_modules/@angular/cdk/overlay-prebuilt.css",
           "apps/web-client/src/assets/styles/styles.scss"
         ],
         "stylePreprocessorOptions": {
