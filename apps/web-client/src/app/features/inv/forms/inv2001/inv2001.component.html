@@ -1,0 +1,130 @@
+<app-page-form-layout
+  [title]="'Warehouse Setup'"
+  [icon]="'warehouse'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Warehouses'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (w of model.pager.paged(); track w.warehouse_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === w.warehouse_no"
+        (click)="model.select(w)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ w.warehouse_name }}</h6>
+          @if (w.is_default === 1) { <span class="badge text-bg-primary">Default</span> }
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ w.warehouse_id }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-9 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">warehouse</mat-icon>
+                Warehouse
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="warehouse_id">Code</label>
+                    <input type="text" id="warehouse_id" formControlName="warehouse_id" class="form-control text-uppercase" placeholder="WH-MAIN" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="warehouse_name">Name</label>
+                    <input type="text" id="warehouse_name" formControlName="warehouse_name" class="form-control" placeholder="Main Store" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="warehouse_type">Type</label>
+                    <ng-select id="warehouse_type" labelForId="warehouse_type" formControlName="warehouse_type" [clearable]="false">
+                      @for (t of model.warehouseTypes; track t.value) {
+                        <ng-option [value]="t.value">{{ t.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="manager_employee_no">Manager (Employee No)</label>
+                    <input type="number" id="manager_employee_no" formControlName="manager_employee_no" class="form-control" placeholder="Optional" />
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label" for="address">Address</label>
+                    <input type="text" id="address" formControlName="address" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_default">Default</label>
+                    <ng-select id="is_default" labelForId="is_default" formControlName="is_default" [clearable]="false">
+                      <ng-option [value]="1">Yes</ng-option>
+                      <ng-option [value]="0">No</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="allow_negative_stock">Allow Negative</label>
+                    <ng-select id="allow_negative_stock" labelForId="allow_negative_stock" formControlName="allow_negative_stock" [clearable]="false">
+                      <ng-option [value]="1">Yes</ng-option>
+                      <ng-option [value]="0">No</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_sale_point">Sale Point</label>
+                    <ng-select id="is_sale_point" labelForId="is_sale_point" formControlName="is_sale_point" [clearable]="false">
+                      <ng-option [value]="1">Yes</ng-option>
+                      <ng-option [value]="0">No</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

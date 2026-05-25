@@ -1,0 +1,129 @@
+<app-page-form-layout
+  [title]="'Stock Transfer'"
+  [icon]="'swap_horiz'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Transfers'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && model.isDraft()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo() && model.isDraft()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (o of model.pager.paged(); track o.transfer_no) {
+      <button type="button" class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === o.transfer_no" (click)="model.select(o)">
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ o.transfer_id }}</h6>
+          <span class="badge" [ngClass]="{ 'text-bg-secondary': o.status === 1, 'text-bg-info': o.status === 2, 'text-bg-warning': o.status === 3, 'text-bg-success': o.status === 4, 'text-bg-warning': o.status === 5, 'text-bg-danger': o.status === 6 }">
+            {{ model.statusLabels[o.status] }}
+          </span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ o.from_warehouse_name }} → {{ o.to_warehouse_name }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No transfers</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="form-section-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">swap_horiz</mat-icon>Stock Transfer</h4>
+          <div class="d-flex align-items-center gap-2">
+            @if (model.selectedNo()) {
+              <span class="badge" [ngClass]="{ 'text-bg-secondary': model.isDraft(), 'text-bg-info': model.isSubmitted(), 'text-bg-warning': model.isDispatched(), 'text-bg-success': model.status() === 4, 'text-bg-danger': model.status() === 6 }">{{ model.statusLabel() }}</span>
+            }
+            @if (model.selectedNo() && model.isDraft() && permissionService.canUpdate()) {
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="onSubmit()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">send</mat-icon> Submit</button>
+            }
+            @if (model.isSubmitted() && permissionService.canApprove()) {
+              <button type="button" class="btn btn-sm btn-primary" (click)="onDispatch()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">local_shipping</mat-icon> Dispatch</button>
+            }
+            @if (model.isDispatched() && permissionService.canApprove()) {
+              <button type="button" class="btn btn-sm btn-success" (click)="onReceive()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">inventory</mat-icon> Receive</button>
+            }
+            @if ((model.isDraft() || model.isSubmitted()) && permissionService.canApprove()) {
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="onCancel()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">cancel</mat-icon> Cancel</button>
+            }
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row row-group">
+            @if (model.form.get('transfer_id')?.value) {
+              <div class="col-md-3"><div class="field-group"><label class="field-label">Document No</label><input class="form-control" formControlName="transfer_id" /></div></div>
+            }
+            <div class="col-md-3"><div class="field-group"><label class="field-label required">Date</label><input type="date" class="form-control" formControlName="transfer_date" /></div></div>
+            <div class="col-md-3"><div class="field-group"><label class="field-label required">From Warehouse</label>
+              <ng-select formControlName="from_warehouse_no" [clearable]="false" placeholder="Source">
+                @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }
+              </ng-select></div></div>
+            <div class="col-md-3"><div class="field-group"><label class="field-label required">To Warehouse</label>
+              <ng-select formControlName="to_warehouse_no" [clearable]="false" placeholder="Destination">
+                @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }
+              </ng-select></div></div>
+            <div class="col-md-6"><div class="field-group"><label class="field-label">Remarks</label><input class="form-control" formControlName="remarks" /></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list</mat-icon>Lines</h4>
+          @if (model.isDraft()) {
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addLine()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">add</mat-icon> Add Line</button>
+          }
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width:200px">Product</th>
+                  <th style="width:130px">UOM</th>
+                  <th class="text-end" style="width:120px">Qty Sent</th>
+                  @if (model.isDispatched() || model.status() >= 4) { <th class="text-end" style="width:130px">Qty Received</th> }
+                  <th style="width:130px">Batch</th>
+                  <th style="width:50px"></th>
+                </tr>
+              </thead>
+              <tbody [formArrayName]="'lines'">
+                @for (row of model.lines.controls; track $index) {
+                  <tr [formGroupName]="$index" [class.table-warning]="(model.status() >= 4) && row.get('qty_received')?.value != null && row.get('qty_received')?.value < row.get('qty_sent')?.value">
+                    <td><ng-select formControlName="product_no" [clearable]="false" placeholder="Product">
+                      @for (p of model.lookups().products; track p.value) { <ng-option [value]="p.value">{{ p.label }}</ng-option> }
+                    </ng-select></td>
+                    <td><ng-select formControlName="uom_no" [clearable]="false" placeholder="UOM">
+                      @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
+                    </ng-select></td>
+                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty_sent" step="0.0001" /></td>
+                    @if (model.isDispatched() || model.status() >= 4) {
+                      <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty_received" step="0.0001" /></td>
+                    }
+                    <td><input class="form-control form-control-sm text-uppercase" formControlName="batch_code" placeholder="if batch" /></td>
+                    <td class="text-center">
+                      @if (model.isDraft()) {
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeLine($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (model.lines.length === 0) { <tr><td colspan="6" class="text-center opacity-75 p-4">No lines. Click “Add Line”.</td></tr> }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

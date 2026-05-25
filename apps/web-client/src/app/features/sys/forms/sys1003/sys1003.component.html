@@ -1,93 +1,48 @@
-<app-page-form-layout
-  [title]="'fySetup' | translate"
-  [subtitle]="'manageFySettings' | translate"
-  [icon]="'calendar_today'"
-  [recordsCount]="model.filteredYears().length"
-  [sidebarTitle]="'fySetup' | translate"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  (save)="onSave()"
-  (new)="onNew()"
-  (reset)="onReset()"
-  (delete)="onDelete()"
-  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedYearNo()"
-  [isSaving]="model.isSaving()"
-  [isLoading]="model.isLoading()"
->
+<app-page-form-layout [title]="'fySetup' | translate" [subtitle]="'manageFySettings' | translate"
+  [icon]="'calendar_today'" [hasSidebar]="false" (save)="onSave()" (new)="onNew()" (reset)="onReset()"
+  (delete)="onDelete()" [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()" [showDelete]="permissionService.canDelete() && !!model.selectedYearNo()"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()">
   <!-- Extra Header Action for Closing FY -->
   <div extraHeaderActions>
-    @if (permissionService.canUpdate() && model.selectedYearNo() && formdata.get('status')?.value === 'Open') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
-        (click)="onCloseFY()"
-      >
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-          >lock_open</mat-icon
-        >
-        <span class="small">{{ 'closeFy' | translate }}</span>
-      </button>
+    @if (permissionService.canUpdate() && model.selectedYearNo() && formdata.get('is_closed')?.value === 0) {
+    <button type="button"
+      class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
+      (click)="onCloseFY()">
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px">lock_open</mat-icon>
+      <span class="small">{{ 'closeFy' | translate }}</span>
+    </button>
     }
   </div>
 
-  <!-- Sidebar List Content -->
-  <div sidebarList>
-    @for (year of model.pager.paged(); track year.fin_year_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedYearNo() === year.fin_year_no"
-        (click)="selectYear(year)"
-      >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold">{{ year.fin_year_code }}</h6>
-          <span
-            class="badge rounded-pill"
-            [ngClass]="{
-              'text-bg-success': year.status === 'Open',
-              'text-bg-secondary': year.status === 'Closed',
-            }"
-            >{{ year.status }}</span
-          >
-        </div>
-        <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-          {{ year.fin_year_name }}
-        </p>
-        <div class="d-flex gap-2 mt-1 opacity-50 small">
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
-            >event</mat-icon
-          >
-          <span
-            >{{ year.start_date | date: 'shortDate' }} -
-            {{ year.end_date | date: 'shortDate' }}</span
-          >
-        </div>
-      </button>
-    }
-
-    @if (model.filteredYears().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon
-          class="opacity-50 mb-2"
-          style="font-size: 32px; height: 32px; width: 32px"
-          >event_busy</mat-icon
-        >
-        <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
-      </div>
-    }
-  </div>
 
   <!-- Main Form Content -->
   <div formContent>
     <form [formGroup]="formdata" autocomplete="off">
       <div class="row row-group">
+        <!-- Filter Card -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 col-sm-6 col-12">
+                  <div class="field-group mb-0">
+                    <ng-select id="filter_fin_year" [items]="model.financialYears()" bindLabel="fin_year_id"
+                      bindValue="fin_year_no" [ngModel]="model.selectedYearNo()" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onSelectYear($event)" [clearable]="false" placeholder="Select Financial Year">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- FY Basic Info Column (8-col) -->
-        <div class="col-xl-8 col-lg-12">
+        <div class="col-xl-12 col-lg-12">
           <div class="form-section-card card">
             <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
+              <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center">
                 <mat-icon class="me-2 align-middle">info</mat-icon>
                 {{ 'fyInfo' | translate }}
               </h4>
@@ -96,230 +51,75 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="fin_year_code">{{
+                    <label class="field-label" for="fin_year_id">{{
                       'fyCode' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="fin_year_code"
-                      formControlName="fin_year_code"
-                      class="form-control text-uppercase"
-                      placeholder="e.g. FY2025-26"
-                    />
+                      }}</label>
+                    <input type="text" id="fin_year_id" formControlName="fin_year_id"
+                      class="form-control text-uppercase" [class.bg-light]="!!model.selectedYearNo()"
+                      [readonly]="!!model.selectedYearNo()" placeholder="e.g. FY-JUL25-JUN26" />
                   </div>
                 </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="fin_year_name">{{
-                      'fyName' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="fin_year_name"
-                      formControlName="fin_year_name"
-                      class="form-control"
-                      placeholder="e.g. Financial Year 2025-2026"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label required" for="branch_nos">{{
-                      'assignedBranches' | translate
-                    }}</label>
-                    <ng-select
-                      id="branch_nos"
-                      labelForId="branch_nos"
-                      formControlName="branch_nos"
-                      [multiple]="true"
-                      bindLabel="branch_name"
-                      bindValue="branch_no"
-                      placeholder="{{ 'selectBranches' | translate }}"
-                    >
-                      @for (branch of model.branches(); track branch.branch_no) {
-                        <ng-option [value]="branch.branch_no">
-                          {{ branch.branch_name }}
-                        </ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
+
+                <div class="col-md-4">
                   <div class="field-group">
                     <label class="field-label required" for="start_date">{{
                       'startDate' | translate
-                    }}</label>
-                    <input
-                      type="date"
-                      id="start_date"
-                      formControlName="start_date"
-                      class="form-control"
-                      (change)="autoGeneratePeriods()"
-                    />
+                      }}</label>
+                    <input type="date" id="start_date" formControlName="start_date" class="form-control"
+                      (change)="autoGeneratePeriods()" />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
                     <label class="field-label required" for="end_date">{{
                       'endDate' | translate
-                    }}</label>
-                    <input
-                      type="date"
-                      id="end_date"
-                      formControlName="end_date"
-                      class="form-control"
-                      (change)="autoGeneratePeriods()"
-                    />
+                      }}</label>
+                    <input type="date" id="end_date" formControlName="end_date" class="form-control"
+                      (change)="autoGeneratePeriods()" />
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Periods Table -->
-          <div class="form-section-card card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">list_alt</mat-icon>
-                {{ 'accountingPeriods' | translate }}
-              </h4>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                (click)="autoGeneratePeriods()"
-                [disabled]="!formdata.get('start_date')?.value"
-              >
-                <mat-icon
-                  class="align-middle me-1"
-                  style="font-size: 16px; width: 16px; height: 16px"
-                  >auto_fix_high</mat-icon
-                >
-                {{ 'regenerate' | translate }}
-              </button>
-            </div>
-            <div class="card-body p-0">
-              <div
-                class="periods-table-container"
-                style="height: 298px; overflow-y: auto"
-              >
-                <table
-                  class="table table-hover align-middle mb-0 custom-table-sm"
-                >
-                  <thead class="bg-light sticky-top shadow-sm">
-                    <tr>
-                      <th class="ps-3" style="width: 150px">
-                        {{ 'code' | translate }}
-                      </th>
-                      <th>{{ 'name' | translate }}</th>
-                      <th style="width: 130px">{{ 'start' | translate }}</th>
-                      <th style="width: 130px">{{ 'end' | translate }}</th>
-                      <th style="width: 110px">{{ 'status' | translate }}</th>
-                    </tr>
-                  </thead>
-                  <tbody formArrayName="periods">
-                    @for (p of periodsFormArray.controls; track i; let i = $index) {
-                      <tr [formGroupName]="i">
-                        <td class="ps-3">
-                          <input
-                            type="text"
-                            formControlName="period_code"
-                            class="form-control form-control-sm text-uppercase bg-transparent border-0 fw-bold"
-                            readonly
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            formControlName="period_name"
-                            class="form-control form-control-sm bg-transparent border-0"
-                          />
-                        </td>
-                        <td>
-                          <span class="small">{{
-                            p.get('start_date')?.value | date: 'mediumDate'
-                          }}</span>
-                        </td>
-                        <td>
-                          <span class="small">{{
-                            p.get('end_date')?.value | date: 'mediumDate'
-                          }}</span>
-                        </td>
-                        <td>
-                          <select
-                            formControlName="status"
-                            class="form-select form-select-sm border-0 bg-light"
-                          >
-                            <option value="Open">Open</option>
-                            <option value="Closed">Closed</option>
-                          </select>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+                <div class="field-group">
+                  <label class="field-label" for="is_closed">{{ 'status' | translate }}</label>
+                  <ng-select id="is_closed" labelForId="is_closed" formControlName="is_closed" bindLabel="label"
+                    bindValue="value" placeholder="{{ 'selectStatus' | translate }}">
+                    <ng-option [value]="0">Open</ng-option>
+                    <ng-option [value]="1">Closed</ng-option>
+                  </ng-select>
+                </div>
+                <div class="field-group mt-3">
+                  <label class="field-label" for="remarks">{{ 'remarks' | translate }}</label>
+                  <textarea id="remarks" formControlName="remarks" class="form-control" rows="3"
+                    placeholder="Optional remarks"></textarea>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Side Column (4-col) -->
-        <div class="col-xl-4 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">settings</mat-icon>
-                {{ 'settings' | translate }}
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="field-group mb-3">
-                <div class="custom--checkbox">
-                  <mat-checkbox formControlName="is_current" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">{{
-                      'currentFinancialYear' | translate
-                    }}</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-              <div class="field-group">
-                <label class="field-label" for="status">{{ 'status' | translate }}</label>
-                <ng-select
-                  id="status"
-                  labelForId="status"
-                  formControlName="status"
-                  bindLabel="label"
-                  bindValue="value"
-                  placeholder="{{ 'selectStatus' | translate }}"
-                >
-                  @for (s of SYS_CONSTS.financialYearStatuses; track s.value) {
-                    <ng-option [value]="s.value">
-                      {{ s.label | translate }}
-                    </ng-option>
-                  }
-                </ng-select>
-              </div>
-            </div>
-          </div>
 
-          <div class="form-section-card card bg-light-2d border-0 shadow-none">
-            <div class="card-body">
-              <h6 class="fw-bold small text-uppercase mb-2">
-                {{ 'helpfulTips' | translate }}
-              </h6>
-              <ul class="small text-secondary ps-3 mb-0">
-                <li>{{ 'standardFormatTip' | translate }}</li>
-                <li>{{ 'autoGenerateTip' | translate }}</li>
-                <li>{{ 'lockYearTip' | translate }}</li>
-              </ul>
+        <!-- Financial Periods Table (using Custom HTML Table) -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center">
+                <mat-icon class="me-2">list_alt</mat-icon>
+                {{ 'accountingPeriods' | translate }}
+              </h4>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="autoGeneratePeriods()"
+                [disabled]="!formdata.get('start_date')?.value">
+                <mat-icon class="align-middle me-1"
+                  style="font-size: 16px; width: 16px; height: 16px">auto_fix_high</mat-icon>
+                {{ 'regenerate' | translate }}
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <app-common-table [columns]="periodsTableColumns" [data]="periodsTableData()"
+                [config]="periodsTableConfig" [tableId]="'sys1003-periods'" (cellEdit)="onCellEdit($event)">
+              </app-common-table>
             </div>
           </div>
         </div>
       </div>
     </form>
   </div>
-
-  <!-- Pagination footer -->
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

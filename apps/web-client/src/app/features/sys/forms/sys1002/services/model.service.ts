@@ -1,72 +1,30 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { DatePipe } from '@angular/common';
 import { finalize } from 'rxjs';
-import { Sys1002DataService } from './data.service';
-import { BaseEntity } from '../../../../../core/models/base-entity.model';
+import { Sys1002DataService, Sys1002BranchDto, Sys1002EmployeeDto } from './data.service';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { makePaginator } from '../../../../../core/utils/paginator';
-import { CommonDataService } from '@app/shared/services/common-data.service';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
-// ─── Domain Interface ────────────────────────────────────────────────────────
+/** @deprecated Use Sys1002BranchDto instead. Kept for backward compatibility with sys1003/1004/1005. */
+export type IBranch = Sys1002BranchDto;
 
-/**
- * Interface representing a Branch entity.
- * Based on the sys_branch table in db.md.
- */
-export interface IBranch extends BaseEntity {
-  branch_no: number;
-  branch_id: string;
-  branch_name: string;
-  branch_name_nls?: string | null;
-  branch_type?: string | null;
-  address1?: string | null;
-  address2?: string | null;
-  city?: string | null;
-  state_province?: string | null;
-  post_code?: string | null;
-  mobile_number?: string | null;
-  phone_number?: string | null;
-  email?: string | null;
-  manager_no?: number | null;
-  company_no: number;
-  active_status: number;
-  display_sl?: number;
-  remarks?: string | null;
-  description?: string | null;
-}
-
-// ─── Service ─────────────────────────────────────────────────────────────────
-
-/**
- * State + form service for SYS1002 – Branch Setup.
- *
- * Responsibilities:
- *  - Reactive signals (branches list, loading flags, selection)
- *  - FormGroup construction and patching
- *  - Orchestration of Sys1002DataService calls
- *
- * HTTP endpoint paths and request construction live in Sys1002DataService.
- */
 @Injectable()
 export class Sys1002ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Sys1002DataService);
   private toastr = inject(ToastrService);
-  private datePipe = inject(DatePipe);
-  private commApi = inject(CommonDataService);
   private authCtx = inject(AuthContextService);
 
   // ─── State ─────────────────────────────────────────────────────────────────
-  branches = signal<IBranch[]>([]);
+  branches = signal<Sys1002BranchDto[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
   searchTerm = signal('');
   selectedBranchNo = signal<number | null>(null);
-  employees = signal<any[]>([]);
+  employees = signal<Sys1002EmployeeDto[]>([]);
 
   form!: FormGroup;
 
@@ -82,37 +40,35 @@ export class Sys1002ModelService {
     );
   });
 
-  // Pagination over the filtered list (see core/utils/paginator).
-  pager = makePaginator<IBranch>(this.filteredBranches);
+  pager = makePaginator<Sys1002BranchDto>(this.filteredBranches);
 
   loadEmployees(): void {
-    this.commApi.getEmployeeList({ active_status: 1 }).subscribe((res) => {
-      this.employees.set(res.data);
+    this.data.getEmployees().subscribe((res) => {
+      if (isSuccess(res) && res.data) {
+        this.employees.set(res.data);
+      }
     });
   }
 
   // ─── Form ───────────────────────────────────────────────────────────────────
   initForm(): void {
     this.form = this.fb.group({
-      branch_no: [null],
-      branch_id: [''],
-      branch_name: ['', [Validators.required, Validators.maxLength(200)]],
-      branch_name_nls: [''],
-      branch_type: ['', [Validators.required]],
-      address1: [''],
-      address2: [''],
-      city: ['', [Validators.required]],
-      state_province: [''],
-      post_code: [''],
-      mobile_number: ['', [Validators.required]],
-      phone_number: [''],
-      email: ['', Validators.email],
-      manager_no: [null],
-      company_no: [this.authCtx.user()?.company_no ?? null],
-      active_status: [1, Validators.required],
-      display_sl: [null],
-      remarks: [''],
-      description: [''],
+      branch_no:            [null],
+      company_no:           [this.authCtx.user()?.company_no ?? null],
+      branch_id:            [''],
+      branch_name:          ['', [Validators.required, Validators.maxLength(250)]],
+      branch_name_nls:      [''],
+      branch_type:          [''],
+      branch_addr1:         [''],
+      branch_addr2:         [''],
+      city:                 [''],
+      post_code:            [''],
+      mobile_no:            [''],
+      contact_no:           [''],
+      email:                ['', Validators.email],
+      manager_employee_no:  [null],
+      is_main_branch:       [0],
+      is_active:            [1, Validators.required],
     });
   }
 
@@ -120,7 +76,7 @@ export class Sys1002ModelService {
   loadBranches(reselectNo: number | null = null): void {
     this.isLoading.set(true);
     this.data
-      .loadBranches()
+      .getBranchList()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
@@ -128,50 +84,50 @@ export class Sys1002ModelService {
             this.branches.set(res.data);
             const resolved = resolvePostReloadSelection(
               res.data,
-              (b) => b.branch_no,
+              (b: Sys1002BranchDto) => b.branch_no,
               reselectNo,
             );
-            resolved ? this.selectBranch(resolved.item) : this.onNew();
+            resolved ? this.selectBranch(resolved.item as Sys1002BranchDto) : this.onNew();
           }
         },
       });
   }
 
-  selectBranch(branch: IBranch): void {
+  selectBranch(branch: Sys1002BranchDto): void {
     this.selectedBranchNo.set(branch.branch_no);
     this.isLoading.set(true);
 
     this.data
-      .loadBranchDetail(branch.branch_no)
+      .getBranchDetail(branch.branch_no!)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
-            const d = res.data as unknown as Record<string, unknown>;
-            this.form.patchValue({
-              branch_no: d['branch_no'] ?? d['branchNo'],
-              branch_id: d['branch_id'] ?? d['branchId'],
-              branch_name: d['branch_name'] ?? d['branchName'],
-              branch_name_nls: d['branch_name_nls'] ?? d['branchNameLocal'],
-              branch_type: d['branch_type'] ?? d['branchType'],
-              address1: d['address1'] ?? d['addressLine1'],
-              address2: d['address2'] ?? d['addressLine2'],
-              city: d['city'],
-              state_province: d['state_province'] ?? d['stateProvince'],
-              post_code: d['post_code'] ?? d['postCode'],
-              mobile_number: d['mobile_number'] ?? d['phonePrimary'],
-              phone_number: d['phone_number'],
-              email: d['email'],
-              manager_no: d['manager_no'] ?? d['managerUserNo'],
-              company_no: d['company_no'] ?? d['companyNo'],
-              active_status: d['active_status'] ?? d['status'] ?? 1,
-              display_sl: d['display_sl'] ?? d['displaySl'],
-              remarks: d['remarks'],
-              description: d['description'],
-            });
+            this.patchForm(res.data);
           }
         },
       });
+  }
+
+  patchForm(d: Sys1002BranchDto): void {
+    this.form.patchValue({
+      branch_no:            d.branch_no,
+      company_no:           d.company_no,
+      branch_id:            d.branch_id,
+      branch_name:          d.branch_name,
+      branch_name_nls:      d.branch_name_nls,
+      branch_type:          d.branch_type,
+      branch_addr1:         d.branch_addr1,
+      branch_addr2:         d.branch_addr2,
+      city:                 d.city,
+      post_code:            d.post_code,
+      mobile_no:            d.mobile_no,
+      contact_no:           d.contact_no,
+      email:                d.email,
+      manager_employee_no:  d.manager_employee_no,
+      is_main_branch:       d.is_main_branch === 1,
+      is_active:            d.is_active ?? 1,
+    });
   }
 
   onSave(callback?: () => void): void {
@@ -184,30 +140,25 @@ export class Sys1002ModelService {
     this.isSaving.set(true);
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedBranchNo();
-    const payload = {
+    const payload: Sys1002BranchDto = {
       ...val,
       branch_no: this.selectedBranchNo(),
-      active_status:
-        val.active_status === true
-          ? 1
-          : val.active_status === false
-            ? 0
-            : val.active_status,
+      is_main_branch: val.is_main_branch === true ? 1 : val.is_main_branch === false ? 0 : val.is_main_branch,
+      is_active: val.is_active === true ? 1 : val.is_active === false ? 0 : val.is_active,
     };
 
-    const obs = isUpdate
-      ? this.data.updateBranch(payload)
-      : this.data.saveBranch(payload);
-
-    obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: (res) => {
-        if (isSuccess(res)) {
-          this.toastr.success(isUpdate ? 'Branch updated' : 'Branch created');
-          this.loadBranches(isUpdate ? this.selectedBranchNo() : null);
-          if (callback) callback();
-        }
-      },
-    });
+    this.data
+      .saveBranch(payload)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (isSuccess(res)) {
+            this.toastr.success(isUpdate ? 'Branch updated' : 'Branch created');
+            this.loadBranches(isUpdate ? this.selectedBranchNo() : null);
+            if (callback) callback();
+          }
+        },
+      });
   }
 
   onDelete(callback?: () => void): void {
@@ -232,7 +183,7 @@ export class Sys1002ModelService {
   onNew(): void {
     this.selectedBranchNo.set(null);
     this.form.reset({
-      active_status: 1,
+      is_active:  1,
       company_no: this.authCtx.user()?.company_no ?? null,
     });
   }

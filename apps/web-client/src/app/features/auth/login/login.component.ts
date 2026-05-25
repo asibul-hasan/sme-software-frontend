@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -10,6 +10,8 @@ import {
 } from '@angular/forms';
 import { AuthService } from '../../../core';
 import { ToastrService } from 'ngx-toastr';
+import { StorageService } from '../../../core/services/storage.service';
+import { globalConstants } from '../../../core/constants/global.constants';
 import {
   AuthDataService,
   Company,
@@ -22,6 +24,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-login',
   standalone: true,
   imports: [
@@ -42,6 +45,7 @@ export class LoginComponent implements OnInit {
   private readonly router          = inject(Router);
   private readonly route           = inject(ActivatedRoute);
   private readonly toastr          = inject(ToastrService);
+  private readonly storage         = inject(StorageService);
   private readonly destroyRef      = inject(DestroyRef);
   private readonly cdr             = inject(ChangeDetectorRef);
 
@@ -66,6 +70,13 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.returnUrl =
       this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+
+    // Re-plan §4.5: pre-fill the last user id used on this device, then load its contexts.
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    if (lastUserId) {
+      this.loginForm.get('userName')?.setValue(lastUserId);
+      this.onUserNameBlur();
+    }
   }
 
   onUserNameBlur() {
@@ -96,8 +107,7 @@ export class LoginComponent implements OnInit {
                 company_name: c.company_name,
               }));
 
-              const firstCompany = this.companies[0].company_no;
-              this.loginForm.get('company_no')?.setValue(firstCompany);
+              this.loginForm.get('company_no')?.setValue(this.preferredCompanyNo());
               this.loginForm.get('company_no')?.enable();
 
               this.onCompanyChange();
@@ -120,13 +130,36 @@ export class LoginComponent implements OnInit {
         branch_name: b.branch_name,
       }));
 
-      // We don't auto-select the branch anymore, user must select it
-      this.loginForm.get('branch_no')?.setValue(null);
+      // Auto-select when there is a remembered branch or only one option (re-plan hybrid login).
+      this.loginForm.get('branch_no')?.setValue(this.preferredBranchNo());
     } else {
       this.branches = [];
       this.loginForm.get('branch_no')?.setValue(null);
     }
     this.cdr.markForCheck();
+  }
+
+  /** Last-used company for this device (if the typed user matches), else the first company. */
+  private preferredCompanyNo(): number {
+    const first = this.companies[0].company_no;
+    const typed = this.loginForm.get('userName')?.value;
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    if (typed && typed === lastUserId) {
+      const lastCompany = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastCompanyNo, 'local'));
+      if (lastCompany && this.companies.some((c) => c.company_no === lastCompany)) return lastCompany;
+    }
+    return first;
+  }
+
+  /** Remembered branch (if the typed user matches) → else the single branch → else none. */
+  private preferredBranchNo(): number | null {
+    const typed = this.loginForm.get('userName')?.value;
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    if (typed && typed === lastUserId) {
+      const lastBranch = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastBranchNo, 'local'));
+      if (lastBranch && this.branches.some((b) => b.branch_no === lastBranch)) return lastBranch;
+    }
+    return this.branches.length === 1 ? this.branches[0].branch_no : null;
   }
 
   onSubmit() {
@@ -136,7 +169,7 @@ export class LoginComponent implements OnInit {
 
       const formValue = this.loginForm.getRawValue();
       const payload = {
-        user_name: formValue.userName,
+        user_id: formValue.userName,
         password: formValue.password,
         company_no: Number(formValue.company_no),
         branch_no: Number(formValue.branch_no),
@@ -145,14 +178,18 @@ export class LoginComponent implements OnInit {
       this.authService.login(payload)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: () => {
+          next: (response) => {
             // Use setTimeout to ensure the view state is stable before navigation and toastr
             setTimeout(() => {
               this.isLoading.set(false);
               // Save the current branches list to context so Header can show them
               this.authService.setAvailableBranches(this.branches);
-              
-              this.toastr.success('Logged in successfully', 'Welcome');
+
+              if (response?.must_change_password === 1) {
+                this.toastr.warning('You must change your password before continuing.', 'Action Required');
+              } else {
+                this.toastr.success('Logged in successfully', 'Welcome');
+              }
               this.router.navigateByUrl(this.returnUrl);
               this.cdr.detectChanges();
             });
@@ -164,7 +201,7 @@ export class LoginComponent implements OnInit {
                 this.lockedUntil = err.error.locked_until;
                 this.startLockTimer();
               } else {
-                this.toastr.error(err.error?.message || 'Invalid credentials', 'Login Failed');
+                this.toastr.error(this.mapLoginError(err.error?.message), 'Login Failed');
               }
               this.cdr.detectChanges();
             });
@@ -172,6 +209,20 @@ export class LoginComponent implements OnInit {
         });
     } else {
       this.loginForm.markAllAsTouched();
+    }
+  }
+
+  /** Maps backend login error codes to user-friendly messages. */
+  private mapLoginError(code?: string): string {
+    switch (code) {
+      case 'PASSWORD_NOT_SET':        return 'Your password has not been set yet. Please contact your administrator.';
+      case 'INVALID_CREDENTIALS':     return 'Invalid user ID or password.';
+      case 'USER_LOCKED':             return 'Your account is locked. Please contact your administrator.';
+      case 'USER_INACTIVE':           return 'Your account is inactive. Please contact your administrator.';
+      case 'TOO_MANY_LOGIN_ATTEMPTS': return 'Too many failed attempts. Please try again in a few minutes.';
+      case 'BRANCH_ACCESS_DENIED':    return 'You do not have access to the selected branch.';
+      case 'COMPANY_ACCESS_DENIED':   return 'You do not have access to the selected company.';
+      default:                        return code || 'Invalid credentials';
     }
   }
 

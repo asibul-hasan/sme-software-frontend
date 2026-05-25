@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
@@ -11,6 +11,7 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sys1005',
   standalone: true,
   imports: [

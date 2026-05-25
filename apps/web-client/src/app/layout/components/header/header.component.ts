@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   signal,
   computed,
@@ -8,7 +9,7 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService, ThemeService, LanguageService } from '../../../core';
 import { MenuService } from '../sidebar/services/menu-builder.service';
@@ -32,6 +33,7 @@ export interface NotificationItem {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   standalone: true,
   imports: [SharedModule],
@@ -176,7 +178,7 @@ export class HeaderComponent implements OnInit {
     } else {
       // Fallback: Use standard URL segmentation
       const segments = url.split('/').filter(Boolean);
-      const crumbs: BreadcrumbItem[] = segments.map((seg, i) => ({
+      const crumbs: BreadcrumbItem[] = segments.map((seg: string, i: number) => ({
         label: this.toLabel(seg),
         url: '/' + segments.slice(0, i + 1).join('/'),
       }));

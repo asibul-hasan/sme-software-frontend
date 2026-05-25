@@ -1,0 +1,258 @@
+<!-- AIDLY ERP — Common Table -->
+<div class="form-section-card card">
+
+  <!-- TOOLBAR -->
+  @if (mergedConfig().showSearch || mergedConfig().showColumnToggle || mergedConfig().showExport || mergedConfig().showTitle) {
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2" style="padding:6px 12px">
+      <!-- Left: Title + Search -->
+      <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+        @if (mergedConfig().showTitle && mergedConfig().title) {
+          <h4 class="card-header__title mb-0 fw-bold" style="font-size:14px">
+            <mat-icon class="me-1 align-middle" style="font-size:18px;width:18px;height:18px">table_view</mat-icon>
+            {{ mergedConfig().title }}
+          </h4>
+        }
+        @if (mergedConfig().showSearch) {
+          <div class="position-relative d-flex align-items-center" style="max-width:240px;flex:1">
+            <mat-icon class="position-absolute text-muted" style="left:8px;font-size:17px;width:17px;height:17px;pointer-events:none;z-index:1">search</mat-icon>
+            <input type="text" [formControl]="searchControl" [placeholder]="mergedConfig().searchPlaceholder || 'Search...'" class="form-control" style="padding-left:30px;padding-right:26px;height:32px;font-size:12px;border-radius:6px" />
+            @if (searchControl.value) {
+              <button class="position-absolute d-flex align-items-center justify-content-center border-0 bg-transparent text-muted" style="right:4px;width:20px;height:20px;border-radius:4px;cursor:pointer" (click)="searchControl.setValue('')">
+                <mat-icon style="font-size:15px;width:15px;height:15px">close</mat-icon>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Right: Action buttons -->
+      <div class="btn-action-group">
+        <!-- Column Toggle -->
+        @if (mergedConfig().showColumnToggle) {
+          <button class="btn-action btn-reset" [uiMenuTriggerFor]="columnMenu" style="height:30px;padding:0 8px" uiTooltip="Columns">
+            <mat-icon style="font-size:17px;width:17px;height:17px">view_column</mat-icon>
+          </button>
+          <ui-menu #columnMenu>
+            <div style="min-width:220px;max-height:320px;overflow-y:auto;padding:4px 0">
+              <div class="d-flex align-items-center justify-content-between" style="padding:8px 14px 6px;border-bottom:1px solid var(--border-color)">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary)">Columns</span>
+                <div class="d-flex gap-1">
+                  <button class="btn-action btn-save" style="height:24px;padding:0 6px;font-size:10px" (click)="saveColumnVisibility(); $event.stopPropagation()">
+                    <mat-icon style="font-size:14px;width:14px;height:14px">save</mat-icon> Save
+                  </button>
+                  <button class="btn-action btn-reset" style="height:24px;padding:0 6px;font-size:10px" (click)="resetColumnVisibility(); $event.stopPropagation()">
+                    <mat-icon style="font-size:14px;width:14px;height:14px">restart_alt</mat-icon>
+                  </button>
+                </div>
+              </div>
+              @for (col of columns(); track col.field) {
+                @if (col.hideable !== false) {
+                  <div class="d-flex align-items-center gap-2" style="padding:5px 14px;cursor:pointer" (click)="toggleColumn(col); $event.stopPropagation()">
+                    <mat-icon style="font-size:18px;width:18px;height:18px;color:var(--indigo)">
+                      {{ isColumnVisible(col) ? 'check_box' : 'check_box_outline_blank' }}
+                    </mat-icon>
+                    <span style="font-size:13px;color:var(--text-primary);user-select:none">{{ col.title }}</span>
+                  </div>
+                }
+              }
+            </div>
+          </ui-menu>
+        }
+
+        <!-- Export dropdown (single button, icons only) -->
+        @if (mergedConfig().showExport) {
+          <button class="btn-action btn-reset" [uiMenuTriggerFor]="exportMenu" style="height:30px;padding:0 8px" uiTooltip="Export">
+            <mat-icon style="font-size:17px;width:17px;height:17px">file_download</mat-icon>
+          </button>
+          <ui-menu #exportMenu>
+            <div style="padding:4px 0;min-width:160px">
+              @for (format of mergedConfig().exportFormats || []; track format) {
+                <button class="d-flex align-items-center gap-2 border-0 bg-transparent w-100" style="padding:8px 14px;cursor:pointer;font-size:13px;color:var(--text-primary);text-align:left" (click)="onExport(format)" (mouseover)="$any($event.currentTarget).style.background='var(--select-bg)'" (mouseout)="$any($event.currentTarget).style.background='transparent'">
+                  @switch (format) {
+                    @case ('excel') { <mat-icon style="font-size:18px;width:18px;height:18px;color:var(--success)">description</mat-icon> <span>Excel</span> }
+                    @case ('pdf') { <mat-icon style="font-size:18px;width:18px;height:18px;color:var(--danger)">picture_as_pdf</mat-icon> <span>PDF</span> }
+                    @case ('csv') { <mat-icon style="font-size:18px;width:18px;height:18px;color:var(--primary)">file_download</mat-icon> <span>CSV</span> }
+                    @case ('print') { <mat-icon style="font-size:18px;width:18px;height:18px;color:var(--text-secondary)">print</mat-icon> <span>Print</span> }
+                  }
+                </button>
+              }
+            </div>
+          </ui-menu>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- TABLE -->
+  <div class="card-body p-0">
+    <div class="overflow-auto" [style.max-height]="mergedConfig().maxHeight">
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="w-100 mb-0">
+
+        <!-- Selection Column -->
+        @if (mergedConfig().selectable) {
+          <ng-container matColumnDef="__select">
+            <th mat-header-cell *matHeaderCellDef style="width:40px;min-width:40px;max-width:40px;padding:0 6px;text-align:center">
+              <mat-checkbox [checked]="isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()" (change)="toggleAllRows()" color="primary" />
+            </th>
+            <td mat-cell *matCellDef="let row" style="width:40px;min-width:40px;max-width:40px;padding:0 6px;text-align:center">
+              <mat-checkbox [checked]="selection.isSelected(row)" (change)="toggleRow(row)" (click)="$event.stopPropagation()" color="primary" />
+            </td>
+          </ng-container>
+        }
+
+        <!-- Row Number Column -->
+        @if (mergedConfig().showRowNumbers) {
+          <ng-container matColumnDef="__rowNumber">
+            <th mat-header-cell *matHeaderCellDef style="width:40px;min-width:40px;max-width:40px;padding:0 6px;text-align:center;font-size:11px">#</th>
+            <td mat-cell *matCellDef="let row; let i = index" style="width:40px;min-width:40px;max-width:40px;padding:0 6px;text-align:center;color:var(--text-secondary);font-size:11px">{{ i + 1 }}</td>
+          </ng-container>
+        }
+
+        <!-- Dynamic Data Columns -->
+        @for (col of visibleColumns(); track col.field) {
+          <ng-container [matColumnDef]="col.field">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="!col.sort" [class]="getHeaderClass(col)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)">{{ col.title }}</th>
+            <td mat-cell *matCellDef="let row" [class]="getCellClass(col)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)" (dblclick)="col.editable ? startEdit(row, col) : null">
+              @if (isEditing(row, col.field)) {
+                @switch (col.cellType) {
+                  @case ('select') {
+                    <select class="form-select" style="height:28px;font-size:12px;padding:0 6px;border-radius:6px" [value]="editValue() ?? ''" (change)="onEditInput($event, col)" (blur)="commitEdit(col)" (keydown.escape)="cancelEdit()" (keydown.enter)="commitEdit(col)" autofocus>
+                      <option value="">-- Select --</option>
+                      @for (opt of getSelectOptions(col, row); track opt.value) { <option [value]="opt.value">{{ opt.label }}</option> }
+                    </select>
+                  }
+                  @case ('checkbox') {
+                    <input type="checkbox" [checked]="!!editValue()" (change)="onEditCheckbox($event)" (blur)="commitEdit(col)" style="width:15px;height:15px;accent-color:var(--indigo);cursor:pointer" autofocus />
+                  }
+                  @case ('date') {
+                    <input type="date" [value]="editValue()" (input)="onEditInput($event, col)" (blur)="commitEdit(col)" (keydown.escape)="cancelEdit()" (keydown.enter)="commitEdit(col)" class="form-control" style="height:28px;font-size:12px;padding:0 6px;border-radius:6px" autofocus />
+                  }
+                  @default {
+                    <input [type]="col.cellType === 'number' || col.cellType === 'decimal' || col.cellType === 'currency' ? 'number' : 'text'" [value]="editValue() ?? ''" [attr.step]="col.cellType === 'decimal' || col.cellType === 'currency' ? '0.01' : null" (input)="onEditInput($event, col)" (blur)="commitEdit(col)" (keydown.escape)="cancelEdit()" (keydown.enter)="commitEdit(col)" class="form-control" style="height:28px;font-size:12px;padding:0 6px;border-radius:6px" autofocus />
+                  }
+                }
+              } @else {
+                @switch (col.cellType) {
+                  @case ('badge') { @if (getBadgeConfig(row, col); as badge) { <ui-badge [variant]="badge.variant">{{ badge.label }}</ui-badge> } }
+                  @case ('checkbox') {
+                    @if (getCellValue(row, col)) { <mat-icon class="text-success" style="font-size:17px;width:17px;height:17px">check_circle</mat-icon> }
+                    @else { <mat-icon class="text-muted" style="font-size:17px;width:17px;height:17px;opacity:0.4">cancel</mat-icon> }
+                  }
+                  @case ('icon') { <mat-icon style="font-size:18px;width:18px;height:18px">{{ getCellValue(row, col) }}</mat-icon> }
+                  @case ('button') {
+                    @if (getButtonConfig(row, col); as btn) {
+                      <button class="btn-action" [class]="btn.variant === 'danger' ? 'btn-delete' : btn.variant === 'success' ? 'btn-save' : 'btn-reset'" style="height:26px;padding:0 6px;font-size:11px" (click)="onCellButtonClick(row, col, btn); $event.stopPropagation()">
+                        @if (btn.icon) { <mat-icon style="font-size:14px;width:14px;height:14px">{{ btn.icon }}</mat-icon> } {{ btn.label }}
+                      </button>
+                    }
+                  }
+                  @case ('custom-template') { @if (col.customTemplate) { <ng-container *ngTemplateOutlet="col.customTemplate; context: { $implicit: row, column: col }" /> } }
+                  @default { <span [class]="getAlignClass(col)">{{ formatCellValue(row, col) }}</span> }
+                }
+              }
+            </td>
+          </ng-container>
+        }
+
+        <!-- Actions Column -->
+        @if (mergedConfig().showActions) {
+          <ng-container matColumnDef="__actions">
+            <th mat-header-cell *matHeaderCellDef style="width:80px;min-width:80px;text-align:center">Actions</th>
+            <td mat-cell *matCellDef="let row" style="width:80px;min-width:80px;text-align:center">
+              <div class="d-flex align-items-center justify-content-center gap-1">
+                @for (action of mergedConfig().actions || []; track action.type) {
+                  @if (!action.visible || action.visible(row)) {
+                    <button class="btn-action" [class]="action.variant === 'danger' ? 'btn-delete' : action.variant === 'primary' ? 'btn-new' : 'btn-reset'" style="width:26px;height:26px;padding:0;border-radius:6px" [style.opacity]="action.disabled && action.disabled(row) ? '0.4' : '1'" [style.pointer-events]="action.disabled && action.disabled(row) ? 'none' : 'auto'" [disabled]="action.disabled && action.disabled(row)" [uiTooltip]="action.tooltip || ''" (click)="onAction(action, row); $event.stopPropagation()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">{{ action.icon }}</mat-icon>
+                    </button>
+                  }
+                }
+              </div>
+            </td>
+          </ng-container>
+        }
+
+        <!-- Header Row -->
+        <tr mat-header-row *matHeaderRowDef="displayFields(); sticky: true"></tr>
+
+        <!-- Body Rows -->
+        @if (!showSkeleton()) {
+          <tr mat-row *matRowDef="let row; columns: displayFields()" [class]="selection.isSelected(row) ? 'erp-row-active' : ''" (click)="onRowClick(row, $event)"></tr>
+        }
+
+        <!-- Empty State -->
+        @if (!showSkeleton() && dataSource.filteredData.length === 0) {
+          <tr class="mat-row">
+            <td [attr.colspan]="displayFields().length" style="text-align:center;vertical-align:middle;border:none">
+              <div class="d-flex flex-column align-items-center gap-2 py-4">
+                <mat-icon class="text-muted" style="font-size:40px;width:40px;height:40px;opacity:0.3">inventory_2</mat-icon>
+                <p class="fw-semibold text-muted mb-0" style="font-size:13px">No data available</p>
+              </div>
+            </td>
+          </tr>
+        }
+
+        <!-- Skeleton -->
+        @if (showSkeleton()) {
+          @for (i of skeletonRows; track i) {
+            <tr class="mat-row" style="height:36px">
+              @for (field of displayFields(); track field) {
+                <td class="mat-cell" style="padding:8px 12px;border-bottom:1px solid var(--border-color)">
+                  <div style="height:12px;border-radius:4px;width:80%;background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--border-color) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:skeleton-pulse 1.5s ease-in-out infinite"></div>
+                </td>
+              }
+            </tr>
+          }
+        }
+
+        <!-- Footer Totals -->
+        @if (hasFooterTotal() && !showSkeleton() && dataSource.filteredData.length > 0) {
+          <tr class="mat-row erp-footer-row sticky-bottom">
+            @for (field of displayFields(); track field) {
+              @if (field === '__select' || field === '__rowNumber') {
+                <td class="mat-cell erp-footer-cell" style="width:40px"></td>
+              } @else if (field === '__actions') {
+                <td class="mat-cell erp-footer-cell text-end fw-bold" style="width:80px">{{ getFooterLabel() }}</td>
+              } @else {
+                @if (getColumnByField(field); as col) {
+                  <td class="mat-cell erp-footer-cell" [class]="getAlignClass(col)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)">
+                    @if (col.bottomTotal) { <strong>{{ getFooterValue(col) }}</strong> }
+                  </td>
+                } @else { <td class="mat-cell erp-footer-cell"></td> }
+              }
+            }
+          </tr>
+        }
+      </table>
+    </div>
+  </div>
+
+  <!-- PAGINATION + INFO -->
+  @if (mergedConfig().pagination) {
+    <div class="d-flex align-items-center justify-content-between border-top" style="border-color:var(--border-color);background:var(--bg-secondary)">
+      <div class="d-flex align-items-center gap-2 ps-2" style="font-size:11px;color:var(--text-secondary)">
+        <span>{{ dataSource.filteredData.length }} record{{ dataSource.filteredData.length !== 1 ? 's' : '' }}</span>
+        @if (searchControl.value) { <span style="font-style:italic;opacity:0.6">(filtered)</span> }
+        @if (mergedConfig().selectable && selection.hasValue()) { <span class="fw-semibold" style="color:var(--indigo)">{{ selection.selected.length }} selected</span> }
+      </div>
+      @if (!mergedConfig().serverSide) {
+        <mat-paginator
+          [pageSizeOptions]="mergedConfig().pageSizeOptions || [10,25,50,100]"
+          [pageSize]="mergedConfig().defaultPageSize || 10"
+          showFirstLastButtons
+        />
+      } @else {
+        <mat-paginator
+          [length]="totalCount()"
+          [pageSizeOptions]="mergedConfig().pageSizeOptions || [10,25,50,100]"
+          [pageSize]="mergedConfig().defaultPageSize || 10"
+          showFirstLastButtons
+          (page)="onPageChange($event)"
+        />
+      }
+    </div>
+  }
+</div>
+
+<!-- VIEW MODAL -->
+<app-table-view-modal [open]="viewModalOpen()" (openChange)="viewModalOpen.set($event)" [columns]="visibleColumns()" [row]="viewModalRow()" [title]="mergedConfig().title ? mergedConfig().title + ' — Details' : 'View Details'" />

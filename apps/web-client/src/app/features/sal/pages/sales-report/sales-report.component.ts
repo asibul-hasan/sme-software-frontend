@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sales-report',
   templateUrl: './sales-report.component.html',
   styleUrls: ['./sales-report.component.scss']

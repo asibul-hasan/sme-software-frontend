@@ -47,13 +47,10 @@
             <h6 class="mb-0 fw-bold">{{ dept.department_id }}</h6>
             <span
               class="badge rounded-pill"
-              [ngClass]="dept.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary'"
-            >{{ dept.active_status === 1 ? 'Active' : 'Inactive' }}</span>
+              [ngClass]="dept.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'"
+            >{{ dept.is_active === 1 ? 'Active' : 'Inactive' }}</span>
           </div>
           <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ dept.department_name }}</p>
-          @if (dept.short_name) {
-            <p class="mb-0 small opacity-50 text-truncate">{{ dept.short_name }}</p>
-          }
         </button>
       }
       @if (model.filteredDepts().length === 0) {
@@ -98,13 +95,6 @@
                   </div>
                   <div class="col-md-6">
                     <div class="field-group">
-                      <label class="field-label" for="dept_short_name">Short Name</label>
-                      <input type="text" id="dept_short_name" formControlName="short_name"
-                        class="form-control" placeholder="e.g. HR" />
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="field-group">
                       <label class="field-label" for="parent_dept">Parent Department</label>
                       <ng-select id="parent_dept" labelForId="parent_dept"
                         formControlName="parent_department_no"
@@ -114,7 +104,7 @@
                       </ng-select>
                     </div>
                   </div>
-                  <div class="col-md-12">
+                  <div class="col-md-6">
                     <div class="field-group">
                       <label class="field-label" for="dept_head">Department Head</label>
                       <ng-select id="dept_head" labelForId="dept_head"
@@ -125,11 +115,18 @@
                       </ng-select>
                     </div>
                   </div>
-                  <div class="col-md-12">
+                  <div class="col-md-6">
                     <div class="field-group">
-                      <label class="field-label" for="dept_desc">Description</label>
-                      <textarea id="dept_desc" formControlName="description"
-                        class="form-control" rows="2" placeholder="Brief description"></textarea>
+                      <label class="field-label" for="hierarchy_level">Hierarchy Level</label>
+                      <input type="number" id="hierarchy_level" formControlName="hierarchy_level"
+                        class="form-control" placeholder="e.g. 1" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="cost_center_no">Cost Center</label>
+                      <input type="number" id="cost_center_no" formControlName="cost_center_no"
+                        class="form-control" placeholder="Cost center no" />
                     </div>
                   </div>
                 </div>
@@ -150,15 +147,10 @@
                 <div class="field-group mb-3">
                   <label class="field-label required" for="dept_status">Status</label>
                   <ng-select id="dept_status" labelForId="dept_status"
-                    formControlName="active_status" [clearable]="false">
+                    formControlName="is_active" [clearable]="false">
                     <ng-option [value]="1">Active</ng-option>
                     <ng-option [value]="0">Inactive</ng-option>
                   </ng-select>
-                </div>
-                <div class="field-group mb-3">
-                  <label class="field-label" for="dept_sl">Display Order</label>
-                  <input type="number" id="dept_sl" formControlName="display_sl"
-                    class="form-control" placeholder="e.g. 1" />
                 </div>
                 <div class="field-group">
                   <label class="field-label" for="dept_remarks">Remarks</label>
@@ -223,8 +215,8 @@
             <h6 class="mb-0 fw-bold">{{ desig.designation_id }}</h6>
             <span
               class="badge rounded-pill"
-              [ngClass]="desig.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary'"
-            >{{ desig.active_status === 1 ? 'Active' : 'Inactive' }}</span>
+              [ngClass]="desig.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'"
+            >{{ desig.is_active === 1 ? 'Active' : 'Inactive' }}</span>
           </div>
           <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ desig.designation_name }}</p>
           @if (desig.grade_level) {
@@ -274,13 +266,6 @@
                   </div>
                   <div class="col-md-6">
                     <div class="field-group">
-                      <label class="field-label" for="desig_short">Short Name</label>
-                      <input type="text" id="desig_short" formControlName="short_name"
-                        class="form-control" placeholder="e.g. Sr. Mgr" />
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="field-group">
                       <label class="field-label required" for="desig_dept">Department</label>
                       <ng-select id="desig_dept" labelForId="desig_dept"
                         formControlName="department_no"
@@ -302,6 +287,13 @@
                       <label class="field-label" for="desig_rank">Hierarchy Rank</label>
                       <input type="number" id="desig_rank" formControlName="hierarchy_rank"
                         class="form-control" placeholder="e.g. 5" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="job_category">Job Category</label>
+                      <input type="number" id="job_category" formControlName="job_category"
+                        class="form-control" placeholder="Category code" />
                     </div>
                   </div>
                 </div>
@@ -363,15 +355,10 @@
                 <div class="field-group mb-3">
                   <label class="field-label required" for="desig_status">Status</label>
                   <ng-select id="desig_status" labelForId="desig_status"
-                    formControlName="active_status" [clearable]="false">
+                    formControlName="is_active" [clearable]="false">
                     <ng-option [value]="1">Active</ng-option>
                     <ng-option [value]="0">Inactive</ng-option>
                   </ng-select>
-                </div>
-                <div class="field-group mb-3">
-                  <label class="field-label" for="desig_sl">Display Order</label>
-                  <input type="number" id="desig_sl" formControlName="display_sl"
-                    class="form-control" placeholder="e.g. 1" />
                 </div>
                 <div class="field-group">
                   <label class="field-label" for="desig_remarks">Remarks</label>

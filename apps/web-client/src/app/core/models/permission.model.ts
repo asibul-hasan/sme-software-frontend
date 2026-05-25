@@ -15,10 +15,14 @@ export enum ModuleEnum {
 }
 
 /**
- * Action codes — must match the boolean columns on `sys_enroll_module_menu`
- * (and `sys_role_permission`). Keeping these aligned with the DB column
- * names lets us hand the backend's permission row straight into a check
+ * Action codes — must match the boolean columns on `sys_role_permission`
+ * in the backend schema. Keeping these aligned with the DB column names
+ * lets us hand the backend's permission row straight into a check
  * without translation.
+ *
+ * The legacy `sys_enroll_module_menu` table has been replaced by
+ * `sys_enroll_menu` (branch × menu); permission flags now live exclusively
+ * on `sys_role_permission`.
  */
 export enum ActionEnum {
   VIEW    = 'can_view',
@@ -27,6 +31,7 @@ export enum ActionEnum {
   DELETE  = 'can_delete',
   APPROVE = 'can_approve',
   EXPORT  = 'can_export',
+  PRINT   = 'can_print',
 }
 
 /** Per-form permission record. Flat keys so JSON from the API maps directly. */
@@ -37,6 +42,7 @@ export interface IFormPermission {
   can_delete?:  boolean;
   can_approve?: boolean;
   can_export?:  boolean;
+  can_print?:   boolean;
 }
 
 export interface IModulePermission {

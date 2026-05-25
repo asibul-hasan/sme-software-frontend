@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -9,6 +9,7 @@ import { AlertService } from '../../../core/services/alert.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-session-lock',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatIconModule],
@@ -45,7 +46,7 @@ export class SessionLockComponent {
     }
 
     const payload = {
-      user_name: user.user_name,
+      user_id: user.user_name,
       password: this.lockForm.value.password!,
       company_no: user.company_no,
       branch_no: user.branch_no,

@@ -136,7 +136,8 @@
                 }
               ],
               "styles": [
-                "node_modules/bootstrap/dist/css/bootstrap.min.css",
+                "apps/web-client/src/assets/styles/tailwind.css",
+                "node_modules/@angular/cdk/overlay-prebuilt.css",
                 "apps/web-client/src/assets/styles/styles.scss"
               ],
               "stylePreprocessorOptions": {
@@ -223,26 +224,14 @@
         },
         "implicitDependencies": []
       }
-    },
-    "shared-ui": {
-      "name": "shared-ui",
-      "type": "lib",
-      "data": {
-        "root": "libs/shared-ui",
-        "name": "shared-ui",
-        "implicitDependencies": [],
-        "targets": {},
-        "tags": []
-      }
     }
   },
   "externalNodes": {},
   "dependencies": {
     "web-support": [],
-    "web-client": [],
-    "shared-ui": []
+    "web-client": []
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1778688784102
+  "computedAt": 1779698253804
 }

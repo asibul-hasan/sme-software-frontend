@@ -1,18 +1,18 @@
 {
   "run": {
-    "command": "nx build web-client --configuration=development",
-    "startTime": "2026-05-12T16:31:42.784Z",
-    "endTime": "2026-05-12T16:33:21.520Z",
+    "command": "nx build web-client",
+    "startTime": "2026-05-20T19:03:38.936Z",
+    "endTime": "2026-05-20T19:04:11.996Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "web-client:build:development",
+      "taskId": "web-client:build:production",
       "target": "build",
       "projectName": "web-client",
-      "hash": "13903255292355588224",
-      "startTime": "2026-05-12T16:31:42.847Z",
-      "endTime": "2026-05-12T16:33:20.299Z",
+      "hash": "17880921053581258749",
+      "startTime": "2026-05-20T19:03:38.967Z",
+      "endTime": "2026-05-20T19:04:11.740Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 0

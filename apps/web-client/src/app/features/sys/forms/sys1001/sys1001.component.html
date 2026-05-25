@@ -11,14 +11,13 @@
   (reset)="onReset()"
   [showDelete]="false"
 >
-  <!-- Extra Header Action for Last Updated -->
-
   <!-- Main Form Content -->
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
       <div class="row row-group">
-        <!-- Left Column: Core Identity & Branding -->
-        <div class="col-xl-8 col-lg-12">
+        <!-- Left Column: General info, address and legal details -->
+        <div class="col-xl-9 col-lg-8">
+          <!-- General Information -->
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
@@ -30,15 +29,14 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label for="company_id" class="field-label">{{
+                    <label for="company_id" class="field-label required">{{
                       'companyCode' | translate
                     }}</label>
                     <input
                       id="company_id"
                       type="text"
                       formControlName="company_id"
-                      class="form-control bg-light fw-bold"
-                      readonly
+                      class="form-control fw-bold"
                     />
                   </div>
                 </div>
@@ -53,20 +51,6 @@
                       formControlName="company_name"
                       class="form-control form-control-lg fw-bold"
                       placeholder="{{ 'legalCompanyName' | translate }}"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label for="short_name" class="field-label">{{
-                      'shortName' | translate
-                    }}</label>
-                    <input
-                      id="short_name"
-                      type="text"
-                      formControlName="short_name"
-                      class="form-control form-control-lg"
-                      placeholder="{{ 'shortName' | translate }}"
                     />
                   </div>
                 </div>
@@ -127,13 +111,13 @@
                 <!-- Addresses -->
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="address1" class="field-label">{{
+                    <label for="company_addr1" class="field-label">{{
                       'addressLine1' | translate
                     }}</label>
                     <input
-                      id="address1"
+                      id="company_addr1"
                       type="text"
-                      formControlName="address1"
+                      formControlName="company_addr1"
                       class="form-control"
                       placeholder="{{ 'addressLine1Placeholder' | translate }}"
                     />
@@ -141,13 +125,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="address2" class="field-label">{{
+                    <label for="company_addr2" class="field-label">{{
                       'addressLine2' | translate
                     }}</label>
                     <input
-                      id="address2"
+                      id="company_addr2"
                       type="text"
-                      formControlName="address2"
+                      formControlName="company_addr2"
                       class="form-control"
                       placeholder="{{ 'addressLine2Placeholder' | translate }}"
                     />
@@ -196,13 +180,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="country" class="field-label">{{
+                    <label for="country_code" class="field-label">{{
                       'country' | translate
                     }}</label>
                     <ng-select
-                      id="country"
-                      labelForId="country"
-                      formControlName="country"
+                      id="country_code"
+                      labelForId="country_code"
+                      formControlName="country_code"
                       bindLabel="label"
                       bindValue="value"
                       placeholder="{{ 'selectCountry' | translate }}"
@@ -237,13 +221,13 @@
                 <!-- Contact Info -->
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="mobile_number" class="field-label">{{
+                    <label for="mobile_no" class="field-label">{{
                       'primaryPhone' | translate
                     }}</label>
                     <input
-                      id="mobile_number"
+                      id="mobile_no"
                       type="text"
-                      formControlName="mobile_number"
+                      formControlName="mobile_no"
                       class="form-control"
                       placeholder="Primary phone"
                     />
@@ -251,13 +235,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="phone_number" class="field-label">{{
+                    <label for="contact_no" class="field-label">{{
                       'secondaryPhone' | translate
                     }}</label>
                     <input
-                      id="phone_number"
-                      type="number"
-                      formControlName="phone_number"
+                      id="contact_no"
+                      type="text"
+                      formControlName="contact_no"
                       class="form-control"
                       placeholder="Secondary phone"
                     />
@@ -283,9 +267,8 @@
           </div>
         </div>
 
-        <!-- Right Column: Logo & Legal -->
-        <div class="col-xl-4 col-lg-12">
-          <!-- Logo Card -->
+        <!-- Right Column: Branding & Legal -->
+        <div class="col-xl-3 col-lg-4">
           <div class="form-section-card card branding-card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
@@ -304,8 +287,8 @@
             </div>
           </div>
 
-          <!-- Legal Card -->
-          <div class="form-section-card card mt-3">
+          <!-- Legal & Compliance -->
+          <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">gavel</mat-icon>
@@ -353,7 +336,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12">
                   <div class="field-group">
                     <label for="tin_no" class="field-label">TIN</label>
                     <input
@@ -364,7 +347,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12">
                   <div class="field-group">
                     <label for="bin_no" class="field-label">BIN</label>
                     <input

@@ -1,0 +1,97 @@
+<div class="p-3">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0 fw-bold">
+      <mat-icon class="me-2 align-middle">perm_media</mat-icon>
+      File &amp; Image Manager
+    </h4>
+    <span class="badge text-bg-light border">{{ model.fileCount() }} files</span>
+  </div>
+
+  <!-- Upload + filter -->
+  <div class="form-section-card card mb-3">
+    <div class="card-body">
+      <div class="row row-group align-items-end">
+        <div class="col-md-3">
+          <div class="field-group">
+            <label class="field-label" for="upCat">Category</label>
+            <select id="upCat" class="form-select" [value]="model.uploadCategory()" (change)="model.uploadCategory.set(+$any($event.target).value)">
+              @for (c of model.categories; track c.value) { <option [value]="c.value">{{ c.label }}</option> }
+            </select>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="field-group">
+            <label class="field-label" for="upFile">File</label>
+            <input id="upFile" #fileInput type="file" class="form-control" (change)="model.onFileSelected(fileInput)" />
+          </div>
+        </div>
+        <div class="col-md-2">
+          @if (permissionService.canInsert()) {
+            <button type="button" class="btn btn-primary w-100" (click)="model.upload()" [disabled]="model.isUploading() || !model.selectedFile()">
+              <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">upload</mat-icon>
+              Upload
+            </button>
+          }
+        </div>
+        <div class="col-md-2">
+          <div class="field-group">
+            <label class="field-label" for="flt">Filter</label>
+            <select id="flt" class="form-select" [value]="model.filterType() ?? ''" (change)="onFilterChange($any($event.target).value)">
+              <option [value]="''">All categories</option>
+              @for (c of model.categories; track c.value) { <option [value]="c.value">{{ c.label }}</option> }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div class="row row-group">
+    @for (f of model.files(); track f.file_no) {
+      <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="form-section-card card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-center align-items-center mb-2 bg-light rounded" style="height: 140px; overflow: hidden">
+              @if (model.isImage(f) && model.thumbUrl(f.file_no)) {
+                <img [src]="model.thumbUrl(f.file_no)" [alt]="f.file_name" style="max-height: 140px; max-width: 100%; object-fit: contain" />
+              } @else if (model.isImage(f)) {
+                <mat-icon class="opacity-50" style="font-size: 48px; height: 48px; width: 48px">image</mat-icon>
+              } @else {
+                <mat-icon class="opacity-50" style="font-size: 48px; height: 48px; width: 48px">description</mat-icon>
+              }
+            </div>
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <span class="badge text-bg-secondary">{{ f.entity_type_label }}</span>
+              @if (f.is_primary === 1) { <span class="badge text-bg-success">Primary</span> }
+            </div>
+            <p class="mb-1 small fw-semibold text-truncate" [title]="f.file_name">{{ f.file_name }}</p>
+            <p class="mb-2 small opacity-75">
+              {{ model.formatSize(f.file_size) }}
+              @if (f.width_px && f.height_px) { · {{ f.width_px }}×{{ f.height_px }} }
+            </p>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" (click)="model.download(f.file_no, f.file_name)">
+                <mat-icon style="font-size: 16px; height: 16px; width: 16px">download</mat-icon>
+              </button>
+              @if (permissionService.canDelete()) {
+                <button type="button" class="btn btn-sm btn-outline-danger flex-fill" (click)="onDelete(f.file_no)">
+                  <mat-icon style="font-size: 16px; height: 16px; width: 16px">delete</mat-icon>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+    @if (model.files().length === 0) {
+      <div class="col-12">
+        <div class="p-5 text-center opacity-75">
+          <mat-icon class="opacity-50 mb-2" style="font-size: 40px; height: 40px; width: 40px">folder_open</mat-icon>
+          <p class="mb-0">No files yet. Upload one above.</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

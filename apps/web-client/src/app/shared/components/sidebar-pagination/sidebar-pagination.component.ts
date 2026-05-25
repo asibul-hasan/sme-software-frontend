@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,13 +6,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 
 import { PaginatorState } from '../../../core/utils/paginator';
 
-/**
- * Drop-in pagination footer for any sidebar list.
- *
- * Pass a paginator built via `makePaginator(...)` from `core/utils/paginator`.
- * The component renders first / prev / page / next / last buttons plus a
- * page-size selector — all bound to the paginator's signals.
- */
 @Component({
   selector: 'app-sidebar-pagination',
   standalone: true,

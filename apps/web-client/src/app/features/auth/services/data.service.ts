@@ -8,7 +8,12 @@ import { IPermissionConfig } from '../../../core/models/permission.model';
 import { SKIP_LOADER } from '../../../core/interceptors/loader.interceptor';
 
 export interface LoginRequest {
-  user_name: string;
+  /**
+   * Login identifier — maps to backend `sys_user.user_id`.
+   * The backend still accepts the legacy `user_name` key via `@JsonAlias`,
+   * but new code should send `user_id`.
+   */
+  user_id: string;
   password: string;
   company_no?: number;
   branch_no?: number;
@@ -76,6 +81,11 @@ export interface LoginResponse {
   menu?: unknown[];
 
   permissions?: IPermissionConfig;
+
+  /** Data-access scope: 1=BRANCH, 2=COMPANY, 3=GLOBAL (SYS re-plan). */
+  access_scope?: number;
+  /** 1 = the user must change their password before continuing. */
+  must_change_password?: number;
 }
 
 export interface RegisterRequest {
@@ -161,9 +171,9 @@ export class AuthDataService extends BaseDataService {
       .pipe(map((res) => res.data));
   }
 
-  getUserContexts(userName: string): Observable<UserContextResponse[]> {
+  getUserContexts(userId: string): Observable<UserContextResponse[]> {
     return this.http.get<ApiResponse<UserContextResponse[]>>(`${this.baseUrl}/contexts`, {
-      params: { user_name: userName },
+      params: { user_id: userId },
     }).pipe(map(res => res.data));
   }
 
@@ -190,6 +200,14 @@ export class AuthDataService extends BaseDataService {
       .pipe(map(res => res.data));
   }
 
+  /** Switch the active company (multi-company users). branchNo optional → server picks default. */
+  switchCompany(companyNo: number, branchNo?: number): Observable<LoginResponse> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(`${this.baseUrl}/switch-company`,
+        { company_no: companyNo, branch_no: branchNo ?? null })
+      .pipe(map(res => res.data));
+  }
+
   changePassword(payload: ChangePasswordPayload): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
@@ -206,15 +224,15 @@ export class AuthDataService extends BaseDataService {
     return this.http.get<ApiResponse<unknown>>(`${this.baseUrl}/permissions`).pipe(map(res => res.data));
   }
 
-  getCompaniesByUserName(userName: string): Observable<Company[]> {
+  getCompaniesByUserId(userId: string): Observable<Company[]> {
     return this.http.get<ApiResponse<Company[]>>(`${this.baseUrl}/companies`, {
-      params: { user_name: userName },
+      params: { user_id: userId },
     }).pipe(map(res => res.data));
   }
 
-  getBranchesByUserName(userName: string): Observable<Branch[]> {
+  getBranchesByUserId(userId: string): Observable<Branch[]> {
     return this.http.get<ApiResponse<Branch[]>>(`${this.baseUrl}/branches`, {
-      params: { user_name: userName },
+      params: { user_id: userId },
     }).pipe(map(res => res.data));
   }
 }

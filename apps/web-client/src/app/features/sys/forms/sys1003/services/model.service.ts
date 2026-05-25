@@ -11,25 +11,59 @@ import { IBranch } from '../../sys1002/services/model.service';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { makePaginator } from '../../../../../core/utils/paginator';
 
+// ─── Status Mappers ──────────────────────────────────────────────────────────
+// Backend uses Short codes; frontend displays strings.
+
+const IS_CLOSED_MAP: Record<number, string> = { 0: 'Open', 1: 'Closed' };
+const IS_CLOSED_REVERSE: Record<string, number> = { Open: 0, Closed: 1 };
+
+const PERIOD_STATUS_MAP: Record<number, string> = { 1: 'Open', 2: 'Closed', 3: 'Locked' };
+const PERIOD_STATUS_REVERSE: Record<string, number> = { Open: 1, Closed: 2, Locked: 3 };
+
+export function isClosedToLabel(val: number | null | undefined): string {
+  return IS_CLOSED_MAP[val ?? 0] ?? 'Open';
+}
+
+export function labelToIsClosed(val: string | null | undefined): number {
+  return IS_CLOSED_REVERSE[val ?? 'Open'] ?? 0;
+}
+
+export function periodStatusToLabel(val: number | null | undefined): string {
+  return PERIOD_STATUS_MAP[val ?? 1] ?? 'Open';
+}
+
+export function labelToPeriodStatus(val: string | null | undefined): number {
+  return PERIOD_STATUS_REVERSE[val ?? 'Open'] ?? 1;
+}
+
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
+// Field names match the backend DTOs (snake_case).
 
 export interface FinancialYearPeriod extends BaseEntity {
-  period_no?: number;
-  period_code: string;
-  period_name: string;
+  fin_period_no?: number;
+  fin_year_no?: number;
+  fin_period_id: string;
+  fin_period_name: string;
   start_date: string;
   end_date: string;
-  status: 'Open' | 'Closed' | 'Locked';
+  period_type?: number;     // 1=Monthly, 2=Quarterly, 3=Half-Yearly, 4=Yearly, 5=Adjustment
+  period_status?: number;   // 1=Open, 2=Closed, 3=Locked
+  remarks?: string;
+  is_active?: number;
+  row_version?: number;
 }
 
 export interface FinancialYear extends BaseEntity {
   fin_year_no: number;
-  fin_year_code: string;
+  fin_year_id: string;
   fin_year_name: string;
   start_date: string;
   end_date: string;
-  status: 'Open' | 'Closed' | 'Locked';
-  is_current: boolean;
+  is_closed: number;        // 0=Open, 1=Closed
+  branch_no: number;
+  remarks?: string;
+  is_active?: number;
+  row_version?: number;
   periods: FinancialYearPeriod[];
 }
 
@@ -67,7 +101,7 @@ export class Sys1003ModelService {
     return this.financialYears().filter(
       (y) =>
         y.fin_year_name.toLowerCase().includes(term) ||
-        y.fin_year_code.toLowerCase().includes(term),
+        y.fin_year_id.toLowerCase().includes(term),
     );
   });
 
@@ -84,13 +118,12 @@ export class Sys1003ModelService {
   initForm(): void {
     this.form = this.fb.group({
       fin_year_no:  [null],
-      fin_year_code: ['', [Validators.required, Validators.maxLength(20)]],
+      fin_year_id:  ['', [Validators.maxLength(20)]],  // auto-generated if blank
       fin_year_name: ['', [Validators.required]],
-      branch_nos:   [[], [Validators.required]],
       start_date:   ['', [Validators.required]],
       end_date:     ['', [Validators.required]],
-      status:       ['Open', [Validators.required]],
-      is_current:   [false],
+      is_closed:    [0],    // 0=Open, 1=Closed
+      remarks:      [''],
       periods:      this.fb.array([]),
     }, {
       validators: [CustomValidators.minMax('start_date', 'end_date')]
@@ -99,12 +132,14 @@ export class Sys1003ModelService {
 
   addPeriodRow(period?: FinancialYearPeriod): void {
     const group = this.fb.group({
-      period_no:   [period?.period_no ?? null],
-      period_code: [period?.period_code ?? '', Validators.required],
-      period_name: [period?.period_name ?? '', Validators.required],
-      start_date:  [period?.start_date ?? '', Validators.required],
-      end_date:    [period?.end_date ?? '', Validators.required],
-      status:      [period?.status ?? 'Open', Validators.required],
+      fin_period_no:   [period?.fin_period_no ?? null],
+      fin_period_id:   [period?.fin_period_id ?? '', Validators.required],
+      fin_period_name: [period?.fin_period_name ?? '', Validators.required],
+      start_date:      [period?.start_date ?? '', Validators.required],
+      end_date:        [period?.end_date ?? '', Validators.required],
+      period_status:   [period?.period_status ?? 1, Validators.required],  // 1=Open
+      period_type:     [period?.period_type ?? 1],  // 1=Monthly
+      remarks:         [period?.remarks ?? ''],
     });
     this.periodsFormArray.push(group);
   }
@@ -118,25 +153,43 @@ export class Sys1003ModelService {
       return;
     }
 
-    const start = new Date(startDateStr);
-    const end   = new Date(endDateStr);
+    // Parse dates cleanly in local time to avoid timezone shifts
+    const startParts = startDateStr.split('-');
+    const endParts   = endDateStr.split('-');
+    const start = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
+    const end   = new Date(Number(endParts[0]), Number(endParts[1]) - 1, Number(endParts[2]));
+    
     this.periodsFormArray.clear();
 
-    for (let i = 0; i < 12; i++) {
-      const pStart = new Date(start.getFullYear(), start.getMonth() + i, 1);
-      const pEnd   = new Date(start.getFullYear(), start.getMonth() + i + 1, 0);
-      if (pStart > end) break;
+    const formatDate = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dateVal = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${dateVal}`;
+    };
+
+    let current = new Date(start);
+
+    while (current <= end) {
+      const pStart = new Date(current);
+      // Find the last day of the current month
+      const pEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+      const finalPEnd = pEnd > end ? new Date(end) : pEnd;
 
       const monthName = pStart.toLocaleString('default', { month: 'long' });
       const year      = pStart.getFullYear();
 
       this.addPeriodRow({
-        period_code: `${monthName.substring(0, 3).toUpperCase()}-${year}`,
-        period_name: `${monthName} ${year}`,
-        start_date:  pStart.toISOString().split('T')[0],
-        end_date:    (pEnd > end ? end : pEnd).toISOString().split('T')[0],
-        status:      'Open',
+        fin_period_id:   `${monthName.substring(0, 3).toUpperCase()}-${year}`,
+        fin_period_name: `${monthName} ${year}`,
+        start_date:      formatDate(pStart),
+        end_date:        formatDate(finalPEnd),
+        period_status:   1,  // Open
+        period_type:     1,  // Monthly
       });
+
+      // Move to the first day of the next month
+      current = new Date(pEnd.getFullYear(), pEnd.getMonth() + 1, 1);
     }
     this.toastr.info('Accounting periods generated.');
   }
@@ -185,30 +238,32 @@ export class Sys1003ModelService {
       .subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
-            const d = res.data as unknown as Record<string, unknown>;
+            const d = res.data;
             this.periodsFormArray.clear();
 
             this.form.patchValue({
-              fin_year_no:   d['finYearNo'],
-              fin_year_code: d['finYearCode'],
-              fin_year_name: d['finYearName'],
-              branch_nos:    d['branchNos'] || [],
-              start_date:    this.datePipe.transform(d['startDate'] as string, 'yyyy-MM-dd'),
-              end_date:      this.datePipe.transform(d['endDate'] as string, 'yyyy-MM-dd'),
-              status:        d['status'],
-              is_current:    d['isCurrent'] === 1 || d['isCurrent'] === true,
+              fin_year_no:   d.fin_year_no,
+              fin_year_id:   d.fin_year_id,
+              fin_year_name: d.fin_year_name,
+              branch_no:     d.branch_no,
+              start_date:    this.datePipe.transform(d.start_date, 'yyyy-MM-dd'),
+              end_date:      this.datePipe.transform(d.end_date, 'yyyy-MM-dd'),
+              is_closed:     d.is_closed ?? 0,
+              remarks:       d.remarks ?? '',
             });
 
-            const periods = (d['periods'] as Record<string, unknown>[]) || [];
+            const periods = d.periods || [];
             if (periods.length) {
               periods.forEach((p) =>
                 this.addPeriodRow({
-                  period_no:   p['periodNo'] as number,
-                  period_code: p['periodCode'] as string,
-                  period_name: p['periodName'] as string,
-                  start_date:  this.datePipe.transform(p['startDate'] as string, 'yyyy-MM-dd') ?? '',
-                  end_date:    this.datePipe.transform(p['endDate'] as string, 'yyyy-MM-dd') ?? '',
-                  status:      p['status'] as 'Open' | 'Closed' | 'Locked',
+                  fin_period_no:   p.fin_period_no,
+                  fin_period_id:   p.fin_period_id,
+                  fin_period_name: p.fin_period_name,
+                  start_date:      this.datePipe.transform(p.start_date, 'yyyy-MM-dd') ?? '',
+                  end_date:        this.datePipe.transform(p.end_date, 'yyyy-MM-dd') ?? '',
+                  period_status:   p.period_status ?? 1,
+                  period_type:     p.period_type ?? 1,
+                  remarks:         p.remarks,
                 }),
               );
             }
@@ -231,42 +286,41 @@ export class Sys1003ModelService {
     const isUpdate = !!yearNo;
     const payload  = {
       fin_year_no:   yearNo,
-      fin_year_code: val.fin_year_code,
+      fin_year_id:   val.fin_year_id || null,  // null → backend auto-generates
       fin_year_name: val.fin_year_name,
-      branch_nos:    val.branch_nos,
+      branch_no:     val.branch_no,
       start_date:    val.start_date,
       end_date:      val.end_date,
-      status:        val.status,
-      is_current:    val.is_current ? 1 : 0,
-      periods:       (val.periods as Record<string, unknown>[]).map((p) => ({
-        period_no:   p['period_no'],
-        period_code: p['period_code'],
-        period_name: p['period_name'],
-        start_date:  p['start_date'],
-        end_date:    p['end_date'],
-        status:      p['status'],
+      is_closed:     val.is_closed ?? 0,
+      remarks:       val.remarks || null,
+      is_active:     1,
+      periods: (val.periods as Record<string, unknown>[]).map((p) => ({
+        fin_period_no:   p['fin_period_no'] || null,
+        fin_period_id:   p['fin_period_id'],
+        fin_period_name: p['fin_period_name'],
+        start_date:      p['start_date'],
+        end_date:        p['end_date'],
+        period_status:   p['period_status'] ?? 1,
+        period_type:     p['period_type'] ?? 1,
+        remarks:         p['remarks'] || null,
       })),
     };
 
-    const obs = (isUpdate && yearNo !== null)
-      ? this.data.updateFinancialYear(yearNo, payload)
-      : this.data.saveFinancialYear(payload);
-
-
-
-
-
-    obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: (res) => {
-        if (isSuccess(res)) {
-          this.toastr.success(isUpdate ? 'Financial Year updated' : 'Financial Year created');
-          this.loadFinancialYears(isUpdate ? this.lastSelectedIndex : 0);
-        } else {
-          this.toastr.error(res.message || 'Save failed');
-        }
-      },
-      error: () => this.toastr.error('API error during save'),
-    });
+    // Backend uses POST for upsert (insert if fin_year_no is null, update otherwise)
+    this.data
+      .saveFinancialYear(payload)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (isSuccess(res)) {
+            this.toastr.success(isUpdate ? 'Financial Year updated' : 'Financial Year created');
+            this.loadFinancialYears(isUpdate ? this.lastSelectedIndex : 0);
+          } else {
+            this.toastr.error(res.message || 'Save failed');
+          }
+        },
+        error: () => this.toastr.error('API error during save'),
+      });
   }
 
   onDelete(callback?: () => void): void {
@@ -294,12 +348,12 @@ export class Sys1003ModelService {
   onNew(): void {
     this.selectedYearNo.set(null);
     this.periodsFormArray?.clear();
-    this.form?.reset({ status: 'Open', is_current: false });
+    this.form?.reset({ is_closed: 0 });
   }
 
   /** Called by component for the Close FY action */
   closeFiscalYear(): void {
-    this.form.patchValue({ status: 'Closed' });
+    this.form.patchValue({ is_closed: 1 });
     this.onSave();
   }
 }

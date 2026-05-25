@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -17,11 +17,12 @@ export interface ModalColumn {
 export interface DataListModalConfig {
   title: string;
   columns: ModalColumn[];
-  data: any[];
+  data: Record<string, unknown>[];
   width?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-data-list-modal',
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatTableModule, MatButtonModule, MatIconModule, DragDropModule],

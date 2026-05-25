@@ -7,34 +7,51 @@ import { FinancialYear } from './model.service';
 
 /**
  * Form-level HTTP service for SYS1003 – Financial Year Setup.
- * Owns all endpoint paths and request construction for the FY form.
- * State and FormGroup live in Sys1003ModelService.
+ *
+ * Uses the form-specific endpoints:
+ *   /api/v1/sys/forms/sys1003/financial-years
+ *
+ * Branch list uses the generic SysDataService endpoint since sys1003
+ * does not expose its own branch list.
  */
 @Injectable()
 export class Sys1003DataService {
   private sysService = inject(SysDataService);
 
+  /**
+   * Branch list for the dropdown.
+   * Uses generic endpoint: GET /api/v1/sys/branches
+   */
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branch/list');
+    return this.sysService.getBranches() as Observable<ApiResponse<IBranch[]>>;
   }
 
+  /**
+   * GET /api/v1/sys/forms/sys1003/financial-years
+   */
   loadFinancialYears(): Observable<ApiResponse<FinancialYear[]>> {
-    return this.sysService.getList<FinancialYear[]>('finyear/list');
+    return this.sysService.getList<FinancialYear[]>('forms/sys1003/financial-years');
   }
 
+  /**
+   * GET /api/v1/sys/forms/sys1003/financial-years/{finYearNo}
+   */
   loadFinancialYearDetail(finYearNo: number): Observable<ApiResponse<FinancialYear>> {
-    return this.sysService.getDtl<FinancialYear>('finyear', finYearNo);
+    return this.sysService.getDtl<FinancialYear>('forms/sys1003/financial-years', finYearNo);
   }
 
-  saveFinancialYear(payload: object): Observable<ApiResponse<unknown>> {
-    return this.sysService.insert<unknown>('finyear', payload);
+  /**
+   * POST /api/v1/sys/forms/sys1003/financial-years
+   * Backend upserts: inserts if fin_year_no is null, updates otherwise.
+   */
+  saveFinancialYear(payload: object): Observable<ApiResponse<FinancialYear>> {
+    return this.sysService.insert<FinancialYear>('forms/sys1003/financial-years', payload);
   }
 
-  updateFinancialYear(finYearNo: number, payload: object): Observable<ApiResponse<unknown>> {
-    return this.sysService.update<unknown>('finyear', finYearNo, payload);
-  }
-
+  /**
+   * DELETE /api/v1/sys/forms/sys1003/financial-years/{finYearNo}
+   */
   deleteFinancialYear(finYearNo: number): Observable<ApiResponse<unknown>> {
-    return this.sysService.delete<unknown>('finyear', finYearNo);
+    return this.sysService.delete<unknown>('forms/sys1003/financial-years', finYearNo);
   }
 }

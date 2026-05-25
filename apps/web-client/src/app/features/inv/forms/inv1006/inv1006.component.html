@@ -1,0 +1,121 @@
+<app-page-form-layout
+  [title]="'Product Attribute Setup'"
+  [icon]="'tune'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Attributes'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (a of model.pager.paged(); track a.attribute_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === a.attribute_no"
+        (click)="model.select(a)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ a.attribute_name }}</h6>
+          <span class="badge text-bg-light border">{{ a.values.length }} values</span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ a.attribute_id }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">tune</mat-icon>
+                Attribute
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="attribute_id">Code</label>
+                    <input type="text" id="attribute_id" formControlName="attribute_id" class="form-control text-uppercase" placeholder="SIZE" />
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label required" for="attribute_name">Name</label>
+                    <input type="text" id="attribute_name" formControlName="attribute_name" class="form-control" placeholder="Size" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list</mat-icon>Values</h4>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addValue()">
+                <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon> Add Value
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 30%">Code</th>
+                      <th>Name</th>
+                      <th class="text-center" style="width: 90px">Order</th>
+                      <th class="text-center" style="width: 60px"></th>
+                    </tr>
+                  </thead>
+                  <tbody [formArrayName]="'values'">
+                    @for (row of model.values.controls; track $index) {
+                      <tr [formGroupName]="$index">
+                        <td><input type="text" class="form-control form-control-sm text-uppercase" formControlName="value_code" placeholder="M" /></td>
+                        <td><input type="text" class="form-control form-control-sm" formControlName="value_name" placeholder="Medium" /></td>
+                        <td><input type="number" class="form-control form-control-sm" formControlName="order_sl" /></td>
+                        <td class="text-center">
+                          <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeValue($index)" title="Remove">
+                            <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                    @if (model.values.length === 0) {
+                      <tr><td colspan="4" class="text-center opacity-75 p-4">No values yet. Click “Add Value”.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

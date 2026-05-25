@@ -1,0 +1,105 @@
+<app-page-form-layout
+  [title]="'Unit of Measure Setup'"
+  [icon]="'straighten'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Units'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (u of model.pager.paged(); track u.uom_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === u.uom_no"
+        (click)="model.select(u)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold">{{ u.uom_id }}</h6>
+          <span class="badge rounded-pill" [ngClass]="{ 'text-bg-success': u.is_active === 1, 'text-bg-secondary': u.is_active === 0 }">
+            {{ u.is_active === 1 ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ u.uom_name }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">straighten</mat-icon>
+                Unit of Measure
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="uom_id">Code</label>
+                    <input type="text" id="uom_id" formControlName="uom_id" class="form-control text-uppercase" placeholder="PCS" />
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label required" for="uom_name">Name</label>
+                    <input type="text" id="uom_name" formControlName="uom_name" class="form-control" placeholder="Pieces" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="uom_name_nls">Name (NLS)</label>
+                    <input type="text" id="uom_name_nls" formControlName="uom_name_nls" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label required" for="uom_type">Type</label>
+                    <ng-select id="uom_type" labelForId="uom_type" formControlName="uom_type" [clearable]="false">
+                      @for (t of model.uomTypes; track t.value) {
+                        <ng-option [value]="t.value">{{ t.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="decimal_places">Decimals</label>
+                    <input type="number" id="decimal_places" formControlName="decimal_places" class="form-control" min="0" max="4" step="1" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

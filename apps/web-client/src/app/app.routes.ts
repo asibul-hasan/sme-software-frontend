@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
+import { authGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { AuthLayoutComponent } from './layout/auth-layout/auth-layout.component';
 
@@ -28,7 +28,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
@@ -49,25 +49,16 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
       },
-      // Module placeholders — each module's `routes.ts` registers its
-      // own forms/reports as the modules come online. Removing one of
-      // these without first removing the matching menu items from the
-      // backend will turn the sidebar into a stream of 404s.
-      // {
-      //   path: 'hr',
-      //   loadChildren: () =>
-      //     import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
-      // },
-      // {
-      //   path: 'inv',
-      //   loadChildren: () =>
-      //     import('./features/inv/inventory.routes').then((m) => m.INVENTORY_ROUTES),
-      // },
-      // {
-      //   path: 'sal',
-      //   loadChildren: () =>
-      //     import('./features/sal/sales.routes').then((m) => m.SALES_ROUTES),
-      // },
+      {
+        path: 'inv',
+        loadChildren: () =>
+          import('./features/inv/inventory.routes').then(
+            (m) => m.INVENTORY_ROUTES,
+          ),
+      },
+      // Additional module routes (sal, pur, fin, rpt) should be added here
+      // as they come online. Each module's `routes.ts` registers its own forms.
+      // Ensure matching menu items exist in the backend before adding routes.
     ],
   },
 

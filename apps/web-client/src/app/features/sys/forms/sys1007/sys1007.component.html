@@ -1,0 +1,93 @@
+<app-page-form-layout
+  [title]="'Cost Center Setup'"
+  [icon]="'account_tree'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Cost Centers'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (cc of model.pager.paged(); track cc.cost_center_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === cc.cost_center_no"
+        (click)="model.select(cc)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold">{{ cc.cost_center_id }}</h6>
+          <span class="badge rounded-pill" [ngClass]="{ 'text-bg-success': cc.is_active === 1, 'text-bg-secondary': cc.is_active === 0 }">
+            {{ cc.is_active === 1 ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ cc.cost_center_name }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">account_tree</mat-icon>
+                Cost Center
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="cost_center_id">Code</label>
+                    <input type="text" id="cost_center_id" formControlName="cost_center_id" class="form-control text-uppercase" placeholder="e.g. CC-001" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="cost_center_name">Name</label>
+                    <input type="text" id="cost_center_name" formControlName="cost_center_name" class="form-control" placeholder="e.g. Sales — Retail" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="parent_cost_center_no">Parent Cost Center</label>
+                    <ng-select id="parent_cost_center_no" labelForId="parent_cost_center_no" formControlName="parent_cost_center_no" [clearable]="true" placeholder="None">
+                      @for (p of model.parentOptions(); track p.cost_center_no) {
+                        <ng-option [value]="p.cost_center_no">{{ p.cost_center_name }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

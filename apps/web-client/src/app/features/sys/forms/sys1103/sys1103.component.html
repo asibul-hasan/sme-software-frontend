@@ -1,0 +1,135 @@
+<app-page-form-layout
+  [title]="'Role Permission Matrix'"
+  [icon]="'grid_on'"
+  [recordsCount]="model.filteredRoles().length"
+  [sidebarTitle]="'Roles'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <!-- Sidebar: role selector -->
+  <div sidebarList>
+    @for (role of model.filteredRoles(); track role.role_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedRoleNo() === role.role_no"
+        (click)="model.selectRole(role.role_no)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold">{{ role.role_id }}</h6>
+          @if (role.is_system_role === 1) {
+            <span class="badge text-bg-primary">System</span>
+          }
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
+          {{ role.role_name }}
+        </p>
+      </button>
+    }
+    @if (model.filteredRoles().length === 0) {
+      <div class="p-4 text-center opacity-75">
+        <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">badge</mat-icon>
+        <p class="mb-0 small">No roles found</p>
+      </div>
+    }
+  </div>
+
+  <!-- Main: permission matrix -->
+  <div formContent>
+    @if (!model.selectedRoleNo()) {
+      <div class="p-4 text-center opacity-75">Select a role to edit its permissions.</div>
+    } @else {
+      <div class="form-section-card card">
+        <div class="card-header">
+          <h4 class="card-header__title mb-0 fw-bold">
+            <mat-icon class="me-2 align-middle">grid_on</mat-icon>
+            Permissions
+          </h4>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width: 220px">Form</th>
+                  @for (f of model.flagFields; track f.key) {
+                    <th class="text-center" style="width: 64px">{{ f.label }}</th>
+                  }
+                  <th class="text-center" style="min-width: 110px">Scope</th>
+                  <th class="text-center" style="min-width: 100px">Records</th>
+                  <th class="text-center" style="min-width: 90px">Bulk</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (group of model.grouped(); track group.module_name) {
+                  <tr class="table-light">
+                    <td [attr.colspan]="model.flagFields.length + 4" class="fw-bold small text-uppercase opacity-75">
+                      {{ group.module_name }}
+                    </td>
+                  </tr>
+                  @for (row of group.rows; track row.menu_no) {
+                    <tr>
+                      <td>
+                        <div class="fw-semibold">{{ row.form_name }}</div>
+                        <div class="small opacity-75">{{ row.submodule_name }}</div>
+                      </td>
+                      @for (f of model.flagFields; track f.key) {
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [checked]="row[f.key] === 1"
+                            (change)="model.toggle(row.menu_no, f.key)"
+                          />
+                        </td>
+                      }
+                      <td class="text-center">
+                        <select
+                          class="form-select form-select-sm"
+                          [value]="row.perm_scope"
+                          (change)="model.setScope(row.menu_no, +$any($event.target).value)"
+                        >
+                          <option [value]="1">Company</option>
+                          <option [value]="2">Branch</option>
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <select
+                          class="form-select form-select-sm"
+                          [value]="row.record_filter"
+                          (change)="model.setRecordFilter(row.menu_no, +$any($event.target).value)"
+                        >
+                          <option [value]="1">All</option>
+                          <option [value]="2">Own</option>
+                        </select>
+                      </td>
+                      <td class="text-center text-nowrap">
+                        <button type="button" class="btn btn-sm btn-link p-0" (click)="model.grantAll(row.menu_no, 1)">All</button>
+                        <span class="mx-1 opacity-50">|</span>
+                        <button type="button" class="btn btn-sm btn-link p-0 text-muted" (click)="model.grantAll(row.menu_no, 0)">None</button>
+                      </td>
+                    </tr>
+                  }
+                }
+                @if (model.matrix().length === 0) {
+                  <tr>
+                    <td [attr.colspan]="model.flagFields.length + 4" class="text-center opacity-75 p-4">
+                      No forms enrolled for this company. Enroll forms first (Menu Enrollment).
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</app-page-form-layout>

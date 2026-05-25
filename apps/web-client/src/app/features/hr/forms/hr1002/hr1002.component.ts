@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
@@ -8,6 +8,7 @@ import { Hr1002ModelService } from './services/model.service';
 import { Hr1002DataService } from './services/data.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hr1002',
   standalone: true,
   imports: [SharedModule, CommonModule, PageFormLayoutComponent],
