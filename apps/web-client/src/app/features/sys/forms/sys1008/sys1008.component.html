@@ -1,0 +1,105 @@
+<app-page-form-layout
+  [title]="'System Settings'"
+  [icon]="'tune'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Settings'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (s of model.pager.paged(); track s.setting_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === s.setting_no"
+        (click)="model.select(s)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ s.setting_key }}</h6>
+          @if (s.setting_group) { <span class="badge text-bg-light border">{{ s.setting_group }}</span> }
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ s.setting_value }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">tune</mat-icon>
+                Setting
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="setting_key">Key</label>
+                    <input type="text" id="setting_key" formControlName="setting_key" class="form-control" placeholder="e.g. INV.ALLOW_NEGATIVE_STOCK" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="setting_group">Group</label>
+                    <input type="text" id="setting_group" formControlName="setting_group" class="form-control" placeholder="e.g. Inventory" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="setting_value">Value</label>
+                    <input type="text" id="setting_value" formControlName="setting_value" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="value_type">Type</label>
+                    <ng-select id="value_type" labelForId="value_type" formControlName="value_type" [clearable]="false">
+                      <ng-option [value]="1">String</ng-option>
+                      <ng-option [value]="2">Number</ng-option>
+                      <ng-option [value]="3">Boolean</ng-option>
+                      <ng-option [value]="4">JSON</ng-option>
+                      <ng-option [value]="5">Date</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label" for="description">Description</label>
+                    <textarea id="description" formControlName="description" class="form-control" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

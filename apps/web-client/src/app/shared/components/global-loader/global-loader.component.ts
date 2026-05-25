@@ -1,28 +1,29 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LoaderService } from '../../../core/services/loader.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-global-loader',
   standalone: true,
-  imports: [CommonModule],
   template: `
-    <div class="loader-overlay" *ngIf="loaderService.isLoading()">
-      <div class="center-body">
-        <div class="loader-spanne-20">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+    @if (loaderService.isLoading()) {
+      <div class="loader-overlay">
+        <div class="center-body">
+          <div class="loader-spanne-20">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
-    </div>
+    }
   `,
-  styleUrls: ['./global-loader.component.scss']
+  styleUrl: './global-loader.component.scss',
 })
 export class GlobalLoaderComponent {
-  constructor(public loaderService: LoaderService) {}
+  readonly loaderService = inject(LoaderService);
 }

@@ -9,16 +9,23 @@ import { resolvePostReloadSelection } from '../../../../../core/utils/list-selec
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
-import { CommonDataService } from '../../../../../shared/services/common-data.service';
+import { CommonDataService, DepartmentLookup, DesignationLookup } from '../../../../../shared/services/common-data.service';
 
+/**
+ * Employee entity — mirrors the `hr_employee` table from db-updated.md.
+ *
+ * Field names use snake_case to match the backend JSON wire format
+ * (Jackson SNAKE_CASE serialisation) so the API response maps directly
+ * without transformation.
+ */
 export interface IEmployee extends BaseEntity {
   employee_no: number;
   employee_id: string;
   first_name: string;
-  last_name: string;
-  full_name: string;
-  first_name_nls?: string | null;
-  last_name_nls?: string | null;
+  middle_name?: string | null;
+  last_name?: string | null;
+
+  // Personal Core
   date_of_birth: string;
   gender?: number | null;
   marital_status?: number | null;
@@ -26,18 +33,27 @@ export interface IEmployee extends BaseEntity {
   religion?: number | null;
   nationality?: number | null;
   photo_url?: string | null;
+  signature_url?: string | null;
+
+  // Statutory Identifiers
   nid_number?: string | null;
   passport_number?: string | null;
   birth_certificate_no?: string | null;
   tin_number?: string | null;
+
+  // Org Mapping
   department_no: number;
   designation_no: number;
   reporting_to?: number | null;
   branch_no: number;
+
+  // Contract Milestones
   joining_date: string;
   confirmation_date?: string | null;
   employment_type?: number | null;
-  employee_status?: number | null;
+  is_active: number;
+
+  // Communication
   mobile_number: string;
   alternative_mobile_number?: string | null;
   official_email?: string | null;
@@ -45,28 +61,36 @@ export interface IEmployee extends BaseEntity {
   emergency_contact_name: string;
   emergency_contact_number: string;
   emergency_contact_relation?: string | null;
+
+  // Address
   present_address: string;
   permanent_address?: string | null;
   present_post_code?: string | null;
   permanent_post_code?: string | null;
+
+  // Compensation
   pay_schedule?: number | null;
-  salary_grade_no?: number | null;
-  basic_salary: number;
-  gross_salary?: number | null;
-  bank_account_number?: string | null;
+  salary: number;
+
+  // Bank & MFS
+  bank_account_no?: string | null;
   bank_name?: string | null;
   bank_branch?: string | null;
   routing_number?: string | null;
   mfs_number?: string | null;
   mfs_provider?: string | null;
+
+  // Contract (for contractual employees)
   contract_start_date?: string | null;
   contract_end_date?: string | null;
   contract_amount?: number | null;
   contract_notes?: string | null;
-  active_status: number;
-  display_sl?: number | null;
+
+  // Education
+  highest_education?: string | null;
+  education_subject?: string | null;
+
   remarks?: string | null;
-  description?: string | null;
 }
 
 @Injectable()
@@ -82,8 +106,8 @@ export class Hr1001ModelService {
   isLoading = signal(false);
 
   employees    = signal<IEmployee[]>([]);
-  departments  = signal<any[]>([]);
-  designations = signal<any[]>([]);
+  departments  = signal<DepartmentLookup[]>([]);
+  designations = signal<DesignationLookup[]>([]);
 
   selectedEmployeeNo = signal<number | null>(null);
   searchTerm         = signal('');
@@ -97,7 +121,7 @@ export class Hr1001ModelService {
     const deptNo = this.formDeptNo();
     const all = this.designations();
     if (!deptNo) return all;
-    return all.filter((d: any) => d.department_no === deptNo);
+    return all.filter((d) => d.department_no === deptNo);
   });
 
   filteredEmployees = computed(() => {
@@ -108,13 +132,15 @@ export class Hr1001ModelService {
     let list = this.employees();
     if (deptNo)  list = list.filter((e) => e.department_no  === deptNo);
     if (desigNo) list = list.filter((e) => e.designation_no === desigNo);
-    if (status !== null && status !== undefined) list = list.filter((e) => e.active_status === status);
+    if (status !== null && status !== undefined) list = list.filter((e) => e.is_active === status);
     if (!term) return list;
     return list.filter(
-      (e) =>
-        (e.full_name   || '').toLowerCase().includes(term) ||
-        (e.employee_id || '').toLowerCase().includes(term) ||
-        (e.mobile_number || '').includes(term),
+      (e) => {
+        const fullName = `${e.first_name} ${e.last_name ?? ''}`.trim().toLowerCase();
+        return fullName.includes(term) ||
+          (e.employee_id || '').toLowerCase().includes(term) ||
+          (e.mobile_number || '').includes(term);
+      },
     );
   });
 
@@ -128,12 +154,11 @@ export class Hr1001ModelService {
     this.form = this.fb.group(
       {
         employee_no:               [null],
-        employee_id:               ['', [Validators.required, Validators.maxLength(50)]],
+        employee_id:               ['', [Validators.required, Validators.maxLength(30)]],
         first_name:                ['', [Validators.required, Validators.maxLength(100)]],
-        last_name:                 ['', [Validators.required, Validators.maxLength(100)]],
-        full_name:                 ['', [Validators.required, Validators.maxLength(200)]],
-        first_name_nls:            [''],
-        last_name_nls:             [''],
+        middle_name:               ['', [Validators.maxLength(100)]],
+        last_name:                 ['', [Validators.maxLength(100)]],
+
         date_of_birth:             ['', [Validators.required]],
         gender:                    [null],
         marital_status:            [null],
@@ -154,7 +179,7 @@ export class Hr1001ModelService {
         joining_date:              ['', [Validators.required]],
         confirmation_date:         [null],
         employment_type:           [null],
-        employee_status:           [1],
+        is_active:                 [1],
 
         mobile_number:             ['', [Validators.required]],
         alternative_mobile_number: [''],
@@ -171,11 +196,9 @@ export class Hr1001ModelService {
         permanent_post_code:       [''],
 
         pay_schedule:              [null],
-        salary_grade_no:           [null],
-        basic_salary:              [0, [Validators.required, Validators.min(0)]],
-        gross_salary:              [null],
+        salary:                    [0, [Validators.required, Validators.min(0)]],
 
-        bank_account_number:       [''],
+        bank_account_no:           [''],
         bank_name:                 [''],
         bank_branch:               [''],
         routing_number:            [''],
@@ -187,16 +210,15 @@ export class Hr1001ModelService {
         contract_amount:           [null],
         contract_notes:            [''],
 
+        highest_education:         [''],
+        education_subject:         [''],
+
         company_no:                [this.authCtx.user()?.company_no ?? null, [Validators.required]],
-        active_status:             [1, [Validators.required]],
-        display_sl:                [null],
         remarks:                   [''],
-        description:               [''],
       },
       {
         validators: [
           CustomValidators.atLeastOne(['nid_number', 'passport_number']),
-          CustomValidators.minMax('basic_salary', 'gross_salary'),
         ],
       },
     );
@@ -257,10 +279,8 @@ export class Hr1001ModelService {
               employee_no:               d['employee_no']               ?? d['employeeNo'],
               employee_id:               d['employee_id']               ?? d['employeeId'],
               first_name:                d['first_name']                ?? d['firstName'],
+              middle_name:               d['middle_name']               ?? d['middleName'],
               last_name:                 d['last_name']                 ?? d['lastName'],
-              full_name:                 d['full_name']                 ?? d['fullName'],
-              first_name_nls:            d['first_name_nls']            ?? d['firstNameNls'],
-              last_name_nls:             d['last_name_nls']             ?? d['lastNameNls'],
               date_of_birth:             d['date_of_birth']             ?? d['dateOfBirth'],
               gender:                    d['gender'],
               marital_status:            d['marital_status']            ?? d['maritalStatus'],
@@ -278,7 +298,7 @@ export class Hr1001ModelService {
               joining_date:              d['joining_date']              ?? d['joiningDate'],
               confirmation_date:         d['confirmation_date']         ?? d['confirmationDate'],
               employment_type:           d['employment_type']           ?? d['employmentType'],
-              employee_status:           d['employee_status']           ?? d['employeeStatus'] ?? 1,
+              is_active:                 d['is_active']                 ?? d['isActive'] ?? 1,
               mobile_number:             d['mobile_number']             ?? d['mobileNumber'],
               alternative_mobile_number: d['alternative_mobile_number'] ?? d['alternativeMobileNumber'],
               official_email:            d['official_email']            ?? d['officialEmail'],
@@ -291,10 +311,8 @@ export class Hr1001ModelService {
               present_post_code:         d['present_post_code']         ?? d['presentPostCode'],
               permanent_post_code:       d['permanent_post_code']       ?? d['permanentPostCode'],
               pay_schedule:              d['pay_schedule']              ?? d['paySchedule'],
-              salary_grade_no:           d['salary_grade_no']           ?? d['salaryGradeNo'],
-              basic_salary:              d['basic_salary']              ?? d['basicSalary'] ?? 0,
-              gross_salary:              d['gross_salary']              ?? d['grossSalary'],
-              bank_account_number:       d['bank_account_number']       ?? d['bankAccountNumber'],
+              salary:                    d['salary']                    ?? 0,
+              bank_account_no:           d['bank_account_no']           ?? d['bankAccountNo'],
               bank_name:                 d['bank_name']                 ?? d['bankName'],
               bank_branch:               d['bank_branch']               ?? d['bankBranch'],
               routing_number:            d['routing_number']            ?? d['routingNumber'],
@@ -304,11 +322,10 @@ export class Hr1001ModelService {
               contract_end_date:         d['contract_end_date']         ?? d['contractEndDate'],
               contract_amount:           d['contract_amount']           ?? d['contractAmount'],
               contract_notes:            d['contract_notes']            ?? d['contractNotes'],
+              highest_education:         d['highest_education']         ?? d['highestEducation'],
+              education_subject:         d['education_subject']         ?? d['educationSubject'],
               company_no:                d['company_no']                ?? d['companyNo'],
-              active_status:             d['active_status']             ?? d['activeStatus'] ?? 1,
-              display_sl:                d['display_sl']                ?? d['displaySl'],
               remarks:                   d['remarks'],
-              description:               d['description'],
             });
           }
         },
@@ -362,9 +379,8 @@ export class Hr1001ModelService {
     this.selectedEmployeeNo.set(null);
     this.formDeptNo.set(null);
     this.form.reset({
-      active_status:    1,
-      employee_status:  1,
-      basic_salary:     0,
+      is_active:  1,
+      salary:     0,
       company_no: this.authCtx.user()?.company_no ?? null,
       branch_no:  this.authCtx.user()?.branch_no  ?? null,
     });

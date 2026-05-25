@@ -1,0 +1,131 @@
+<app-page-form-layout
+  [title]="'User-Company Mapping'"
+  [icon]="'apartment'"
+  [recordsCount]="model.filteredUsers().length"
+  [sidebarTitle]="'Users'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <!-- Sidebar: user selector -->
+  <div sidebarList>
+    @for (u of model.filteredUsers(); track u.user_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedUserNo() === u.user_no"
+        (click)="model.selectUser(u.user_no)"
+      >
+        <h6 class="mb-0 fw-bold">{{ u.user_name }}</h6>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ u.user_id }}</p>
+      </button>
+    }
+    @if (model.filteredUsers().length === 0) {
+      <div class="p-4 text-center opacity-75">
+        <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">person_off</mat-icon>
+        <p class="mb-0 small">No users found</p>
+      </div>
+    }
+  </div>
+
+  <!-- Main: company access for the selected user -->
+  <div formContent>
+    @if (!model.selectedUserNo()) {
+      <div class="p-4 text-center opacity-75">Select a user to manage their company access.</div>
+    } @else {
+      <div class="form-section-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-header__title mb-0 fw-bold">
+            <mat-icon class="me-2 align-middle">apartment</mat-icon>
+            Company Access
+          </h4>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addRow()">
+            <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon>
+            Add Company
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width: 240px">Company</th>
+                  <th class="text-center" style="width: 90px">Default</th>
+                  <th class="text-center" style="width: 90px">Owner</th>
+                  <th class="text-center" style="width: 90px">Active</th>
+                  <th class="text-center" style="width: 60px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of model.mappings(); track $index) {
+                  <tr>
+                    <td>
+                      <select
+                        class="form-select form-select-sm"
+                        [value]="row.company_no ?? ''"
+                        (change)="model.setCompany($index, $any($event.target).value)"
+                      >
+                        <option [value]="''">Select company…</option>
+                        @for (c of model.companies(); track c.value) {
+                          <option [value]="c.value">{{ c.label }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="text-center">
+                      <input
+                        type="radio"
+                        name="defaultCompany"
+                        class="form-check-input"
+                        [checked]="row.is_default === 1"
+                        (change)="model.setDefault($index)"
+                      />
+                    </td>
+                    <td class="text-center">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        [checked]="row.is_owner === 1"
+                        (change)="model.toggleOwner($index)"
+                      />
+                    </td>
+                    <td class="text-center">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        [checked]="row.is_active === 1"
+                        (change)="model.toggleActive($index)"
+                      />
+                    </td>
+                    <td class="text-center">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-link text-danger p-0"
+                        (click)="model.removeRow($index)"
+                        title="Remove"
+                      >
+                        <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (model.mappings().length === 0) {
+                  <tr>
+                    <td colspan="5" class="text-center opacity-75 p-4">
+                      No company access yet. Click “Add Company” to grant one.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</app-page-form-layout>

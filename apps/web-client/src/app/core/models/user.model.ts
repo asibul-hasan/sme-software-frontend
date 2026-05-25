@@ -21,4 +21,8 @@ export interface User {
   branch_no?:    number;
   branch_name?:  string;
   branch_ids?:   number[];
+
+  /** Data-access scope: 1=BRANCH, 2=COMPANY, 3=GLOBAL (drives the branch/company switcher). */
+  access_scope?: number;
+  default_branch_no?: number;
 }

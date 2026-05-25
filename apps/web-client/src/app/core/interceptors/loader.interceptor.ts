@@ -1,12 +1,5 @@
-import { Injectable, inject } from '@angular/core';
-import {
-  HttpContextToken,
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpContextToken, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { LoaderService } from '../services/loader.service';
 
@@ -17,15 +10,18 @@ import { LoaderService } from '../services/loader.service';
  */
 export const SKIP_LOADER = new HttpContextToken<boolean>(() => false);
 
-@Injectable()
-export class LoaderInterceptor implements HttpInterceptor {
-  private readonly loader = inject(LoaderService);
-
-  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    if (req.context.get(SKIP_LOADER)) {
-      return next.handle(req);
-    }
-    this.loader.show();
-    return next.handle(req).pipe(finalize(() => this.loader.hide()));
+/**
+ * Global loading spinner interceptor (functional).
+ *
+ * Shows the loader on request start, hides it when the response arrives
+ * (or errors). Opt-out with `SKIP_LOADER` context token.
+ */
+export const loaderInterceptor: HttpInterceptorFn = (req, next) => {
+  if (req.context.get(SKIP_LOADER)) {
+    return next(req);
   }
-}
+
+  const loader = inject(LoaderService);
+  loader.show();
+  return next(req).pipe(finalize(() => loader.hide()));
+};

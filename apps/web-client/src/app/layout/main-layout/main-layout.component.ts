@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -9,6 +9,7 @@ import { FooterComponent } from '../components/footer/footer.component';
 import { GlobalLoaderComponent } from '../../shared/components/global-loader/global-loader.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-main-layout',
   standalone: true,
   imports: [

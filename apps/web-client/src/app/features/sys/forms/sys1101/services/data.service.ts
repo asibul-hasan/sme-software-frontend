@@ -1,55 +1,63 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SysDataService } from '../../../services/data.service';
+import { HttpClient } from '@angular/common/http';
+import { AppConfigService } from '../../../../../core/services/app-config.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IUser, IUserRole } from './model.service';
+import { Sys1101EmployeeDto, Sys1101UserDto, Sys1101UserRoleDto } from './model.service';
 
 /**
- * Form-level HTTP service for SYS1101 – User Management.
+ * Form-level HTTP service for SYS1101 User Management.
+ * All API calls go through the dedicated Sys1101Controller.
  */
 @Injectable()
 export class Sys1101DataService {
-  private sysService = inject(SysDataService);
+  private http = inject(HttpClient);
+  private config = inject(AppConfigService);
+  private baseUrl = `${this.config.apiUrl}/sys/forms/sys1101`;
 
-  loadUsers(params?: Record<string, string | number | boolean>): Observable<ApiResponse<IUser[]>> {
-    return this.sysService.searchUsers(params) as Observable<ApiResponse<IUser[]>>;
+  // ─── Employee Operations ──────────────────────────────────────────────────
+
+  getEmployeeList(isActive?: number): Observable<ApiResponse<Sys1101EmployeeDto[]>> {
+    const params: Record<string, string> = {};
+    if (isActive !== undefined && isActive !== null) {
+      params['is_active'] = String(isActive);
+    }
+    return this.http.get<ApiResponse<Sys1101EmployeeDto[]>>(`${this.baseUrl}/employees`, { params });
   }
 
-  loadUsersSummary(params?: Record<string, string | number | boolean>): Observable<ApiResponse<any[]>> {
-    return this.sysService.getUserSummary(params);
+  getEmployeeDetail(employeeNo: number): Observable<ApiResponse<Sys1101EmployeeDto>> {
+    return this.http.get<ApiResponse<Sys1101EmployeeDto>>(`${this.baseUrl}/employees/${employeeNo}`);
   }
 
-  loadUserRoles(userNo: number): Observable<ApiResponse<IUserRole[]>> {
-    return this.sysService.getUserRoles(userNo) as Observable<ApiResponse<IUserRole[]>>;
+  // ─── User Operations ─────────────────────────────────────────────────────
+
+  getUserByEmployeeNo(employeeNo: number): Observable<ApiResponse<Sys1101UserDto | null>> {
+    return this.http.get<ApiResponse<Sys1101UserDto | null>>(`${this.baseUrl}/users/by-employee/${employeeNo}`);
   }
 
-  loadUserDetail(userNo: number): Observable<ApiResponse<IUser>> {
-    return this.sysService.getUserDtl(userNo) as Observable<ApiResponse<IUser>>;
+  createUser(payload: Partial<Sys1101UserDto>): Observable<ApiResponse<Sys1101UserDto>> {
+    return this.http.post<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users`, payload);
   }
 
-  loadUserByEmployeeNo(employeeNo: number): Observable<ApiResponse<IUser>> {
-    return this.sysService.getUserByEmployeeNo(employeeNo) as Observable<ApiResponse<IUser>>;
-  }
-
-  saveUser(payload: Partial<IUser>): Observable<ApiResponse<IUser>> {
-    return this.sysService.insertUser(payload) as Observable<ApiResponse<IUser>>;
-  }
-
-  updateUser(payload: Partial<IUser>): Observable<ApiResponse<IUser>> {
-    const userNo = payload.user_no;
-    if (!userNo) throw new Error('user_no is required for update');
-    return this.sysService.updateUser(userNo, payload) as Observable<ApiResponse<IUser>>;
+  updateUser(userNo: number, payload: Partial<Sys1101UserDto>): Observable<ApiResponse<Sys1101UserDto>> {
+    return this.http.put<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users/${userNo}`, payload);
   }
 
   deleteUser(userNo: number): Observable<ApiResponse<void>> {
-    return this.sysService.deleteUser(userNo);
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/users/${userNo}`);
   }
 
-  setLocked(userNo: number, locked: number): Observable<ApiResponse<IUser>> {
-    return this.sysService.setUserLocked(userNo, locked) as Observable<ApiResponse<IUser>>;
+  lockUser(userNo: number, locked: number): Observable<ApiResponse<Sys1101UserDto>> {
+    return this.http.patch<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users/${userNo}/lock?locked=${locked}`, {});
   }
 
   resetPassword(userNo: number, newPassword: string): Observable<ApiResponse<void>> {
-    return this.sysService.resetUserPassword(userNo, { new_password: newPassword });
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/users/${userNo}/reset-password`, { new_password: newPassword });
+  }
+
+  // ─── User Role Operations ────────────────────────────────────────────────
+
+  getUserRoles(userNo: number): Observable<ApiResponse<Sys1101UserRoleDto[]>> {
+    return this.http.get<ApiResponse<Sys1101UserRoleDto[]>>(`${this.baseUrl}/users/${userNo}/roles`);
   }
 }

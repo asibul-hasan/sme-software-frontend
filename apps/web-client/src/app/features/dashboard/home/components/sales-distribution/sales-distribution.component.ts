@@ -1,8 +1,9 @@
-import { Component, AfterViewInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, AfterViewInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sales-distribution',
   standalone: true,
   imports: [CommonModule],

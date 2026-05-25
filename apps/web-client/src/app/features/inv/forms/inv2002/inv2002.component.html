@@ -1,0 +1,95 @@
+<div class="p-3">
+  <!-- Header + warehouse selector -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0 fw-bold">
+      <mat-icon class="me-2 align-middle">shelves</mat-icon>
+      Rack / Shelf Setup
+    </h4>
+    <div style="min-width: 280px">
+      <ng-select
+        [items]="model.warehouses()"
+        bindValue="value"
+        bindLabel="label"
+        [clearable]="false"
+        placeholder="Select warehouse"
+        [ngModel]="model.selectedWarehouseNo()"
+        (ngModelChange)="model.selectWarehouse($event)"
+      ></ng-select>
+    </div>
+  </div>
+
+  @if (!model.selectedWarehouseNo()) {
+    <div class="p-4 text-center opacity-75">Select a warehouse to manage its racks.</div>
+  } @else {
+    <div class="row row-group">
+      <!-- Rack list -->
+      <div class="col-lg-6">
+        <div class="form-section-card card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">shelves</mat-icon>Racks</h4>
+            @if (permissionService.canInsert()) {
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.newRack()">New</button>
+            }
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Location</th><th>Status</th></tr></thead>
+                <tbody>
+                  @for (r of model.racks(); track r.rack_no) {
+                    <tr style="cursor: pointer" [class.table-active]="model.selectedRackNo() === r.rack_no" (click)="model.selectRack(r)">
+                      <td class="fw-semibold small">{{ r.rack_id }}</td>
+                      <td class="small">{{ r.rack_name }}</td>
+                      <td class="small opacity-75">{{ r.aisle }}{{ r.rack ? '-' + r.rack : '' }}{{ r.shelf ? '-' + r.shelf : '' }}{{ r.bin ? '-' + r.bin : '' }}</td>
+                      <td><span class="badge" [ngClass]="r.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'">{{ r.is_active === 1 ? 'Active' : 'Inactive' }}</span></td>
+                    </tr>
+                  }
+                  @if (model.racks().length === 0) { <tr><td colspan="4" class="text-center opacity-75 p-4">No racks yet.</td></tr> }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rack form -->
+      <div class="col-lg-6">
+        <div class="form-section-card card">
+          <div class="card-header">
+            <h4 class="card-header__title mb-0 fw-bold">{{ model.selectedRackNo() ? 'Edit' : 'New' }} Rack</h4>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="model.form" autocomplete="off">
+              <div class="row row-group">
+                <div class="col-md-6"><div class="field-group"><label class="field-label required" for="rack_id">Code</label><input type="text" id="rack_id" formControlName="rack_id" class="form-control text-uppercase" placeholder="A-01-03" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="rack_name">Name</label><input type="text" id="rack_name" formControlName="rack_name" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="aisle">Aisle</label><input type="text" id="aisle" formControlName="aisle" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="rack">Rack</label><input type="text" id="rack" formControlName="rack" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="shelf">Shelf</label><input type="text" id="shelf" formControlName="shelf" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="bin">Bin</label><input type="text" id="bin" formControlName="bin" class="form-control" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="is_active">Status</label>
+                  <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                    <ng-option [value]="1">Active</ng-option>
+                    <ng-option [value]="0">Inactive</ng-option>
+                  </ng-select>
+                </div></div>
+              </div>
+            </form>
+            <div class="d-flex gap-2 mt-2">
+              @if (permissionService.canInsert() || permissionService.canUpdate()) {
+                <button type="button" class="btn btn-primary" (click)="model.onSave()" [disabled]="model.isSaving()">
+                  <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">save</mat-icon> Save
+                </button>
+              }
+              @if (permissionService.canDelete() && model.selectedRackNo()) {
+                <button type="button" class="btn btn-outline-danger" (click)="onDelete()">
+                  <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon> Delete
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

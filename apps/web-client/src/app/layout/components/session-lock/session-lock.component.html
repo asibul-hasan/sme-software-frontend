@@ -1,68 +1,60 @@
-<div class="lock-container">
-  <div class="lock-card p-5 text-center">
-    <div class="user-profile mb-4">
-      <div class="avatar mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle">
-        <mat-icon class="text-white">account_circle</mat-icon>
-      </div>
-      <h3 class="user-name fw-bold mb-1">{{ user()?.name }}</h3>
-      <p class="user-email small mb-0">{{ user()?.email }}</p>
+<div class="lock-card">
+  <div class="lock-avatar">
+    <mat-icon>account_circle</mat-icon>
+  </div>
+
+  <h2 class="lock-name">{{ user()?.name || 'Session Locked' }}</h2>
+  @if (user()?.email) {
+    <p class="lock-email">{{ user()?.email }}</p>
+  }
+
+  <form [formGroup]="lockForm" (ngSubmit)="onSubmit()" class="lock-form">
+    <label class="lock-label" for="lockPassword">Password Required</label>
+
+    <div class="lock-field" [class.lock-field--invalid]="error()">
+      <mat-icon class="lock-field__icon">lock</mat-icon>
+      <input
+        id="lockPassword"
+        class="lock-field__input"
+        [type]="showPassword() ? 'text' : 'password'"
+        formControlName="password"
+        placeholder="Enter password to unlock"
+        autocomplete="current-password"
+      />
+      <button
+        type="button"
+        class="lock-field__toggle"
+        [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+        (click)="showPassword.set(!showPassword())"
+      >
+        <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
     </div>
 
-    <form [formGroup]="lockForm" (ngSubmit)="onSubmit()">
-      <div class="mb-4 text-start">
-        <label class="form-label field-label small fw-semibold ms-1">Password Required</label>
-        <div class="input-group lock-input rounded-3 overflow-hidden">
-          <span class="input-group-text bg-transparent border-0 input-icon pe-0">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px">lock</mat-icon>
-          </span>
-          <input
-            [type]="showPassword() ? 'text' : 'password'"
-            formControlName="password"
-            class="form-control border-0 bg-transparent py-2 px-2 lock-input-field"
-            placeholder="Enter password to unlock"
-          />
-          <button
-            type="button"
-            class="btn border-0 input-icon px-3"
-            (click)="showPassword.set(!showPassword())"
-          >
-            <mat-icon style="font-size: 20px; width: 20px; height: 20px">
-              {{ showPassword() ? 'visibility_off' : 'visibility' }}
-            </mat-icon>
-          </button>
-        </div>
-        @if (error()) {
-          <div class="text-danger small mt-2 d-flex align-items-center gap-1 ms-1">
-            <mat-icon style="font-size: 14px; width: 14px; height: 14px">error</mat-icon>
-            {{ error() }}
-          </div>
-        }
-      </div>
+    @if (error()) {
+      <p class="lock-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </p>
+    }
 
-      <button
-        type="submit"
-        class="btn btn-unlock w-100 py-2 fw-bold rounded-3"
-        [disabled]="lockForm.invalid || isLoading()"
-      >
-        @if (isLoading()) {
-          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          Unlocking...
-        } @else {
-          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle" class="me-1">lock_open</mat-icon>
-          Unlock Session
-        }
-      </button>
+    <button
+      type="submit"
+      class="lock-submit"
+      [disabled]="lockForm.invalid || isLoading()"
+    >
+      @if (isLoading()) {
+        <span class="lock-spinner"></span>
+        <span>Unlocking…</span>
+      } @else {
+        <mat-icon>lock_open</mat-icon>
+        <span>Unlock Session</span>
+      }
+    </button>
 
-      <div class="mt-4">
-        <button
-          type="button"
-          class="btn btn-link switch-btn text-decoration-none small p-0"
-          (click)="onSwitchUser()"
-        >
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle" class="me-1">swap_horiz</mat-icon>
-          Switch Account
-        </button>
-      </div>
-    </form>
-  </div>
+    <button type="button" class="lock-switch" (click)="onSwitchUser()">
+      <mat-icon>swap_horiz</mat-icon>
+      <span>Switch Account</span>
+    </button>
+  </form>
 </div>

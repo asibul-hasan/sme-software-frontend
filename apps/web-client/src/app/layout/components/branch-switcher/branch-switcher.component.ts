@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,6 +14,7 @@ interface Branch {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-branch-switcher',
   standalone: true,
   imports: [
@@ -111,6 +112,5 @@ export class BranchSwitcherComponent implements OnInit {
   onBranchChange(branchId: number) {
     this.selectedBranch.set(branchId);
     this.authService.switchBranch(branchId);
-    console.log('Branch changed to:', branchId);
   }
 }

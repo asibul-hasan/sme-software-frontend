@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  HttpInterceptor, HttpRequest, HttpHandler,
+  HttpInterceptor, HttpInterceptorFn, HttpRequest, HttpHandler,
   HttpEvent, HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
@@ -32,7 +32,7 @@ import { IRawMenuForm } from '../models/permission.model';
  *     token expired or backend unreachable), force a logout so the user
  *     lands on the login screen instead of spamming the server.
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AuthInterceptor implements HttpInterceptor {
   private readonly authService = inject(AuthService);
   private readonly authContext = inject(AuthContextService);
@@ -152,3 +152,16 @@ export class AuthInterceptor implements HttpInterceptor {
     return match?.form_id ?? null;
   }
 }
+
+/**
+ * Functional wrapper around `AuthInterceptor` for use with `withInterceptors()`.
+ *
+ * The class-based `AuthInterceptor` encapsulates the single-flight refresh
+ * queue (instance state), so we delegate to it via DI rather than inlining
+ * the logic into a bare function.
+ */
+export const AuthInterceptorFn: HttpInterceptorFn = (req, next) => {
+  const interceptor = inject(AuthInterceptor);
+  return interceptor.intercept(req, { handle: next });
+};
+

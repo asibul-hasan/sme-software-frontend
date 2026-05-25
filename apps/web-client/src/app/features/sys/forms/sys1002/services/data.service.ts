@@ -1,42 +1,72 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SysDataService } from '../../../services/data.service';
+import { HttpClient } from '@angular/common/http';
+import { AppConfigService } from '../../../../../core/services/app-config.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IBranch } from './model.service';
 
 /**
- * Form-level HTTP service for SYS1002 – Branch Setup.
- *
- * Updated to use the standardized RESTful 5-API pattern:
- * - list:   GET /api/v1/sys/branches
- * - detail: GET /api/v1/sys/branches/{no}
- * - insert: POST /api/v1/sys/branches
- * - update: PUT /api/v1/sys/branches/{no}
- * - delete: DELETE /api/v1/sys/branches/{no}
+ * Form-specific DTO for SYS1002 Branch.
+ */
+export interface Sys1002BranchDto {
+  branch_no: number | null;
+  company_no: number;
+  branch_id: string | null;
+  branch_name: string;
+  branch_name_nls: string | null;
+  branch_type: string | null;
+  branch_addr1: string | null;
+  branch_addr2: string | null;
+  city: string | null;
+  post_code: string | null;
+  mobile_no: string | null;
+  contact_no: string | null;
+  email: string | null;
+  manager_employee_no: number | null;
+  manager_name: string | null;
+  is_main_branch: number;
+  is_active: number;
+  row_version: number | null;
+}
+
+/**
+ * Lightweight employee for manager dropdown.
+ */
+export interface Sys1002EmployeeDto {
+  employee_no: number;
+  employee_id: string;
+  full_name: string;
+  department_name: string | null;
+  designation_name: string | null;
+  is_active: number;
+}
+
+/**
+ * Form-level HTTP service for SYS1002 Branch Setup.
+ * All API calls go through the dedicated Sys1002Controller.
  */
 @Injectable()
 export class Sys1002DataService {
-  private sysService = inject(SysDataService);
+  private http = inject(HttpClient);
+  private config = inject(AppConfigService);
+  private baseUrl = `${this.config.apiUrl}/sys/forms/sys1002`;
 
-  loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branches');
+  getBranchList(): Observable<ApiResponse<Sys1002BranchDto[]>> {
+    return this.http.get<ApiResponse<Sys1002BranchDto[]>>(`${this.baseUrl}/branches`);
   }
 
-  loadBranchDetail(branchNo: number): Observable<ApiResponse<IBranch>> {
-    return this.sysService.getDtl<IBranch>('branches', branchNo);
+  getBranchDetail(branchNo: number): Observable<ApiResponse<Sys1002BranchDto>> {
+    return this.http.get<ApiResponse<Sys1002BranchDto>>(`${this.baseUrl}/branches/${branchNo}`);
   }
 
-  saveBranch(payload: Partial<IBranch>): Observable<ApiResponse<IBranch>> {
-    return this.sysService.insert<IBranch>('branches', payload);
+  saveBranch(payload: Sys1002BranchDto): Observable<ApiResponse<Sys1002BranchDto>> {
+    return this.http.post<ApiResponse<Sys1002BranchDto>>(`${this.baseUrl}/branches`, payload);
   }
 
-  updateBranch(payload: Partial<IBranch>): Observable<ApiResponse<IBranch>> {
-    const branchNo = payload.branch_no;
-    if (!branchNo) throw new Error('branch_no is required for update');
-    return this.sysService.update<IBranch>('branches', branchNo, payload);
+  deleteBranch(branchNo: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/branches/${branchNo}`);
   }
 
-  deleteBranch(branchNo: number): Observable<ApiResponse<Record<string, unknown>>> {
-    return this.sysService.delete<Record<string, unknown>>('branches', branchNo);
+  getEmployees(): Observable<ApiResponse<Sys1002EmployeeDto[]>> {
+    return this.http.get<ApiResponse<Sys1002EmployeeDto[]>>(`${this.baseUrl}/employees`);
   }
 }

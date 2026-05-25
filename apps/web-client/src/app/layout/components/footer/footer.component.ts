@@ -1,7 +1,8 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, signal } from '@angular/core';
 import { SharedModule } from '../../../shared';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-footer',
   standalone: true,
   imports: [SharedModule],

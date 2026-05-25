@@ -418,11 +418,5 @@
       "nx.json",
       "nx/target-defaults"
     ]
-  },
-  "libs/shared-ui": {
-    "root": [
-      "libs/shared-ui/project.json",
-      "nx/core/project-json"
-    ]
   }
 }

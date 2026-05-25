@@ -31,9 +31,11 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { ValidationMessageDirective, CollapsibleCardDirective } from './directives';
+import { UI_KIT } from './ui';
 import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
 import { SidebarPaginationComponent } from './components/sidebar-pagination/sidebar-pagination.component';
+import { CommonTableComponent } from './components/common-table';
 import { DateOnlyPipe } from './pipes/date-format.pipe';
 import { DateTimePipe } from './pipes/date-time.pipe';
 import { DateTimeGmtPipe } from './pipes/date-time-gmt.pipe';
@@ -86,6 +88,8 @@ const PIPES = [
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,
+    CommonTableComponent,
+    ...UI_KIT,
     ...PIPES,
   ],
   exports: [
@@ -95,6 +99,8 @@ const PIPES = [
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,
+    CommonTableComponent,
+    ...UI_KIT,
     ...PIPES,
   ],
 })

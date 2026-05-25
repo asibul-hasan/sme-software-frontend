@@ -1,0 +1,66 @@
+/* ============================================================
+ * Tailwind v4 entry — plain CSS so @import / @theme work natively.
+ * The SCSS layer (styles.scss) is loaded separately by the build.
+ * ============================================================ */
+@import 'tailwindcss';
+
+/* Dark mode is driven by the data-theme attribute on <html>
+   (toggled by ThemeService) — not the default `prefers-color-scheme`. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ── Static tokens ────────────────────────────────────────────
+   Font + type scale mirror the app's --text-* scale.
+   Breakpoints match Bootstrap's so responsive behavior is unchanged. */
+@theme {
+  --font-sans: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  --text-xxs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 13.5px;
+  --text-lg: 15px;
+  --text-xl: 18px;
+
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-2xl: 1400px;
+}
+
+/* ── Theme-reactive color tokens ──────────────────────────────
+   `inline` keeps the var() reference live, so every utility
+   (bg-*, text-*, border-*) re-resolves on light/dark switch.
+   Source of truth: assets/styles/_themes.scss */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --color-indigo: var(--indigo);
+  --color-teal: var(--teal);
+  --color-amber: var(--amber);
+  --color-rose: var(--rose);
+  --color-emerald: var(--emerald);
+  --color-purple: var(--purple);
+  --color-orange: var(--orange);
+
+  --color-canvas: var(--bg-primary);
+  --color-surface: var(--card-bg);
+  --color-muted: var(--bg-secondary);
+  --color-content: var(--text-primary);
+  --color-subtle: var(--text-secondary);
+  --color-line: var(--border-color);
+
+  --color-input: var(--input-bg);
+  --color-input-border: var(--input-border);
+
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar-foreground: var(--sidebar-text);
+  --color-header: var(--header-bg);
+  --color-header-foreground: var(--header-text);
+  --color-footer: var(--footer-bg);
+  --color-footer-foreground: var(--footer-text);
+}

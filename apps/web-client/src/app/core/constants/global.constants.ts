@@ -6,7 +6,12 @@
  * components/services rather than re-parsing localStorage on every access.
  */
 export const globalConstants = {
-  /** LocalStorage keys — keep stable; renaming invalidates every active session. */
+  /**
+   * Storage keys. Per the SYS re-plan §4.5, the auth token + active context live in
+   * **sessionStorage** (per-tab, so two tabs can hold different branches), while the
+   * `lastUsed*` hints live in **localStorage** to pre-fill the login picker next time.
+   * Keep these stable; renaming invalidates every active session.
+   */
   storageKeys: {
     accessToken:        'access_token',
     refreshToken:       'refresh_token',
@@ -16,6 +21,10 @@ export const globalConstants = {
     availableBranches:  'sme_available_branches',
     sidebarCollapsed:   'sme_sidebar_collapsed',
     sidebarExpanded:    'sme_sidebar_expanded',
+    // Login "remember last" hints (localStorage, per-device — not the active session).
+    lastUserId:         'sme_last_user_id',
+    lastCompanyNo:      'sme_last_company_no',
+    lastBranchNo:       'sme_last_branch_no',
   },
 
   pagination: {

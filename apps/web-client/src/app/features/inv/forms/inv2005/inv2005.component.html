@@ -1,0 +1,93 @@
+<div class="p-3">
+  <!-- Header + warehouse selector -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0 fw-bold">
+      <mat-icon class="me-2 align-middle">low_priority</mat-icon>
+      Reorder Level Setup
+    </h4>
+    <div class="d-flex align-items-center gap-2">
+      <div style="min-width: 280px">
+        <ng-select
+          [items]="model.warehouses()"
+          bindValue="value"
+          bindLabel="label"
+          [clearable]="false"
+          placeholder="Select warehouse"
+          [ngModel]="model.selectedWarehouseNo()"
+          (ngModelChange)="model.selectWarehouse($event)"
+        ></ng-select>
+      </div>
+      @if (permissionService.canInsert() || permissionService.canUpdate()) {
+        <button type="button" class="btn btn-primary" (click)="model.onSave()" [disabled]="model.isSaving()">
+          <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">save</mat-icon> Save
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (!model.selectedWarehouseNo()) {
+    <div class="p-4 text-center opacity-75">Select a warehouse to manage its reorder policy.</div>
+  } @else {
+    <div class="form-section-card card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">low_priority</mat-icon>Reorder Rules</h4>
+        @if (permissionService.canInsert()) {
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addRow()">
+            <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon> Add Product
+          </button>
+        }
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="min-width: 260px">Product</th>
+                <th class="text-end" style="width: 130px">Reorder Level</th>
+                <th class="text-end" style="width: 130px">Reorder Qty</th>
+                <th class="text-end" style="width: 120px">Min Stock</th>
+                <th class="text-end" style="width: 120px">Max Stock</th>
+                <th class="text-end" style="width: 110px">Lead Days</th>
+                <th class="text-center" style="width: 50px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of model.rows(); track $index) {
+                <tr>
+                  <td>
+                    @if (row.reorder_no) {
+                      <span class="small fw-semibold">{{ row.product_name }}</span>
+                    } @else {
+                      <ng-select
+                        [items]="model.products()"
+                        bindValue="value"
+                        bindLabel="label"
+                        [clearable]="false"
+                        placeholder="Select product"
+                        [(ngModel)]="row.product_no"
+                        [ngModelOptions]="{ standalone: true }"
+                      ></ng-select>
+                    }
+                  </td>
+                  <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="row.reorder_level" [ngModelOptions]="{ standalone: true }" step="0.0001" /></td>
+                  <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="row.reorder_qty" [ngModelOptions]="{ standalone: true }" step="0.0001" /></td>
+                  <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="row.min_stock" [ngModelOptions]="{ standalone: true }" step="0.0001" /></td>
+                  <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="row.max_stock" [ngModelOptions]="{ standalone: true }" step="0.0001" /></td>
+                  <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="row.lead_time_days" [ngModelOptions]="{ standalone: true }" /></td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeRow($index)" title="Remove">
+                      <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @if (model.rows().length === 0) {
+                <tr><td colspan="7" class="text-center opacity-75 p-4">No reorder rules. Click “Add Product”.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>

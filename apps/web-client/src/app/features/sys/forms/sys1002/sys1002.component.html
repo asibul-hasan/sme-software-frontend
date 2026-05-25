@@ -46,11 +46,11 @@
           <span
             class="badge rounded-pill"
             [ngClass]="{
-              'text-bg-success': branch.active_status === 1,
-              'text-bg-secondary': branch.active_status === 0,
+              'text-bg-success': branch.is_active === 1,
+              'text-bg-secondary': branch.is_active === 0,
             }"
             >{{
-              (branch.active_status === 1 ? 'active' : 'inactive') | translate
+              (branch.is_active === 1 ? 'active' : 'inactive') | translate
             }}</span
           >
         </div>
@@ -150,13 +150,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="manager_user_no">{{
+                    <label class="field-label" for="manager_employee_no">{{
                       'manager' | translate
                     }}</label>
                     <ng-select
-                      id="manager_user_no"
-                      labelForId="manager_user_no"
-                      formControlName="manager_no"
+                      id="manager_employee_no"
+                      labelForId="manager_employee_no"
+                      formControlName="manager_employee_no"
                       bindLabel="label"
                       bindValue="value"
                       placeholder="{{ 'selectManager' | translate }}"
@@ -172,13 +172,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="mobile_number">{{
+                    <label class="field-label" for="mobile_no">{{
                       'mobile' | translate
                     }}</label>
                     <input
                       type="text"
-                      id="mobile_number"
-                      formControlName="mobile_number"
+                      id="mobile_no"
+                      formControlName="mobile_no"
                       class="form-control"
                       placeholder="e.g. +880 1XXX-XXXXXX"
                     />
@@ -186,13 +186,13 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="phone_number">{{
+                    <label class="field-label" for="contact_no">{{
                       'phone' | translate
                     }}</label>
                     <input
                       type="text"
-                      id="phone_number"
-                      formControlName="phone_number"
+                      id="contact_no"
+                      formControlName="contact_no"
                       class="form-control"
                       placeholder="e.g. 02-XXXXXXX"
                     />
@@ -212,18 +212,19 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label" for="description">{{
-                      'description' | translate
-                    }}</label>
-                    <textarea
-                      id="description"
-                      formControlName="description"
-                      class="form-control"
-                      rows="2"
-                      placeholder="Brief description of the branch"
-                    ></textarea>
+                <div class="col-md-6">
+                  <div class="field-group mb-3">
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        formControlName="is_main_branch"
+                        color="primary"
+                        [disabled]="true"
+                      >
+                        <span class="field-label mb-0" style="cursor: not-allowed">{{
+                          'isMainBranch' | translate
+                        }}</span>
+                      </mat-checkbox>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -242,12 +243,12 @@
             </div>
             <div class="card-body">
               <div class="field-group mb-3">
-                <label class="field-label" for="address1">{{
+                <label class="field-label" for="branch_addr1">{{
                   'address' | translate
                 }}</label>
                 <textarea
-                  id="address1"
-                  formControlName="address1"
+                  id="branch_addr1"
+                  formControlName="branch_addr1"
                   class="form-control"
                   rows="3"
                   placeholder="{{ 'addressPlaceholder' | translate }}"
@@ -282,29 +283,15 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-12 mt-3">
-                  <div class="field-group">
-                    <label class="field-label" for="state_province">{{
-                      'stateProvince' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="state_province"
-                      formControlName="state_province"
-                      class="form-control"
-                      placeholder="State / Province"
-                    />
-                  </div>
-                </div>
               </div>
               <div class="field-group">
-                <label class="field-label" for="active_status">{{
+                <label class="field-label" for="is_active">{{
                   'status' | translate
                 }}</label>
                 <ng-select
-                  id="active_status"
-                  labelForId="active_status"
-                  formControlName="active_status"
+                  id="is_active"
+                  labelForId="is_active"
+                  formControlName="is_active"
                   bindLabel="label"
                   bindValue="value"
                   placeholder="{{ 'selectStatus' | translate }}"
@@ -323,5 +310,8 @@
   </div>
 
   <!-- Pagination footer -->
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 </app-page-form-layout>

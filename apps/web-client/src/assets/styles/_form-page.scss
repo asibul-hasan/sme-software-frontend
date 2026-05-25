@@ -194,33 +194,17 @@
  * and toggles `.is-collapsed` on the host element when clicked.
  * ─────────────────────────────────────────────────────────────────── */
 .form-section-card.is-collapsible {
+  // The header is NOT clickable as a whole — only the chevron button
+  // (.card-collapse-toggle, injected by CollapsibleCardDirective) toggles
+  // the card. This keeps title clicks, button clicks, etc. from
+  // accidentally collapsing the section.
   > .card-header {
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
     user-select: none;
-    transition: background-color 0.15s ease;
     position: relative;
-    padding-right: 2.25rem; // make room for the chevron
-
-    &:hover {
-      background: rgba(var(--indigo-rgb), 0.04);
-    }
-
-    // Chevron indicator on the right. Default state = EXPANDED → up arrow.
-    &::after {
-      content: '';
-      position: absolute;
-      right: 0.85rem;
-      top: 50%;
-      width: 8px;
-      height: 8px;
-      border-right: 2px solid var(--text-secondary);
-      border-bottom: 2px solid var(--text-secondary);
-      transform: translateY(-35%) rotate(-135deg);  // points UP
-      transition: transform 0.25s ease;
-    }
+    padding-right: 2.75rem; // reserves space for .card-collapse-toggle
   }
 
   // Body uses max-height for the collapse animation. This works regardless
@@ -236,10 +220,10 @@
   &.is-collapsed {
     > .card-header {
       border-bottom: 0;       // header looks attached when nothing is below
+    }
 
-      &::after {
-        transform: translateY(-65%) rotate(45deg);  // points DOWN (collapsed)
-      }
+    > .card-header .card-collapse-toggle__chevron {
+      transform: rotate(45deg); // points DOWN (collapsed)
     }
 
     > .card-body {
@@ -250,6 +234,48 @@
       pointer-events: none;
     }
   }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Collapse toggle button — injected by CollapsibleCardDirective.
+// This is the ONLY clickable area that collapses/expands a card.
+// ─────────────────────────────────────────────────────────────────
+
+.card-collapse-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: rgba(var(--indigo-rgb), 0.10);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+  }
+}
+
+.card-collapse-toggle__chevron {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(-135deg); // points UP (expanded)
+  transition: transform 0.25s ease;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1187,19 +1213,50 @@ select option,
 /* ng-select dropdown panel — themed so the bg follows light/dark mode */
 .ng-dropdown-panel {
   background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--card-shadow) !important;
+  overflow: hidden !important;
+  z-index: 1050 !important;
+  margin-top: 4px !important;
 }
 
-.ng-dropdown-panel .ng-option {
-  background: var(--card-bg) !important;
-  color: var(--text-primary) !important;
+.ng-dropdown-panel .ng-dropdown-panel-items {
+  padding: 4px 0 !important;
+
+  .ng-option {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    padding: 8px 12px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+
+    &.ng-option-marked {
+      background: var(--select-bg) !important;
+      color: var(--indigo) !important;
+    }
+
+    &.ng-option-selected {
+      background: var(--indigo) !important;
+      color: #fff !important;
+      font-weight: 600 !important;
+    }
+  }
 }
 
-.ng-dropdown-panel .ng-option.ng-option-marked {
-  background: var(--select-bg) !important;
-  color: var(--indigo) !important;
+/* Security Badge Pill Styles */
+.security-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
 }
 
-.ng-dropdown-panel .ng-option.ng-option-selected {
-  background: var(--indigo) !important;
-  color: #fff !important;
-}
+
+

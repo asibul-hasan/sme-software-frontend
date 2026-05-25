@@ -57,30 +57,30 @@ export class AuthContextService {
     if (user) {
       this.user.set(user);
       AppGlobals.user = user;
-      this.storage.setItem(globalConstants.storageKeys.userData, user);
+      this.storage.setItem(globalConstants.storageKeys.userData, user, 'session');
     }
     this.permissions.set(permissions);
     if (permissions) {
-      this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions);
+      this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions, 'session');
     } else {
-      this.storage.removeItem(globalConstants.storageKeys.userPermissions);
+      this.storage.removeItem(globalConstants.storageKeys.userPermissions, 'session');
     }
 
     this.menu.set(menu ?? []);
-    this.storage.setItem(globalConstants.storageKeys.userMenu, menu ?? []);
+    this.storage.setItem(globalConstants.storageKeys.userMenu, menu ?? [], 'session');
   }
 
   setAvailableBranches(branches: Branch[]): void {
     this.availableBranches.set(branches);
-    this.storage.setItem(globalConstants.storageKeys.availableBranches, branches);
+    this.storage.setItem(globalConstants.storageKeys.availableBranches, branches, 'session');
   }
 
-  /** Rehydrate state from storage on app boot. Returns true if a user was found. */
+  /** Rehydrate state from storage on app boot. Returns true if a user was found (per-tab session). */
   loadFromStorage(): boolean {
-    const cachedUser     = this.storage.getItem<User>(globalConstants.storageKeys.userData);
-    const cachedPerms    = this.storage.getItem<IPermissionConfig>(globalConstants.storageKeys.userPermissions);
-    const cachedMenu     = this.storage.getItem<unknown[]>(globalConstants.storageKeys.userMenu);
-    const cachedBranches = this.storage.getItem<Branch[]>(globalConstants.storageKeys.availableBranches);
+    const cachedUser     = this.storage.getItem<User>(globalConstants.storageKeys.userData, 'session');
+    const cachedPerms    = this.storage.getItem<IPermissionConfig>(globalConstants.storageKeys.userPermissions, 'session');
+    const cachedMenu     = this.storage.getItem<unknown[]>(globalConstants.storageKeys.userMenu, 'session');
+    const cachedBranches = this.storage.getItem<Branch[]>(globalConstants.storageKeys.availableBranches, 'session');
 
     if (!cachedUser) return false;
 
@@ -99,7 +99,7 @@ export class AuthContextService {
     const next = { ...current, ...partial };
     this.user.set(next);
     AppGlobals.user = next;
-    this.storage.setItem(globalConstants.storageKeys.userData, next);
+    this.storage.setItem(globalConstants.storageKeys.userData, next, 'session');
   }
 
   clear(): void {
@@ -108,9 +108,9 @@ export class AuthContextService {
     this.permissions.set(null);
     this.menu.set([]);
     this.availableBranches.set([]);
-    this.storage.removeItem(globalConstants.storageKeys.userData);
-    this.storage.removeItem(globalConstants.storageKeys.userPermissions);
-    this.storage.removeItem(globalConstants.storageKeys.userMenu);
-    this.storage.removeItem(globalConstants.storageKeys.availableBranches);
+    this.storage.removeItem(globalConstants.storageKeys.userData, 'session');
+    this.storage.removeItem(globalConstants.storageKeys.userPermissions, 'session');
+    this.storage.removeItem(globalConstants.storageKeys.userMenu, 'session');
+    this.storage.removeItem(globalConstants.storageKeys.availableBranches, 'session');
   }
 }

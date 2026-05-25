@@ -501,10 +501,16 @@ body {
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
+/* The session-lock component renders its own card, so strip every layer of
+   Material dialog chrome (container + MDC surface) to avoid a card-in-a-card. */
 .session-lock-panel {
-  .mat-mdc-dialog-container {
+  .mat-mdc-dialog-container,
+  .mat-mdc-dialog-surface,
+  .mdc-dialog__surface {
     background: transparent !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
   }
 }

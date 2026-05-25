@@ -1,131 +1,122 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BaseEntity } from '../../../../../core/models/base-entity.model';
-
-/**
- * Interface representing a Company entity.
- * Based on the sys_company table in db.md.
- */
-export interface ICompany extends BaseEntity {
-  company_no: number;
-  company_id: string;
-  company_name: string;
-  company_name_nls?: string | null;
-  short_name?: string | null;
-  company_type?: string | null;
-  trade_license_no?: string | null;
-  vat_reg_no?: string | null;
-  tin_no?: string | null;
-  bin_no?: string | null;
-  reg_no?: string | null;
-  address1?: string | null;
-  address2?: string | null;
-  city?: string | null;
-  state_province?: string | null;
-  post_code?: string | null;
-  country?: string | null;
-  mobile_number?: string | null;
-  phone_number?: string | null;
-  email?: string | null;
-  website?: string | null;
-  logo_path?: string | null;
-  active_status: number;
-  remarks?: string | null;
-  description?: string | null;
-}
+import { Sys1001DataService, Sys1001CompanyDto } from './data.service';
+import { isSuccess } from '../../../../../core/models/response.model';
+import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs';
 
 @Injectable()
 export class Sys1001ModelService {
   private fb = inject(FormBuilder);
+  private data = inject(Sys1001DataService);
+  private toastr = inject(ToastrService);
 
   isSaving = signal(false);
   isLoading = signal(false);
-  lastUpdated = signal<string | null>(null);
   logoPreview = signal('');
   logoFileName = signal('');
   isDragActive = signal(false);
   currentCompanyNo = signal<number | null>(null);
 
-  // Instance of the company data
-  company = signal<ICompany | null>(null);
-
-  // Form Instance
   form!: FormGroup;
 
   createForm(): void {
     this.form = this.fb.group({
-      company_no: [null],
-      company_id: [{ value: '', disabled: true }],
-      company_name: ['', [Validators.required, Validators.maxLength(200)]],
+      company_no:       [null],
+      company_id:       ['', [Validators.required, Validators.maxLength(15)]],
+      company_name:     ['', [Validators.required, Validators.maxLength(250)]],
       company_name_nls: [''],
-      short_name: [''],
-      company_type: [''],
-
-      // Legal & Tax Registration
-      reg_no: [''],
+      company_type:     [''],
+      reg_no:           [''],
       trade_license_no: [''],
-      vat_reg_no: [''],
-      tin_no: [''],
-      bin_no: [''],
-
-      // Address
-      address1: [''],
-      address2: [''],
-      city: [''],
-      state_province: [''],
-      post_code: [''],
-      country: [''],
-
-      // Contact
-      mobile_number: [''],
-      phone_number: [''],
-      email: ['', [Validators.email]],
-      website: [''],
-
-      logo_path: [''],
-      active_status: [1, [Validators.required]],
-      remarks: [''],
-      description: [''],
-      // display_sl removed per user instruction "this field there should be nothing"
+      vat_reg_no:       [''],
+      tin_no:           [''],
+      bin_no:           [''],
+      company_addr1:    [''],
+      company_addr2:    [''],
+      city:             [''],
+      state_province:   [''],
+      post_code:        [''],
+      country_code:     [''],
+      mobile_no:        [''],
+      contact_no:       [''],
+      email:            ['', [Validators.email]],
+      website:          [''],
+      logo_path:        [''],
+      is_active:        [1, [Validators.required]],
     });
   }
 
-  patchForm(data: unknown): void {
+  loadCompany(companyNo: number): void {
+    this.isLoading.set(true);
+    this.currentCompanyNo.set(companyNo);
+
+    this.data
+      .getDetail(companyNo)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe((res) => {
+        if (isSuccess(res) && res.data) {
+          this.patchForm(res.data);
+        }
+      });
+  }
+
+  patchForm(data: Sys1001CompanyDto): void {
     if (this.form && data) {
-      const d = data as Record<string, unknown>;
-      const mappedData = {
-        ...d,
-        active_status: (d['active_status'] ??
-          d['active_status'] ??
-          1) as number,
-        company_id: (d['company_id'] ?? d['company_id']) as string,
-        company_name_nls: (d['company_name_nls'] ??
-          d['company_name_nls']) as string,
-        reg_no: (d['reg_no'] ?? d['reg_no']) as string,
-        trade_license_no: (d['trade_license_no'] ??
-          d['trade_license_no']) as string,
-        vat_reg_no: (d['vat_reg_no'] ?? d['vat_reg_no']) as string,
-        tin_no: (d['tin_no'] ?? d['tin_no']) as string,
-        bin_no: (d['bin_no'] ?? d['bin_no']) as string,
-        address1: (d['address1'] ?? d['address_1']) as string,
-        address2: (d['address2'] ?? d['address_2']) as string,
-        post_code: (d['post_code'] ?? d['post_code']) as string,
-        country: (d['country'] ??
-          d['country_code'] ??
-          d['country_code']) as string,
-        mobile_number: (d['mobile_number'] ?? d['mobile_number']) as string,
-        phone_number: (d['phone_number'] ?? d['phone_number']) as string,
-        email: d['email'] as string,
-        logo_path: (d['logo_path'] ?? d['logo_path']) as string,
-      };
+      this.form.patchValue({
+        company_no:       data.company_no,
+        company_id:       data.company_id,
+        company_name:     data.company_name,
+        company_name_nls: data.company_name_nls,
+        company_type:     data.company_type,
+        reg_no:           data.reg_no,
+        trade_license_no: data.trade_license_no,
+        vat_reg_no:       data.vat_reg_no,
+        tin_no:           data.tin_no,
+        bin_no:           data.bin_no,
+        company_addr1:    data.company_addr1,
+        company_addr2:    data.company_addr2,
+        city:             data.city,
+        state_province:   data.state_province,
+        post_code:        data.post_code,
+        country_code:     data.country_code,
+        mobile_no:        data.mobile_no,
+        contact_no:       data.contact_no,
+        email:            data.email,
+        website:          data.website,
+        logo_path:        data.logo_path,
+        is_active:        data.is_active ?? 1,
+      });
 
-      this.form.patchValue(mappedData);
-
-      const logo = mappedData.logo_path;
-      if (logo) {
-        this.logoPreview.set(logo);
+      if (data.logo_path) {
+        this.logoPreview.set(data.logo_path);
       }
     }
+  }
+
+  onSave(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.toastr.warning('Please correct the validation errors.');
+      return;
+    }
+
+    const val = this.form.getRawValue();
+    const payload: Sys1001CompanyDto = {
+      ...val,
+      company_no: this.currentCompanyNo(),
+    };
+
+    this.isSaving.set(true);
+    this.data
+      .save(payload)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe((res) => {
+        if (isSuccess(res) && res.data) {
+          this.toastr.success('Company saved');
+          this.patchForm(res.data);
+        }
+      });
   }
 
   onLogoSelected(file: File): void {

@@ -28,11 +28,11 @@ export class AuthService {
   // ─── Token accessors ─────────────────────────────────────────────────────
 
   getToken(): string | null {
-    return this.storageService.getItem<string>(globalConstants.storageKeys.accessToken);
+    return this.storageService.getItem<string>(globalConstants.storageKeys.accessToken, 'session');
   }
 
   getRefreshToken(): string | null {
-    return this.storageService.getItem<string>(globalConstants.storageKeys.refreshToken);
+    return this.storageService.getItem<string>(globalConstants.storageKeys.refreshToken, 'session');
   }
 
   // ─── App bootstrap ────────────────────────────────────────────────────────
@@ -75,7 +75,10 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.authDataService.login(credentials).pipe(
-      tap((response: LoginResponse) => this.setSession(response))
+      tap((response: LoginResponse) => {
+        this.setSession(response);
+        this.rememberLastUsed(credentials.user_id, response.company_no, response.branch_no);
+      })
     );
   }
 
@@ -92,9 +95,9 @@ export class AuthService {
 
     return this.authDataService.refresh({ refresh_token: refreshToken }).pipe(
       tap(response => {
-        this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token);
+        this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token, 'session');
         if (response.refresh_token) {
-          this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
+          this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, 'session');
         }
       }),
       map(response => response.access_token),
@@ -106,8 +109,8 @@ export class AuthService {
     this.authDataService.logout().pipe(
       catchError(() => of(void 0)),
       finalize(() => {
-        this.storageService.removeItem(globalConstants.storageKeys.accessToken);
-        this.storageService.removeItem(globalConstants.storageKeys.refreshToken);
+        this.storageService.removeItem(globalConstants.storageKeys.accessToken, 'session');
+        this.storageService.removeItem(globalConstants.storageKeys.refreshToken, 'session');
         this.authContext.clear();
         this.permissionService.clearPermissions();
         this.router.navigate(['/auth/login']);
@@ -129,6 +132,13 @@ export class AuthService {
     });
   }
 
+  /** Switch the active company (multi-company users); re-issues the JWT for the target company. */
+  switchCompany(companyNo: number, branchNo?: number): void {
+    this.authDataService.switchCompany(companyNo, branchNo).subscribe((response) => {
+      this.setSession(response);
+    });
+  }
+
   setAvailableBranches(branches: Branch[]): void {
     this.authContext.setAvailableBranches(branches);
   }
@@ -136,8 +146,9 @@ export class AuthService {
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   private setSession(response: LoginResponse): void {
-    this.storageService.setItem(globalConstants.storageKeys.accessToken,  response.access_token);
-    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token);
+    // Per re-plan §4.5: token + active context are per-tab (sessionStorage).
+    this.storageService.setItem(globalConstants.storageKeys.accessToken,  response.access_token,  'session');
+    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, 'session');
 
     const user: User = {
       user_no:       response.user_no,
@@ -148,6 +159,7 @@ export class AuthService {
       company_name:  response.company_name,
       branch_no:     response.branch_no,
       branch_name:   response.branch_name,
+      access_scope:  response.access_scope,
     };
 
     this.authContext.populateFromLogin(user, response.permissions ?? null, response.menu ?? []);
@@ -188,5 +200,12 @@ export class AuthService {
     if (perms) {
       this.permissionService.setPermissions(perms);
     }
+  }
+
+  /** Persist the last successful login context (localStorage) to pre-fill the login picker next time. */
+  private rememberLastUsed(userId: string, companyNo?: number, branchNo?: number): void {
+    if (userId)             this.storageService.setItem(globalConstants.storageKeys.lastUserId, userId, 'local');
+    if (companyNo != null)  this.storageService.setItem(globalConstants.storageKeys.lastCompanyNo, companyNo, 'local');
+    if (branchNo != null)   this.storageService.setItem(globalConstants.storageKeys.lastBranchNo, branchNo, 'local');
   }
 }

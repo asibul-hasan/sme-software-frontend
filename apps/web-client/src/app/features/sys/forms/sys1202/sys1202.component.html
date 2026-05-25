@@ -1,0 +1,125 @@
+<app-page-form-layout
+  [title]="'Menu Enrollment'"
+  [icon]="'shopping_cart_checkout'"
+  [recordsCount]="model.filteredCompanies().length"
+  [sidebarTitle]="'Companies'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <!-- Sidebar: company selector -->
+  <div sidebarList>
+    @for (c of model.filteredCompanies(); track c.value) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedCompanyNo() === c.value"
+        (click)="model.selectCompany(c.value)"
+      >
+        <h6 class="mb-0 fw-bold text-truncate">{{ c.label }}</h6>
+      </button>
+    }
+    @if (model.filteredCompanies().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No companies found</p></div>
+    }
+  </div>
+
+  <!-- Main: menu catalog grouped by module / submodule -->
+  <div formContent>
+    @if (!model.selectedCompanyNo()) {
+      <div class="p-4 text-center opacity-75">Select a company to manage its purchased menus.</div>
+    } @else {
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge text-bg-primary">{{ model.enrolledCount() }} menus enrolled</span>
+      </div>
+
+      @for (mod of model.grouped(); track mod.moduleName) {
+        <div class="form-section-card card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">widgets</mat-icon>
+              {{ mod.moduleName }}
+            </h4>
+            <div class="d-flex gap-1">
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.setModuleEnrolled(mod.moduleName, true)">All</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="model.setModuleEnrolled(mod.moduleName, false)">None</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-center" style="width: 70px">Enroll</th>
+                    <th style="min-width: 220px">Form</th>
+                    <th style="min-width: 140px">Submodule</th>
+                    <th class="text-center" style="width: 90px">Lifetime</th>
+                    <th style="width: 160px">Start</th>
+                    <th style="width: 160px">End</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (sub of mod.submodules; track sub.submoduleName) {
+                    @for (m of sub.items; track m.menu_no) {
+                      <tr [class.table-active]="m.enrolled">
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [checked]="m.enrolled"
+                            (change)="model.toggleEnrolled(m.menu_no)"
+                          />
+                        </td>
+                        <td class="small">
+                          <span class="fw-semibold">{{ m.form_name }}</span>
+                          <span class="opacity-75 d-block">{{ m.form_id }}</span>
+                        </td>
+                        <td class="small">{{ sub.submoduleName }}</td>
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [checked]="m.is_lifetime === 1"
+                            [disabled]="!m.enrolled"
+                            (change)="model.toggleLifetime(m.menu_no)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="date"
+                            class="form-control form-control-sm"
+                            [value]="m.enroll_start_date ?? ''"
+                            [disabled]="!m.enrolled || m.is_lifetime === 1"
+                            (change)="model.setStart(m.menu_no, $any($event.target).value)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="date"
+                            class="form-control form-control-sm"
+                            [value]="m.enroll_end_date ?? ''"
+                            [disabled]="!m.enrolled || m.is_lifetime === 1"
+                            (change)="model.setEnd(m.menu_no, $any($event.target).value)"
+                          />
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+      @if (model.grouped().length === 0) {
+        <div class="p-4 text-center opacity-75">No menus found in the catalog.</div>
+      }
+    }
+  </div>
+</app-page-form-layout>

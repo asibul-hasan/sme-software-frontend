@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   Output,
@@ -8,7 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem } from './models/menu.model';
 import { MenuService } from './services/menu-builder.service';
 import { SharedModule } from '../../../shared';
@@ -16,6 +17,7 @@ import { SharedModule } from '../../../shared';
 const SIDEBAR_EXPANDED_KEY = 'sme_sidebar_expanded';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sidebar',
   standalone: true,
   imports: [SharedModule],

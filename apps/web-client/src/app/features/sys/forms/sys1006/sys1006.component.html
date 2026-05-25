@@ -1,0 +1,91 @@
+<app-page-form-layout
+  [title]="'Exchange Rate Setup'"
+  [icon]="'currency_exchange'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Exchange Rates'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (e of model.pager.paged(); track e.exchange_rate_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === e.exchange_rate_no"
+        (click)="model.select(e)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ e.currency_label || ('Currency #' + e.currency_no) }}</h6>
+          <span class="badge text-bg-light border">{{ e.rate }}</span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75">{{ e.rate_date }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">currency_exchange</mat-icon>
+                Exchange Rate
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="currency_no">Currency</label>
+                    <ng-select id="currency_no" labelForId="currency_no" formControlName="currency_no" [clearable]="false" placeholder="Select currency">
+                      @for (c of model.currencies(); track c.value) {
+                        <ng-option [value]="c.value">{{ c.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="rate_date">Rate Date</label>
+                    <input type="date" id="rate_date" formControlName="rate_date" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="rate">Rate</label>
+                    <input type="number" id="rate" formControlName="rate" class="form-control" step="0.000001" min="0" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

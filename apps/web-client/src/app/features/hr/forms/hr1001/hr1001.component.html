@@ -66,10 +66,10 @@
           <h6 class="mb-0 fw-bold text-truncate" style="max-width:120px">{{ emp.employee_id }}</h6>
           <span
             class="badge rounded-pill"
-            [ngClass]="emp.active_status === 1 ? 'text-bg-success' : 'text-bg-secondary'"
-          >{{ emp.active_status === 1 ? 'Active' : 'Inactive' }}</span>
+            [ngClass]="emp.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'"
+          >{{ emp.is_active === 1 ? 'Active' : 'Inactive' }}</span>
         </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ emp.full_name }}</p>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ emp.first_name }} {{ emp.last_name }}</p>
         <p class="mb-0 small opacity-50 text-truncate">{{ emp.mobile_number }}</p>
       </button>
     }
@@ -118,30 +118,16 @@
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="last_name">Last Name</label>
+                    <label class="field-label" for="middle_name">Middle Name</label>
+                    <input type="text" id="middle_name" formControlName="middle_name"
+                      class="form-control" placeholder="Middle name" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="last_name">Last Name</label>
                     <input type="text" id="last_name" formControlName="last_name"
                       class="form-control" placeholder="Last name" />
-                  </div>
-                </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label required" for="full_name">Full Name</label>
-                    <input type="text" id="full_name" formControlName="full_name"
-                      class="form-control" placeholder="Full legal name" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="first_name_nls">First Name (Local)</label>
-                    <input type="text" id="first_name_nls" formControlName="first_name_nls"
-                      class="form-control" placeholder="প্রথম নাম" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="last_name_nls">Last Name (Local)</label>
-                    <input type="text" id="last_name_nls" formControlName="last_name_nls"
-                      class="form-control" placeholder="শেষ নাম" />
                   </div>
                 </div>
                 <div class="col-md-4">
@@ -360,19 +346,9 @@
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="basic_salary">Basic Salary</label>
-                    <input type="number" id="basic_salary" formControlName="basic_salary"
+                    <label class="field-label required" for="salary">Salary</label>
+                    <input type="number" id="salary" formControlName="salary"
                       class="form-control" placeholder="0.00" min="0" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="gross_salary">Gross Salary</label>
-                    <input type="number" id="gross_salary" formControlName="gross_salary"
-                      class="form-control" placeholder="0.00" min="0" />
-                    @if (model.form.hasError('minMax')) {
-                      <div class="field-error">Gross salary must be ≥ basic salary</div>
-                    }
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -433,8 +409,8 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="bank_account_number">Account Number</label>
-                    <input type="text" id="bank_account_number" formControlName="bank_account_number"
+                    <label class="field-label" for="bank_account_no">Account Number</label>
+                    <input type="text" id="bank_account_no" formControlName="bank_account_no"
                       class="form-control" placeholder="Account number" />
                   </div>
                 </div>
@@ -539,26 +515,12 @@
             </div>
             <div class="card-body">
               <div class="field-group mb-3">
-                <label class="field-label required" for="employee_status">Employee Status</label>
-                <ng-select id="employee_status" labelForId="employee_status"
-                  formControlName="employee_status"
-                  [items]="employeeStatusOptions"
-                  bindLabel="label" bindValue="value"
-                  [clearable]="false">
-                </ng-select>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label required" for="active_status">Record Status</label>
-                <ng-select id="active_status" labelForId="active_status"
-                  formControlName="active_status" [clearable]="false">
+                <label class="field-label required" for="is_active">Status</label>
+                <ng-select id="is_active" labelForId="is_active"
+                  formControlName="is_active" [clearable]="false">
                   <ng-option [value]="1">Active</ng-option>
                   <ng-option [value]="0">Inactive</ng-option>
                 </ng-select>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label" for="display_sl">Display Order</label>
-                <input type="number" id="display_sl" formControlName="display_sl"
-                  class="form-control" placeholder="e.g. 1" />
               </div>
               <div class="field-group">
                 <label class="field-label" for="remarks">Remarks</label>

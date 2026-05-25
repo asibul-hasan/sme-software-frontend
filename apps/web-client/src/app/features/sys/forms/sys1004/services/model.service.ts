@@ -258,7 +258,7 @@ export class Sys1004ModelService {
                 { field: 'entered_by',    label: 'Entered By' },
                 { field: 'entered_at',    label: 'Timestamp',      pipe: 'date', pipeArgs: 'short' },
               ],
-              data: res.data,
+              data: res.data as unknown as Record<string, unknown>[],
             });
           }
         },

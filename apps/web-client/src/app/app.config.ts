@@ -8,8 +8,8 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import {
   provideHttpClient,
-  withInterceptorsFromDi,
-  HTTP_INTERCEPTORS,
+  withInterceptors,
+  withXsrfConfiguration,
 } from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import {
@@ -19,9 +19,9 @@ import {
 import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
-import { AuthInterceptor } from './core/interceptors/auth.interceptor';
-import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
-import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
+import { AuthInterceptorFn } from './core/interceptors/auth.interceptor';
+import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
+import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
 
@@ -54,22 +54,10 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
     }), // Toastr providers
-    provideHttpClient(withInterceptorsFromDi()),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ApiErrorInterceptor,
-      multi: true,
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: LoaderInterceptor,
-      multi: true,
-    },
+    provideHttpClient(
+      withInterceptors([AuthInterceptorFn, apiErrorInterceptor, loaderInterceptor]),
+      withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
+    ),
     {
       provide: APP_INITIALIZER,
       useFactory: initApp,

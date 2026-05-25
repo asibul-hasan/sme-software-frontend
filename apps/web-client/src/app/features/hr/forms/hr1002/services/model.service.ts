@@ -9,43 +9,41 @@ import { resolvePostReloadSelection } from '../../../../../core/utils/list-selec
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
-import { CommonDataService } from '../../../../../shared/services/common-data.service';
+import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
+/**
+ * Department entity — mirrors the `hr_department` table from db-updated.md.
+ */
 export interface IDepartment extends BaseEntity {
   department_no: number;
   department_id: string;
   department_name: string;
-  short_name?: string | null;
   parent_department_no?: number | null;
   department_head_no?: number | null;
   hierarchy_level?: number | null;
   cost_center_no?: number | null;
-  company_no: number;
-  branch_no: number;
-  active_status: number;
-  display_sl?: number | null;
+  branch_no?: number | null;
+  is_active: number;
   remarks?: string | null;
-  description?: string | null;
 }
 
+/**
+ * Designation entity — mirrors the `hr_designation` table from db-updated.md.
+ */
 export interface IDesignation extends BaseEntity {
   designation_no: number;
   designation_id: string;
   designation_name: string;
-  short_name?: string | null;
   department_no: number;
-  job_category?: string | null;
+  job_category?: number | null;
   grade_level?: string | null;
   hierarchy_rank?: number | null;
   min_salary?: number | null;
   max_salary?: number | null;
-  overtime_eligible: number;
-  company_no: number;
-  branch_no: number;
-  active_status: number;
-  display_sl?: number | null;
+  overtime_eligible?: number | null;
+  branch_no?: number | null;
+  is_active: number;
   remarks?: string | null;
-  description?: string | null;
 }
 
 @Injectable()
@@ -62,7 +60,7 @@ export class Hr1002ModelService {
 
   departments = signal<IDepartment[]>([]);
   designations = signal<IDesignation[]>([]);
-  employees   = signal<any[]>([]);
+  employees   = signal<EmployeeLookup[]>([]);
 
   selectedDeptNo  = signal<number | null>(null);
   selectedDesigNo = signal<number | null>(null);
@@ -104,38 +102,32 @@ export class Hr1002ModelService {
       department_no:        [null],
       department_id:        ['', [Validators.required, Validators.maxLength(20)]],
       department_name:      ['', [Validators.required, Validators.maxLength(150)]],
-      short_name:           [''],
       parent_department_no: [null],
       department_head_no:   [null],
-      company_no:           [this.authCtx.user()?.company_no ?? null, [Validators.required]],
-      branch_no:            [this.authCtx.user()?.branch_no  ?? null, [Validators.required]],
-      active_status:        [1, [Validators.required]],
-      display_sl:           [null],
+      hierarchy_level:      [null],
+      cost_center_no:       [null],
+      branch_no:            [this.authCtx.user()?.branch_no  ?? null],
+      is_active:            [1, [Validators.required]],
       remarks:              [''],
-      description:          [''],
     });
   }
 
   initDesigForm(): void {
     this.desigForm = this.fb.group(
       {
-        designation_no:   [null],
-        designation_id:   ['', [Validators.required, Validators.maxLength(20)]],
-        designation_name: ['', [Validators.required, Validators.maxLength(150)]],
-        short_name:       [''],
-        department_no:    [null, [Validators.required]],
-        job_category:     [''],
-        grade_level:      [''],
-        hierarchy_rank:   [null],
-        min_salary:       [null],
-        max_salary:       [null],
+        designation_no:    [null],
+        designation_id:    ['', [Validators.required, Validators.maxLength(20)]],
+        designation_name:  ['', [Validators.required, Validators.maxLength(150)]],
+        department_no:     [null, [Validators.required]],
+        job_category:      [null],
+        grade_level:       [''],
+        hierarchy_rank:    [null],
+        min_salary:        [null],
+        max_salary:        [null],
         overtime_eligible: [0],
-        company_no:       [this.authCtx.user()?.company_no ?? null, [Validators.required]],
-        branch_no:        [this.authCtx.user()?.branch_no  ?? null, [Validators.required]],
-        active_status:    [1, [Validators.required]],
-        display_sl:       [null],
-        remarks:          [''],
-        description:      [''],
+        branch_no:         [this.authCtx.user()?.branch_no  ?? null],
+        is_active:         [1, [Validators.required]],
+        remarks:           [''],
       },
       { validators: [CustomValidators.minMax('min_salary', 'max_salary')] },
     );
@@ -183,7 +175,7 @@ export class Hr1002ModelService {
   }
 
   loadEmployees(): void {
-    this.commApi.getEmployeeList({ active_status: 1 }).subscribe((res) => {
+    this.commApi.getEmployeeList({ is_active: 1 }).subscribe((res) => {
       if (isSuccess(res) && res.data) this.employees.set(res.data);
     });
   }
@@ -203,15 +195,13 @@ export class Hr1002ModelService {
               department_no:        d['department_no']        ?? d['departmentNo'],
               department_id:        d['department_id']        ?? d['departmentId'],
               department_name:      d['department_name']      ?? d['departmentName'],
-              short_name:           d['short_name']           ?? d['shortName'],
               parent_department_no: d['parent_department_no'] ?? d['parentDepartmentNo'],
               department_head_no:   d['department_head_no']   ?? d['departmentHeadNo'],
-              company_no:           d['company_no']           ?? d['companyNo'],
+              hierarchy_level:      d['hierarchy_level']      ?? d['hierarchyLevel'],
+              cost_center_no:       d['cost_center_no']       ?? d['costCenterNo'],
               branch_no:            d['branch_no']            ?? d['branchNo'],
-              active_status:        d['active_status']        ?? d['activeStatus'] ?? 1,
-              display_sl:           d['display_sl']           ?? d['displaySl'],
+              is_active:            d['is_active']            ?? d['isActive'] ?? 1,
               remarks:              d['remarks'],
-              description:          d['description'],
             });
           }
         },
@@ -232,7 +222,6 @@ export class Hr1002ModelService {
               designation_no:    d['designation_no']   ?? d['designationNo'],
               designation_id:    d['designation_id']   ?? d['designationId'],
               designation_name:  d['designation_name'] ?? d['designationName'],
-              short_name:        d['short_name']        ?? d['shortName'],
               department_no:     d['department_no']     ?? d['departmentNo'],
               job_category:      d['job_category']      ?? d['jobCategory'],
               grade_level:       d['grade_level']       ?? d['gradeLevel'],
@@ -240,12 +229,9 @@ export class Hr1002ModelService {
               min_salary:        d['min_salary']        ?? d['minSalary'],
               max_salary:        d['max_salary']        ?? d['maxSalary'],
               overtime_eligible: d['overtime_eligible'] ?? d['overtimeEligible'] ?? 0,
-              company_no:        d['company_no']        ?? d['companyNo'],
               branch_no:         d['branch_no']         ?? d['branchNo'],
-              active_status:     d['active_status']     ?? d['activeStatus'] ?? 1,
-              display_sl:        d['display_sl']        ?? d['displaySl'],
+              is_active:         d['is_active']         ?? d['isActive'] ?? 1,
               remarks:           d['remarks'],
-              description:       d['description'],
             });
           }
         },
@@ -338,19 +324,17 @@ export class Hr1002ModelService {
   onNewDept(): void {
     this.selectedDeptNo.set(null);
     this.deptForm.reset({
-      active_status: 1,
-      company_no: this.authCtx.user()?.company_no ?? null,
-      branch_no:  this.authCtx.user()?.branch_no  ?? null,
+      is_active: 1,
+      branch_no: this.authCtx.user()?.branch_no ?? null,
     });
   }
 
   onNewDesig(): void {
     this.selectedDesigNo.set(null);
     this.desigForm.reset({
-      active_status:     1,
+      is_active:         1,
       overtime_eligible: 0,
-      company_no: this.authCtx.user()?.company_no ?? null,
-      branch_no:  this.authCtx.user()?.branch_no  ?? null,
+      branch_no:         this.authCtx.user()?.branch_no ?? null,
     });
   }
 }

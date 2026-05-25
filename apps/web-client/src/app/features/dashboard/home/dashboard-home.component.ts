@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatCardsComponent } from './components/stat-cards/stat-cards.component';
 import { SalesOverviewChartComponent } from './components/sales-overview/sales-overview-chart.component';
@@ -15,6 +15,7 @@ import { TopProductsComponent } from './components/top-products/top-products.com
 import { SalesVsPurchasesChartComponent } from './components/sales-vs-purchases/sales-vs-purchases-chart.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-home',
   standalone: true,
   imports: [
@@ -31,9 +32,9 @@ import { SalesVsPurchasesChartComponent } from './components/sales-vs-purchases/
     PurchaseOrdersComponent,
     FinancialOverviewComponent,
     TopProductsComponent,
-    SalesVsPurchasesChartComponent
+    SalesVsPurchasesChartComponent,
   ],
   templateUrl: './dashboard-home.component.html',
-  styleUrls: ['./dashboard-home.component.scss']
+  styleUrls: ['./dashboard-home.component.scss'],
 })
 export class DashboardHomeComponent {}

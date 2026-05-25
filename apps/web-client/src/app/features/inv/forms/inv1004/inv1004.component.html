@@ -1,0 +1,95 @@
+<app-page-form-layout
+  [title]="'Brand Setup'"
+  [icon]="'sell'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Brands'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (b of model.pager.paged(); track b.brand_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === b.brand_no"
+        (click)="model.select(b)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold">{{ b.brand_id }}</h6>
+          <span class="badge rounded-pill" [ngClass]="{ 'text-bg-success': b.is_active === 1, 'text-bg-secondary': b.is_active === 0 }">
+            {{ b.is_active === 1 ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ b.brand_name }}</p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">sell</mat-icon>
+                Brand
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="brand_id">Code</label>
+                    <input type="text" id="brand_id" formControlName="brand_id" class="form-control text-uppercase" placeholder="e.g. BR-001" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="brand_name">Name</label>
+                    <input type="text" id="brand_name" formControlName="brand_name" class="form-control" placeholder="e.g. Nestlé" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="manufacturer">Manufacturer</label>
+                    <input type="text" id="manufacturer" formControlName="manufacturer" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="brand_name_nls">Name (NLS)</label>
+                    <input type="text" id="brand_name_nls" formControlName="brand_name_nls" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

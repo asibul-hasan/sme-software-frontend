@@ -1,0 +1,119 @@
+<app-page-form-layout
+  [title]="'Approval Workflow Setup'"
+  [icon]="'approval'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Approval Rules'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (w of model.pager.paged(); track w.workflow_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action p-3"
+        [class.active]="model.selectedNo() === w.workflow_no"
+        (click)="model.select(w)"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <h6 class="mb-0 fw-bold text-truncate">{{ w.document_type }}</h6>
+          <span class="badge text-bg-light border">Step {{ w.step_number }}</span>
+        </div>
+        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
+          {{ w.approver_role_label || ('Role #' + w.approver_role_no) }}
+          @if (w.is_final === 1) { <span class="badge text-bg-success ms-1">Final</span> }
+        </p>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="model.form" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">approval</mat-icon>
+                Approval Rule
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="document_type">Document Type</label>
+                    <ng-select id="document_type" labelForId="document_type" formControlName="document_type" [clearable]="false" placeholder="Select document type">
+                      @for (d of model.documentTypes; track d) {
+                        <ng-option [value]="d">{{ d }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="step_number">Step</label>
+                    <input type="number" id="step_number" formControlName="step_number" class="form-control" min="1" step="1" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_final">Final Step</label>
+                    <ng-select id="is_final" labelForId="is_final" formControlName="is_final" [clearable]="false">
+                      <ng-option [value]="0">No</ng-option>
+                      <ng-option [value]="1">Yes</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="approver_role_no">Approver Role</label>
+                    <ng-select id="approver_role_no" labelForId="approver_role_no" formControlName="approver_role_no" [clearable]="false" placeholder="Select role">
+                      @for (r of model.roleOptions(); track r.value) {
+                        <ng-option [value]="r.value">{{ r.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="amount_min">Amount From</label>
+                    <input type="number" id="amount_min" formControlName="amount_min" class="form-control" step="0.01" min="0" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="amount_max">Amount To</label>
+                    <input type="number" id="amount_max" formControlName="amount_max" class="form-control" step="0.01" min="0" placeholder="No limit" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="is_active">Status</label>
+                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
+                      <ng-option [value]="1">Active</ng-option>
+                      <ng-option [value]="0">Inactive</ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

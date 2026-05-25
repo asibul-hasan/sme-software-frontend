@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Directive,
   ElementRef,
   HostBinding,
@@ -8,22 +9,25 @@ import {
 } from '@angular/core';
 
 /**
- * Makes every `.form-section-card` collapsible. Clicking the card header
- * toggles its body open/closed. A chevron indicator is rendered in CSS
- * (see `_form-page.scss`) — no DOM mutation needed here.
+ * Makes every `.form-section-card` collapsible.
+ *
+ * The directive injects a chevron toggle button into the card header. Clicks
+ * on that button (and only that button) toggle the collapsed state — clicks
+ * anywhere else inside the card are ignored.
+ *
+ * The click handler is wired via Angular's {@link HostListener} (not a vanilla
+ * {@code addEventListener} on the injected button) so the signal update
+ * reliably flows through change detection and the host class refreshes
+ * immediately.
  *
  * The selector matches the existing card class, so the directive auto-applies
- * to every existing card in the codebase without changing any template.
- *
- * Click handling intentionally only toggles when the click target is inside
- * the card's `.card-header`. Clicks inside the body (inputs, ng-selects,
- * buttons) never collapse the card.
+ * to every card in the codebase without changing any template.
  */
 @Directive({
   selector: '.form-section-card',
   standalone: true,
 })
-export class CollapsibleCardDirective {
+export class CollapsibleCardDirective implements AfterViewInit {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   private readonly collapsed = signal(false);
@@ -35,23 +39,34 @@ export class CollapsibleCardDirective {
     return this.collapsed();
   }
 
+  ngAfterViewInit(): void {
+    const header = this.host.nativeElement.querySelector(
+      ':scope > .card-header',
+    ) as HTMLElement | null;
+    if (!header) return;
+
+    // Idempotent — bail if a toggle was already injected for this header.
+    if (header.querySelector(':scope > .card-collapse-toggle')) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'card-collapse-toggle';
+    button.setAttribute('aria-label', 'Toggle section');
+    button.innerHTML =
+      '<span class="card-collapse-toggle__chevron" aria-hidden="true"></span>';
+    header.appendChild(button);
+  }
+
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
     const target = event.target as HTMLElement | null;
     if (!target) return;
-
-    // Only react if the click started inside this card's own header
-    // (avoids toggling when a nested card body is clicked).
-    const header = target.closest('.card-header');
-    if (!header || !this.host.nativeElement.contains(header)) return;
-
-    // Don't hijack clicks on interactive controls that may live in the header
-    // (links, buttons, inputs, ng-select). Without this guard, e.g. a "more"
-    // menu in the header would also collapse the card.
-    if (target.closest('button, a, input, select, textarea, .ng-select')) {
-      return;
-    }
-
+    const toggle = target.closest('.card-collapse-toggle');
+    // Only the chevron toggle button (or its inner chevron span) triggers
+    // the collapse — every other click in the card is a no-op. The contains
+    // check guards against a nested card's toggle bubbling up to this host.
+    if (!toggle || !this.host.nativeElement.contains(toggle)) return;
+    event.stopPropagation();
     this.collapsed.update((v) => !v);
   }
 }
