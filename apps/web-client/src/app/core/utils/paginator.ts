@@ -11,6 +11,12 @@ export interface PaginatorState<T> {
   readonly paged: Signal<T[]>;
   readonly pageSizeOptions: readonly number[];
 
+  /** Current sort direction. Only meaningful when a `sortKey` was provided. */
+  readonly sortDirection: Signal<'asc' | 'desc'>;
+  /** Flip asc ⇄ desc and snap to page 1. Drives the layout's sort toggle. */
+  toggleSortDirection(): void;
+  setSortDirection(dir: 'asc' | 'desc'): void;
+
   firstPage(): void;
   prevPage(): void;
   nextPage(): void;
@@ -40,18 +46,47 @@ const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
  */
 export function makePaginator<T>(
   source: Signal<T[]>,
-  options: { pageSize?: number; pageSizeOptions?: readonly number[] } = {},
+  options: {
+    pageSize?: number;
+    pageSizeOptions?: readonly number[];
+    /**
+     * Field used by the asc/desc toggle. Provide it to make the layout's sort
+     * button actually work (usually the primary key, e.g. `(x) => x.role_no`).
+     * Without it the toggle is inert.
+     */
+    sortKey?: (item: T) => number | string;
+    /** Starting direction — defaults to `desc` (newest-first, matches the List Ordering Rule). */
+    initialSort?: 'asc' | 'desc';
+  } = {},
 ): PaginatorState<T> {
-  const pageSize    = signal(options.pageSize ?? 10);
-  const currentPage = signal(1);
+  const pageSize      = signal(options.pageSize ?? 10);
+  const currentPage   = signal(1);
+  const sortDirection = signal<'asc' | 'desc'>(options.initialSort ?? 'desc');
 
-  const totalItems = computed(() => source().length);
+  // Sorted view of the source. No sortKey → source order is preserved (toggle inert).
+  const ordered = computed<T[]>(() => {
+    const list = source();
+    const key = options.sortKey;
+    if (!key) return list;
+    const dir = sortDirection() === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      const ka = key(a);
+      const kb = key(b);
+      const cmp =
+        typeof ka === 'number' && typeof kb === 'number'
+          ? ka - kb
+          : String(ka).localeCompare(String(kb));
+      return cmp * dir;
+    });
+  });
+
+  const totalItems = computed(() => ordered().length);
   const totalPages = computed(() =>
     Math.max(1, Math.ceil(totalItems() / pageSize())),
   );
 
   const paged = computed(() => {
-    const list = source();
+    const list = ordered();
     const size = pageSize();
     // Clamp so that shrinking filters can't strand us on an empty page.
     const page = Math.min(currentPage(), totalPages());
@@ -71,6 +106,16 @@ export function makePaginator<T>(
     totalItems,
     paged,
     pageSizeOptions: options.pageSizeOptions ?? DEFAULT_PAGE_SIZE_OPTIONS,
+
+    sortDirection,
+    setSortDirection: (dir) => {
+      sortDirection.set(dir);
+      currentPage.set(1);
+    },
+    toggleSortDirection: () => {
+      sortDirection.set(sortDirection() === 'asc' ? 'desc' : 'asc');
+      currentPage.set(1);
+    },
 
     firstPage: () => goToPage(1),
     prevPage:  () => goToPage(currentPage() - 1),

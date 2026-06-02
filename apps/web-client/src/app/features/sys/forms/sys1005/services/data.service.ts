@@ -15,26 +15,26 @@ export class Sys1005DataService {
   private sysService = inject(SysDataService);
 
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branch/list');
+    return this.sysService.getList<IBranch[]>('branches/list');
   }
 
   loadTaxRules(): Observable<ApiResponse<TaxRule[]>> {
-    return this.sysService.getList<TaxRule[]>('tax/list');
+    return this.sysService.getList<TaxRule[]>('forms/sys1005/vat-taxes');
   }
 
   loadTaxDetail(taxNo: number): Observable<ApiResponse<TaxRule>> {
-    return this.sysService.getDtl<TaxRule>('tax', taxNo);
+    return this.sysService.getDtl<TaxRule>('forms/sys1005/vat-taxes', taxNo);
   }
 
   saveTaxRule(payload: Partial<TaxRule>): Observable<ApiResponse<TaxRule>> {
-    return this.sysService.insert<TaxRule>('tax', payload);
+    return this.sysService.insert<TaxRule>('forms/sys1005/vat-taxes', payload);
   }
 
   updateTaxRule(taxNo: number, payload: Partial<TaxRule>): Observable<ApiResponse<TaxRule>> {
-    return this.sysService.update<TaxRule>('tax', taxNo, payload);
+    return this.sysService.update<TaxRule>('forms/sys1005/vat-taxes', taxNo, payload);
   }
 
   deleteTaxRule(taxNo: number): Observable<ApiResponse<Record<string, unknown>>> {
-    return this.sysService.delete<Record<string, unknown>>('tax', taxNo);
+    return this.sysService.delete<Record<string, unknown>>('forms/sys1005/vat-taxes', taxNo);
   }
 }

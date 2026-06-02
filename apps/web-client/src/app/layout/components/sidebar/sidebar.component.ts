@@ -7,12 +7,14 @@ import {
   computed,
   effect,
   inject,
-  signal,
+  signal,    // still used for isCollapsed, searchTerm, isAllExpanded
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem } from './models/menu.model';
 import { MenuService } from './services/menu-builder.service';
 import { SharedModule } from '../../../shared';
+import { AuthContextService } from '../../../core/services/auth-context.service';
+import { AppBootstrapService } from '../../../core/services/app-bootstrap.service';
 
 const SIDEBAR_EXPANDED_KEY = 'sme_sidebar_expanded';
 
@@ -25,8 +27,20 @@ const SIDEBAR_EXPANDED_KEY = 'sme_sidebar_expanded';
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
-  private readonly router = inject(Router);
+  private readonly router      = inject(Router);
   private readonly menuService = inject(MenuService);
+  private readonly authCtx     = inject(AuthContextService);
+  private readonly bootstrap   = inject(AppBootstrapService);
+
+  /** Logged-in company — drives the sidebar brand pill. */
+  readonly companyName    = computed(() => this.authCtx.user()?.company_name ?? 'Aidly');
+  readonly companyInitial = computed(() => (this.authCtx.user()?.company_name ?? 'A').charAt(0).toUpperCase());
+
+  /**
+   * Base64 data-URL for the company logo.  Loaded once at login by
+   * AppBootstrapService and cached in sessionStorage — no per-render API call.
+   */
+  readonly logoUrl = this.bootstrap.companyLogoDataUrl;
 
   @Input() set collapsed(val: boolean) {
     this.isCollapsed.set(val);

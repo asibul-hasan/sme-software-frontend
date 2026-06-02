@@ -29,20 +29,9 @@ export interface Sys1002BranchDto {
 }
 
 /**
- * Lightweight employee for manager dropdown.
- */
-export interface Sys1002EmployeeDto {
-  employee_no: number;
-  employee_id: string;
-  full_name: string;
-  department_name: string | null;
-  designation_name: string | null;
-  is_active: number;
-}
-
-/**
  * Form-level HTTP service for SYS1002 Branch Setup.
  * All API calls go through the dedicated Sys1002Controller.
+ * Employee lookup is handled by CommonLookupService (shared).
  */
 @Injectable()
 export class Sys1002DataService {
@@ -66,7 +55,4 @@ export class Sys1002DataService {
     return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/branches/${branchNo}`);
   }
 
-  getEmployees(): Observable<ApiResponse<Sys1002EmployeeDto[]>> {
-    return this.http.get<ApiResponse<Sys1002EmployeeDto[]>>(`${this.baseUrl}/employees`);
-  }
 }

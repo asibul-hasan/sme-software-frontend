@@ -195,7 +195,7 @@
   "manager": "Manager",
   "fySetup": "Financial Year Setup",
   "fyInfo": "Financial Year Information",
-  "fyCode": "FY Code",
+  "finYearId": "Fin Year ID",
   "fyName": "FY Description",
   "startDate": "Start Date",
   "endDate": "End Date",
@@ -286,5 +286,33 @@
   "end": "End",
   "manageCurrencySettings": "Manage global currencies, exchange rates, and regional formats",
   "manageTaxSettings": "Configure tax rules, VAT rates, and composite tax structures",
-  "addComponentTax": "Add Component Tax"
+  "addComponentTax": "Add Component Tax",
+
+  "mobile": "Mobile",
+  "postCode": "Post Code",
+  "isMainBranch": "Is Main Branch",
+  "mainBranch": "Main Branch",
+  "selectManager": "Select Manager",
+  "selectStatus": "Select Status",
+  "headOffice": "Head Office",
+  "branchOffice": "Branch Office",
+  "regional": "Regional",
+  "retailStore": "Retail Store",
+  "serviceCenter": "Service Center",
+
+  "branchCodePlaceholder": "e.g. BR-001",
+  "branchNamePlaceholder": "e.g. Downtown Main Branch",
+  "mobilePlaceholder": "e.g. +880 1XXX-XXXXXX",
+  "phonePlaceholder": "e.g. 02-XXXXXXX",
+  "emailPlaceholder": "branch@company.com",
+  "cityPlaceholder": "City",
+  "postCodePlaceholder": "ZIP / Post Code",
+
+  "branchUpdated": "Branch updated successfully",
+  "branchCreated": "Branch created successfully",
+  "branchDeleted": "Branch deleted successfully",
+  "mainBranchExists": "Main branch already exists. You cannot set another main branch.",
+  "mainBranchLocked": "Main branch cannot be changed once set.",
+  "deleteConfirmBranch": "Are you sure you want to delete this branch?",
+  "validationErrors": "Please correct the validation errors."
 }

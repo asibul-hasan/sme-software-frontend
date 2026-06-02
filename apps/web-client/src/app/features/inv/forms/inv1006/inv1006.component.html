@@ -19,19 +19,22 @@
     @for (a of model.pager.paged(); track a.attribute_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === a.attribute_no"
         (click)="model.select(a)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate">{{ a.attribute_name }}</h6>
-          <span class="badge text-bg-light border">{{ a.values.length }} values</span>
+        <h6 class="list-item-title mb-0 text-truncate">{{ a.attribute_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ a.attribute_id }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag">{{ a.values.length }} values</span>
         </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ a.attribute_id }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>tune</mat-icon>
+        <p>No records found</p>
+      </div>
     }
   </div>
 

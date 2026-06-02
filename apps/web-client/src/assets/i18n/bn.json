@@ -118,7 +118,7 @@
   "manager": "ম্যানেজার",
   "fySetup": "অর্থবছর সেটআপ",
   "fyInfo": "অর্থবছরের তথ্য",
-  "fyCode": "অর্থবছর কোড",
+  "finYearId": "অর্থবছর আইডি",
   "fyName": "অর্থবছর বিবরণ",
   "startDate": "শুরুর তারিখ",
   "endDate": "শেষের তারিখ",
@@ -275,5 +275,33 @@
   "end": "শেষ",
   "manageCurrencySettings": "গ্লোবাল কারেন্সি, বিনিময় হার এবং আঞ্চলিক বিন্যাস পরিচালনা করুন",
   "manageTaxSettings": "ট্যাক্স নিয়ম, ভ্যাট হার এবং যৌগিক ট্যাক্স কাঠামো কনফিগার করুন",
-  "addComponentTax": "উপাদান ট্যাক্স যোগ করুন"
+  "addComponentTax": "উপাদান ট্যাক্স যোগ করুন",
+
+  "mobile": "মোবাইল",
+  "postCode": "পোস্ট কোড",
+  "isMainBranch": "মূল শাখা",
+  "mainBranch": "মূল শাখা",
+  "selectManager": "ম্যানেজার নির্বাচন করুন",
+  "selectStatus": "অবস্থা নির্বাচন করুন",
+  "headOffice": "প্রধান কার্যালয়",
+  "branchOffice": "শাখা অফিস",
+  "regional": "আঞ্চলিক",
+  "retailStore": "খুচরা দোকান",
+  "serviceCenter": "সার্ভিস সেন্টার",
+
+  "branchCodePlaceholder": "যেমন: BR-001",
+  "branchNamePlaceholder": "যেমন: ডাউনটাউন মেইন শাখা",
+  "mobilePlaceholder": "যেমন: +৮৮০ ১XXX-XXXXXX",
+  "phonePlaceholder": "যেমন: ০২-XXXXXXX",
+  "emailPlaceholder": "branch@company.com",
+  "cityPlaceholder": "শহর",
+  "postCodePlaceholder": "জিপ / পোস্ট কোড",
+
+  "branchUpdated": "শাখা সফলভাবে আপডেট হয়েছে",
+  "branchCreated": "শাখা সফলভাবে তৈরি হয়েছে",
+  "branchDeleted": "শাখা সফলভাবে মুছে ফেলা হয়েছে",
+  "mainBranchExists": "মূল শাখা ইতিমধ্যে বিদ্যমান। আপনি আরেকটি মূল শাখা নির্ধারণ করতে পারবেন না।",
+  "mainBranchLocked": "মূল শাখা একবার নির্ধারিত হলে পরিবর্তন করা যাবে না।",
+  "deleteConfirmBranch": "আপনি কি এই শাখা মুছে ফেলতে নিশ্চিত?",
+  "validationErrors": "অনুগ্রহ করে ত্রুটিগুলি সংশোধন করুন।"
 }

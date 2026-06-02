@@ -14,6 +14,12 @@
 
 @import '@ng-select/ng-select/themes/default.theme.css';
 
+/* ── Sidebar: override Bootstrap's global `a { text-decoration: underline }` ── */
+app-sidebar a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
 /* ----------------------------------------- */
 /* BASE STYLES AND SCROLLBARS                */
 /* ----------------------------------------- */
@@ -481,17 +487,61 @@ body {
   }
 }
 
-/* ── Mobile Responsive Overrides (Using Bootstrap Breakpoints) ── */
+/* ── Mobile Responsive Overrides ── */
+/* Sidebar mobile behaviour is handled in main-layout.component.scss
+   (.app-sidebar { position: fixed } at < 992px) — nothing needed here. */
 
-@media (max-width: 991.98px) {
-  /* On mobile, the sidebar floats above the content instead of taking layout space */
-  .app-body > .app-sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 60;
-  }
+/* ═══════════════════════════════════════════════════════════════════════
+   COMMON TABLE — global overrides
+   The component-level ::ng-deep rules cannot reliably beat the global
+   !important declarations in _form-page.scss, so these live here where
+   the more-specific selector wins on specificity.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Standard ERP row heights.
+   Material MDC hard-codes --mat-table-row-item-container-height: 52px.
+   Override via the token (no !important needed) so compact/striped
+   modifier classes can still narrow it further. */
+.mat-mdc-table {
+  --mat-table-header-container-height:        36px;
+  --mat-table-row-item-container-height:      38px;
+  --mat-table-footer-container-height:        36px;
+}
+
+/* Paginator page-size select.
+   The global _form-page.scss rule `.mat-mdc-form-field-flex { border: 1px solid;
+   min-height: 42px !important }` matches the paginator's internal mat-form-field
+   and renders it as a full-height bordered input box.
+   The selector below is more specific (two classes vs one) so it wins over
+   the global !important declarations. */
+.mat-mdc-paginator .mat-mdc-text-field-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 4px !important;
+}
+.mat-mdc-paginator .mat-mdc-form-field-flex {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  min-height: unset !important;
+  height: auto !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.mat-mdc-paginator .mat-mdc-form-field-flex:hover,
+.mat-mdc-paginator .mat-mdc-form-field-flex:focus-within {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.mat-mdc-paginator .mat-mdc-form-field-infix {
+  padding: 0 !important;
+  min-height: unset !important;
+  width: auto !important;
+}
+/* Hide the hint/error subscript row that adds dead space below the select */
+.mat-mdc-paginator .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
 }
 
 /* ── Session Lock Backdrop ── */

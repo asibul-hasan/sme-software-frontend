@@ -56,9 +56,22 @@ export const routes: Routes = [
             (m) => m.INVENTORY_ROUTES,
           ),
       },
-      // Additional module routes (sal, pur, fin, rpt) should be added here
-      // as they come online. Each module's `routes.ts` registers its own forms.
-      // Ensure matching menu items exist in the backend before adding routes.
+      {
+        path: 'sal',
+        loadChildren: () =>
+          import('./features/sal/sales.routes').then((m) => m.SALES_ROUTES),
+      },
+      {
+        path: 'pur',
+        loadChildren: () =>
+          import('./features/pur/pur.routes').then((m) => m.PUR_ROUTES),
+      },
+      {
+        path: 'fin',
+        loadChildren: () =>
+          import('./features/fin/fin.routes').then((m) => m.FIN_ROUTES),
+      },
+      // rpt routes — add when reporting module is built
     ],
   },
 

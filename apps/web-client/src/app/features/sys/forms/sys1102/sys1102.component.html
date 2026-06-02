@@ -20,40 +20,30 @@
     @for (role of model.pager.paged(); track role.role_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedRoleNo() === role.role_no"
         (click)="model.selectRole(role)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold">{{ role.role_id }}</h6>
-          @if (role.is_system_role === 1) {
-            <span class="badge text-bg-primary">System</span>
-          }
-        </div>
-        <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-          {{ role.role_name }}
-        </p>
-        <div class="d-flex justify-content-end align-items-center mt-2">
-          <span
-            class="badge rounded-pill"
-            [ngClass]="{
-              'text-bg-success': role.is_active === 1,
-              'text-bg-secondary': role.is_active === 0,
-            }"
-            >{{ role.is_active === 1 ? 'Active' : 'Inactive' }}</span
-          >
-        </div>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="role.is_active === 1"
+          [class.status-dot--inactive]="role.is_active !== 1"
+          [title]="role.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ role.role_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ role.role_name }}</p>
+        @if (role.is_system_role === 1) {
+          <div class="list-item-meta">
+            <span class="list-item-tag list-item-tag--primary">System</span>
+          </div>
+        }
       </button>
     }
 
     @if (model.filteredRoles().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon
-          class="opacity-50 mb-2"
-          style="font-size: 32px; height: 32px; width: 32px"
-          >badge</mat-icon
-        >
-        <p class="mb-0 small">No records found</p>
+      <div class="list-empty-state">
+        <mat-icon>badge</mat-icon>
+        <p>No records found</p>
       </div>
     }
   </div>
@@ -109,20 +99,22 @@
                     ></textarea>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <div class="field-group">
-                    <label class="field-label" for="default_access_scope"
-                      >Default Access Scope</label
-                    >
+                    <label class="field-label">
+                      Branch Assignment
+                      <mat-icon class="field-info-icon" matTooltip="Leave empty to apply to all branches">info_outline</mat-icon>
+                    </label>
                     <ng-select
-                      id="default_access_scope"
-                      labelForId="default_access_scope"
-                      formControlName="default_access_scope"
-                      [clearable]="false"
+                      formControlName="branch_nos"
+                      [multiple]="true"
+                      [clearable]="true"
+                      placeholder="All Branches"
+                      [closeOnSelect]="false"
                     >
-                      <ng-option [value]="1">Branch</ng-option>
-                      <ng-option [value]="2">Company (all branches)</ng-option>
-                      <ng-option [value]="3">Global (all companies)</ng-option>
+                      @for (branch of model.branches(); track branch.branch_no) {
+                        <ng-option [value]="branch.branch_no">{{ branch.branch_name }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>

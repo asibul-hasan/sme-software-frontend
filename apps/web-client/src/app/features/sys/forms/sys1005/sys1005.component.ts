@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { sysConstants } from '../../constants/sys.constants';
@@ -8,7 +9,6 @@ import { Sys1005ModelService, TaxRule } from './services/model.service';
 import { Sys1005DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,22 +25,6 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
   templateUrl: './sys1005.component.html',
   styles: [`
     :host { display: block; height: 100%; }
-    .composite-container {
-      border: 1px dashed #dee2e6;
-      border-radius: 8px;
-      padding: 1rem;
-      background: #f8f9fa;
-    }
-    .drag-handle { cursor: move; color: #adb5bd; }
-    .cdk-drag-preview {
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      background: white;
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      border-radius: 4px;
-    }
-    .cdk-drag-placeholder { opacity: 0.3; }
   `],
 })
 export class Sys1005Component implements OnInit {
@@ -48,12 +32,10 @@ export class Sys1005Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
 
-  readonly sysConstants = sysConstants;
-  readonly SYS_CONSTS   = sysConstants;
+  readonly SYS_CONSTS = sysConstants;
 
   ngOnInit(): void {
     this.model.initForm();
-    // Move side-effects to next tick to avoid NG0100
     setTimeout(() => {
       this.permissionService.useLocalPermissions('SYS_1005');
       this.model.loadBranches();
@@ -66,9 +48,7 @@ export class Sys1005Component implements OnInit {
     this.model.pager.reset();
   }
 
-  /** Expose form and FormArray to template */
-  get formdata()             { return this.model.form; }
-  get componentsFormArray()  { return this.model.componentsFormArray; }
+  get formdata() { return this.model.form; }
 
   onSave(): void  { this.model.onSave(); }
   onNew(): void   { this.model.onNew(); }
@@ -76,7 +56,7 @@ export class Sys1005Component implements OnInit {
   onReset(): void {
     if (this.model.selectedTaxNo()) {
       const original = this.model.taxRules().find(
-        (t) => t.tax_no === this.model.selectedTaxNo(),
+        (t) => t.vat_tax_no === this.model.selectedTaxNo(),
       );
       if (original) this.model.selectTax(original);
     } else {
@@ -95,23 +75,17 @@ export class Sys1005Component implements OnInit {
     this.model.selectTax(tax, index);
   }
 
-  addComponentRow(comp?: Partial<TaxRule>): void {
-    this.model.addComponentRow(comp);
+  toUpper(controlName: string): void {
+    const ctrl = this.formdata.get(controlName);
+    if (ctrl) ctrl.setValue(ctrl.value.toUpperCase(), { emitEvent: false });
   }
 
-  removeComponent(index: number): void {
-    this.model.removeComponent(index);
+  toggleActive(event: MatCheckboxChange): void {
+    this.formdata.get('is_active')?.setValue(event.checked ? 1 : 0);
   }
 
-  dropComponent(event: CdkDragDrop<FormGroup[]>): void {
-    this.model.dropComponent(event);
-  }
-
-  onChildTaxSelect(tax: TaxRule): void {
-    this.model.onChildTaxSelect(tax);
-  }
-
-  updateCompositeRate(): void {
-    this.model.updateCompositeRate();
+  getTaxTypeLabel(value: number): string {
+    const found = sysConstants.taxTypes.find((t) => t.value === value);
+    return found ? found.label : String(value);
   }
 }

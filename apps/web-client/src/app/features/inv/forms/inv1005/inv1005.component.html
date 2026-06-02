@@ -19,21 +19,25 @@
     @for (u of model.pager.paged(); track u.uom_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === u.uom_no"
         (click)="model.select(u)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold">{{ u.uom_id }}</h6>
-          <span class="badge rounded-pill" [ngClass]="{ 'text-bg-success': u.is_active === 1, 'text-bg-secondary': u.is_active === 0 }">
-            {{ u.is_active === 1 ? 'Active' : 'Inactive' }}
-          </span>
-        </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ u.uom_name }}</p>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="u.is_active === 1"
+          [class.status-dot--inactive]="u.is_active !== 1"
+          [title]="u.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ u.uom_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ u.uom_name }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>straighten</mat-icon>
+        <p>No records found</p>
+      </div>
     }
   </div>
 

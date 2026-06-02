@@ -23,7 +23,7 @@ export class Sys1003DataService {
    * Uses generic endpoint: GET /api/v1/sys/branches
    */
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getBranches() as Observable<ApiResponse<IBranch[]>>;
+    return this.sysService.getList<IBranch[]>('branches/list');
   }
 
   /**

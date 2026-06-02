@@ -8,6 +8,7 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 
 import { IBranch } from '../../sys1002/services/model.service';
+import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { makePaginator } from '../../../../../core/utils/paginator';
 
@@ -85,11 +86,16 @@ export class Sys1003ModelService {
   private data      = inject(Sys1003DataService);
   private toastr    = inject(ToastrService);
   private datePipe  = inject(DatePipe);
+  private authCtx   = inject(AuthContextService);
+
+  /** Current logged-in branch — the default branch assignment on New. */
+  private get currentBranchNo(): number | null {
+    return this.authCtx.user()?.branch_no ?? null;
+  }
 
   // ─── State ─────────────────────────────────────────────────────────────────
   financialYears    = signal<FinancialYear[]>([]);
   branches          = signal<IBranch[]>([]);
-  isLoading         = signal(false);
   isSaving          = signal(false);
   searchTerm        = signal('');
   selectedYearNo    = signal<number | null>(null);
@@ -118,8 +124,9 @@ export class Sys1003ModelService {
   initForm(): void {
     this.form = this.fb.group({
       fin_year_no:  [null],
-      fin_year_id:  ['', [Validators.maxLength(20)]],  // auto-generated if blank
-      fin_year_name: ['', [Validators.required]],
+      fin_year_id:  ['', [Validators.required, Validators.maxLength(20)]],
+      fin_year_name: [''],
+      branch_nos:   [[] as number[]],   // multi-branch; empty = all branches
       start_date:   ['', [Validators.required]],
       end_date:     ['', [Validators.required]],
       is_closed:    [0],    // 0=Open, 1=Closed
@@ -144,9 +151,34 @@ export class Sys1003ModelService {
     this.periodsFormArray.push(group);
   }
 
+  /** Auto-generate fin_year_id from start & end dates when creating a new FY */
+  private generateFinYearId(): void {
+    if (this.selectedYearNo()) return; // don't overwrite existing FY
+
+    const startDateStr = this.form.get('start_date')?.value;
+    const endDateStr   = this.form.get('end_date')?.value;
+    if (!startDateStr || !endDateStr) return;
+
+    const startParts = startDateStr.split('-');
+    const endParts   = endDateStr.split('-');
+    const start = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
+    const end   = new Date(Number(endParts[0]), Number(endParts[1]) - 1, Number(endParts[2]));
+
+    const mon = (d: Date) => d.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const yr  = (d: Date) => String(d.getFullYear()).slice(-2);
+
+    const idPart = `${mon(start)}${yr(start)}-${mon(end)}${yr(end)}`;
+    this.form.patchValue({
+      fin_year_id:   `FY-${idPart}`,
+      fin_year_name: idPart,
+    });
+  }
+
   autoGeneratePeriods(): void {
     const startDateStr = this.form.get('start_date')?.value;
     const endDateStr   = this.form.get('end_date')?.value;
+
+    this.generateFinYearId();
 
     if (!startDateStr || !endDateStr) {
       this.toastr.warning('Please select start and end dates first.');
@@ -204,11 +236,7 @@ export class Sys1003ModelService {
   }
 
   loadFinancialYears(reselectIndex?: number): void {
-    this.isLoading.set(true);
-    this.data
-      .loadFinancialYears()
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
+    this.data.loadFinancialYears().subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
             this.financialYears.set(res.data);
@@ -230,12 +258,8 @@ export class Sys1003ModelService {
   selectYear(year: FinancialYear, index?: number): void {
     if (index !== undefined) this.lastSelectedIndex = index;
     this.selectedYearNo.set(year.fin_year_no);
-    this.isLoading.set(true);
 
-    this.data
-      .loadFinancialYearDetail(year.fin_year_no)
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
+    this.data.loadFinancialYearDetail(year.fin_year_no).subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
             const d = res.data;
@@ -245,7 +269,7 @@ export class Sys1003ModelService {
               fin_year_no:   d.fin_year_no,
               fin_year_id:   d.fin_year_id,
               fin_year_name: d.fin_year_name,
-              branch_no:     d.branch_no,
+              branch_nos:    d.branch_no != null ? [d.branch_no] : [],
               start_date:    this.datePipe.transform(d.start_date, 'yyyy-MM-dd'),
               end_date:      this.datePipe.transform(d.end_date, 'yyyy-MM-dd'),
               is_closed:     d.is_closed ?? 0,
@@ -288,7 +312,7 @@ export class Sys1003ModelService {
       fin_year_no:   yearNo,
       fin_year_id:   val.fin_year_id || null,  // null → backend auto-generates
       fin_year_name: val.fin_year_name,
-      branch_no:     val.branch_no,
+      branch_nos:    val.branch_nos ?? [],   // empty = all branches (one NULL record)
       start_date:    val.start_date,
       end_date:      val.end_date,
       is_closed:     val.is_closed ?? 0,
@@ -327,11 +351,7 @@ export class Sys1003ModelService {
     const yearNo = this.selectedYearNo();
     if (!yearNo) return;
 
-    this.isLoading.set(true);
-    this.data
-      .deleteFinancialYear(yearNo)
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
+    this.data.deleteFinancialYear(yearNo).subscribe({
         next: (res) => {
           if (isSuccess(res)) {
             this.toastr.success('Financial Year deleted');
@@ -348,7 +368,10 @@ export class Sys1003ModelService {
   onNew(): void {
     this.selectedYearNo.set(null);
     this.periodsFormArray?.clear();
-    this.form?.reset({ is_closed: 0 });
+    this.form?.reset({
+      is_closed:  0,
+      branch_nos: this.currentBranchNo != null ? [this.currentBranchNo] : [],
+    });
   }
 
   /** Called by component for the Close FY action */

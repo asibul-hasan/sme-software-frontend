@@ -24,16 +24,27 @@ import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
+import { AppBootstrapService } from './core/services/app-bootstrap.service';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
 }
 
-export function initApp(auth: AuthService, session: SessionManagerService) {
+export function initApp(
+  auth:      AuthService,
+  session:   SessionManagerService,
+  bootstrap: AppBootstrapService,
+) {
   return () =>
     new Promise((resolve) => {
       auth.initialize().subscribe({
-        next: () => {
+        next: (result) => {
+          // result is truthy when an existing session was rehydrated from
+          // sessionStorage (page refresh).  Restore cached logo + currency
+          // without hitting the API again.
+          if (result) {
+            bootstrap.loadFromStorage();
+          }
           session.init();
           resolve(true);
         },
@@ -61,7 +72,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initApp,
-      deps: [AuthService, SessionManagerService],
+      deps: [AuthService, SessionManagerService, AppBootstrapService],
       multi: true,
     },
     {

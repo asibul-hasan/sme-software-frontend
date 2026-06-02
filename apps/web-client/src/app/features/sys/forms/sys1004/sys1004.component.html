@@ -2,40 +2,49 @@
   [title]="'currencySetup' | translate"
   [subtitle]="'manageCurrencySettings' | translate"
   [icon]="'payments'"
-  [recordsCount]="model.filteredCurrencies().length"
-  [sidebarTitle]="'currencies' | translate"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  (save)="onSave()"
-  (new)="onNew()"
-  (reset)="onReset()"
-  (delete)="onDelete()"
+  [hasSidebar]="activeTab() === 'currency'"
+  [recordsCount]="activeTab() === 'currency' ? model.filteredCurrencies().length : rateModel.items().length"
+  [sidebarTitle]="activeTab() === 'currency' ? ('currencies' | translate) : 'Exchange Rates'"
+  [searchTerm]="activeTab() === 'currency' ? model.searchTerm() : rateModel.searchTerm()"
+  (searchTermChange)="onTabSearchChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onTabSave()"
+  (new)="onTabNew()"
+  (reset)="onTabReset()"
+  (delete)="onTabDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedCurrencyNo()"
-  [isSaving]="model.isSaving()"
-  [isLoading]="model.isLoading()"
+  [showDelete]="activeTab() === 'currency'
+    ? (permissionService.canDelete() && !!model.selectedCurrencyNo())
+    : (permissionService.canDelete() && !!rateModel.selectedNo())"
+  [isSaving]="activeTab() === 'currency' ? model.isSaving() : rateModel.isSaving()"
 >
-  <!-- Extra Header Actions -->
-  <div extraHeaderActions>
-    @if (model.selectedCurrencyNo() && !formdata.get('is_base_currency')?.value) {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-info d-flex align-items-center gap-2 py-1 px-3 fw-bold rounded-3"
-        (click)="viewRateHistory()"
-        [disabled]="model.isHistoryLoading()"
-      >
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-          >history</mat-icon
-        >
-        <span class="small">{{
-          model.isHistoryLoading() ? 'Loading...' : ('viewHistory' | translate)
-        }}</span>
-      </button>
-    }
+
+  <!-- ── Tab bar ─────────────────────────────────────────────────────────── -->
+  <div tabBarContent class="form-tab-bar d-flex gap-1 px-3 pt-2">
+    <button
+      type="button"
+      class="form-tab-btn"
+      [class.active]="activeTab() === 'currency'"
+      (click)="activeTab.set('currency')"
+    >
+      <mat-icon class="tab-icon">payments</mat-icon>
+      Currency Setup
+    </button>
+    <button
+      type="button"
+      class="form-tab-btn"
+      [class.active]="activeTab() === 'exchange-rates'"
+      (click)="activeTab.set('exchange-rates')"
+    >
+      <mat-icon class="tab-icon">currency_exchange</mat-icon>
+      Exchange Rates
+    </button>
   </div>
 
-  <!-- Sidebar List -->
+
+  <!-- ── Sidebar List (currency tab) ───────────────────────────────────── -->
   <div sidebarList>
     @for (curr of model.pager.paged(); track curr.currency_no) {
       <button
@@ -44,270 +53,354 @@
         [class.active]="model.selectedCurrencyNo() === curr.currency_no"
         (click)="selectCurrency(curr)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold">{{ curr.currency_code }}</h6>
-          <span class="badge rounded-pill text-bg-light border small">{{
-            curr.currency_symbol
-          }}</span>
-        </div>
-        <p class="mb-1 small fw-semibold opacity-75 text-truncate">
-          {{ curr.currency_name_en }}
-        </p>
-        <div class="d-flex justify-content-between align-items-center mt-2">
-          <span class="badge rounded-pill bg-light text-dark border small">{{
-            curr.region
-          }}</span>
-          <div class="d-flex align-items-center gap-1 text-primary small fw-bold">
-            <span class="opacity-50">1 :</span>
-            <span>{{ curr.exchange_rate | number: '1.2-4' }}</span>
+        <div class="d-flex w-100 justify-content-between align-items-center gap-2">
+          <div class="d-flex align-items-baseline gap-2" style="min-width: 0">
+            <h6 class="list-item-title mb-0 text-truncate">{{ curr.currency_code }}</h6>
+            <span class="list-item-id">{{ curr.currency_symbol }}</span>
           </div>
+          @if (curr.is_base_currency) {
+            <span class="list-item-tag list-item-tag--warning">BASE</span>
+          }
+        </div>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ curr.currency_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-chip">
+            <mat-icon>pin</mat-icon><span>{{ curr.number_system === 1 ? 'International' : 'Indian' }}</span>
+          </span>
+          @if (curr.fraction_name) {
+            <span class="list-item-chip">
+              <mat-icon>toll</mat-icon><span>{{ curr.fraction_name }}</span>
+            </span>
+          }
         </div>
       </button>
     }
 
     @if (model.filteredCurrencies().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon
-          class="opacity-50 mb-2"
-          style="font-size: 32px; height: 32px; width: 32px"
-          >money_off</mat-icon
-        >
-        <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
+      <div class="list-empty-state">
+        <mat-icon>money_off</mat-icon>
+        <p>{{ 'noRecordsFound' | translate }}</p>
       </div>
     }
   </div>
 
-  <!-- Main Form Content -->
+  <!-- ── Main Form Content ─────────────────────────────────────────────── -->
   <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
+
+    <!-- ══ Currency Setup Tab ══════════════════════════════════════════════ -->
+    @if (activeTab() === 'currency') {
+      <form [formGroup]="formdata" autocomplete="off">
+        <div class="row row-group">
+
+          <!-- Left column (8/12) -->
+          <div class="col-xl-8 col-lg-12">
+
+            <!-- Currency Information -->
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">info</mat-icon>
+                  {{ 'currencyInfo' | translate }}
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label required" for="currency_code">{{ 'currencyCode' | translate }}</label>
+                      <input
+                        type="text" id="currency_code"
+                        formControlName="currency_code"
+                        class="form-control text-uppercase"
+                        placeholder="e.g. USD"
+                        (input)="toUpper('currency_code')"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="field-group">
+                      <label class="field-label required" for="currency_name">{{ 'currencyName' | translate }}</label>
+                      <input
+                        type="text" id="currency_name"
+                        formControlName="currency_name"
+                        class="form-control"
+                        placeholder="e.g. United States Dollar"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="fraction_name">{{ 'fractionName' | translate }}</label>
+                      <input
+                        type="text" id="fraction_name"
+                        formControlName="fraction_name"
+                        class="form-control"
+                        placeholder="e.g. Cent"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label required" for="currency_symbol">{{ 'currencySymbol' | translate }}</label>
+                      <input
+                        type="text" id="currency_symbol"
+                        formControlName="currency_symbol"
+                        class="form-control"
+                        placeholder="e.g. $"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="field-group">
+                      <label class="field-label" for="branch_nos">
+                        {{ 'branch' | translate }}
+                        <mat-icon class="field-info-icon" matTooltip="Leave empty to apply to all branches">info_outline</mat-icon>
+                      </label>
+                      <ng-select id="branch_nos" labelForId="branch_nos" formControlName="branch_nos"
+                        [multiple]="true" [closeOnSelect]="false" [clearable]="true"
+                        placeholder="All Branches">
+                        @for (branch of model.branches(); track branch.branch_no) {
+                          <ng-option [value]="branch.branch_no">{{ branch.branch_name }}</ng-option>
+                        }
+                      </ng-select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exchange Rate — editable on insert, read-only on edit -->
+            @if (!formdata.get('is_base_currency')?.value) {
+              <div class="form-section-card card">
+                <div class="card-header">
+                  <h4 class="card-header__title mb-0 fw-bold">
+                    <mat-icon class="me-2 align-middle">trending_up</mat-icon>
+                    {{ 'exchangeRate' | translate }}
+                    @if (model.selectedCurrencyNo()) {
+                      <span class="text-secondary fw-normal small ms-2">
+                        (from Exchange Rates table; manage in Exchange Rates tab)
+                      </span>
+                    }
+                  </h4>
+                </div>
+                <div class="card-body">
+                  <div class="row row-group">
+                    <div class="col-12">
+                      <div class="field-group">
+                        <label class="field-label" [class.required]="!model.selectedCurrencyNo()">
+                          {{ 'baseRate' | translate }} (1 Base = ?)
+                        </label>
+                        @if (model.selectedCurrencyNo()) {
+                          <!-- Existing currency: read-only from exchange rate table -->
+                          @if (model.latestExchangeRate() != null) {
+                            <input type="text" class="form-control fw-bold text-primary"
+                              [value]="model.latestExchangeRate() | number: '1.2-' + (currencySettings.baseCurrency()?.decimal_places ?? 4)"
+                              [readonly]="true" [attr.disabled]="true" />
+                          } @else {
+                            <input type="text" class="form-control"
+                              value="No rate set — add one in Exchange Rates tab"
+                              [readonly]="true" [attr.disabled]="true" />
+                          }
+                        } @else {
+                          <!-- New currency: editable input -->
+                          <input
+                            type="number" id="exchange_rate"
+                            formControlName="exchange_rate"
+                            class="form-control fw-bold text-primary"
+                            step="0.0001"
+                            placeholder="e.g. 83.50"
+                          />
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <!-- Base currency locked info card -->
+              <div class="form-section-card card border-warning">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                  <mat-icon class="text-warning" style="font-size: 32px; width: 32px; height: 32px">lock</mat-icon>
+                  <div>
+                    <h6 class="mb-1 fw-bold text-warning">Base Currency — Exchange Rate Locked</h6>
+                    <p class="mb-0 small text-secondary">
+                      The exchange rate for the base currency is always <strong>1.00</strong>.
+                      All other currency rates are expressed relative to this currency.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
+
+          </div><!-- /left -->
+
+          <!-- Right column (4/12) -->
+          <div class="col-xl-4 col-lg-12">
+
+            <!-- Formatting & Settings -->
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">tune</mat-icon>
+                  {{ 'formatting' | translate }}
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="field-group mb-3">
+                  <label class="field-label required" for="number_system">{{ 'numberFormat' | translate }}</label>
+                  <ng-select id="number_system" labelForId="number_system" formControlName="number_system"
+                    [clearable]="false">
+                    <ng-option [value]="1">International (1,234.56)</ng-option>
+                    <ng-option [value]="0">Indian (1,23,456.78)</ng-option>
+                  </ng-select>
+                  @if (formdata.get('is_base_currency')?.value) {
+                    <small class="text-info d-block mt-1">
+                      <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle">info</mat-icon>
+                      Applied ERP-wide for all number displays.
+                    </small>
+                  }
+                </div>
+                <div class="field-group mb-3">
+                  <label class="field-label required" for="decimal_places">{{ 'decimalPlaces' | translate }}</label>
+                  <input
+                    type="number" id="decimal_places"
+                    formControlName="decimal_places"
+                    class="form-control"
+                    min="0" max="4"
+                  />
+                  @if (formdata.get('is_base_currency')?.value) {
+                    <small class="text-info d-block mt-1">
+                      <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle">info</mat-icon>
+                      Applied ERP-wide for all amount fields.
+                    </small>
+                  }
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Base Currency</label>
+                  <div class="custom--checkbox">
+                    <mat-checkbox formControlName="is_base_currency" color="primary">
+                      <span class="field-label mb-0" style="cursor: pointer">{{ 'setAsBaseCurrency' | translate }}</span>
+                    </mat-checkbox>
+                  </div>
+                  @if (!formdata.get('is_base_currency')?.value) {
+                    <small class="text-secondary d-block mt-1 ps-1">
+                      Only one base currency is allowed. Selecting this will replace any existing base.
+                    </small>
+                  }
+                </div>
+              </div>
+            </div>
+
+
+          </div><!-- /right -->
+        </div>
+      </form>
+    }
+
+    <!-- ══ Exchange Rates Tab ═══════════════════════════════════════════════ -->
+    @if (activeTab() === 'exchange-rates') {
       <div class="row row-group">
-        <!-- Currency Info (8-col) -->
-        <div class="col-xl-8 col-lg-12">
+
+        <!-- Entry form (left, 5 col) -->
+        <div class="col-xl-5 col-lg-12">
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">info</mat-icon>
-                {{ 'currencyInfo' | translate }}
+                <mat-icon class="me-2 align-middle">currency_exchange</mat-icon>
+                @if (rateModel.selectedNo()) { Edit Exchange Rate } @else { New Exchange Rate }
               </h4>
             </div>
             <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="currency_code">{{
-                      'currencyCode' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="currency_code"
-                      formControlName="currency_code"
-                      class="form-control text-uppercase"
-                      placeholder="e.g. USD"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="currency_name_en">{{
-                      'currencyNameEn' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="currency_name_en"
-                      formControlName="currency_name_en"
-                      class="form-control"
-                      placeholder="e.g. United States Dollar"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="currency_name_bn">{{
-                      'currencyNameLocal' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="currency_name_bn"
-                      formControlName="currency_name_bn"
-                      class="form-control"
-                      placeholder="Name in local language"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="currency_symbol">{{
-                      'currencySymbol' | translate
-                    }}</label>
-                    <input
-                      type="text"
-                      id="currency_symbol"
-                      formControlName="currency_symbol"
-                      class="form-control"
-                      placeholder="e.g. $"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="region">{{
-                      'region' | translate
-                    }}</label>
-                    <ng-select
-                      id="region"
-                      labelForId="region"
-                      formControlName="region"
-                      bindLabel="label"
-                      bindValue="value"
-                      placeholder="{{ 'selectRegion' | translate }}"
-                    >
-                      <ng-option [value]="null">Select</ng-option>
-                      @for (region of SYS_CONSTS.regions; track region.value) {
-                        <ng-option [value]="region.value">
-                          {{ region.label | translate }}
-                        </ng-option>
+              <form [formGroup]="rateModel.form" autocomplete="off">
+                <div class="row row-group">
+                  <div class="col-12">
+                    <div class="field-group">
+                      <label class="field-label required" for="er_currency_no">Currency</label>
+                      <ng-select
+                        id="er_currency_no"
+                        labelForId="er_currency_no"
+                        formControlName="currency_no"
+                        [items]="rateCurrencyLookup()"
+                        bindLabel="label"
+                        bindValue="value"
+                        [clearable]="false"
+                        placeholder="Select currency (base excluded)"
+                      />
+                      @if (rateCurrencyLookup().length === 0) {
+                        <small class="text-warning d-block mt-1">
+                          <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle">warning</mat-icon>
+                          No currencies available. Add currencies in the Currency Setup tab first.
+                        </small>
                       }
-                    </ng-select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label required" for="er_rate_date">Rate Date</label>
+                      <input type="date" id="er_rate_date" formControlName="rate_date" class="form-control" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label required" for="er_rate">Rate (vs. Base)</label>
+                      <input
+                        type="text"
+                        inputmode="decimal"
+                        id="er_rate"
+                        formControlName="rate"
+                        class="form-control fw-bold text-primary"
+                        [placeholder]="ratePlaceholder()"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="field-group">
+                      <label class="field-label" for="er_is_active">Status</label>
+                      <ng-select id="er_is_active" labelForId="er_is_active"
+                        formControlName="is_active" [clearable]="false">
+                        <ng-option [value]="1">Active</ng-option>
+                        <ng-option [value]="0">Inactive</ng-option>
+                      </ng-select>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label required" for="branch_nos">{{
-                      'assignedBranches' | translate
-                    }}</label>
-                    <ng-select
-                      id="branch_nos"
-                      labelForId="branch_nos"
-                      formControlName="branch_nos"
-                      [multiple]="true"
-                      bindLabel="branch_name"
-                      bindValue="branch_no"
-                      placeholder="{{ 'selectBranches' | translate }}"
-                    >
-                      @for (branch of model.branches(); track branch.branch_no) {
-                        <ng-option [value]="branch.branch_no">
-                          {{ branch.branch_name }}
-                        </ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
 
+        </div>
+
+        <!-- Rate history table (right, 7 col) -->
+        <div class="col-xl-7 col-lg-12">
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">trending_up</mat-icon>
-                {{ 'exchangeRate' | translate }}
+                <mat-icon class="me-2 align-middle">table_view</mat-icon>
+                Exchange Rate History
+                <span class="badge text-bg-secondary ms-2 fw-normal" style="font-size: 11px">
+                  {{ rateModel.items().length }} records
+                </span>
               </h4>
             </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="exchange_rate"
-                      >{{ 'baseRate' | translate }} (1 Base = ?)</label
-                    >
-                    <input
-                      type="number"
-                      id="exchange_rate"
-                      formControlName="exchange_rate"
-                      class="form-control fw-bold text-primary"
-                      step="0.0001"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="rate_date">{{
-                      'effectiveDate' | translate
-                    }}</label>
-                    <input
-                      type="date"
-                      id="rate_date"
-                      formControlName="rate_date"
-                      class="form-control"
-                    />
-                  </div>
-                </div>
-              </div>
+            <div class="card-body p-0">
+              <app-common-table
+                [columns]="rateTableColumns()"
+                [data]="rateTableData()"
+                [config]="rateTableConfig"
+                (rowClick)="onRateRowClick($event)"
+              />
             </div>
           </div>
         </div>
 
-        <!-- Format & Settings (4-col) -->
-        <div class="col-xl-4 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">tune</mat-icon>
-                {{ 'formatting' | translate }}
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="field-group mb-3">
-                <label class="field-label required" for="number_format">{{
-                  'numberFormat' | translate
-                }}</label>
-                <ng-select
-                  id="number_format"
-                  labelForId="number_format"
-                  formControlName="number_format"
-                  bindLabel="label"
-                  bindValue="value"
-                  placeholder="{{ 'selectFormat' | translate }}"
-                >
-                  <ng-option value="International">International (1,234.56)</ng-option>
-                  <ng-option value="Indian">Indian (1,23,456.78)</ng-option>
-                </ng-select>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label required" for="decimal_places">{{
-                  'decimalPlaces' | translate
-                }}</label>
-                <input
-                  type="number"
-                  id="decimal_places"
-                  formControlName="decimal_places"
-                  class="form-control"
-                  min="0"
-                  max="4"
-                />
-              </div>
-              <div class="field-group">
-                <div class="custom--checkbox">
-                  <mat-checkbox
-                    formControlName="is_base_currency"
-                    color="primary"
-                  >
-                    <span class="field-label mb-0" style="cursor: pointer">{{
-                      'setAsBaseCurrency' | translate
-                    }}</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section-card card bg-indigo-50 border-0 shadow-none">
-            <div class="card-body">
-              <h6 class="fw-bold small text-uppercase mb-2 text-indigo">
-                {{ 'currencyGuide' | translate }}
-              </h6>
-              <ul class="small text-secondary ps-3 mb-0">
-                <li>{{ 'baseCurrencyTip' | translate }}</li>
-                <li>{{ 'multiBranchTip' | translate }}</li>
-                <li>{{ 'historyTip' | translate }}</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
-    </form>
-  </div>
+    }<!-- /exchange-rates tab -->
 
-  <!-- Pagination footer -->
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  </div><!-- /formContent -->
+
+  <!-- ── Sidebar pagination (currency tab only) ────────────────────────────── -->
+  @if (activeTab() === 'currency') {
+    <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  }
+
 </app-page-form-layout>

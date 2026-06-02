@@ -24,6 +24,7 @@ export class Sys1008Component implements OnInit {
   ngOnInit(): void {
     this.model.initForm();
     this.permissionService.useLocalPermissions('SYS_1008');
+    this.model.loadBranches();
     this.model.loadList();
   }
 

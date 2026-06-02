@@ -9,13 +9,20 @@ import { resolvePostReloadSelection } from '../../../../../core/utils/list-selec
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { Sys1102DataService } from './data.service';
 
+export interface IBranchLookup {
+  branch_no: number;
+  branch_id: string;
+  branch_name: string;
+  is_main_branch: number;
+  branch_type: string | null;
+}
+
 /**
  * Role entity — aligned to the SYS re-plan `sys_role`.
  *
  * Roles are **company-scoped templates** (`company_no`, not `branch_no`); they are assigned
- * to users per branch via `sys_user_branch.role_no`. Permission flags live on
- * `sys_role_permission`. `default_access_scope` (1=BRANCH,2=COMPANY,3=GLOBAL) is the suggested
- * scope for users given this role.
+ * to users per branch via `sys_user_branch.role_no`. Branch applicability is stored in
+ * `sys_role_branch`: specific branches or company-wide (empty `branch_nos` = all branches).
  */
 export interface IRole extends BaseEntity {
   role_no: number;
@@ -24,7 +31,7 @@ export interface IRole extends BaseEntity {
   role_id: string;
   role_name: string;
   role_desc?: string | null;
-  default_access_scope?: number | null;
+  branch_nos?: number[] | null;
   is_system_role?: number | null;
   is_active: number;
   remarks?: string | null;
@@ -43,6 +50,7 @@ export class Sys1102ModelService {
 
   // ─── State ──────────────────────────────────────────────────────────────────
   roles = signal<IRole[]>([]);
+  branches = signal<IBranchLookup[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
   searchTerm = signal('');
@@ -73,15 +81,23 @@ export class Sys1102ModelService {
   // ─── Form ───────────────────────────────────────────────────────────────────
   initForm(): void {
     this.form = this.fb.group({
-      role_no:              [null],
-      // Company-scoped: default to the admin's active company.
-      company_no:           [this.authCtx.user()?.company_no ?? null, [Validators.required]],
-      role_id:              ['', [Validators.required, Validators.maxLength(20)]],
-      role_name:            ['', [Validators.required, Validators.maxLength(150)]],
-      role_desc:            ['', [Validators.maxLength(500)]],
-      default_access_scope: [1],
-      is_system_role:       [0],
-      is_active:            [1, [Validators.required]],
+      role_no:        [null],
+      company_no:     [this.authCtx.user()?.company_no ?? null, [Validators.required]],
+      role_id:        ['', [Validators.required, Validators.maxLength(20)]],
+      role_name:      ['', [Validators.required, Validators.maxLength(150)]],
+      role_desc:      ['', [Validators.maxLength(500)]],
+      branch_nos:     [[] as number[]],
+      is_system_role: [0],
+      is_active:      [1, [Validators.required]],
+    });
+  }
+
+  // ─── Data loading ─────────────────────────────────────────────────────────
+  loadBranches(): void {
+    this.data.loadBranches().subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) this.branches.set(res.data);
+      },
     });
   }
 
@@ -121,14 +137,14 @@ export class Sys1102ModelService {
 
   patchForm(d: IRole): void {
     this.form.patchValue({
-      role_no:              d.role_no,
-      company_no:           d.company_no,
-      role_id:              d.role_id,
-      role_name:            d.role_name,
-      role_desc:            d.role_desc,
-      default_access_scope: d.default_access_scope ?? 1,
-      is_system_role:       d.is_system_role ?? 0,
-      is_active:            d.is_active ?? 1,
+      role_no:        d.role_no,
+      company_no:     d.company_no,
+      role_id:        d.role_id,
+      role_name:      d.role_name,
+      role_desc:      d.role_desc,
+      branch_nos:     d.branch_nos ?? [],
+      is_system_role: d.is_system_role ?? 0,
+      is_active:      d.is_active ?? 1,
     });
   }
 
@@ -184,10 +200,10 @@ export class Sys1102ModelService {
   onNew(): void {
     this.selectedRoleNo.set(null);
     this.form.reset({
-      is_active:            1,
-      default_access_scope: 1,
-      is_system_role:       0,
-      company_no:           this.authCtx.user()?.company_no ?? null,
+      is_active:      1,
+      branch_nos:     [],
+      is_system_role: 0,
+      company_no:     this.authCtx.user()?.company_no ?? null,
     });
   }
 }

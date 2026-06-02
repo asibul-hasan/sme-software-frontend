@@ -2,9 +2,12 @@
   [title]="'User-Branch Mapping'"
   [icon]="'hub'"
   [recordsCount]="model.filteredUsers().length"
-  [sidebarTitle]="'Users'"
+  [sidebarTitle]="'Employees'"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
+  [hasActiveFilters]="model.hasActiveFilters()"
+  (clearFilters)="model.clearFilters()"
+  [pager]="model.pager"
   (save)="onSave()"
   (reset)="onReset()"
   [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
@@ -13,123 +16,165 @@
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <!-- Sidebar: user selector -->
+  <!-- Sidebar Filters: department + designation (like the user form) -->
+  <div sidebarFilters class="px-2 pb-2 flex-shrink-0 border-bottom">
+    <div class="field-group mb-2">
+      <ng-select
+        [ngModel]="model.filterDept()"
+        (ngModelChange)="model.filterDept.set($event); model.filterDesig.set(null); model.pager.reset()"
+        placeholder="All Departments"
+        [clearable]="true"
+      >
+        @for (d of model.departments(); track d) {
+          <ng-option [value]="d">{{ d }}</ng-option>
+        }
+      </ng-select>
+    </div>
+    <div class="field-group mb-0">
+      <ng-select
+        [ngModel]="model.filterDesig()"
+        (ngModelChange)="model.filterDesig.set($event); model.pager.reset()"
+        placeholder="All Designations"
+        [clearable]="true"
+      >
+        @for (d of model.designations(); track d) {
+          <ng-option [value]="d">{{ d }}</ng-option>
+        }
+      </ng-select>
+    </div>
+  </div>
+
+  <!-- Sidebar: employee selector (multi-select for bulk assignment) -->
   <div sidebarList>
-    @for (u of model.filteredUsers(); track u.user_no) {
+    @if (model.filteredUsers().length > 0) {
+      <div class="ub-selectbar">
+        <label class="ub-selectall">
+          <input
+            type="checkbox"
+            class="ub-row-check"
+            [checked]="model.allChecked()"
+            [indeterminate]="model.someChecked()"
+            (change)="model.toggleSelectAll()"
+          />
+          <span>Select all</span>
+        </label>
+        @if (model.effectiveCount() > 1) {
+          <button type="button" class="ub-selclear" (click)="model.clearChecked()">
+            {{ model.effectiveCount() }} selected · Clear
+          </button>
+        }
+      </div>
+    }
+
+    @for (u of model.pager.paged(); track u.user_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action ub-list-row"
         [class.active]="model.selectedUserNo() === u.user_no"
         (click)="model.selectUser(u.user_no)"
       >
-        <h6 class="mb-0 fw-bold">{{ u.user_name }}</h6>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ u.user_id }}</p>
+        <input
+          type="checkbox"
+          class="ub-row-check"
+          [checked]="model.isRowSelected(u.user_no)"
+          (click)="$event.stopPropagation()"
+          (change)="model.toggleChecked(u.user_no)"
+          title="Select for bulk assignment"
+        />
+        <span class="ub-row-body">
+          <h6 class="list-item-title mb-0 text-truncate">{{ u.user_name }}</h6>
+          <p class="list-item-subtitle mb-0 text-truncate">
+            {{ u.user_id }}{{ u.designation_name ? ' · ' + u.designation_name : '' }}
+          </p>
+        </span>
       </button>
     }
     @if (model.filteredUsers().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">person_off</mat-icon>
-        <p class="mb-0 small">No users found</p>
+      <div class="list-empty-state">
+        <mat-icon>person_off</mat-icon>
+        <p>No employees found</p>
       </div>
     }
   </div>
 
   <!-- Main: branch-role mappings for the selected user -->
-  <div formContent>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- ── Cell templates for the common table (always defined) ─────────────── -->
+    <ng-template #defaultTpl let-row>
+      <input
+        type="radio"
+        name="ub-default"
+        class="ub-radio"
+        [checked]="row.is_default === 1"
+        (change)="model.setDefaultForRow(row)"
+        title="Set as default login branch"
+      />
+    </ng-template>
+
+    <ng-template #activeTpl let-row>
+      <input
+        type="checkbox"
+        class="ub-check"
+        [checked]="row.is_active === 1"
+        (change)="model.toggleActiveForRow(row)"
+        title="Active branch access"
+      />
+    </ng-template>
+
+    <ng-template #removeTpl let-row>
+      <button type="button" class="ub-remove" (click)="model.removeRowRef(row)" title="Remove branch">
+        <mat-icon>delete_outline</mat-icon>
+      </button>
+    </ng-template>
+
     @if (!model.selectedUserNo()) {
-      <div class="p-4 text-center opacity-75">Select a user to manage their branch access.</div>
+      <div class="ub-empty">
+        <mat-icon>hub</mat-icon>
+        <p>Select an employee to manage their branch access.</p>
+      </div>
     } @else {
-      <div class="form-section-card card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-header__title mb-0 fw-bold">
-            <mat-icon class="me-2 align-middle">hub</mat-icon>
+      @if (model.effectiveCount() > 1) {
+        <div class="ub-bulk-banner">
+          <mat-icon>groups</mat-icon>
+          <span>
+            Saving applies the mappings below to <strong>{{ model.effectiveCount() }}</strong>
+            selected employee(s), replacing their current branch access.
+          </span>
+          <button type="button" class="ub-bulk-clear" (click)="model.clearChecked()">Clear selection</button>
+        </div>
+      }
+
+      <!-- Card-based content (per CLAUDE.md form pattern) -->
+      <div class="form-section-card card ub-card">
+        <div class="card-header ub-card-header">
+          <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2">
+            <mat-icon class="align-middle">hub</mat-icon>
             Branch Access &amp; Roles
+            <span class="ub-count-pill">{{ model.mappings().length }}</span>
           </h4>
-          <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addRow()">
-            <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon>
-            Add Branch
+          <button type="button" class="btn btn-sm btn-primary ub-add" (click)="model.addRow()">
+            <mat-icon>add</mat-icon><span>Add Branch</span>
           </button>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="min-width: 200px">Branch</th>
-                  <th style="min-width: 200px">Role</th>
-                  <th class="text-center" style="width: 90px">Default</th>
-                  <th class="text-center" style="width: 90px">Active</th>
-                  <th class="text-center" style="width: 60px"></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of model.mappings(); track $index) {
-                  <tr>
-                    <td>
-                      <select
-                        class="form-select form-select-sm"
-                        [value]="row.branch_no ?? ''"
-                        (change)="model.setBranch($index, $any($event.target).value)"
-                      >
-                        <option [value]="''">Select branch…</option>
-                        @for (b of model.branches(); track b.value) {
-                          <option [value]="b.value">{{ b.label }}</option>
-                        }
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        class="form-select form-select-sm"
-                        [value]="row.role_no ?? ''"
-                        (change)="model.setRole($index, $any($event.target).value)"
-                      >
-                        <option [value]="''">Select role…</option>
-                        @for (r of model.roles(); track r.value) {
-                          <option [value]="r.value">{{ r.label }}</option>
-                        }
-                      </select>
-                    </td>
-                    <td class="text-center">
-                      <input
-                        type="radio"
-                        name="defaultBranch"
-                        class="form-check-input"
-                        [checked]="row.is_default === 1"
-                        (change)="model.setDefault($index)"
-                      />
-                    </td>
-                    <td class="text-center">
-                      <input
-                        type="checkbox"
-                        class="form-check-input"
-                        [checked]="row.is_active === 1"
-                        (change)="model.toggleActive($index)"
-                      />
-                    </td>
-                    <td class="text-center">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-link text-danger p-0"
-                        (click)="model.removeRow($index)"
-                        title="Remove"
-                      >
-                        <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
-                      </button>
-                    </td>
-                  </tr>
-                }
-                @if (model.mappings().length === 0) {
-                  <tr>
-                    <td colspan="5" class="text-center opacity-75 p-4">
-                      No branch access yet. Click “Add Branch” to assign one.
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+
+        <div class="ub-hint">
+          <mat-icon>info</mat-icon>
+          Assign the branches this employee can access and the role they hold at each. One branch is the
+          <strong>default</strong> (selected at login). Inactive rows keep the mapping but block access.
+        </div>
+
+        <div class="card-body p-0 ub-card-body">
+          <app-common-table
+            class="ub-fill"
+            [columns]="columns()"
+            [data]="rows()"
+            [config]="tableConfig"
+            [tableId]="'sys1104-mappings'"
+          ></app-common-table>
         </div>
       </div>
     }
   </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

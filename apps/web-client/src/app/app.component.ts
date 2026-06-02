@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/cor
 import { RouterModule } from '@angular/router';
 import { NgSelectConfig } from '@ng-select/ng-select';
 import { SessionManagerService } from './core/services/session-manager.service';
+// import { ShowDatepickerDirective } from './shared/directives/show-datepicker.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

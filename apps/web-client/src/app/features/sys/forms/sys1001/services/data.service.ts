@@ -47,7 +47,18 @@ export class Sys1001DataService {
     return this.http.get<ApiResponse<Sys1001CompanyDto>>(`${this.baseUrl}/${companyNo}`);
   }
 
-  save(payload: Sys1001CompanyDto): Observable<ApiResponse<Sys1001CompanyDto>> {
+  /** POST — create a new company (no company_no yet). */
+  insert(payload: Sys1001CompanyDto): Observable<ApiResponse<Sys1001CompanyDto>> {
     return this.http.post<ApiResponse<Sys1001CompanyDto>>(this.baseUrl, payload);
+  }
+
+  /** PUT /{companyNo} — update an existing company. */
+  update(companyNo: number, payload: Sys1001CompanyDto): Observable<ApiResponse<Sys1001CompanyDto>> {
+    return this.http.put<ApiResponse<Sys1001CompanyDto>>(`${this.baseUrl}/${companyNo}`, payload);
+  }
+
+  /** DELETE /{companyNo} — soft-delete a company. */
+  delete(companyNo: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${companyNo}`);
   }
 }

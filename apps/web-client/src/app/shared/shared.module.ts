@@ -31,6 +31,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { ValidationMessageDirective, CollapsibleCardDirective } from './directives';
+import { ShowDatepickerDirective } from './directives/show-datepicker.directive';
 import { UI_KIT } from './ui';
 import { LogoUploadComponent } from './components/logo-upload/logo-upload.component';
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
@@ -85,6 +86,7 @@ const PIPES = [
     ...MODULES,
     ValidationMessageDirective,
     CollapsibleCardDirective,
+    ShowDatepickerDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,
@@ -96,6 +98,7 @@ const PIPES = [
     ...MODULES,
     ValidationMessageDirective,
     CollapsibleCardDirective,
+    ShowDatepickerDirective,
     LogoUploadComponent,
     PageFormLayoutComponent,
     SidebarPaginationComponent,

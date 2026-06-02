@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IRole } from './model.service';
+import { IRole, IBranchLookup } from './model.service';
 
 /**
  * Form-level HTTP service for SYS1102 – Role Management.
@@ -12,7 +12,11 @@ export class Sys1102DataService {
   private sysService = inject(SysDataService);
 
   loadRoles(): Observable<ApiResponse<IRole[]>> {
-    return this.sysService.getRoles() as Observable<ApiResponse<IRole[]>>;
+    return this.sysService.getRoleLookupList() as Observable<ApiResponse<IRole[]>>;
+  }
+
+  loadBranches(): Observable<ApiResponse<IBranchLookup[]>> {
+    return this.sysService.getList<IBranchLookup[]>('branches/list');
   }
 
   loadRoleDetail(roleNo: number): Observable<ApiResponse<IRole>> {

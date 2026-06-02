@@ -10,14 +10,16 @@ import { PermissionService } from './permission.service';
 import { StorageService } from './storage.service';
 import { AuthContextService } from './auth-context.service';
 import { globalConstants } from '../constants/global.constants';
+import { AppBootstrapService } from './app-bootstrap.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly authDataService  = inject(AuthDataService);
+  private readonly authDataService   = inject(AuthDataService);
   private readonly permissionService = inject(PermissionService);
   private readonly storageService    = inject(StorageService);
   private readonly authContext       = inject(AuthContextService);
   private readonly router            = inject(Router);
+  private readonly appBootstrap      = inject(AppBootstrapService);
 
   public readonly isAuthenticated    = this.authContext.isAuthenticated;
   public readonly user               = this.authContext.user;
@@ -113,6 +115,7 @@ export class AuthService {
         this.storageService.removeItem(globalConstants.storageKeys.refreshToken, 'session');
         this.authContext.clear();
         this.permissionService.clearPermissions();
+        this.appBootstrap.clear();          // wipe logo + currency cache
         this.router.navigate(['/auth/login']);
       })
     ).subscribe();
@@ -170,6 +173,10 @@ export class AuthService {
     } else {
       this.permissionService.clearPermissions();
     }
+
+    // Fetch company logo + currency once per login/branch-switch; results are
+    // cached in sessionStorage — no repeated API calls during the session.
+    this.appBootstrap.bootstrap();
   }
 
   private loadProfile(): Observable<User> {

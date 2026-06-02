@@ -17,19 +17,22 @@
 >
   <div sidebarList>
     @for (o of model.pager.paged(); track o.transfer_no) {
-      <button type="button" class="list-group-item list-group-item-action p-3"
+      <button type="button" class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === o.transfer_no" (click)="model.select(o)">
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate">{{ o.transfer_id }}</h6>
-          <span class="badge" [ngClass]="{ 'text-bg-secondary': o.status === 1, 'text-bg-info': o.status === 2, 'text-bg-warning': o.status === 3, 'text-bg-success': o.status === 4, 'text-bg-warning': o.status === 5, 'text-bg-danger': o.status === 6 }">
+        <h6 class="list-item-title mb-0 text-truncate">{{ o.transfer_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ o.from_warehouse_name }} → {{ o.to_warehouse_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [ngClass]="{ 'list-item-tag--info': o.status === 2, 'list-item-tag--warning': o.status === 3 || o.status === 5, 'list-item-tag--success': o.status === 4, 'list-item-tag--danger': o.status === 6 }">
             {{ model.statusLabels[o.status] }}
           </span>
         </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">{{ o.from_warehouse_name }} → {{ o.to_warehouse_name }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No transfers</p></div>
+      <div class="list-empty-state">
+        <mat-icon>swap_horiz</mat-icon>
+        <p>No transfers</p>
+      </div>
     }
   </div>
 

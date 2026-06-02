@@ -2,19 +2,31 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize, forkJoin } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
+import { CommonLookupService } from '../../../../../core/services/common-lookup.service';
+import { makePaginator } from '../../../../../core/utils/paginator';
 import { Sys1104DataService } from './data.service';
 
+/**
+ * Left-list item — an EMPLOYEE (managers think in employees, not user accounts).
+ * `user_no` is the employee's linked login, used for all branch-role mapping calls.
+ */
 export interface UserOption {
   user_no: number;
-  user_id: string;
-  user_name: string;
+  user_id: string;          // employee_id (e.g. EMP-0042)
+  user_name: string;        // employee full name
   employee_no?: number;
-  access_scope?: number;
+  department_name?: string | null;
+  designation_name?: string | null;
 }
 
 export interface Option {
   value: number;
   label: string;
+}
+
+/** Role option carrying its branch availability — empty `branch_nos` = available at all branches. */
+export interface RoleOption extends Option {
+  branch_nos: number[];
 }
 
 export interface MappingRow {
@@ -32,44 +44,164 @@ export interface MappingRow {
 @Injectable()
 export class Sys1104ModelService {
   private data = inject(Sys1104DataService);
+  private commonLookup = inject(CommonLookupService);
   private toastr = inject(ToastrService);
 
   users = signal<UserOption[]>([]);
   branches = signal<Option[]>([]);
-  roles = signal<Option[]>([]);
+  roles = signal<RoleOption[]>([]);
   mappings = signal<MappingRow[]>([]);
   selectedUserNo = signal<number | null>(null);
   searchTerm = signal('');
   isLoading = signal(false);
   isSaving = signal(false);
 
+  // Sidebar filters (mirrors the user form): department + designation, derived from the list.
+  filterDept = signal<string | null>(null);
+  filterDesig = signal<string | null>(null);
+
+  departments = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const u of this.users()) if (u.department_name) set.add(u.department_name);
+    return [...set].sort();
+  });
+
+  designations = computed<string[]>(() => {
+    const dept = this.filterDept();
+    const set = new Set<string>();
+    for (const u of this.users()) {
+      if (dept && u.department_name !== dept) continue;
+      if (u.designation_name) set.add(u.designation_name);
+    }
+    return [...set].sort();
+  });
+
+  hasActiveFilters = computed(() => this.filterDept() !== null || this.filterDesig() !== null);
+
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const data = this.users();
-    if (!term) return data;
-    return data.filter(
-      (u) =>
-        (u.user_name || '').toLowerCase().includes(term) ||
-        (u.user_id || '').toLowerCase().includes(term),
-    );
+    const dept = this.filterDept();
+    const desig = this.filterDesig();
+    return this.users().filter((u) => {
+      if (dept && u.department_name !== dept) return false;
+      if (desig && u.designation_name !== desig) return false;
+      if (
+        term &&
+        !((u.user_name || '').toLowerCase().includes(term) ||
+          (u.user_id || '').toLowerCase().includes(term))
+      )
+        return false;
+      return true;
+    });
   });
+
+  /** Paginated sidebar list — standard master-detail pattern (see SYS1002/SYS1004). */
+  pager = makePaginator(this.filteredUsers, { sortKey: (u) => u.user_no });
+
+  clearFilters(): void {
+    this.filterDept.set(null);
+    this.filterDesig.set(null);
+    this.pager.reset();
+  }
+
+  // ── Multi-select for bulk assignment ────────────────────────────────────────
+  // Explicitly ticked employees. The ACTIVE (clicked) employee is always an effective
+  // target too — you're editing its grid — so it always shows checked and is included
+  // on save. That removes the "grid shows A but saving hits B" confusion.
+  checkedUserNos = signal<ReadonlySet<number>>(new Set());
+
+  effectiveSelected = computed<Set<number>>(() => {
+    const s = new Set(this.checkedUserNos());
+    const active = this.selectedUserNo();
+    if (active != null) s.add(active);
+    return s;
+  });
+  effectiveCount = computed(() => this.effectiveSelected().size);
+
+  allChecked = computed(() => {
+    const f = this.filteredUsers();
+    return f.length > 0 && f.every((u) => this.effectiveSelected().has(u.user_no));
+  });
+  someChecked = computed(() => {
+    const f = this.filteredUsers();
+    const sel = this.effectiveSelected();
+    const n = f.filter((u) => sel.has(u.user_no)).length;
+    return n > 0 && n < f.length;
+  });
+
+  /** Checkbox state for a row — checked when explicitly ticked OR it's the active row. */
+  isRowSelected(userNo: number): boolean {
+    return this.effectiveSelected().has(userNo);
+  }
+  toggleChecked(userNo: number): void {
+    this.checkedUserNos.update((s) => {
+      const next = new Set(s);
+      if (next.has(userNo)) next.delete(userNo);
+      else next.add(userNo);
+      return next;
+    });
+  }
+  /** Select-all toggles only the currently filtered employees. */
+  toggleSelectAll(): void {
+    const f = this.filteredUsers();
+    this.checkedUserNos.update((s) => {
+      const next = new Set(s);
+      if (this.allChecked()) f.forEach((u) => next.delete(u.user_no));
+      else f.forEach((u) => next.add(u.user_no));
+      return next;
+    });
+  }
+  clearChecked(): void {
+    this.checkedUserNos.set(new Set());
+  }
+
+  /** Branch numbers already chosen in any row — drives duplicate-prevention in the dropdowns. */
+  selectedBranchNos = computed(() => {
+    const s = new Set<number>();
+    for (const r of this.mappings()) if (r.branch_no != null) s.add(r.branch_no);
+    return s;
+  });
+
+  /** True when this branch is used by a DIFFERENT row (so its option is disabled here). */
+  isBranchTaken(branchNo: number, currentRowBranch: number | null): boolean {
+    return branchNo !== currentRowBranch && this.selectedBranchNos().has(branchNo);
+  }
+
+  /**
+   * Roles available for a branch: those assigned to it, plus roles with no specific
+   * assignment (empty `branch_nos` = all branches). With no branch chosen yet, show none.
+   */
+  rolesForBranch(branchNo: number | null): RoleOption[] {
+    if (branchNo == null) return [];
+    return this.roles().filter((r) => !r.branch_nos?.length || r.branch_nos.includes(branchNo));
+  }
 
   loadInitial(): void {
     this.isLoading.set(true);
     forkJoin({
-      users: this.data.getUsers(),
+      employees: this.commonLookup.getEmployees(),
       branches: this.data.getBranches(),
       roles: this.data.getRoles(),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe(({ users, branches, roles }) => {
+      .subscribe(({ employees, branches, roles }) => {
         if (isSuccess(branches) && branches.data) this.branches.set(branches.data);
         if (isSuccess(roles) && roles.data) this.roles.set(roles.data);
-        if (isSuccess(users) && users.data) {
-          this.users.set(users.data);
-          const first = users.data[0];
-          if (first) this.selectUser(first.user_no);
-        }
+
+        // Only employees with a login account can be mapped to branches/roles.
+        const opts: UserOption[] = (employees ?? [])
+          .filter((e) => e.user_no != null)
+          .map((e) => ({
+            user_no: e.user_no as number,
+            user_id: e.employee_id,
+            user_name: e.full_name,
+            employee_no: e.employee_no,
+            department_name: e.department_name,
+            designation_name: e.designation_name,
+          }));
+        this.users.set(opts);
+        const first = opts[0];
+        if (first) this.selectUser(first.user_no);
       });
   }
 
@@ -110,14 +242,48 @@ export class Sys1104ModelService {
     this.mappings.update((rows) => rows.filter((_, i) => i !== index));
   }
 
-  setBranch(index: number, value: string): void {
-    const n = value ? Number(value) : null;
-    this.mappings.update((rows) => rows.map((r, i) => (i === index ? { ...r, branch_no: n } : r)));
+  // ── Row-reference variants — used by the common-table custom templates ──────
+  private indexOfRow(row: MappingRow): number {
+    return this.mappings().indexOf(row);
+  }
+  setBranchForRow(row: MappingRow, value: number | null): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) this.setBranchNo(i, value);
+  }
+  setRoleForRow(row: MappingRow, value: number | null): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) this.setRoleNo(i, value);
+  }
+  setDefaultForRow(row: MappingRow): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) this.setDefault(i);
+  }
+  toggleActiveForRow(row: MappingRow): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) this.toggleActive(i);
+  }
+  removeRowRef(row: MappingRow): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) this.removeRow(i);
   }
 
-  setRole(index: number, value: string): void {
-    const n = value ? Number(value) : null;
-    this.mappings.update((rows) => rows.map((r, i) => (i === index ? { ...r, role_no: n } : r)));
+  setBranchNo(index: number, value: number | null): void {
+    this.mappings.update((rows) =>
+      rows.map((r, i) => {
+        if (i !== index) return r;
+        const next = { ...r, branch_no: value ?? null };
+        // If the role already chosen isn't available at the new branch, clear it.
+        if (next.role_no != null && value != null) {
+          const ok = this.rolesForBranch(value).some((ro) => ro.value === next.role_no);
+          if (!ok) next.role_no = null;
+        }
+        return next;
+      }),
+    );
+  }
+
+  setRoleNo(index: number, value: number | null): void {
+    this.mappings.update((rows) => rows.map((r, i) => (i === index ? { ...r, role_no: value ?? null } : r)));
   }
 
   setDefault(index: number): void {
@@ -131,14 +297,27 @@ export class Sys1104ModelService {
   }
 
   onSave(): void {
-    const userNo = this.selectedUserNo();
-    if (!userNo) {
-      this.toastr.warning('Select a user first.');
-      return;
-    }
     const rows = this.mappings();
     if (rows.some((r) => r.branch_no == null || r.role_no == null)) {
       this.toastr.warning('Every row needs both a branch and a role.');
+      return;
+    }
+    const branchNos = rows.map((r) => r.branch_no);
+    if (new Set(branchNos).size !== branchNos.length) {
+      this.toastr.warning('Each branch can only be added once.');
+      return;
+    }
+
+    // Bulk mode: apply the same rows to every effective target (active + checked).
+    const targets = [...this.effectiveSelected()];
+    if (targets.length > 1) {
+      this.bulkSave(targets, rows);
+      return;
+    }
+
+    const userNo = this.selectedUserNo();
+    if (!userNo) {
+      this.toastr.warning('Select an employee first.');
       return;
     }
     this.isSaving.set(true);
@@ -155,6 +334,26 @@ export class Sys1104ModelService {
           }
         },
         error: (err) => this.toastr.error(err?.error?.message || 'API error during save'),
+      });
+  }
+
+  private bulkSave(userNos: number[], rows: MappingRow[]): void {
+    this.isSaving.set(true);
+    this.data
+      .bulkSaveMappings(userNos, rows)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (isSuccess(res)) {
+            this.toastr.success(`Mappings saved for ${userNos.length} employee(s)`);
+            this.clearChecked();
+            const cur = this.selectedUserNo();
+            if (cur) this.selectUser(cur);
+          } else {
+            this.toastr.error(res.message || 'Bulk save failed');
+          }
+        },
+        error: (err) => this.toastr.error(err?.error?.message || 'API error during bulk save'),
       });
   }
 }

@@ -18,15 +18,18 @@
     @for (c of model.filteredCompanies(); track c.value) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedCompanyNo() === c.value"
         (click)="model.selectCompany(c.value)"
       >
-        <h6 class="mb-0 fw-bold text-truncate">{{ c.label }}</h6>
+        <h6 class="list-item-title mb-0 text-truncate">{{ c.label }}</h6>
       </button>
     }
     @if (model.filteredCompanies().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No companies found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>domain</mat-icon>
+        <p>No companies found</p>
+      </div>
     }
   </div>
 

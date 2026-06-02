@@ -48,7 +48,7 @@ export class UiBadgeComponent {
   classes = computed(
     () =>
       'inline-flex items-center gap-1 rounded-full px-2 py-0.5 ' +
-      'text-xxs font-semibold leading-none whitespace-nowrap ' +
+      'text-xs font-semibold leading-none whitespace-nowrap ' +
       (this.solid()
         ? UiBadgeComponent.SOLID[this.variant()]
         : UiBadgeComponent.SOFT[this.variant()]),

@@ -125,9 +125,14 @@ export class MenuService {
   }
 
   /**
-   * Always creates a route in the format /code/type/form-name-slug
+   * Uses the backend `route` field when available; otherwise falls back to
+   * building a route from code/type/form-name-slug.
    */
   private buildRoute(form: RawMenuForm): string {
+    if (form.route) {
+      return form.route;
+    }
+
     const code = (form.code || 'unknown').toLowerCase();
     const type = (form.type || 'general').toLowerCase();
     const slug = (form.form_name || '')

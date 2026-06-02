@@ -1,0 +1,269 @@
+// ── SYS1104 User-Branch Mapping ─────────────────────────────────────────
+// The mapping grid uses the shared <app-common-table>; this file styles only
+// the section header, the info hint, and the in-cell controls.
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Outer card fills the content height (per CLAUDE.md card pattern).
+.ub-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+.ub-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.ub-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// The common table fills the card body. Neutralise its OWN card chrome so it
+// reads as part of this card (no card-in-card border/shadow).
+.ub-fill {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  ::ng-deep > .form-section-card.card {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    background: transparent;
+  }
+  ::ng-deep .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  ::ng-deep .card-body > .overflow-auto {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none !important;
+  }
+}
+
+// Placeholder
+.ub-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 64px 16px;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.4;
+  }
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// ── Sidebar multi-select ────────────────────────────────────────────────
+.ub-selectbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+.ub-selectall {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.ub-selclear {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo);
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+.ub-row-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--indigo);
+  cursor: pointer;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+// List row laid out horizontally so the checkbox sits beside the text
+.ub-list-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+}
+.ub-row-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+// ── Bulk banner (content area) ──────────────────────────────────────────
+.ub-bulk-banner {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: rgba(var(--indigo-rgb), 0.08);
+  border: 1px solid rgba(var(--indigo-rgb), 0.35);
+  border-radius: 8px;
+
+  > mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--indigo);
+    flex: 0 0 auto;
+  }
+  span { flex: 1 1 auto; }
+  strong { color: var(--indigo); }
+}
+.ub-bulk-clear {
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--indigo);
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+
+.ub-count-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(var(--indigo-rgb), 0.12);
+  color: var(--indigo);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ub-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Info hint strip — sits between the card header and the table body
+.ub-hint {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  background: rgba(var(--indigo-rgb), 0.04);
+  border-bottom: 1px solid var(--border-color);
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: var(--indigo);
+    flex: 0 0 auto;
+    margin-top: 1px;
+  }
+  strong {
+    color: var(--text-primary);
+  }
+}
+
+// ── In-cell controls (rendered via common-table custom templates) ──────────
+.ub-cell-select {
+  display: block;
+  min-width: 200px;
+
+  ::ng-deep .ng-select-container {
+    min-height: 34px;
+  }
+}
+
+.ub-radio,
+.ub-check {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--indigo);
+  cursor: pointer;
+  margin: 0;
+}
+
+.ub-remove {
+  border: none;
+  background: none;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--danger);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s ease;
+
+  mat-icon {
+    font-size: 19px;
+    width: 19px;
+    height: 19px;
+  }
+  &:hover {
+    background: rgba(var(--danger-rgb), 0.1);
+  }
+}

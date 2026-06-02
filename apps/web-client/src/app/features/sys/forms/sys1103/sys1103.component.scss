@@ -1,0 +1,451 @@
+// ── SYS1103 Role Permission Matrix ──────────────────────────────────────
+// Modern, theme-aware grid: sticky header + first column, collapsible module
+// groups with grant counts, tri-state row/column toggles, copy-from-role.
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Fill the full content height (template gives formContent a flex-filled column).
+.perm-empty {
+  flex: 1 1 auto;
+}
+
+.perm-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+
+  // header + filter bar stay fixed; the table area fills the rest and scrolls.
+  > .card-header,
+  > .perm-filter-bar {
+    flex-shrink: 0;
+  }
+  > .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// ── Empty / placeholder ─────────────────────────────────────────────────
+.perm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 64px 16px;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.4;
+  }
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// ── Card header: title + bulk actions ───────────────────────────────────
+.perm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.perm-count-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(var(--indigo-rgb), 0.12);
+  color: var(--indigo);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.perm-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+// ERP-standard pill button used across the toolbar
+.perm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.perm-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 2px;
+}
+
+// ── Filter bar ──────────────────────────────────────────────────────────
+.perm-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(var(--indigo-rgb), 0.02);
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+}
+
+.perm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+// Labeled filter field (label on top, control below — matches form fields)
+.perm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1;
+  }
+}
+
+.perm-search {
+  position: relative;
+  min-width: 240px;
+
+  &__icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+  .form-control {
+    padding-left: 34px;
+    min-height: 38px;
+  }
+}
+
+.perm-select {
+  display: block;
+  width: 200px !important;
+  min-width: 200px;
+
+  ::ng-deep .ng-select-container {
+    min-height: 38px;
+    width: 100%;
+  }
+}
+
+// Toggle chip (Granted only)
+.perm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  &:hover {
+    border-color: rgba(var(--indigo-rgb), 0.5);
+  }
+  &--on {
+    border-color: var(--indigo);
+    color: var(--indigo);
+    background: rgba(var(--indigo-rgb), 0.07);
+  }
+}
+
+.perm-clear {
+  font-size: 12.5px;
+  font-weight: 600;
+  height: 38px;
+}
+
+// Vertical divider separating "Copy from" from the filter controls
+.perm-vdivider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--border-color);
+  margin: 2px 4px;
+}
+
+// Copy-from-role group (left section, labeled like the filter fields)
+.perm-copy {
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__select {
+    width: 200px;
+
+    ::ng-deep .ng-select-container {
+      min-height: 38px;
+    }
+  }
+}
+
+// ── Matrix table ────────────────────────────────────────────────────────
+.perm-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.perm-matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+
+  // Sticky header
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border-color);
+    padding: 7px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  // Sticky first column
+  th.sticky-col,
+  td.sticky-col {
+    position: sticky;
+    left: 0;
+    background: var(--card-bg);
+    text-align: left;
+  }
+  th.sticky-col {
+    z-index: 4;
+  }
+  td.sticky-col {
+    z-index: 1;
+  }
+
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  .perm-col-form {
+    min-width: 240px;
+  }
+  .perm-col-flag {
+    width: 62px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+
+    .perm-col-flag__label {
+      display: block;
+    }
+    &:hover {
+      color: var(--indigo);
+    }
+  }
+  .perm-col-all {
+    width: 56px;
+    text-align: center;
+  }
+  .perm-col-meta {
+    width: 96px;
+    text-align: center;
+  }
+}
+
+// Checkboxes — theme indigo
+.perm-check {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--indigo);
+  cursor: pointer;
+  vertical-align: middle;
+  margin: 0;
+}
+.perm-check--all {
+  width: 18px;
+  height: 18px;
+}
+
+// Module group header row
+.perm-module-row {
+  cursor: pointer;
+  background: rgba(var(--indigo-rgb), 0.05);
+
+  td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 7px 8px;
+  }
+  &:hover {
+    background: rgba(var(--indigo-rgb), 0.09);
+  }
+  &:hover .perm-module-row__rest {
+    opacity: 1;
+  }
+
+  .perm-chev {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    color: var(--text-secondary);
+  }
+  .perm-module-name {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+  .perm-module-count {
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(var(--indigo-rgb), 0.12);
+    color: var(--indigo);
+    font-size: 11px;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  &__rest {
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+}
+
+.perm-module-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo);
+  cursor: pointer;
+
+  &--muted {
+    color: var(--text-secondary);
+  }
+  &:hover {
+    text-decoration: underline;
+  }
+}
+.perm-module-sep {
+  margin: 0 8px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+// Form rows
+.perm-form-row {
+  &:hover {
+    background: rgba(var(--indigo-rgb), 0.04);
+  }
+  &:hover .sticky-col {
+    background: #f7f8fc;
+  }
+
+  .perm-form-name {
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .perm-form-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.2;
+  }
+}
+
+// Compact scope / records selects
+.perm-mini-select {
+  max-width: 92px;
+  padding: 3px 6px;
+  font-size: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--input-focus-border);
+  }
+}
+
+.perm-table-empty {
+  text-align: center;
+  padding: 32px 16px !important;
+  color: var(--text-secondary);
+}
+
+// Dark theme: lighten the sticky-col hover fill
+:host-context([data-theme='dark']) .perm-form-row:hover .sticky-col {
+  background: var(--bg-secondary);
+}

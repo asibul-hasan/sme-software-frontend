@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
@@ -32,8 +37,12 @@ export class Inv1001Component implements OnInit {
     this.model.searchTerm.set(val);
     this.model.pager.reset();
   }
-  onSave(): void { this.model.onSave(); }
-  onNew(): void { this.model.onNew(); }
+  onSave(): void {
+    this.model.onSave();
+  }
+  onNew(): void {
+    this.model.onNew();
+  }
   onReset(): void {
     const no = this.model.selectedNo();
     const item = this.model.items().find((x) => x.product_no === no);

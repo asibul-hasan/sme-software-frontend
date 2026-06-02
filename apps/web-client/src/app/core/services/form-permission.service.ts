@@ -44,10 +44,11 @@ export class FormPermissionService {
   readonly permission = this._permission.asReadonly();
 
   // Convenience computed signals for templates.
-  readonly canView   = computed(() => this._permission().can_view);
-  readonly canInsert = computed(() => this._permission().can_insert);
-  readonly canUpdate = computed(() => this._permission().can_update);
-  readonly canDelete = computed(() => this._permission().can_delete);
+  readonly canView    = computed(() => this._permission().can_view);
+  readonly canInsert  = computed(() => this._permission().can_insert);
+  readonly canUpdate  = computed(() => this._permission().can_update);
+  readonly canDelete  = computed(() => this._permission().can_delete);
+  readonly canApprove = computed(() => this._permission().can_update);
 
   /**
    * Loads the permission row for {@code formId} from the backend.

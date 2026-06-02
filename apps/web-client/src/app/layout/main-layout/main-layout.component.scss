@@ -1,91 +1,22 @@
-/*
- * Enterprise app-shell.
- *
- *   ┌─────────────────────────────────────────────┐
- *   │ HEADER (fixed height, full width)           │
- *   ├──────┬──────────────────────────────────────┤
- *   │ SIDE │  CONTENT (only this scrolls)         │
- *   │ BAR  │                                      │
- *   ├──────┴──────────────────────────────────────┤
- *   │ FOOTER (fixed height, full width)           │
- *   └─────────────────────────────────────────────┘
- *
- * body has overflow:hidden (set globally in styles.scss).
- * Only `.content-scroll` can scroll vertically.
- */
+// Tailwind handles the layout classes in the template.
+// Only things Tailwind cannot express live here.
 
-:host {
-  display: block;
-  height: 100%;
-}
+:host { display: block; height: 100%; }
 
-.app-layout {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--bg-primary);
-  background-image: var(--bg-gradient);
-}
-
-// HEADER (host wrapper)
-.app-header {
-  flex-shrink: 0;
-  display: block;
-  width: 100%;
-  z-index: 1000;
-}
-
-// FOOTER (host wrapper)
-.app-footer-host {
-  flex-shrink: 0;
-  display: block;
-  width: 100%;
-  z-index: 100;
-}
-
-// BODY: sidebar + content
-.app-body {
-  flex: 1;
-  min-height: 0;          // critical: lets the flex child shrink and scroll
-  display: flex;
-  overflow: hidden;
-  position: relative;     // for mobile overlay
-}
-
-// SIDEBAR (host wrapper)
-.app-sidebar {
-  flex-shrink: 0;
-  height: 100%;
-  display: block;
-  z-index: 50;
-}
-
-// CONTENT column
-.app-content {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;     // for the global-loader overlay
-}
-
-// THE SINGLE scroll container
-.content-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 4px;             // small visual gap between content and shell edges
-}
-
-// Mobile dim overlay
-.sidebar-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 40;
-  cursor: pointer;
+// Mobile: sidebar becomes a fixed overlay — Tailwind can't express
+// the translateX hide/show with our Angular [class.collapsed] pattern.
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 200;
+  }
+  .app-right {
+    margin-left: 0 !important;
+  }
+  .sidebar-overlay {
+    display: block !important;
+  }
 }

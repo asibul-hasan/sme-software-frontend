@@ -76,6 +76,7 @@ export class Sys1101ModelService {
   filterDeptNo = signal<number | null>(null);
   filterDesigNo = signal<number | null>(null);
   filterUserStatus = signal<number | null>(null);
+  sortDirection = signal<'asc' | 'desc'>('asc');
 
   // ─── Computed: filtered designations by department ────────────────────────
   filteredDesignations = computed(() => {
@@ -106,7 +107,10 @@ export class Sys1101ModelService {
     if (status !== null && status !== undefined)
       list = list.filter((e) => e.is_active === status);
 
-    return list;
+    const sorted = [...list].sort((a, b) =>
+      (a.full_name || '').localeCompare(b.full_name || ''),
+    );
+    return this.sortDirection() === 'desc' ? sorted.reverse() : sorted;
   });
 
   pager = makePaginator<Sys1101EmployeeDto>(this.filteredEmployees);
@@ -123,7 +127,6 @@ export class Sys1101ModelService {
       user_name: ['', [Validators.required, Validators.maxLength(50)]],
       is_active: [1, [Validators.required]],
       is_locked: [0],
-      access_scope: [1],
       failed_login_count: [0],
       last_login_at: [{ value: '', disabled: true }],
       password_changed_at: [{ value: '', disabled: true }],
@@ -199,7 +202,6 @@ export class Sys1101ModelService {
       user_name: '',
       is_active: 1,
       is_locked: 0,
-      access_scope: 1,
       failed_login_count: 0,
       last_login_at: '',
       password_changed_at: '',
@@ -263,7 +265,6 @@ export class Sys1101ModelService {
         user_name: val.user_name,
         is_active: val.is_active,
         is_locked: val.is_locked,
-        access_scope: val.access_scope,
       };
       this.isSaving.set(true);
       this.data
@@ -281,7 +282,6 @@ export class Sys1101ModelService {
         employee_no: val.employee_no,
         user_id: val.user_id,
         user_name: val.user_name,
-        access_scope: val.access_scope,
         password: val.password,
       };
       this.isSaving.set(true);
@@ -411,7 +411,6 @@ export class Sys1101ModelService {
       user_name: user.user_name,
       is_active: user.is_active ?? 1,
       is_locked: user.is_locked ?? 0,
-      access_scope: user.access_scope ?? 1,
       failed_login_count: user.failed_login_count ?? 0,
       last_login_at: user.last_login_at ?? '',
       password_changed_at: user.password_changed_at ?? '',
@@ -432,7 +431,6 @@ export class Sys1101ModelService {
       user_name: userId,
       is_active: 1,
       is_locked: 0,
-      access_scope: 1,
       failed_login_count: 0,
       last_login_at: '',
       password_changed_at: '',

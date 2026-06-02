@@ -18,6 +18,30 @@
   &::placeholder {
     color: var(--text-secondary);
   }
+
+  // Invalid state — red border
+  &.is-invalid {
+    border-color: $danger-color !important;
+    box-shadow: 0 0 0 3px rgba($danger-color, 0.2) !important;
+
+    &:focus {
+      border-color: $danger-color !important;
+      box-shadow: 0 0 0 3px rgba($danger-color, 0.3) !important;
+    }
+  }
+}
+
+// ng-select invalid state
+.ng-select.is-invalid {
+  .ng-select-container {
+    border-color: $danger-color !important;
+    box-shadow: 0 0 0 3px rgba($danger-color, 0.2) !important;
+  }
+}
+
+textarea.is-invalid {
+  border-color: $danger-color !important;
+  box-shadow: 0 0 0 3px rgba($danger-color, 0.2) !important;
 }
 
 .form-label {

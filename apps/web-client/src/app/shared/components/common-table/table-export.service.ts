@@ -78,6 +78,11 @@ export class TableExportService {
   }
 
   private getDisplayValue(row: Record<string, unknown>, col: ColumnDef): unknown {
+    // Explicit accessor wins (custom-template / computed columns).
+    if (col.value) {
+      const v = col.value(row);
+      return v == null ? '' : v;
+    }
     const value = row[col.field];
     if (value == null) return '';
     if (col.cellType === 'select' && col.options) {

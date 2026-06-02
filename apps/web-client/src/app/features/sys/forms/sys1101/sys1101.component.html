@@ -5,6 +5,10 @@
   sidebarTitle="Employees"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="model.searchTerm.set($event); model.pager.reset()"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  [hasActiveFilters]="model.filterDeptNo() !== null || model.filterDesigNo() !== null || model.filterUserStatus() !== null"
+  (clearFilters)="model.filterDeptNo.set(null); model.filterDesigNo.set(null); model.filterUserStatus.set(null); model.pager.reset()"
   (save)="onSave()"
   (new)="onNew()"
   (reset)="onReset()"
@@ -69,47 +73,38 @@
     @for (emp of model.pager.paged(); track emp.employee_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
-        [class.active]="
-          model.selectedEmployee()?.employee_no === emp.employee_no
-        "
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedEmployee()?.employee_no === emp.employee_no"
         (click)="model.selectEmployee(emp)"
       >
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate" style="max-width: 130px">
-            {{ emp.full_name || emp.employee_id }}
-          </h6>
-          <span
-            class="badge rounded-pill"
-            [ngClass]="
-              emp.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'
-            "
-          >
-            {{ emp.is_active === 1 ? 'Active' : 'Inactive' }}
-          </span>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="emp.is_active === 1"
+          [class.status-dot--inactive]="emp.is_active !== 1"
+          [title]="emp.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <div class="d-flex align-items-baseline gap-2" style="min-width: 0; padding-right: 16px">
+          <h6 class="list-item-title mb-0 text-truncate">{{ emp.full_name }}</h6>
+          <span class="list-item-id">{{ emp.employee_id }}</span>
         </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
-          {{ emp.employee_id }}
+        <div class="list-item-meta">
+          @if (emp.department_name) {
+            <span class="list-item-chip">
+              <mat-icon>apartment</mat-icon><span>{{ emp.department_name }}</span>
+            </span>
+          }
           @if (emp.designation_name) {
-            — {{ emp.designation_name }}
+            <span class="list-item-chip">
+              <mat-icon>badge</mat-icon><span>{{ emp.designation_name }}</span>
+            </span>
           }
-        </p>
-        <p class="mb-0 small opacity-50 text-truncate">
-          {{ emp.department_name || '' }}
-          @if (emp.mobile_number) {
-            | {{ emp.mobile_number }}
-          }
-        </p>
+        </div>
       </button>
     }
     @if (model.filteredEmployees().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon
-          style="font-size: 32px; height: 32px; width: 32px"
-          class="opacity-50 mb-2"
-          >people</mat-icon
-        >
-        <p class="mb-0 small">{{ 'noRecordsFound' | translate }}</p>
+      <div class="list-empty-state">
+        <mat-icon>people</mat-icon>
+        <p>{{ 'noRecordsFound' | translate }}</p>
       </div>
     }
   </div>
@@ -284,23 +279,6 @@
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="access_scope"
-                      >Access Scope</label
-                    >
-                    <ng-select
-                      id="access_scope"
-                      labelForId="access_scope"
-                      formControlName="access_scope"
-                      [clearable]="false"
-                    >
-                      <ng-option [value]="1">Branch</ng-option>
-                      <ng-option [value]="2">Company (all branches)</ng-option>
-                      <ng-option [value]="3">Global (all companies)</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="failed_login_count"
@@ -359,9 +337,7 @@
                         [disabled]="!model.selectedUserNo()"
                         (change)="model.lockSelected($event.checked ? 1 : 0)"
                       >
-                        <span class="field-label mb-0" style="cursor: pointer"
-                          >Account is locked</span
-                        >
+                        <span class="field-label mb-0" style="cursor: pointer">Locked</span>
                       </mat-checkbox>
                     </div>
                   </div>

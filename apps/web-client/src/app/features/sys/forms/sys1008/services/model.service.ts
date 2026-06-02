@@ -6,9 +6,12 @@ import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { Sys1008DataService } from './data.service';
+import { AuthContextService } from '../../../../../core/services/auth-context.service';
+import { CommonLookupService, BranchLookupDto } from '../../../../../core/services/common-lookup.service';
 
 export interface ISetting {
   setting_no: number;
+  branch_no?: number | null;
   setting_key: string;
   setting_value: string;
   value_type?: number | null;   // 1=String,2=Number,3=Boolean,4=JSON,5=Date
@@ -23,13 +26,25 @@ export class Sys1008ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Sys1008DataService);
   private toastr = inject(ToastrService);
+  private authCtx = inject(AuthContextService);
+  private lookup = inject(CommonLookupService);
 
   items = signal<ISetting[]>([]);
+  branches = signal<BranchLookupDto[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
   searchTerm = signal('');
   selectedNo = signal<number | null>(null);
   form!: FormGroup;
+
+  /** Current logged-in branch — the default branch assignment on New. */
+  private get currentBranchNo(): number | null {
+    return this.authCtx.user()?.branch_no ?? null;
+  }
+
+  loadBranches(): void {
+    this.lookup.getBranches().subscribe((list) => this.branches.set(list));
+  }
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -47,6 +62,7 @@ export class Sys1008ModelService {
   initForm(): void {
     this.form = this.fb.group({
       setting_no: [null],
+      branch_nos: [[] as number[]],   // multi-branch; empty = all branches
       setting_key: ['', [Validators.required, Validators.maxLength(80)]],
       setting_value: ['', [Validators.required, Validators.maxLength(500)]],
       value_type: [1],
@@ -74,6 +90,7 @@ export class Sys1008ModelService {
     this.selectedNo.set(item.setting_no);
     this.form.patchValue({
       setting_no: item.setting_no,
+      branch_nos: item.branch_no != null ? [item.branch_no] : [],
       setting_key: item.setting_key,
       setting_value: item.setting_value,
       value_type: item.value_type ?? 1,
@@ -130,6 +147,10 @@ export class Sys1008ModelService {
 
   onNew(): void {
     this.selectedNo.set(null);
-    this.form.reset({ is_active: 1, value_type: 1 });
+    this.form.reset({
+      is_active: 1,
+      value_type: 1,
+      branch_nos: this.currentBranchNo != null ? [this.currentBranchNo] : [],
+    });
   }
 }

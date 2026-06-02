@@ -1,147 +1,141 @@
 <aside
-  class="sidebar flex flex-col items-center z-[3] overflow-hidden"
+  class="sidebar flex flex-col h-full overflow-hidden"
+  [style.width.px]="isCollapsed() ? 72 : 250"
   [class.collapsed]="isCollapsed()"
 >
-  <!-- Logo -->
+
+  <!-- ── Brand: 48px to align with header ── -->
   <div
-    class="sb-logo flex items-center justify-center shrink-0 overflow-hidden mb-4"
+    class="sb-brand flex items-center flex-shrink-0 h-12 cursor-pointer"
+    [class.justify-center]="isCollapsed()"
+    [class.px-3]="!isCollapsed()"
     [routerLink]="['/']"
   >
-    <span class="logo-main font-black">A</span>
-    <span class="logo-sub font-bold" *ngIf="!isCollapsed()">IDLY</span>
-    <span class="logo-x font-semibold opacity-75" *ngIf="isCollapsed()">X</span>
+    <div
+      class="sb-logo flex items-center gap-2 rounded-xl text-white overflow-hidden flex-shrink-0 h-9 transition-all duration-300"
+      [class.w-11]="isCollapsed()"
+      [class.justify-center]="isCollapsed()"
+      [class.w-full]="!isCollapsed()"
+      [class.px-3]="!isCollapsed()"
+    >
+      <!-- Logo image when available, else initial letter -->
+      <ng-container *ngIf="logoUrl(); else initialTpl">
+        <img
+          [src]="logoUrl()"
+          alt="Company logo"
+          class="flex-shrink-0 rounded-lg object-contain"
+          [class.w-7]="!isCollapsed()"
+          [class.h-7]="!isCollapsed()"
+          [class.w-8]="isCollapsed()"
+          [class.h-8]="isCollapsed()"
+        />
+      </ng-container>
+      <ng-template #initialTpl>
+        <span class="text-xl font-black flex-shrink-0">{{ companyInitial() }}</span>
+      </ng-template>
+      <span *ngIf="!isCollapsed()" class="text-[13px] font-bold tracking-wide truncate">{{ companyName() }}</span>
+    </div>
   </div>
 
-  <!-- Top Search & Collapse Toggle Section -->
-  <div
-    class="sb-search-container w-full px-4 pb-4 flex items-center justify-between gap-2"
-    *ngIf="!isCollapsed()"
-  >
-    <div class="search-input-wrapper relative grow">
-      <ui-icon class="search-icon" [size]="18">search</ui-icon>
+  <!-- ── Search + expand-all (expanded only) ── -->
+  <div *ngIf="!isCollapsed()" class="flex items-center gap-2 w-full px-3 py-2 flex-shrink-0">
+    <div class="relative flex-1">
+      <ui-icon class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40" [size]="16">search</ui-icon>
       <input
         type="text"
-        class="sb-search-input"
+        class="sb-search-input w-full h-[34px] rounded-lg text-[13px] transition-all"
         placeholder="Search menu..."
         [ngModel]="searchTerm()"
         (ngModelChange)="searchTerm.set($event)"
       />
-
       <button
-        type="button"
-        class="clear-search-btn flex items-center justify-center w-7 h-7 border-0 bg-transparent p-0 cursor-pointer rounded"
         *ngIf="searchTerm()"
+        type="button"
+        class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center border-0 bg-transparent cursor-pointer rounded opacity-60 hover:opacity-100"
         (click)="searchTerm.set('')"
       >
-        <ui-icon [size]="18">close</ui-icon>
+        <ui-icon [size]="16">close</ui-icon>
       </button>
     </div>
-
     <button
       type="button"
-      class="sb-collapse-toggle-btn flex items-center justify-center shrink-0 p-0 cursor-pointer"
+      class="sb-action-btn w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center rounded-lg cursor-pointer transition-colors"
       (click)="toggleExpandAll()"
       [uiTooltip]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
       uiTooltipPosition="above"
     >
-      <ui-icon [size]="18">{{
-        isAllExpanded() ? 'unfold_less_double' : 'unfold_more_double'
-      }}</ui-icon>
+      <ui-icon [size]="16">{{ isAllExpanded() ? 'unfold_less_double' : 'unfold_more_double' }}</ui-icon>
     </button>
   </div>
 
-  <!-- Menu Items -->
-  <nav
-    class="sb-nav flex flex-col items-center grow w-full overflow-y-auto overflow-x-hidden"
-  >
+  <!-- ── Navigation ── -->
+  <nav class="sb-nav flex flex-col w-full flex-1 overflow-y-auto overflow-x-hidden pb-2">
     <ng-container *ngFor="let module of filteredMenuItems()">
+
       <!-- MODULE -->
-      <div class="sb-module w-full flex flex-col items-center">
+      <div class="w-full flex flex-col">
         <a
-          class="sb-item module-item px-2 w-full flex items-center shrink-0 no-underline relative whitespace-nowrap overflow-hidden"
+          class="sb-item flex items-center min-h-[36px] rounded-lg my-px no-underline cursor-pointer transition-all duration-200 relative overflow-hidden whitespace-nowrap"
+          [class.justify-center]="isCollapsed()"
+          [class.w-11]="isCollapsed()"
+          [class.mx-auto]="isCollapsed()"
+          [class.px-2]="isCollapsed()"
+          [class.mx-2]="!isCollapsed()"
+          [class.px-2]="!isCollapsed()"
           (click)="toggleNode(module, $event)"
-          [class.expanded-item]="!isCollapsed()"
-          [uiTooltip]="module.formName | translate"
+          [uiTooltip]="isCollapsed() ? (module.formName | translate) : ''"
           uiTooltipPosition="right"
         >
-          <ui-icon class="sb-icon shrink-0" [size]="19">{{
-            module.icon
-          }}</ui-icon>
-          <span class="sb-label" *ngIf="!isCollapsed()">
-            {{ module.formName | translate }}
-          </span>
-          <ui-icon *ngIf="!isCollapsed()" class="expand-icon" [size]="18">
-            {{ module.expanded ? 'expand_less' : 'expand_more' }}
-          </ui-icon>
+          <ui-icon class="flex-shrink-0" [size]="19">{{ module.icon }}</ui-icon>
+          <span *ngIf="!isCollapsed()" class="text-[13px] flex-1 truncate">{{ module.formName | translate }}</span>
+          <ui-icon *ngIf="!isCollapsed()" class="ml-auto opacity-50 flex-shrink-0" [size]="18">{{ module.expanded ? 'expand_less' : 'expand_more' }}</ui-icon>
         </a>
-        <!-- SUBMODULE -->
-        <div
-          class="sb-submodule w-full flex flex-col items-center"
-          *ngIf="module.expanded && module.children"
-        >
-          <ng-container
-            *ngFor="let sub of module.children; let isLastSub = last"
-          >
-            <div
-              class="w-full relative flex flex-col items-center"
-              style="gap: 2px"
-            >
-              <!-- Tree Lines for Submodule -->
-              <div class="line-sub-connect" *ngIf="!isCollapsed()"></div>
-              <div
-                class="line-sub-v-bottom"
-                *ngIf="!isCollapsed() && !isLastSub"
-              ></div>
 
+        <!-- SUBMODULE -->
+        <div *ngIf="module.expanded && module.children" class="w-full flex flex-col">
+          <ng-container *ngFor="let sub of module.children; let isLastSub = last">
+            <div class="w-full relative flex flex-col" style="gap:2px">
+              <div class="line-sub-connect" *ngIf="!isCollapsed()"></div>
+              <div class="line-sub-v-bottom" *ngIf="!isCollapsed() && !isLastSub"></div>
               <a
-                class="sb-item submodule-item px-2 w-full flex items-center shrink-0 no-underline relative whitespace-nowrap overflow-hidden z-[1]"
+                class="sb-item flex items-center min-h-[36px] rounded-lg my-px no-underline cursor-pointer transition-all duration-200 relative overflow-hidden whitespace-nowrap z-[1]"
+                [class.justify-center]="isCollapsed()"
+                [class.w-11]="isCollapsed()"
+                [class.mx-auto]="isCollapsed()"
+                [class.px-2]="isCollapsed()"
+                [class.mx-2]="!isCollapsed()"
+                [class.sb-indent-sub]="!isCollapsed()"
                 (click)="toggleNode(sub, $event)"
-                [uiTooltip]="sub.formName | translate"
+                [uiTooltip]="isCollapsed() ? (sub.formName | translate) : ''"
                 uiTooltipPosition="right"
               >
-                <ui-icon class="sb-icon shrink-0" [size]="19">{{
-                  sub.icon
-                }}</ui-icon>
-                <span class="sb-label" *ngIf="!isCollapsed()">
-                  {{ sub.formName | translate }}
-                </span>
-                <ui-icon *ngIf="!isCollapsed()" class="expand-icon" [size]="18">
-                  {{ sub.expanded ? 'expand_less' : 'expand_more' }}
-                </ui-icon>
+                <ui-icon class="flex-shrink-0" [size]="19">{{ sub.icon }}</ui-icon>
+                <span *ngIf="!isCollapsed()" class="text-[13px] flex-1 truncate">{{ sub.formName | translate }}</span>
+                <ui-icon *ngIf="!isCollapsed()" class="ml-auto opacity-50 flex-shrink-0" [size]="18">{{ sub.expanded ? 'expand_less' : 'expand_more' }}</ui-icon>
               </a>
-              <!-- FORMS -->
-              <div
-                class="sb-forms w-full flex flex-col items-center"
-                *ngIf="sub.expanded && sub.children"
-              >
-                <ng-container
-                  *ngFor="let form of sub.children; let isLastForm = last"
-                >
-                  <div
-                    class="w-full relative flex flex-col items-center"
-                    style="gap: 2px"
-                  >
-                    <!-- Tree Lines for Forms -->
-                    <div class="line-form-connect" *ngIf="!isCollapsed()"></div>
-                    <div
-                      class="line-form-v-bottom"
-                      *ngIf="!isCollapsed() && !isLastForm"
-                    ></div>
 
+              <!-- FORMS -->
+              <div *ngIf="sub.expanded && sub.children" class="w-full flex flex-col">
+                <ng-container *ngFor="let form of sub.children; let isLastForm = last">
+                  <div class="w-full relative flex flex-col" style="gap:2px">
+                    <div class="line-form-connect" *ngIf="!isCollapsed()"></div>
+                    <div class="line-form-v-bottom" *ngIf="!isCollapsed() && !isLastForm"></div>
                     <a
-                      class="sb-item form-item px-2 w-full flex items-center shrink-0 no-underline relative whitespace-nowrap overflow-hidden z-[1]"
+                      class="sb-item flex items-center min-h-[36px] rounded-lg my-px no-underline cursor-pointer transition-all duration-200 relative overflow-hidden whitespace-nowrap z-[1]"
+                      [class.justify-center]="isCollapsed()"
+                      [class.w-11]="isCollapsed()"
+                      [class.mx-auto]="isCollapsed()"
+                      [class.px-2]="isCollapsed()"
+                      [class.mx-2]="!isCollapsed()"
+                      [class.sb-indent-form]="!isCollapsed()"
                       [routerLink]="form.route"
                       routerLinkActive="active"
                       [routerLinkActiveOptions]="{ exact: false }"
-                      [uiTooltip]="form.formName | translate"
+                      [uiTooltip]="isCollapsed() ? (form.formName | translate) : ''"
                       uiTooltipPosition="right"
                     >
-                      <ui-icon class="sb-icon shrink-0" [size]="19">{{
-                        form.icon
-                      }}</ui-icon>
-                      <span class="sb-label" *ngIf="!isCollapsed()">
-                        {{ form.formName | translate }}
-                      </span>
+                      <ui-icon class="flex-shrink-0" [size]="19">{{ form.icon }}</ui-icon>
+                      <span *ngIf="!isCollapsed()" class="text-[13px] truncate">{{ form.formName | translate }}</span>
                     </a>
                   </div>
                 </ng-container>
@@ -150,26 +144,20 @@
           </ng-container>
         </div>
       </div>
+
     </ng-container>
   </nav>
 
-  <!-- Bottom Section -->
-  <div
-    class="sb-bottom flex items-center justify-end flex-wrap gap-2 w-full"
-    style="border-top: 1px solid var(--border)"
-  >
-    <!-- Toggle Collapse Button -->
-    <div class="flex items-center justify-end w-full py-2">
-      <button
-        type="button"
-        class="sb-toggle-btn m-0 p-0"
-        (click)="toggleSidebar()"
-        [title]="isCollapsed() ? 'Expand' : 'Collapse'"
-      >
-        <ui-icon [size]="16">{{
-          isCollapsed() ? 'chevron_right' : 'chevron_left'
-        }}</ui-icon>
-      </button>
-    </div>
+  <!-- ── Footer: 25px matching content footer ── -->
+  <div class="sb-footer flex items-center justify-end flex-shrink-0 h-[25px] px-2">
+    <button
+      type="button"
+      class="sb-toggle-btn w-5 h-5 flex items-center justify-center rounded-full cursor-pointer transition-all"
+      (click)="toggleSidebar()"
+      [title]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+    >
+      <ui-icon [size]="12">{{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}</ui-icon>
+    </button>
   </div>
+
 </aside>

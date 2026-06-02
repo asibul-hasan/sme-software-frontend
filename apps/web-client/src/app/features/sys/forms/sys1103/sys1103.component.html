@@ -5,6 +5,7 @@
   [sidebarTitle]="'Roles'"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
+  [pager]="model.pager"
   (save)="onSave()"
   (reset)="onReset()"
   [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
@@ -15,113 +16,273 @@
 >
   <!-- Sidebar: role selector -->
   <div sidebarList>
-    @for (role of model.filteredRoles(); track role.role_no) {
+    @for (role of model.pager.paged(); track role.role_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedRoleNo() === role.role_no"
         (click)="model.selectRole(role.role_no)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold">{{ role.role_id }}</h6>
-          @if (role.is_system_role === 1) {
-            <span class="badge text-bg-primary">System</span>
-          }
-        </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
-          {{ role.role_name }}
-        </p>
+        <h6 class="list-item-title mb-0 text-truncate">{{ role.role_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ role.role_name }}</p>
+        @if (role.is_system_role === 1) {
+          <div class="list-item-meta">
+            <span class="list-item-tag list-item-tag--primary">System</span>
+          </div>
+        }
       </button>
     }
     @if (model.filteredRoles().length === 0) {
-      <div class="p-4 text-center opacity-75">
-        <mat-icon class="opacity-50 mb-2" style="font-size: 32px; height: 32px; width: 32px">badge</mat-icon>
-        <p class="mb-0 small">No roles found</p>
+      <div class="list-empty-state">
+        <mat-icon>badge</mat-icon>
+        <p>No roles found</p>
       </div>
     }
   </div>
 
   <!-- Main: permission matrix -->
-  <div formContent>
+  <div formContent class="h-100 d-flex flex-column">
     @if (!model.selectedRoleNo()) {
-      <div class="p-4 text-center opacity-75">Select a role to edit its permissions.</div>
+      <div class="perm-empty">
+        <mat-icon>grid_on</mat-icon>
+        <p>Select a role from the list to edit its permissions.</p>
+      </div>
     } @else {
-      <div class="form-section-card card">
-        <div class="card-header">
-          <h4 class="card-header__title mb-0 fw-bold">
-            <mat-icon class="me-2 align-middle">grid_on</mat-icon>
+      <div class="form-section-card card perm-card">
+        <!-- ── Header: title + grant count + bulk actions ──────────────── -->
+        <div class="card-header perm-header">
+          <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2">
+            <mat-icon class="align-middle">grid_on</mat-icon>
             Permissions
+            <span class="perm-count-pill">{{ model.visibleGranted() }}/{{ model.visiblePossible() }}</span>
           </h4>
+          <div class="perm-header__actions">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary perm-btn"
+              (click)="model.toggleAllCollapse()"
+            >
+              <mat-icon>{{ model.isAllCollapsed() ? 'unfold_more' : 'unfold_less' }}</mat-icon>
+              <span>{{ model.isAllCollapsed() ? 'Expand all' : 'Collapse all' }}</span>
+            </button>
+            <span class="perm-divider"></span>
+            <button type="button" class="btn btn-sm btn-outline-success perm-btn" (click)="model.grantAllVisible(1)">
+              <mat-icon>done_all</mat-icon><span>Grant all</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger perm-btn" (click)="model.grantAllVisible(0)">
+              <mat-icon>remove_done</mat-icon><span>Clear all</span>
+            </button>
+          </div>
         </div>
+
+        <!-- ── Filter bar ─────────────────────────────────────────────────
+             Left: Copy from | divider | Module / Submodule / Granted
+             Right: form search                                            -->
+        <div class="perm-filter-bar">
+          <div class="perm-filters">
+            <!-- Copy from role (left, its own section) -->
+            <div class="perm-field perm-copy">
+              <label class="perm-field__label">Copy from</label>
+              <div class="perm-copy__row">
+                <ng-select
+                  class="perm-copy__select"
+                  [items]="model.otherRoles()"
+                  bindValue="role_no"
+                  bindLabel="role_name"
+                  [ngModel]="model.copySourceRoleNo()"
+                  (ngModelChange)="model.copySourceRoleNo.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  placeholder="another role…"
+                  [clearable]="true"
+                >
+                  <ng-template ng-option-tmp let-item="item">
+                    <span class="fw-semibold">{{ item.role_id }}</span>
+                    <span class="opacity-75 ms-1">{{ item.role_name }}</span>
+                  </ng-template>
+                </ng-select>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary perm-btn"
+                  [disabled]="!model.copySourceRoleNo() || model.isCopying()"
+                  (click)="model.copyFromRole()"
+                >
+                  <mat-icon>content_copy</mat-icon><span>Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <span class="perm-vdivider"></span>
+
+            <div class="perm-field">
+              <label class="perm-field__label">Module</label>
+              <ng-select
+                class="perm-select"
+                [items]="model.modules()"
+                [ngModel]="model.moduleFilter()"
+                (ngModelChange)="model.moduleFilter.set($event || ''); model.submoduleFilter.set('')"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="All Modules"
+                [clearable]="true"
+              ></ng-select>
+            </div>
+
+            <div class="perm-field">
+              <label class="perm-field__label">Submodule</label>
+              <ng-select
+                class="perm-select"
+                [items]="model.submodules()"
+                [ngModel]="model.submoduleFilter()"
+                (ngModelChange)="model.submoduleFilter.set($event || '')"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="All Submodules"
+                [clearable]="true"
+              ></ng-select>
+            </div>
+
+            <div class="perm-field">
+              <label class="perm-field__label">&nbsp;</label>
+              <button
+                type="button"
+                class="perm-chip"
+                [class.perm-chip--on]="model.onlyGranted()"
+                (click)="model.onlyGranted.set(!model.onlyGranted())"
+              >
+                <mat-icon>{{ model.onlyGranted() ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                Granted only
+              </button>
+            </div>
+
+            @if (model.hasActiveFilters()) {
+              <div class="perm-field">
+                <label class="perm-field__label">&nbsp;</label>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none px-1 perm-clear" (click)="model.clearFilters()">
+                  Clear filters
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="perm-filter-bar__right">
+            <!-- Form search — bottom-right corner -->
+            <div class="perm-search">
+              <mat-icon class="perm-search__icon">search</mat-icon>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Find a form…"
+                [ngModel]="model.formSearch()"
+                (ngModelChange)="model.formSearch.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Matrix table ─────────────────────────────────────────────── -->
         <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle mb-0">
-              <thead class="table-light">
+          <div class="perm-table-wrap">
+            <table class="perm-matrix">
+              <thead>
                 <tr>
-                  <th style="min-width: 220px">Form</th>
+                  <th class="perm-col-form sticky-col">Module / Action</th>
                   @for (f of model.flagFields; track f.key) {
-                    <th class="text-center" style="width: 64px">{{ f.label }}</th>
+                    <th
+                      class="perm-col-flag"
+                      [title]="'Toggle ' + f.label + ' for all visible forms'"
+                      (click)="model.grantColumn(f.key, model.columnState(f.key) === 'all' ? 0 : 1)"
+                    >
+                      <span class="perm-col-flag__label">{{ f.label }}</span>
+                      <input
+                        type="checkbox"
+                        class="perm-check"
+                        [checked]="model.columnState(f.key) === 'all'"
+                        [indeterminate]="model.columnState(f.key) === 'some'"
+                        (click)="$event.preventDefault()"
+                      />
+                    </th>
                   }
-                  <th class="text-center" style="min-width: 110px">Scope</th>
-                  <th class="text-center" style="min-width: 100px">Records</th>
-                  <th class="text-center" style="min-width: 90px">Bulk</th>
+                  <th class="perm-col-all" title="Grant / revoke the whole row">All</th>
+                  <!-- Scope / Records columns hidden for now -->
+                  <!--
+                  <th class="perm-col-meta">Scope</th>
+                  <th class="perm-col-meta">Records</th>
+                  -->
                 </tr>
               </thead>
               <tbody>
-                @for (group of model.grouped(); track group.module_name) {
-                  <tr class="table-light">
-                    <td [attr.colspan]="model.flagFields.length + 4" class="fw-bold small text-uppercase opacity-75">
-                      {{ group.module_name }}
+                @for (group of model.filteredGrouped(); track group.module_name) {
+                  <tr class="perm-module-row" (click)="model.toggleModule(group.module_name)">
+                    <td class="sticky-col">
+                      <mat-icon class="perm-chev">{{ model.isCollapsed(group.module_name) ? 'chevron_right' : 'expand_more' }}</mat-icon>
+                      <span class="perm-module-name">{{ group.module_name }}</span>
+                      <span class="perm-module-count">{{ model.moduleGranted(group) }}/{{ model.moduleTotal(group) }}</span>
+                    </td>
+                    <td [attr.colspan]="model.flagFields.length + 1" class="perm-module-row__rest">
+                      <button type="button" class="perm-module-btn" (click)="$event.stopPropagation(); model.grantModule(group, 1)">Grant all</button>
+                      <span class="perm-module-sep">·</span>
+                      <button type="button" class="perm-module-btn perm-module-btn--muted" (click)="$event.stopPropagation(); model.grantModule(group, 0)">Clear</button>
                     </td>
                   </tr>
-                  @for (row of group.rows; track row.menu_no) {
-                    <tr>
-                      <td>
-                        <div class="fw-semibold">{{ row.form_name }}</div>
-                        <div class="small opacity-75">{{ row.submodule_name }}</div>
-                      </td>
-                      @for (f of model.flagFields; track f.key) {
+
+                  @if (!model.isCollapsed(group.module_name)) {
+                    @for (row of group.rows; track row.menu_no) {
+                      <tr class="perm-form-row">
+                        <td class="sticky-col perm-form-cell">
+                          <div class="perm-form-name">{{ row.form_name }}</div>
+                          @if (row.submodule_name) {
+                            <div class="perm-form-sub">{{ row.submodule_name }}</div>
+                          }
+                        </td>
+                        @for (f of model.flagFields; track f.key) {
+                          <td class="text-center">
+                            <input
+                              type="checkbox"
+                              class="perm-check"
+                              [checked]="row[f.key] === 1"
+                              (change)="model.toggle(row.menu_no, f.key)"
+                            />
+                          </td>
+                        }
                         <td class="text-center">
                           <input
                             type="checkbox"
-                            class="form-check-input"
-                            [checked]="row[f.key] === 1"
-                            (change)="model.toggle(row.menu_no, f.key)"
+                            class="perm-check perm-check--all"
+                            [checked]="model.isRowAll(row)"
+                            [indeterminate]="model.isRowSome(row)"
+                            (change)="model.grantAll(row.menu_no, model.isRowAll(row) ? 0 : 1)"
                           />
                         </td>
-                      }
-                      <td class="text-center">
-                        <select
-                          class="form-select form-select-sm"
-                          [value]="row.perm_scope"
-                          (change)="model.setScope(row.menu_no, +$any($event.target).value)"
-                        >
-                          <option [value]="1">Company</option>
-                          <option [value]="2">Branch</option>
-                        </select>
-                      </td>
-                      <td class="text-center">
-                        <select
-                          class="form-select form-select-sm"
-                          [value]="row.record_filter"
-                          (change)="model.setRecordFilter(row.menu_no, +$any($event.target).value)"
-                        >
-                          <option [value]="1">All</option>
-                          <option [value]="2">Own</option>
-                        </select>
-                      </td>
-                      <td class="text-center text-nowrap">
-                        <button type="button" class="btn btn-sm btn-link p-0" (click)="model.grantAll(row.menu_no, 1)">All</button>
-                        <span class="mx-1 opacity-50">|</span>
-                        <button type="button" class="btn btn-sm btn-link p-0 text-muted" (click)="model.grantAll(row.menu_no, 0)">None</button>
-                      </td>
-                    </tr>
+                        <!-- Scope / Records cells hidden for now -->
+                        <!--
+                        <td class="text-center">
+                          <select class="perm-mini-select" [value]="row.perm_scope" (change)="model.setScope(row.menu_no, +$any($event.target).value)">
+                            <option [value]="1">Company</option>
+                            <option [value]="2">Branch</option>
+                          </select>
+                        </td>
+                        <td class="text-center">
+                          <select class="perm-mini-select" [value]="row.record_filter" (change)="model.setRecordFilter(row.menu_no, +$any($event.target).value)">
+                            <option [value]="1">All</option>
+                            <option [value]="2">Own</option>
+                          </select>
+                        </td>
+                        -->
+                      </tr>
+                    }
                   }
                 }
+
                 @if (model.matrix().length === 0) {
                   <tr>
-                    <td [attr.colspan]="model.flagFields.length + 4" class="text-center opacity-75 p-4">
+                    <td [attr.colspan]="model.flagFields.length + 2" class="perm-table-empty">
                       No forms enrolled for this company. Enroll forms first (Menu Enrollment).
+                    </td>
+                  </tr>
+                } @else if (model.filteredGrouped().length === 0) {
+                  <tr>
+                    <td [attr.colspan]="model.flagFields.length + 2" class="perm-table-empty">
+                      No forms match the current filters.
+                      <button type="button" class="btn btn-sm btn-link p-0" (click)="model.clearFilters()">Clear filters</button>
                     </td>
                   </tr>
                 }
@@ -132,4 +293,6 @@
       </div>
     }
   </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

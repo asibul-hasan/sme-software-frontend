@@ -75,12 +75,14 @@
       class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
     >
 
-      <!-- Fixed: optional extra filters + search at bottom of section -->
+      <!-- Fixed: filters → search → results meta bar -->
       <div class="sidebar-filters-section flex-shrink-0 border-bottom">
+        <!-- 1. Host-provided filter dropdowns (top) -->
         <ng-content select="[sidebarFilters]"></ng-content>
 
-        <div class="px-2 py-2">
-          <div class="field-group mb-0 sidebar-search">
+        <!-- 2. Search (with clear) + sort toggle -->
+        <div class="px-2 pt-1 pb-2 d-flex align-items-center gap-2">
+          <div class="field-group mb-0 sidebar-search flex-grow-1">
             <mat-icon class="sidebar-search__icon">search</mat-icon>
             <input
               type="text"
@@ -89,15 +91,44 @@
               [ngModel]="searchTerm"
               (ngModelChange)="onSearchChange($event)"
             />
+            <button
+              *ngIf="searchTerm"
+              type="button"
+              class="sidebar-search__clear"
+              (click)="clearSearch()"
+              title="Clear search"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
+
+          <button
+            *ngIf="showSort"
+            type="button"
+            class="sidebar-sort-btn"
+            (click)="toggleSort()"
+            [title]="currentSort === 'asc' ? 'Sort ascending (oldest first)' : 'Sort descending (newest first)'"
+          >
+            <mat-icon>{{ currentSort === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+          </button>
+        </div>
+
+        <!-- 3. Clear-all — only while a search/filter is narrowing the list -->
+        <div class="sidebar-meta-bar px-2 pb-2" *ngIf="isFiltering">
+          <button
+            type="button"
+            class="sidebar-meta-bar__clear"
+            (click)="clearAll()"
+            title="Clear search & filters"
+          >
+            <mat-icon>filter_alt_off</mat-icon> Clear all
+          </button>
         </div>
       </div>
 
       <!-- Scrollable: list content -->
-      <div class="flex-grow-1 overflow-auto sidebar-scroll-area p-2">
-        <div
-          class="list-group list-group-flush border rounded-3 shadow-sm overflow-hidden"
-        >
+      <div class="flex-grow-1 overflow-auto sidebar-scroll-area">
+        <div class="sidebar-list-wrap">
           <ng-content select="[sidebarList]"></ng-content>
         </div>
       </div>

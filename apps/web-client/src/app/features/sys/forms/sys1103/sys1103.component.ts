@@ -17,7 +17,7 @@ import { Sys1103DataService } from './services/data.service';
   imports: [SharedModule, CommonModule, PageFormLayoutComponent],
   providers: [Sys1103ModelService, Sys1103DataService],
   templateUrl: './sys1103.component.html',
-  styles: [],
+  styleUrls: ['./sys1103.component.scss'],
 })
 export class Sys1103Component implements OnInit {
   public model = inject(Sys1103ModelService);
@@ -30,6 +30,7 @@ export class Sys1103Component implements OnInit {
 
   onSearchTermChange(val: string): void {
     this.model.searchTerm.set(val);
+    this.model.pager.reset();
   }
 
   onSave(): void {

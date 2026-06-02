@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AppConfigService } from '../../../../../core/services/app-config.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { UserOption, Option, MappingRow } from './model.service';
+import { UserOption, Option, RoleOption, MappingRow } from './model.service';
 
 /**
  * Form-level HTTP service for SYS1104 User-Branch Mapping (form-wise Sys1104Controller).
@@ -22,8 +22,8 @@ export class Sys1104DataService {
     return this.http.get<ApiResponse<Option[]>>(`${this.baseUrl}/branches`);
   }
 
-  getRoles(): Observable<ApiResponse<Option[]>> {
-    return this.http.get<ApiResponse<Option[]>>(`${this.baseUrl}/roles`);
+  getRoles(): Observable<ApiResponse<RoleOption[]>> {
+    return this.http.get<ApiResponse<RoleOption[]>>(`${this.baseUrl}/roles`);
   }
 
   getMappings(userNo: number): Observable<ApiResponse<MappingRow[]>> {
@@ -32,5 +32,13 @@ export class Sys1104DataService {
 
   saveMappings(userNo: number, rows: MappingRow[]): Observable<ApiResponse<MappingRow[]>> {
     return this.http.post<ApiResponse<MappingRow[]>>(`${this.baseUrl}/users/${userNo}/mappings`, rows);
+  }
+
+  /** Apply the same mappings to many users at once (backend loops + reconciles each). */
+  bulkSaveMappings(userNos: number[], rows: MappingRow[]): Observable<ApiResponse<number>> {
+    return this.http.post<ApiResponse<number>>(`${this.baseUrl}/mappings/bulk`, {
+      user_nos: userNos,
+      rows,
+    });
   }
 }

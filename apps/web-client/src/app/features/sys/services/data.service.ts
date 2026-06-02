@@ -131,6 +131,10 @@ export class SysDataService extends BaseDataService {
     return this.getList<unknown[]>('roles');
   }
 
+  getRoleLookupList(): Observable<ApiResponse<unknown[]>> {
+    return this.getList<unknown[]>('roles/list');
+  }
+
   getRoleDtl(no: number): Observable<ApiResponse<unknown>> {
     return this.getDtl<unknown>('roles', no);
   }

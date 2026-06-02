@@ -1,41 +1,41 @@
-<div
-  class="app-layout"
-  [class.sidebar-collapsed]="sidebarCollapsed()"
->
-  <!-- ── Fixed Top Header ─────────────────────────────────────── -->
-  <app-header
-    class="app-header"
-    [sidebarCollapsed]="sidebarCollapsed()"
-    (toggleSidebar)="toggleSidebar()"
-    (themeToggled)="onThemeToggle($event)"
-  ></app-header>
+<!-- Root shell: sidebar | right-column, full viewport height -->
+<div class="flex flex-row h-screen overflow-hidden bg-[var(--bg-primary)]" style="background-image: var(--bg-gradient)">
 
-  <!-- ── Body: Sidebar + Scrollable Content ──────────────────── -->
-  <div class="app-body">
-    <app-sidebar
-      class="app-sidebar"
-      [collapsed]="sidebarCollapsed()"
-      (toggleCollapse)="toggleSidebar()"
-    ></app-sidebar>
+  <!-- Sidebar: inline flex child on desktop, fixed overlay on mobile -->
+  <app-sidebar
+    class="app-sidebar flex-shrink-0 h-full block z-50"
+    [collapsed]="sidebarCollapsed()"
+    (toggleCollapse)="toggleSidebar()"
+  ></app-sidebar>
 
-    <!-- Mobile sidebar dim overlay -->
-    <div
-      *ngIf="!sidebarCollapsed()"
-      class="sidebar-overlay lg:hidden"
-      (click)="toggleSidebar()"
-    ></div>
+  <!-- Backdrop: mobile only — tap to close sidebar -->
+  <div
+    *ngIf="!sidebarCollapsed()"
+    class="sidebar-overlay fixed inset-0 bg-black/45 z-[190] cursor-pointer hidden"
+    (click)="toggleSidebar()"
+  ></div>
 
-    <main class="app-content">
+  <!-- Right column: header → content → footer -->
+  <div class="app-right flex flex-col flex-1 min-w-0 h-screen overflow-hidden">
+
+    <app-header
+      class="flex-shrink-0 block w-full z-[100]"
+      [sidebarCollapsed]="sidebarCollapsed()"
+      (toggleSidebar)="toggleSidebar()"
+      (themeToggled)="onThemeToggle($event)"
+    ></app-header>
+
+    <main class="flex flex-col flex-1 min-h-0 overflow-hidden relative">
       <app-global-loader></app-global-loader>
-      <div class="content-scroll">
+      <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1">
         <router-outlet></router-outlet>
       </div>
     </main>
-  </div>
 
-  <!-- ── Fixed Bottom Footer ─────────────────────────────────── -->
-  <app-footer
-    class="app-footer-host"
-    [sidebarCollapsed]="sidebarCollapsed()"
-  ></app-footer>
+    <app-footer
+      class="flex-shrink-0 block w-full"
+      [sidebarCollapsed]="sidebarCollapsed()"
+    ></app-footer>
+
+  </div>
 </div>

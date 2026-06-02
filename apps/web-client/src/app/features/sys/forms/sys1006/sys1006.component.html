@@ -19,19 +19,29 @@
     @for (e of model.pager.paged(); track e.exchange_rate_no) {
       <button
         type="button"
-        class="list-group-item list-group-item-action p-3"
+        class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === e.exchange_rate_no"
         (click)="model.select(e)"
       >
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate">{{ e.currency_label || ('Currency #' + e.currency_no) }}</h6>
-          <span class="badge text-bg-light border">{{ e.rate }}</span>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="e.is_active === 1"
+          [class.status-dot--inactive]="e.is_active !== 1"
+          [title]="e.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ e.currency_label || ('Currency #' + e.currency_no) }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ e.rate_date }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-chip"><mat-icon>trending_up</mat-icon><span>Rate</span></span>
+          <span class="list-item-value">{{ e.rate }}</span>
         </div>
-        <p class="mb-0 small fw-semibold opacity-75">{{ e.rate_date }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>currency_exchange</mat-icon>
+        <p>No records found</p>
+      </div>
     }
   </div>
 
@@ -61,7 +71,8 @@
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="rate_date">Rate Date</label>
-                    <input type="date" id="rate_date" formControlName="rate_date" class="form-control" />
+                    <input type="date" id="rate_date" formControlName="rate_date" class="form-control"
+                      [readonly]="true" [attr.disabled]="true" />
                   </div>
                 </div>
                 <div class="col-md-3">

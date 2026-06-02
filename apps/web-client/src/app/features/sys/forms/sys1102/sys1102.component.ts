@@ -30,6 +30,7 @@ export class Sys1102Component implements OnInit {
   ngOnInit(): void {
     this.model.initForm();
     this.permissionService.useLocalPermissions('SYS_1102');
+    this.model.loadBranches();
     this.model.loadRoles();
   }
 

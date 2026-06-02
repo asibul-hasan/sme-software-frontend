@@ -1,10 +1,10 @@
-import { Directive, Input, ElementRef, Renderer2, OnInit, OnDestroy, Optional, Host } from '@angular/core';
+import { Directive, ElementRef, Renderer2, OnInit, OnDestroy, Optional, Host } from '@angular/core';
 import { NgControl } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 @Directive({
   selector: '[formControl], [formControlName]',
-  standalone: true
+  standalone: true,
 })
 export class ValidationMessageDirective implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -13,23 +13,27 @@ export class ValidationMessageDirective implements OnInit, OnDestroy {
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
-    @Optional() @Host() private control: NgControl
+    @Optional() @Host() private control: NgControl,
   ) {}
 
   ngOnInit(): void {
-    if (this.control?.statusChanges) {
-      this.control.statusChanges
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.updateErrorMessage());
-    }
+    // Use setTimeout(0) to defer check until AFTER Angular processes validation
+    this.control?.valueChanges?.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      setTimeout(() => this.updateState(), 0);
+    });
+    this.control?.statusChanges?.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      setTimeout(() => this.updateState(), 0);
+    });
   }
 
-  private updateErrorMessage(): void {
-    const isInvalid = this.control?.invalid && (this.control?.dirty || this.control?.touched);
-    
+  private updateState(): void {
+    const ctrl = this.control;
+    if (!ctrl) return;
+
+    const isInvalid = ctrl.invalid && (ctrl.dirty || ctrl.touched);
+
     if (isInvalid) {
-      const errorMsg = this.getErrorMessage();
-      this.showError(errorMsg);
+      this.showError(this.getErrorMessage());
     } else {
       this.removeError();
     }
@@ -42,7 +46,7 @@ export class ValidationMessageDirective implements OnInit, OnDestroy {
     if (errors['required']) return 'This field is required';
     if (errors['email']) return 'Invalid email address';
     if (errors['maxlength']) return `Maximum length is ${errors['maxlength'].requiredLength}`;
-    
+
     return 'Invalid value';
   }
 
@@ -53,7 +57,7 @@ export class ValidationMessageDirective implements OnInit, OnDestroy {
       this.renderer.setStyle(this.errorElement, 'display', 'block');
       this.renderer.setStyle(this.errorElement, 'font-size', '11px');
       this.renderer.setStyle(this.errorElement, 'margin-top', '4px');
-      
+
       const parent = this.el.nativeElement.parentElement;
       this.renderer.appendChild(parent, this.errorElement);
     }

@@ -44,13 +44,48 @@
   min-height: 0;
 }
 
-/* Sidebar search input — magnifying glass icon inside the input */
+/* ── Sidebar sort toggle (asc / desc) — sits beside the search box ── */
+.sidebar-sort-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  mat-icon {
+    font-size: 19px;
+    width: 19px;
+    height: 19px;
+  }
+
+  &:hover {
+    color: var(--indigo);
+    border-color: var(--indigo);
+    background: rgba(var(--indigo-rgb), 0.08);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+/* Sidebar search input — modern pill with embedded magnifier */
 .sidebar-search {
   position: relative;
 
   &__icon {
     position: absolute;
-    left: 10px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
@@ -58,11 +93,96 @@
     width: 18px;
     height: 18px;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.65;
+    transition: color 0.15s ease, opacity 0.15s ease;
   }
 
   &__input {
-    padding-left: 36px !important;
+    padding-left: 38px !important;
+    padding-right: 32px !important;
+    height: 38px;
+    border-radius: 9px !important;
+    background: var(--bg-secondary) !important;
+    border: 1px solid transparent !important;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      background: var(--input-bg) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    &:focus {
+      background: var(--input-bg) !important;
+      border-color: var(--input-focus-border) !important;
+      box-shadow: 0 0 0 3px var(--input-focus-ring) !important;
+    }
+  }
+
+  // Clear-search button inside the field (shown only when there's text)
+  &__clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+  }
+
+  &:focus-within &__icon {
+    color: var(--indigo);
+    opacity: 1;
+  }
+}
+
+/* ── Sidebar meta bar: clear-all action (shown only while filtering) ── */
+.sidebar-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  &__clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--indigo);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background: rgba(var(--indigo-rgb), 0.1);
+    }
   }
 }
 
@@ -72,11 +192,11 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    padding: 8px 8px 0 8px;
+    padding: 8px 8px 4px;            /* filters sit at the top of the section now */
 
     /* Reset consumer-provided spacing that conflicts with our grid */
     &.px-2 { padding-left: 8px !important; padding-right: 8px !important; }
-    &.pb-2 { padding-bottom: 0 !important; }
+    &.pb-2 { padding-bottom: 4px !important; }
     &.border-bottom { border-bottom: none !important; }
 
     .field-group {
@@ -88,6 +208,11 @@
       grid-template-columns: 1fr;
     }
   }
+}
+
+/* ── Sidebar list container (holds the projected [sidebarList]) ── */
+.sidebar-list-wrap {
+  padding: 6px;
 }
 
 /* ── Logo / Branding upload styles (shared via this component) ── */

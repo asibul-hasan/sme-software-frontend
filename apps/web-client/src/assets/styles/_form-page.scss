@@ -505,6 +505,26 @@
   position: relative;
 }
 
+// Small info "i" shown next to a field label; full hint appears on hover (tooltip).
+// Sized to sit inline with the label text (--text-sm, 13px).
+.field-info-icon {
+  font-size: 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  line-height: 13px !important;
+  margin-left: 1px;
+  vertical-align: middle;
+  color: var(--text-secondary);
+  opacity: 0.55;
+  cursor: help;
+  transition: color 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    color: var(--indigo);
+    opacity: 1;
+  }
+}
+
 .field-label {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -520,6 +540,24 @@
     line-height: 1;
     margin-left: -2px;
   }
+}
+
+// ── Checkbox label alignment ──────────────────────────────────────────────────
+// A .field-group that contains ONLY a .custom--checkbox (no .field-label above)
+// needs a top spacer equal to the label height + the flex gap so the checkbox
+// sits at the same vertical position as the input in an adjacent labeled field.
+//
+//  Labeled field:         label (≈20px) ┐
+//                         gap (5px)     ├── total: ~67px
+//                         input (42px)  ┘
+//
+//  Checkbox-only field:   spacer (≈25px) ┐
+//                         checkbox (42px)┘── total: ~67px  ✓ aligned
+//
+// calc breakdown:  var(--text-sm, 13px) × 1.5 line-height + 5px gap = 24.5px
+// Supported in all project-targeted browsers: Chrome 105+, Edge 105+, Firefox 121+, Safari 15.4+
+.field-group:has(> .custom--checkbox):not(:has(> .field-label)) {
+  padding-top: calc(var(--text-sm, 13px) * 1.5 + 5px);
 }
 
 .field-input,
@@ -550,7 +588,7 @@
 
 .field-input,
 .field-select {
-  height: 40px;
+  height: 46px;
   padding: 0 12px;
 }
 
@@ -571,48 +609,248 @@
 }
 
 // ─────────────────────────────────────────────────────────────────
-// SELECTION LIST (Branch List style)
+// SIDEBAR SELECTION LIST — modern ERP master list
+// Drives every form's [sidebarList] rows. Works with both the modern
+// markup (.list-item-title / .list-item-subtitle / .list-item-meta) and
+// the legacy h6 + p + badge pattern, so all forms modernize at once.
 // ─────────────────────────────────────────────────────────────────
 
+// The projected [sidebarList] becomes a clean stacked column of cards.
+[sidebarList] {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .list-group-item {
-  border: none;
-  background: transparent;
-  border-left: 4px solid transparent;
-  border-bottom: 1px solid var(--border-color); // Added divider
-  transition: all 0.2s ease;
+  position: relative;          // anchor for the top-right status dot
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
   color: var(--text-primary);
-  margin-bottom: 0; // Removed margin to allow seamless dividers
-  border-radius: 0; // Square corners for cleaner dividers
+  background: var(--card-bg);
+  border: 1px solid var(--border-color) !important;   // permanent border → each row reads as a card
+  border-radius: 10px !important;
+  padding: 9px 11px !important;
+  margin: 0 !important;
+  outline: none !important;          // no boxy focus ring on click
+  box-shadow: none;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.08s ease;
+  cursor: pointer;
 
-  &:last-child {
-    border-bottom: none;
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
   }
 
-  padding: 4px 8px !important;
-
+  // Hover — indigo-tinted fill + accent border (project theme)
   &:hover:not(.active) {
-    background: var(--sidebar-hover);
-    color: var(--indigo);
+    background: rgba(var(--indigo-rgb), 0.05);
+    border-color: rgba(var(--indigo-rgb), 0.35) !important;
+
+    .list-item-title,
+    h6 {
+      color: var(--indigo);
+    }
   }
 
+  &:active {
+    transform: scale(0.992);
+  }
+
+  // Active row — soft fill + inset left accent bar (no full box border)
   &.active {
     background: var(--select-bg) !important;
-    border-left: 4px solid var(--indigo) !important;
+    border-color: rgba(var(--indigo-rgb), 0.28) !important;
+    box-shadow: inset 3px 0 0 0 var(--indigo) !important;
 
     h6,
     h2,
     h3,
     h4,
-    .fw-bold {
+    .fw-bold,
+    .list-item-title {
       color: var(--indigo) !important;
     }
 
     p,
     small,
-    span:not(.badge) {
+    .list-item-subtitle,
+    .list-item-meta .list-item-chip {
       color: var(--select-text) !important;
-      opacity: 0.9;
+      opacity: 0.92;
     }
+  }
+}
+
+// ── Modern list row text helpers ──
+.list-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  transition: color 0.16s ease;
+}
+
+.list-item-subtitle {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  opacity: 0.9;
+}
+
+.list-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 3px;
+}
+
+// One icon+label meta chip. The label sits in its OWN inner <span> so it
+// truncates with an ellipsis instead of wrapping mid-phrase, and the flex
+// gap keeps the icon clear of the text. (Matches the list-view chip.)
+.list-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  > span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Status dot — replaces verbose Active/Inactive pills ──
+// Green = active, red = inactive. A soft ring makes it read as a status light.
+// Place a [title] on the element so the full label is still available on hover.
+.status-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+
+  &--active {
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.18);
+  }
+  &--inactive {
+    background: var(--danger);
+    box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.18);
+  }
+
+  // Pinned to the row's top-right corner as a status light.
+  &--corner {
+    position: absolute;
+    top: 11px;
+    right: 12px;
+    z-index: 1;
+  }
+}
+
+// Muted business id shown inline next to a bold title (e.g. name · EMP-1001).
+.list-item-id {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+// ── Type / category tag — small neutral pill for non-status labels ──
+// (e.g. branch type, tax type, "Main Branch", "BASE"). Distinct from the
+// status dot so the row stays scannable.
+.list-item-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+
+  &--primary {
+    background: rgba(var(--indigo-rgb), 0.12);
+    color: var(--indigo);
+    border-color: transparent;
+  }
+  &--warning {
+    background: rgba(var(--warning-rgb), 0.16);
+    color: var(--warning);
+    border-color: transparent;
+  }
+  &--success {
+    background: rgba(var(--success-rgb), 0.14);
+    color: var(--success);
+    border-color: transparent;
+  }
+  &--danger {
+    background: rgba(var(--danger-rgb), 0.14);
+    color: var(--danger);
+    border-color: transparent;
+  }
+  &--info {
+    background: rgba(var(--info-rgb), 0.14);
+    color: var(--info);
+    border-color: transparent;
+  }
+}
+
+// Strong right-aligned value (e.g. tax %) inside a meta row.
+.list-item-value {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--indigo);
+}
+
+// ── Sidebar empty state (modern) ──
+.list-empty-state {
+  padding: 30px 16px;
+  text-align: center;
+  opacity: 0.75;
+
+  mat-icon {
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
+    opacity: 0.5;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
   }
 }
 
@@ -947,14 +1185,14 @@
   background-color: var(--input-bg) !important;
   border: 1px solid var(--input-border) !important;
   border-radius: 6px !important;
-  min-height: 42px;
+  min-height: 46px;
   color: var(--text-primary) !important;
-  font-size: 13.5px !important;
+  font-size: 14.5px !important;
   font-weight: 500 !important;
   transition: all 0.2s ease;
 
   &::placeholder {
-    font-size: 13.5px !important;
+    font-size: 14.5px !important;
     font-weight: 400 !important;
     opacity: 0.65;
   }
@@ -1045,7 +1283,7 @@ select option,
     display: flex;
     align-items: center;
     align-content: center;
-    min-height: 40px;
+    min-height: 44px;
     width: 100%;
   }
 
@@ -1059,8 +1297,9 @@ select option,
     pointer-events: none;
   }
 
-  // Ghosting fix: Hide the selected value when user starts searching/typing
-  &.ng-select-opened .ng-value {
+  // Ghosting fix: hide the selected value while searching — SINGLE select only.
+  // (Multi-select must keep its chips visible while the dropdown is open.)
+  &.ng-select-single.ng-select-opened .ng-value {
     visibility: hidden !important;
     opacity: 0 !important;
   }
@@ -1077,13 +1316,22 @@ select option,
 
   // Keep the search input's styling but leave its size/position to ng-select.
   .ng-input input {
-    font-size: 13.5px !important;
+    font-size: 14.5px !important;
     color: var(--text-primary) !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
     background: transparent !important;
     padding: 0 !important;
+  }
+
+  // Vertically center the typing/search input for single-select.
+  // ng-select pins .ng-input near the top (top:5px); with our taller 46px
+  // control that left the cursor/typed text above the vertical midline.
+  &.ng-select-single .ng-input {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    height: auto !important;
   }
 
   /*
@@ -1208,6 +1456,70 @@ select option,
   font-weight: 700 !important;
   margin-left: 2px !important;
   display: inline-block !important;
+}
+
+/* ── Multi-select chips: each selected value as a removable grey tag ── */
+.ng-select.ng-select-multiple {
+  .ng-value-container {
+    flex-wrap: wrap !important;       // chips wrap onto new rows instead of collapsing
+    align-items: center !important;
+    align-content: center !important;
+    gap: 5px;
+    padding: 5px 6px !important;
+  }
+
+  // ng-select's default theme offsets the multi placeholder (top:5px),
+  // pushing it above centre before anything is selected. Reset it so the
+  // placeholder sits on the vertical midline like the chips do.
+  .ng-placeholder {
+    top: auto !important;
+    padding: 0 0 0 4px !important;
+  }
+
+  .ng-value {
+    display: inline-flex;
+    align-items: stretch;
+    margin: 0 !important;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+
+    .ng-value-label {
+      order: 1;                       // label first
+      padding: 1px 7px !important;
+      color: var(--text-primary) !important;
+      white-space: nowrap;
+    }
+
+    /* the × remove button — pushed to the right with a divider line */
+    .ng-value-icon {
+      order: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      border-left: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1;
+      transition: background 0.15s ease, color 0.15s ease;
+
+      &:hover {
+        background: var(--danger) !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  /* keep the typing input compact next to the chips */
+  .ng-input {
+    padding: 0 4px !important;
+  }
 }
 
 /* ng-select dropdown panel — themed so the bg follows light/dark mode */

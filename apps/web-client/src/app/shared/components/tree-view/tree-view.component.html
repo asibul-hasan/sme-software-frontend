@@ -1,0 +1,77 @@
+<!-- AIDLY ERP — Reusable Tree View -->
+
+@if (merged().showToolbar) {
+  <div class="tv-toolbar">
+    <span class="tv-count">{{ totalVisible() }} item{{ totalVisible() === 1 ? '' : 's' }}</span>
+    <button
+      type="button"
+      class="tv-tool-btn"
+      (click)="toggleAll()"
+      [title]="allExpanded() ? 'Collapse all' : 'Expand all'"
+    >
+      <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+      {{ allExpanded() ? 'Collapse all' : 'Expand all' }}
+    </button>
+  </div>
+}
+
+@if (nodes().length === 0) {
+  <div class="tv-empty">
+    <mat-icon>{{ merged().emptyIcon }}</mat-icon>
+    <p>{{ merged().emptyText }}</p>
+  </div>
+} @else {
+  <div class="tv-list">
+    @for (node of nodes(); track node.id) {
+      <button
+        type="button"
+        class="tv-node"
+        [class.is-active]="isSelected(node.id)"
+        (click)="onClick(node.row)"
+      >
+        <!-- Indentation rails / connector guide lines -->
+        @if (merged().showConnectors) {
+          <div class="tv-rails">
+            @for (rail of node.rails; track $index) {
+              <div [class]="railClass(rail)" [style.width.px]="merged().indent"></div>
+            }
+          </div>
+        } @else {
+          <div [style.width.px]="node.level * merged().indent" style="flex-shrink: 0"></div>
+        }
+
+        <!-- Expand / collapse chevron (parents) or aligned spacer (leaves) -->
+        @if (node.hasChildren) {
+          <span class="tv-toggle" [class.open]="node.expanded" (click)="toggle(node.id, $event)">
+            <mat-icon>chevron_right</mat-icon>
+          </span>
+        } @else {
+          <span style="width: 20px; flex-shrink: 0"></span>
+        }
+
+        <!-- Leading icon -->
+        <span class="tv-icon">
+          <mat-icon>{{ icon(node.row, node.hasChildren, node.expanded) }}</mat-icon>
+        </span>
+
+        <!-- Label + sublabel -->
+        <span class="tv-text">
+          <span class="tv-label">{{ label(node.row) }}</span>
+          @if (sublabel(node.row)) {
+            <span class="tv-sub">{{ sublabel(node.row) }}</span>
+          }
+        </span>
+
+        <!-- Trailing: child count + status badge -->
+        <span class="tv-trail">
+          @if (node.hasChildren) {
+            <span class="tv-childcount" title="Direct children">{{ node.childCount }}</span>
+          }
+          @if (badge(node.row); as b) {
+            <span class="tv-pill" [ngClass]="b.variant">{{ b.label }}</span>
+          }
+        </span>
+      </button>
+    }
+  </div>
+}

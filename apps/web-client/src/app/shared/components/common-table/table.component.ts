@@ -37,49 +37,74 @@ import { TableViewModalComponent } from './table-view-modal.component';
   styles: `
     :host { display: block; }
     :host ::ng-deep {
-      /* Header cells — same bg as footer */
+      /* Header band — taller, crisp uppercase ERP grid header */
+      .mat-mdc-header-row {
+        min-height: 46px;
+        background: var(--bg-secondary);
+      }
       .mat-mdc-header-cell {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 0 14px;
+        font-size: 11.5px;
         font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
         color: var(--text-secondary);
         background: var(--bg-secondary);
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
         white-space: nowrap;
       }
       .mat-mdc-header-cell.mat-sort-header-sorted { color: var(--indigo); }
       .mat-mdc-header-cell .mat-sort-header-arrow { color: var(--indigo); }
+      /* Column separators in the HEADER only (AG-Grid look) — body stays clean */
+      .mat-mdc-header-cell:not(:last-child) {
+        border-right: 1px solid var(--border-color);
+      }
 
-      /* Body cells */
+      /* Body rows — comfortable height */
+      .mat-mdc-row { min-height: 46px; transition: background 0.12s ease; }
       .mat-mdc-cell {
-        padding: 5px 12px;
+        padding: 8px 14px;
         font-size: 13px;
         font-weight: 500;
         color: var(--text-primary);
         border-bottom: 1px solid var(--border-color);
         vertical-align: middle;
-        transition: background 0.15s ease;
+        transition: background 0.12s ease, color 0.12s ease;
       }
 
-      /* Row hover */
+      /* Row hover — subtle indigo wash */
       .mat-mdc-row:hover .mat-mdc-cell {
         background: var(--select-bg) !important;
         color: var(--indigo);
       }
 
-      /* Sticky header */
-      .mat-mdc-header-row { position: sticky; top: 0; z-index: 3; }
+      /* Sticky header with a soft shadow for depth */
+      .mat-mdc-header-row {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        box-shadow: 0 2px 6px -3px rgba(0, 0, 0, 0.16);
+      }
 
       /* Compact mode */
       .erp-compact .mat-mdc-header-cell { padding: 4px 10px; font-size: 11px; }
       .erp-compact .mat-mdc-cell { padding: 3px 10px; font-size: 12px; }
       .erp-compact .mat-mdc-row { height: 32px; }
 
-      /* Paginator — clean, borderless, matches footer bg */
+      /* Paginator shell — background and outer container height.
+         The form-field and row-height overrides live in styles.scss (global)
+         because ::ng-deep cannot reliably beat global !important rules. */
       .mat-mdc-paginator {
-        background: transparent;
+        background: transparent !important;
         border: none;
-        min-height: 36px;
+      }
+      .mat-mdc-paginator-outer-container {
+        height: auto !important;
+      }
+      .mat-mdc-paginator-container {
+        min-height: 40px !important;
+        padding: 0 4px !important;
+        flex-wrap: nowrap !important;
       }
       .mat-mdc-paginator-page-size-label {
         font-size: 11px;
@@ -104,10 +129,14 @@ import { TableViewModalComponent } from './table-view-modal.component';
       }
     }
 
-    /* Active row */
+    /* Active row — highlight every cell, left indicator bar on first cell only */
     .erp-row-active td {
       background: var(--select-bg) !important;
-      border-left: 3px solid var(--indigo);
+      color: var(--indigo);
+    }
+    .erp-row-active td:first-child {
+      border-left: 3px solid var(--indigo) !important;
+      padding-left: 9px !important;  /* 12px cell-padding − 3px border = same visual gap */
     }
 
     /* Footer row — same bg as header */
@@ -211,13 +240,56 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     });
 
     effect(() => { if (this.loading()) this.showSkeleton.set(true); else setTimeout(() => this.showSkeleton.set(false), 200); });
+
+    // Reactively connect the paginator to the dataSource.
+    // Using an effect (not ngAfterViewInit) because the paginator lives inside
+    // @if(mergedConfig().pagination) — the viewChild signal updates when it
+    // renders, which may happen after or during the first change-detection cycle.
+    // A one-shot ngAfterViewInit call can race with the data effect and connect
+    // to an empty dataSource, leaving the range label stuck at "0 of 0".
+    effect(() => {
+      const pg = this.paginator();
+      if (pg && this.dataSource.paginator !== pg) {
+        this.dataSource.paginator = pg;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort();
-    const pg = this.paginator(); if (pg) this.dataSource.paginator = pg;
+    // Search against the LOGICAL cell text (resolves select labels, custom-template `value`, etc.)
     this.dataSource.filterPredicate = (row, filter) =>
-      this.visibleColumns().some((col) => { const v = row[col.field]; return v != null && String(v).toLowerCase().includes(filter); });
+      this.visibleColumns().some((col) => this.cellSearchText(row, col).toLowerCase().includes(filter));
+    // Sort by the same logical value so custom-template / select columns sort by label, not id.
+    this.dataSource.sortingDataAccessor = (row, field) => {
+      const col = this.columns().find((c) => c.field === field);
+      const raw = col?.value ? col.value(row) : row[field];
+      return typeof raw === 'number' ? raw : String(raw ?? '').toLowerCase();
+    };
+  }
+
+  /** Human-readable text of a cell, used for search. Mirrors what the user actually sees. */
+  private cellSearchText(row: Record<string, unknown>, col: ColumnDef): string {
+    if (col.value) return String(col.value(row) ?? '');
+    switch (col.cellType) {
+      case 'select':
+      case 'date':
+      case 'datepipe':
+      case 'number':
+      case 'decimal':
+      case 'currency':
+        return this.formatCellValue(row, col);
+      case 'badge': {
+        const b = col.badgeConfig?.(row[col.field], row);
+        return b?.label ?? String(row[col.field] ?? '');
+      }
+      case 'checkbox':
+        return row[col.field] ? 'yes' : 'no';
+      default: {
+        const v = row[col.field];
+        return v == null ? '' : String(v);
+      }
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -275,7 +347,12 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     if (action.onClick) action.onClick(row);
     this.rowAction.emit({ action, row });
   }
-  onRowClick(row: Record<string, unknown>, event: MouseEvent): void { this.rowClick.emit(row); }
+  onRowClick(row: Record<string, unknown>, event: MouseEvent): void {
+    this.selection.clear();
+    this.selection.select(row);
+    this.emitSelection();
+    this.rowClick.emit(row);
+  }
 
   // ─── Inline Edit ────────────────────────────────────────────────────────
   startEdit(row: Record<string, unknown>, col: ColumnDef): void { if (!col.editable) return; this.editingCell.set({ row, field: col.field }); this.editValue.set(row[col.field]); }
@@ -324,8 +401,10 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
     const rows = data.map((row) =>
       `<tr>${cols.map((col) => {
-        let val = row[col.field];
-        if (col.cellType === 'select' && col.options) {
+        let val: unknown = col.value ? col.value(row) : row[col.field];
+        if (col.value) {
+          // accessor already returned the display value
+        } else if (col.cellType === 'select' && col.options) {
           const opts = typeof col.options === 'function' ? col.options(row) : col.options;
           const lk = col.labelKey || 'label', vk = col.valueKey || 'value';
           const o = opts.find((x) => (x as unknown as Record<string, unknown>)[vk] === val);
@@ -367,6 +446,11 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   getCellValue(row: Record<string, unknown>, col: ColumnDef): unknown { return row[col.field]; }
 
   formatCellValue(row: Record<string, unknown>, col: ColumnDef): string {
+    // Explicit accessor wins (custom-template / computed columns) — used for display fallback & search.
+    if (col.value && col.cellType !== 'select') {
+      const v = col.value(row);
+      return v == null ? '' : String(v);
+    }
     const value = row[col.field]; if (value == null || value === '') return '';
     switch (col.cellType) {
       case 'select': { const opts = this.getSelectOptions(col, row); const f = opts.find((o) => String(o.value) === String(value)); return f ? f.label : String(value); }

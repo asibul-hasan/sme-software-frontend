@@ -17,33 +17,86 @@
 >
   <div sidebarList>
     @for (p of model.pager.paged(); track p.product_no) {
-      <button type="button" class="list-group-item list-group-item-action p-3"
-        [class.active]="model.selectedNo() === p.product_no" (click)="model.select(p)">
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate">{{ p.product_name }}</h6>
-          <span class="badge rounded-pill" [ngClass]="{ 'text-bg-success': p.is_active === 1, 'text-bg-secondary': p.is_active === 0 }">
-            {{ p.is_active === 1 ? 'Active' : 'Inactive' }}
-          </span>
-        </div>
-        <p class="mb-0 small fw-semibold opacity-75 text-truncate">
-          {{ p.product_id }}@if (p.category_name) { · {{ p.category_name }} }
-        </p>
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === p.product_no"
+        (click)="model.select(p)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="p.is_active === 1"
+          [class.status-dot--inactive]="p.is_active !== 1"
+          [title]="p.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ p.product_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ p.product_id }}</p>
+        @if (p.category_name) {
+          <div class="list-item-meta">
+            <span class="list-item-chip"><mat-icon>category</mat-icon><span>{{ p.category_name }}</span></span>
+          </div>
+        }
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="p-4 text-center opacity-75"><p class="mb-0 small">No records found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <p>No records found</p>
+      </div>
     }
   </div>
 
   <div formContent>
     <!-- Tabs -->
     <div class="form-tab-bar d-flex gap-1 mb-3 flex-wrap">
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'general'" (click)="model.activeTab.set('general')"><mat-icon class="tab-icon">info</mat-icon>General</button>
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'pricing'" (click)="model.activeTab.set('pricing')"><mat-icon class="tab-icon">payments</mat-icon>Pricing</button>
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'inventory'" (click)="model.activeTab.set('inventory')"><mat-icon class="tab-icon">inventory</mat-icon>Inventory</button>
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'variants'" (click)="model.activeTab.set('variants')"><mat-icon class="tab-icon">grid_view</mat-icon>Variants</button>
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'barcodes'" (click)="model.activeTab.set('barcodes')"><mat-icon class="tab-icon">qr_code_2</mat-icon>Barcodes</button>
-      <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'uom'" (click)="model.activeTab.set('uom')"><mat-icon class="tab-icon">straighten</mat-icon>UOM</button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'general'"
+        (click)="model.activeTab.set('general')"
+      >
+        <mat-icon class="tab-icon">info</mat-icon>General
+      </button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'pricing'"
+        (click)="model.activeTab.set('pricing')"
+      >
+        <mat-icon class="tab-icon">payments</mat-icon>Pricing
+      </button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'inventory'"
+        (click)="model.activeTab.set('inventory')"
+      >
+        <mat-icon class="tab-icon">inventory</mat-icon>Inventory
+      </button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'variants'"
+        (click)="model.activeTab.set('variants')"
+      >
+        <mat-icon class="tab-icon">grid_view</mat-icon>Variants
+      </button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'barcodes'"
+        (click)="model.activeTab.set('barcodes')"
+      >
+        <mat-icon class="tab-icon">qr_code_2</mat-icon>Barcodes
+      </button>
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="model.activeTab() === 'uom'"
+        (click)="model.activeTab.set('uom')"
+      >
+        <mat-icon class="tab-icon">straighten</mat-icon>UOM
+      </button>
     </div>
 
     <form [formGroup]="model.form" autocomplete="off">
@@ -52,28 +105,98 @@
         <div class="form-section-card card">
           <div class="card-body">
             <div class="row row-group">
-              <div class="col-md-3"><div class="field-group"><label class="field-label required">Code</label><input class="form-control text-uppercase" formControlName="product_id" placeholder="SKU-001" /></div></div>
-              <div class="col-md-6"><div class="field-group"><label class="field-label required">Name</label><input class="form-control" formControlName="product_name" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Short Name</label><input class="form-control" formControlName="short_name" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label required">Type</label>
-                <ng-select formControlName="product_type" [clearable]="false">
-                  @for (t of model.productTypes; track t.value) { <ng-option [value]="t.value">{{ t.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label required">Category</label>
-                <ng-select formControlName="category_no" [clearable]="false" placeholder="Select">
-                  @for (c of model.lookups().categories; track c.value) { <ng-option [value]="c.value">{{ c.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Brand</label>
-                <ng-select formControlName="brand_no" [clearable]="true" placeholder="None">
-                  @for (b of model.lookups().brands; track b.value) { <ng-option [value]="b.value">{{ b.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label required">Base UOM</label>
-                <ng-select formControlName="base_uom_no" [clearable]="false" placeholder="Select">
-                  @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-6"><div class="field-group"><label class="field-label">Name (NLS)</label><input class="form-control" formControlName="product_name_nls" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Status</label>
-                <ng-select formControlName="is_active" [clearable]="false"><ng-option [value]="1">Active</ng-option><ng-option [value]="0">Inactive</ng-option></ng-select></div></div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label required">Code</label
+                  ><input
+                    class="form-control text-uppercase"
+                    formControlName="product_id"
+                    placeholder="SKU-001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="field-group">
+                  <label class="field-label required">Name</label
+                  ><input class="form-control" formControlName="product_name" />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Short Name</label
+                  ><input class="form-control" formControlName="short_name" />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label required">Type</label>
+                  <ng-select formControlName="product_type" [clearable]="false">
+                    @for (t of model.productTypes; track t.value) {
+                      <ng-option [value]="t.value">{{ t.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label required">Category</label>
+                  <ng-select
+                    formControlName="category_no"
+                    [clearable]="false"
+                    placeholder="Select"
+                  >
+                    @for (c of model.lookups().categories; track c.value) {
+                      <ng-option [value]="c.value">{{ c.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Brand</label>
+                  <ng-select
+                    formControlName="brand_no"
+                    [clearable]="true"
+                    placeholder="None"
+                  >
+                    @for (b of model.lookups().brands; track b.value) {
+                      <ng-option [value]="b.value">{{ b.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label required">Base UOM</label>
+                  <ng-select
+                    formControlName="base_uom_no"
+                    [clearable]="false"
+                    placeholder="Select"
+                  >
+                    @for (u of model.lookups().uoms; track u.value) {
+                      <ng-option [value]="u.value">{{ u.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="field-group">
+                  <label class="field-label">Name (NLS)</label
+                  ><input
+                    class="form-control"
+                    formControlName="product_name_nls"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Status</label>
+                  <ng-select formControlName="is_active" [clearable]="false"
+                    ><ng-option [value]="1">Active</ng-option
+                    ><ng-option [value]="0">Inactive</ng-option></ng-select
+                  >
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -84,27 +207,131 @@
         <div class="form-section-card card">
           <div class="card-body">
             <div class="row row-group">
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Cost Price</label><input type="number" class="form-control" formControlName="cost_price" step="0.000001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Purchase Price</label><input type="number" class="form-control" formControlName="purchase_price" step="0.000001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Sale Price</label><input type="number" class="form-control" formControlName="sale_price" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">MRP</label><input type="number" class="form-control" formControlName="mrp" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Min Sale Price</label><input type="number" class="form-control" formControlName="min_sale_price" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Default Margin %</label><input type="number" class="form-control" formControlName="default_margin_pct" step="0.01" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Tax</label>
-                <ng-select formControlName="vat_tax_no" [clearable]="true" placeholder="None">
-                  @for (t of model.lookups().taxes; track t.value) { <ng-option [value]="t.value">{{ t.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Tax Inclusive</label>
-                <ng-select formControlName="is_tax_inclusive" [clearable]="false"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-4"><div class="field-group"><label class="field-label">Purchase UOM</label>
-                <ng-select formControlName="purchase_uom_no" [clearable]="true" placeholder="Same as base">
-                  @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-4"><div class="field-group"><label class="field-label">Sales UOM</label>
-                <ng-select formControlName="sales_uom_no" [clearable]="true" placeholder="Same as base">
-                  @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                </ng-select></div></div>
-              <div class="col-md-4"><div class="field-group"><label class="field-label">HSN/SAC</label><input class="form-control" formControlName="hsn_sac_code" /></div></div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Cost Price</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="cost_price"
+                    step="0.000001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Purchase Price</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="purchase_price"
+                    step="0.000001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Sale Price</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="sale_price"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">MRP</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="mrp"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Min Sale Price</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="min_sale_price"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Default Margin %</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="default_margin_pct"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Tax</label>
+                  <ng-select
+                    formControlName="vat_tax_no"
+                    [clearable]="true"
+                    placeholder="None"
+                  >
+                    @for (t of model.lookups().taxes; track t.value) {
+                      <ng-option [value]="t.value">{{ t.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Tax Inclusive</label>
+                  <ng-select
+                    formControlName="is_tax_inclusive"
+                    [clearable]="false"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label class="field-label">Purchase UOM</label>
+                  <ng-select
+                    formControlName="purchase_uom_no"
+                    [clearable]="true"
+                    placeholder="Same as base"
+                  >
+                    @for (u of model.lookups().uoms; track u.value) {
+                      <ng-option [value]="u.value">{{ u.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label class="field-label">Sales UOM</label>
+                  <ng-select
+                    formControlName="sales_uom_no"
+                    [clearable]="true"
+                    placeholder="Same as base"
+                  >
+                    @for (u of model.lookups().uoms; track u.value) {
+                      <ng-option [value]="u.value">{{ u.label }}</ng-option>
+                    }
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label class="field-label">HSN/SAC</label
+                  ><input class="form-control" formControlName="hsn_sac_code" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -113,40 +340,181 @@
       <!-- INVENTORY -->
       @if (model.activeTab() === 'inventory') {
         <div class="form-section-card card">
-          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">rule</mat-icon>Tracking</h4></div>
+          <div class="card-header">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">rule</mat-icon>Tracking
+            </h4>
+          </div>
           <div class="card-body">
             @if (model.hasMovements()) {
-              <div class="alert alert-warning py-2 small mb-2">Tracking flags &amp; base UOM are locked — stock movements exist.</div>
+              <div class="alert alert-warning py-2 small mb-2">
+                Tracking flags &amp; base UOM are locked — stock movements
+                exist.
+              </div>
             }
             <div class="row row-group">
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Stock Tracked</label>
-                <ng-select formControlName="is_stock_tracked" [clearable]="false" [readonly]="model.hasMovements()"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Batch Tracked</label>
-                <ng-select formControlName="is_batch_tracked" [clearable]="false" [readonly]="model.hasMovements()"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Expiry Tracked</label>
-                <ng-select formControlName="is_expiry_tracked" [clearable]="false" [readonly]="model.hasMovements()"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Serial Tracked</label>
-                <ng-select formControlName="is_serial_tracked" [clearable]="false" [readonly]="model.hasMovements()"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Shelf Life (days)</label><input type="number" class="form-control" formControlName="shelf_life_days" /></div></div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Stock Tracked</label>
+                  <ng-select
+                    formControlName="is_stock_tracked"
+                    [clearable]="false"
+                    [readonly]="model.hasMovements()"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Batch Tracked</label>
+                  <ng-select
+                    formControlName="is_batch_tracked"
+                    [clearable]="false"
+                    [readonly]="model.hasMovements()"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Expiry Tracked</label>
+                  <ng-select
+                    formControlName="is_expiry_tracked"
+                    [clearable]="false"
+                    [readonly]="model.hasMovements()"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Serial Tracked</label>
+                  <ng-select
+                    formControlName="is_serial_tracked"
+                    [clearable]="false"
+                    [readonly]="model.hasMovements()"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Shelf Life (days)</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="shelf_life_days"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <div class="form-section-card card">
-          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">repeat</mat-icon>Replenishment &amp; Flags</h4></div>
+          <div class="card-header">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">repeat</mat-icon>Replenishment
+              &amp; Flags
+            </h4>
+          </div>
           <div class="card-body">
             <div class="row row-group">
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Reorder Level</label><input type="number" class="form-control" formControlName="reorder_level" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Reorder Qty</label><input type="number" class="form-control" formControlName="reorder_qty" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Min Stock</label><input type="number" class="form-control" formControlName="min_stock" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Max Stock</label><input type="number" class="form-control" formControlName="max_stock" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Weight (gm)</label><input type="number" class="form-control" formControlName="weight_gm" step="0.0001" /></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Primary Barcode</label><input class="form-control" formControlName="barcode" /></div></div>
-              <div class="col-md-2"><div class="field-group"><label class="field-label">Sellable</label>
-                <ng-select formControlName="is_sellable" [clearable]="false"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-2"><div class="field-group"><label class="field-label">Purchasable</label>
-                <ng-select formControlName="is_purchasable" [clearable]="false"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              <div class="col-md-2"><div class="field-group"><label class="field-label">Allow Discount</label>
-                <ng-select formControlName="allow_discount" [clearable]="false"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Reorder Level</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="reorder_level"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Reorder Qty</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="reorder_qty"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Min Stock</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="min_stock"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Max Stock</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="max_stock"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Weight (gm)</label
+                  ><input
+                    type="number"
+                    class="form-control"
+                    formControlName="weight_gm"
+                    step="0.0001"
+                  />
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Primary Barcode</label
+                  ><input class="form-control" formControlName="barcode" />
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="field-group">
+                  <label class="field-label">Sellable</label>
+                  <ng-select formControlName="is_sellable" [clearable]="false"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="field-group">
+                  <label class="field-label">Purchasable</label>
+                  <ng-select
+                    formControlName="is_purchasable"
+                    [clearable]="false"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="field-group">
+                  <label class="field-label">Allow Discount</label>
+                  <ng-select
+                    formControlName="allow_discount"
+                    [clearable]="false"
+                    ><ng-option [value]="1">Yes</ng-option
+                    ><ng-option [value]="0">No</ng-option></ng-select
+                  >
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -155,44 +523,160 @@
       <!-- VARIANTS -->
       @if (model.activeTab() === 'variants') {
         <div class="form-section-card card">
-          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">auto_awesome</mat-icon>Variant Matrix Builder</h4></div>
+          <div class="card-header">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">auto_awesome</mat-icon>Variant
+              Matrix Builder
+            </h4>
+          </div>
           <div class="card-body">
             <div class="row row-group align-items-end">
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Attribute 1</label>
-                <ng-select [items]="model.lookups().attributes" bindValue="attribute_no" bindLabel="attribute_name" [ngModel]="model.genAttr1()" [ngModelOptions]="{standalone:true}" (ngModelChange)="model.genAttr1.set($event)" [clearable]="true" placeholder="None"></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Attribute 2</label>
-                <ng-select [items]="model.lookups().attributes" bindValue="attribute_no" bindLabel="attribute_name" [ngModel]="model.genAttr2()" [ngModelOptions]="{standalone:true}" (ngModelChange)="model.genAttr2.set($event)" [clearable]="true" placeholder="None"></ng-select></div></div>
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Attribute 3</label>
-                <ng-select [items]="model.lookups().attributes" bindValue="attribute_no" bindLabel="attribute_name" [ngModel]="model.genAttr3()" [ngModelOptions]="{standalone:true}" (ngModelChange)="model.genAttr3.set($event)" [clearable]="true" placeholder="None"></ng-select></div></div>
               <div class="col-md-3">
-                <button type="button" class="btn btn-outline-primary w-100" (click)="model.generateVariants()">
-                  <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">auto_fix_high</mat-icon> Generate
+                <div class="field-group">
+                  <label class="field-label">Attribute 1</label>
+                  <ng-select
+                    [items]="model.lookups().attributes"
+                    bindValue="attribute_no"
+                    bindLabel="attribute_name"
+                    [ngModel]="model.genAttr1()"
+                    [ngModelOptions]="{ standalone: true }"
+                    (ngModelChange)="model.genAttr1.set($event)"
+                    [clearable]="true"
+                    placeholder="None"
+                  ></ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Attribute 2</label>
+                  <ng-select
+                    [items]="model.lookups().attributes"
+                    bindValue="attribute_no"
+                    bindLabel="attribute_name"
+                    [ngModel]="model.genAttr2()"
+                    [ngModelOptions]="{ standalone: true }"
+                    (ngModelChange)="model.genAttr2.set($event)"
+                    [clearable]="true"
+                    placeholder="None"
+                  ></ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="field-group">
+                  <label class="field-label">Attribute 3</label>
+                  <ng-select
+                    [items]="model.lookups().attributes"
+                    bindValue="attribute_no"
+                    bindLabel="attribute_name"
+                    [ngModel]="model.genAttr3()"
+                    [ngModelOptions]="{ standalone: true }"
+                    (ngModelChange)="model.genAttr3.set($event)"
+                    [clearable]="true"
+                    placeholder="None"
+                  ></ng-select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary w-100"
+                  (click)="model.generateVariants()"
+                >
+                  <mat-icon
+                    class="align-middle"
+                    style="font-size: 18px; height: 18px; width: 18px"
+                    >auto_fix_high</mat-icon
+                  >
+                  Generate
                 </button>
               </div>
             </div>
           </div>
         </div>
         <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">grid_view</mat-icon>Variants</h4>
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addVariant()">Add</button>
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">grid_view</mat-icon>Variants
+            </h4>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="model.addVariant()"
+            >
+              Add
+            </button>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-sm align-middle mb-0">
-                <thead class="table-light"><tr><th>SKU</th><th>Name</th><th>Barcode</th><th style="width:120px">Sale Price</th><th style="width:120px">MRP</th><th style="width:50px"></th></tr></thead>
+                <thead class="table-light">
+                  <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Barcode</th>
+                    <th style="width: 120px">Sale Price</th>
+                    <th style="width: 120px">MRP</th>
+                    <th style="width: 50px"></th>
+                  </tr>
+                </thead>
                 <tbody [formArrayName]="'variants'">
                   @for (row of model.variants.controls; track $index) {
                     <tr [formGroupName]="$index">
-                      <td><input class="form-control form-control-sm text-uppercase" formControlName="variant_sku" /></td>
-                      <td><input class="form-control form-control-sm" formControlName="variant_name" /></td>
-                      <td><input class="form-control form-control-sm" formControlName="barcode" /></td>
-                      <td><input type="number" class="form-control form-control-sm" formControlName="sale_price" /></td>
-                      <td><input type="number" class="form-control form-control-sm" formControlName="mrp" /></td>
-                      <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeVariant($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button></td>
+                      <td>
+                        <input
+                          class="form-control form-control-sm text-uppercase"
+                          formControlName="variant_sku"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="form-control form-control-sm"
+                          formControlName="variant_name"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="form-control form-control-sm"
+                          formControlName="barcode"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control form-control-sm"
+                          formControlName="sale_price"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control form-control-sm"
+                          formControlName="mrp"
+                        />
+                      </td>
+                      <td class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-link text-danger p-0"
+                          (click)="model.removeVariant($index)"
+                        >
+                          <mat-icon
+                            style="font-size: 18px; height: 18px; width: 18px"
+                            >delete</mat-icon
+                          >
+                        </button>
+                      </td>
                     </tr>
                   }
-                  @if (model.variants.length === 0) { <tr><td colspan="6" class="text-center opacity-75 p-4">No variants. Use the builder above or “Add”.</td></tr> }
+                  @if (model.variants.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center opacity-75 p-4">
+                        No variants. Use the builder above or “Add”.
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
@@ -203,30 +687,107 @@
       <!-- BARCODES -->
       @if (model.activeTab() === 'barcodes') {
         <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">qr_code_2</mat-icon>Barcodes</h4>
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addBarcode()">Add</button>
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">qr_code_2</mat-icon>Barcodes
+            </h4>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="model.addBarcode()"
+            >
+              Add
+            </button>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-sm align-middle mb-0">
-                <thead class="table-light"><tr><th>Barcode</th><th style="width:160px">UOM</th><th style="width:110px">Pack Qty</th><th style="width:140px">Type</th><th class="text-center" style="width:80px">Primary</th><th style="width:50px"></th></tr></thead>
+                <thead class="table-light">
+                  <tr>
+                    <th>Barcode</th>
+                    <th style="width: 160px">UOM</th>
+                    <th style="width: 110px">Pack Qty</th>
+                    <th style="width: 140px">Type</th>
+                    <th class="text-center" style="width: 80px">Primary</th>
+                    <th style="width: 50px"></th>
+                  </tr>
+                </thead>
                 <tbody [formArrayName]="'barcodes'">
                   @for (row of model.barcodes.controls; track $index) {
                     <tr [formGroupName]="$index">
-                      <td><input class="form-control form-control-sm" formControlName="barcode" /></td>
-                      <td><ng-select formControlName="uom_no" [clearable]="false" placeholder="UOM">
-                        @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                      </ng-select></td>
-                      <td><input type="number" class="form-control form-control-sm" formControlName="pack_qty" /></td>
-                      <td><ng-select formControlName="barcode_type" [clearable]="false">
-                        @for (t of model.barcodeTypes; track t.value) { <ng-option [value]="t.value">{{ t.label }}</ng-option> }
-                      </ng-select></td>
-                      <td class="text-center"><input type="checkbox" class="form-check-input" [checked]="row.get('is_primary')?.value === 1" (change)="row.get('is_primary')?.setValue($any($event.target).checked ? 1 : 0)" /></td>
-                      <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeBarcode($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button></td>
+                      <td>
+                        <input
+                          class="form-control form-control-sm"
+                          formControlName="barcode"
+                        />
+                      </td>
+                      <td>
+                        <ng-select
+                          formControlName="uom_no"
+                          [clearable]="false"
+                          placeholder="UOM"
+                        >
+                          @for (u of model.lookups().uoms; track u.value) {
+                            <ng-option [value]="u.value">{{
+                              u.label
+                            }}</ng-option>
+                          }
+                        </ng-select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control form-control-sm"
+                          formControlName="pack_qty"
+                        />
+                      </td>
+                      <td>
+                        <ng-select
+                          formControlName="barcode_type"
+                          [clearable]="false"
+                        >
+                          @for (t of model.barcodeTypes; track t.value) {
+                            <ng-option [value]="t.value">{{
+                              t.label
+                            }}</ng-option>
+                          }
+                        </ng-select>
+                      </td>
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input"
+                          [checked]="row.get('is_primary')?.value === 1"
+                          (change)="
+                            row
+                              .get('is_primary')
+                              ?.setValue($any($event.target).checked ? 1 : 0)
+                          "
+                        />
+                      </td>
+                      <td class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-link text-danger p-0"
+                          (click)="model.removeBarcode($index)"
+                        >
+                          <mat-icon
+                            style="font-size: 18px; height: 18px; width: 18px"
+                            >delete</mat-icon
+                          >
+                        </button>
+                      </td>
                     </tr>
                   }
-                  @if (model.barcodes.length === 0) { <tr><td colspan="6" class="text-center opacity-75 p-4">No barcodes.</td></tr> }
+                  @if (model.barcodes.length === 0) {
+                    <tr>
+                      <td colspan="6" class="text-center opacity-75 p-4">
+                        No barcodes.
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
@@ -237,25 +798,77 @@
       <!-- UOM -->
       @if (model.activeTab() === 'uom') {
         <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">straighten</mat-icon>UOM Conversions</h4>
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addUomConv()">Add</button>
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">straighten</mat-icon>UOM
+              Conversions
+            </h4>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="model.addUomConv()"
+            >
+              Add
+            </button>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-sm align-middle mb-0">
-                <thead class="table-light"><tr><th style="width:240px">From UOM</th><th>= Factor × Base UOM</th><th style="width:50px"></th></tr></thead>
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 240px">From UOM</th>
+                    <th>= Factor × Base UOM</th>
+                    <th style="width: 50px"></th>
+                  </tr>
+                </thead>
                 <tbody [formArrayName]="'uom_conversions'">
                   @for (row of model.uomConversions.controls; track $index) {
                     <tr [formGroupName]="$index">
-                      <td><ng-select formControlName="from_uom_no" [clearable]="false" placeholder="UOM">
-                        @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                      </ng-select></td>
-                      <td><input type="number" class="form-control form-control-sm" formControlName="to_base_factor" step="0.000001" placeholder="e.g. 24" /></td>
-                      <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeUomConv($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button></td>
+                      <td>
+                        <ng-select
+                          formControlName="from_uom_no"
+                          [clearable]="false"
+                          placeholder="UOM"
+                        >
+                          @for (u of model.lookups().uoms; track u.value) {
+                            <ng-option [value]="u.value">{{
+                              u.label
+                            }}</ng-option>
+                          }
+                        </ng-select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control form-control-sm"
+                          formControlName="to_base_factor"
+                          step="0.000001"
+                          placeholder="e.g. 24"
+                        />
+                      </td>
+                      <td class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-link text-danger p-0"
+                          (click)="model.removeUomConv($index)"
+                        >
+                          <mat-icon
+                            style="font-size: 18px; height: 18px; width: 18px"
+                            >delete</mat-icon
+                          >
+                        </button>
+                      </td>
                     </tr>
                   }
-                  @if (model.uomConversions.length === 0) { <tr><td colspan="3" class="text-center opacity-75 p-4">No conversions. Base UOM needs none.</td></tr> }
+                  @if (model.uomConversions.length === 0) {
+                    <tr>
+                      <td colspan="3" class="text-center opacity-75 p-4">
+                        No conversions. Base UOM needs none.
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
@@ -265,5 +878,8 @@
     </form>
   </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 </app-page-form-layout>

@@ -1,8 +1,10 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
-import { Sys1002DataService, Sys1002BranchDto, Sys1002EmployeeDto } from './data.service';
+import { Sys1002DataService, Sys1002BranchDto } from './data.service';
+import { CommonLookupService, EmployeeLookupDto } from '../../../../../core/services/common-lookup.service';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { makePaginator } from '../../../../../core/utils/paginator';
@@ -13,10 +15,12 @@ export type IBranch = Sys1002BranchDto;
 
 @Injectable()
 export class Sys1002ModelService {
-  private fb = inject(FormBuilder);
-  private data = inject(Sys1002DataService);
-  private toastr = inject(ToastrService);
-  private authCtx = inject(AuthContextService);
+  private fb       = inject(FormBuilder);
+  private data     = inject(Sys1002DataService);
+  private lookup   = inject(CommonLookupService);
+  private toastr   = inject(ToastrService);
+  private translate = inject(TranslateService);
+  private authCtx  = inject(AuthContextService);
 
   // ─── State ─────────────────────────────────────────────────────────────────
   branches = signal<Sys1002BranchDto[]>([]);
@@ -24,29 +28,66 @@ export class Sys1002ModelService {
   isSaving = signal(false);
   searchTerm = signal('');
   selectedBranchNo = signal<number | null>(null);
-  employees = signal<Sys1002EmployeeDto[]>([]);
+  employees = signal<EmployeeLookupDto[]>([]);
+  sortDirection = signal<'asc' | 'desc'>('asc');
 
   form!: FormGroup;
 
   // ─── Derived State ──────────────────────────────────────────────────────────
+
+  /**
+   * True when any branch in the list has is_main_branch = 1.
+   * Once a main branch exists it is permanently locked — you cannot
+   * uncheck the flag on that record, nor set another branch as main.
+   */
+  isMainBranchLocked = computed(() =>
+    this.branches().some(b => b.is_main_branch === 1)
+  );
+
+  /**
+   * Controls visibility of the Main Branch checkbox.
+   *
+   * Show only when:
+   *  - Creating a NEW branch and no main branch exists yet (first branch of the
+   *    company → it will automatically become the main branch).
+   *  - Editing an EXISTING branch that IS already the main branch.
+   *
+   * For every other branch the checkbox is completely hidden — there can only
+   * ever be one main branch, and it is set permanently on first creation.
+   */
+  showMainBranchFlag = computed(() => {
+    const selectedNo = this.selectedBranchNo();
+    if (selectedNo === null) {
+      // New-branch form: show only when no main branch exists yet.
+      return !this.isMainBranchLocked();
+    }
+    // Editing: show only for the branch that IS the main branch.
+    return this.branches().some(
+      b => b.branch_no === selectedNo && b.is_main_branch === 1
+    );
+  });
+
   filteredBranches = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.branches();
-    if (!term) return data;
-    return data.filter(
-      (b) =>
-        (b.branch_name || '').toLowerCase().includes(term) ||
-        (b.branch_id || '').toLowerCase().includes(term),
-    );
+    const filtered = !term
+      ? data
+      : data.filter(
+          (b) =>
+            (b.branch_name || '').toLowerCase().includes(term) ||
+            (b.branch_id || '').toLowerCase().includes(term),
+        );
+    // Default: descending by PK — newest branch on top. The sidebar sort
+    // toggle reverses this order for ascending (oldest first).
+    const sorted = [...filtered].sort((a, b) => (b.branch_no ?? 0) - (a.branch_no ?? 0));
+    return this.sortDirection() === 'asc' ? sorted : sorted.reverse();
   });
 
   pager = makePaginator<Sys1002BranchDto>(this.filteredBranches);
 
   loadEmployees(): void {
-    this.data.getEmployees().subscribe((res) => {
-      if (isSuccess(res) && res.data) {
-        this.employees.set(res.data);
-      }
+    this.lookup.getEmployees().subscribe((employees) => {
+      this.employees.set(employees);
     });
   }
 
@@ -133,18 +174,29 @@ export class Sys1002ModelService {
   onSave(callback?: () => void): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toastr.warning('Please correct the validation errors.');
+      this.toastr.warning(this.translate.instant('validationErrors'));
       return;
     }
 
-    this.isSaving.set(true);
-    const val = this.form.getRawValue();
+    const val      = this.form.getRawValue();
     const isUpdate = !!this.selectedBranchNo();
+    const wantsMain = val.is_main_branch === true || val.is_main_branch === 1;
+
+    // Guard: prevent creating a second main branch
+    if (wantsMain && this.isMainBranchLocked()) {
+      const currentMainNo = this.branches().find(b => b.is_main_branch === 1)?.branch_no;
+      if (!isUpdate || currentMainNo !== this.selectedBranchNo()) {
+        this.toastr.error(this.translate.instant('mainBranchExists'));
+        return;
+      }
+    }
+
+    this.isSaving.set(true);
     const payload: Sys1002BranchDto = {
       ...val,
-      branch_no: this.selectedBranchNo(),
-      is_main_branch: val.is_main_branch === true ? 1 : val.is_main_branch === false ? 0 : val.is_main_branch,
-      is_active: val.is_active === true ? 1 : val.is_active === false ? 0 : val.is_active,
+      branch_no:     this.selectedBranchNo(),
+      is_main_branch: wantsMain ? 1 : 0,
+      is_active:      val.is_active === true ? 1 : val.is_active === false ? 0 : val.is_active,
     };
 
     this.data
@@ -153,8 +205,13 @@ export class Sys1002ModelService {
       .subscribe({
         next: (res) => {
           if (isSuccess(res)) {
-            this.toastr.success(isUpdate ? 'Branch updated' : 'Branch created');
-            this.loadBranches(isUpdate ? this.selectedBranchNo() : null);
+            this.toastr.success(this.translate.instant(isUpdate ? 'branchUpdated' : 'branchCreated'));
+            // After create: select the new record by its PK from the response.
+            // After update: keep the current selection.
+            const savedNo = isUpdate
+              ? this.selectedBranchNo()
+              : res.data?.branch_no ?? null;
+            this.loadBranches(savedNo);
             if (callback) callback();
           }
         },
@@ -172,7 +229,7 @@ export class Sys1002ModelService {
       .subscribe({
         next: (res) => {
           if (isSuccess(res)) {
-            this.toastr.success('Branch deleted successfully');
+            this.toastr.success(this.translate.instant('branchDeleted'));
             this.loadBranches();
             if (callback) callback();
           }
@@ -183,8 +240,10 @@ export class Sys1002ModelService {
   onNew(): void {
     this.selectedBranchNo.set(null);
     this.form.reset({
-      is_active:  1,
-      company_no: this.authCtx.user()?.company_no ?? null,
+      is_active:      1,
+      company_no:     this.authCtx.user()?.company_no ?? null,
+      // First branch of the company is always the main branch — auto-checked.
+      is_main_branch: !this.isMainBranchLocked() ? 1 : 0,
     });
   }
 }

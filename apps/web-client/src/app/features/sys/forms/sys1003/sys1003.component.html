@@ -2,7 +2,7 @@
   [icon]="'calendar_today'" [hasSidebar]="false" (save)="onSave()" (new)="onNew()" (reset)="onReset()"
   (delete)="onDelete()" [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()" [showDelete]="permissionService.canDelete() && !!model.selectedYearNo()"
-  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()">
+  [isSaving]="model.isSaving()">
   <!-- Extra Header Action for Closing FY -->
   <div extraHeaderActions>
     @if (permissionService.canUpdate() && model.selectedYearNo() && formdata.get('is_closed')?.value === 0) {
@@ -49,18 +49,17 @@
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="fin_year_id">{{
-                      'fyCode' | translate
+                    <label class="field-label required" for="fin_year_id">{{
+                      'finYearId' | translate
                       }}</label>
                     <input type="text" id="fin_year_id" formControlName="fin_year_id"
                       class="form-control text-uppercase" [class.bg-light]="!!model.selectedYearNo()"
                       [readonly]="!!model.selectedYearNo()" placeholder="e.g. FY-JUL25-JUN26" />
                   </div>
                 </div>
-
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="start_date">{{
                       'startDate' | translate
@@ -69,7 +68,7 @@
                       (change)="autoGeneratePeriods()" />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="end_date">{{
                       'endDate' | translate
@@ -78,18 +77,36 @@
                       (change)="autoGeneratePeriods()" />
                   </div>
                 </div>
-                <div class="field-group">
-                  <label class="field-label" for="is_closed">{{ 'status' | translate }}</label>
-                  <ng-select id="is_closed" labelForId="is_closed" formControlName="is_closed" bindLabel="label"
-                    bindValue="value" placeholder="{{ 'selectStatus' | translate }}">
-                    <ng-option [value]="0">Open</ng-option>
-                    <ng-option [value]="1">Closed</ng-option>
-                  </ng-select>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="is_closed">{{ 'status' | translate }}</label>
+                    <ng-select id="is_closed" labelForId="is_closed" formControlName="is_closed" bindLabel="label"
+                      bindValue="value" placeholder="{{ 'selectStatus' | translate }}">
+                      <ng-option [value]="0">Open</ng-option>
+                      <ng-option [value]="1">Closed</ng-option>
+                    </ng-select>
+                  </div>
                 </div>
-                <div class="field-group mt-3">
-                  <label class="field-label" for="remarks">{{ 'remarks' | translate }}</label>
-                  <textarea id="remarks" formControlName="remarks" class="form-control" rows="3"
-                    placeholder="Optional remarks"></textarea>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="branch_nos">
+                      {{ 'branch' | translate }}
+                      <mat-icon class="field-info-icon" matTooltip="Leave empty to apply to all branches">info_outline</mat-icon>
+                    </label>
+                    <ng-select id="branch_nos" labelForId="branch_nos" formControlName="branch_nos"
+                      [multiple]="true" [closeOnSelect]="false" [clearable]="true" placeholder="All Branches">
+                      @for (branch of model.branches(); track branch.branch_no) {
+                        <ng-option [value]="branch.branch_no">{{ branch.branch_name }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="remarks">{{ 'remarks' | translate }}</label>
+                    <textarea id="remarks" formControlName="remarks" class="form-control" rows="3"
+                      placeholder="Optional remarks"></textarea>
+                  </div>
                 </div>
               </div>
             </div>

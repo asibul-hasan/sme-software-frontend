@@ -11,12 +11,13 @@
   (reset)="onReset()"
   [showDelete]="false"
 >
-  <!-- Main Form Content -->
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
       <div class="row row-group">
-        <!-- Left Column: General info, address and legal details -->
+
+        <!-- ── Left column: General info + Address ───────────────────────── -->
         <div class="col-xl-9 col-lg-8">
+
           <!-- General Information -->
           <div class="form-section-card card">
             <div class="card-header">
@@ -29,67 +30,33 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label for="company_id" class="field-label required">{{
-                      'companyCode' | translate
-                    }}</label>
-                    <input
-                      id="company_id"
-                      type="text"
-                      formControlName="company_id"
-                      class="form-control fw-bold"
-                    />
+                    <label for="company_id" class="field-label required">{{ 'companyCode' | translate }}</label>
+                    <input id="company_id" type="text" formControlName="company_id" class="form-control fw-bold" />
                   </div>
                 </div>
                 <div class="col-md-8">
                   <div class="field-group">
-                    <label for="company_name" class="field-label required">{{
-                      'companyName' | translate
-                    }}</label>
-                    <input
-                      id="company_name"
-                      type="text"
-                      formControlName="company_name"
+                    <label for="company_name" class="field-label required">{{ 'companyName' | translate }}</label>
+                    <input id="company_name" type="text" formControlName="company_name"
                       class="form-control form-control-lg fw-bold"
-                      placeholder="{{ 'legalCompanyName' | translate }}"
-                    />
+                      placeholder="{{ 'legalCompanyName' | translate }}" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="company_name_nls" class="field-label">{{
-                      'localName' | translate
-                    }}</label>
-                    <input
-                      id="company_name_nls"
-                      type="text"
-                      formControlName="company_name_nls"
-                      class="form-control"
-                      placeholder="{{ 'localNamePlaceholder' | translate }}"
-                    />
+                    <label for="company_name_nls" class="field-label">{{ 'localName' | translate }}</label>
+                    <input id="company_name_nls" type="text" formControlName="company_name_nls"
+                      class="form-control" placeholder="{{ 'localNamePlaceholder' | translate }}" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="company_type" class="field-label">{{
-                      'companyType' | translate
-                    }}</label>
-                    <ng-select
-                      id="company_type"
-                      labelForId="company_type"
-                      formControlName="company_type"
-                      bindLabel="label"
-                      bindValue="value"
-                      placeholder="{{ 'selectType' | translate }}"
-                    >
+                    <label for="company_type" class="field-label">{{ 'companyType' | translate }}</label>
+                    <ng-select id="company_type" labelForId="company_type" formControlName="company_type"
+                      bindLabel="label" bindValue="value" placeholder="{{ 'selectType' | translate }}">
                       <ng-option [value]="null">Select</ng-option>
-
-                      @for (
-                        type of sysConstants.companyTypes;
-                        track type.value
-                      ) {
-                        <ng-option [value]="type.value">
-                          {{ type.label }}
-                        </ng-option>
+                      @for (type of sysConstants.companyTypes; track type.value) {
+                        <ng-option [value]="type.value">{{ type.label }}</ng-option>
                       }
                     </ng-select>
                   </div>
@@ -108,168 +75,93 @@
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <!-- Addresses -->
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="company_addr1" class="field-label">{{
-                      'addressLine1' | translate
-                    }}</label>
-                    <input
-                      id="company_addr1"
-                      type="text"
-                      formControlName="company_addr1"
-                      class="form-control"
-                      placeholder="{{ 'addressLine1Placeholder' | translate }}"
-                    />
+                    <label for="company_addr1" class="field-label">{{ 'addressLine1' | translate }}</label>
+                    <input id="company_addr1" type="text" formControlName="company_addr1"
+                      class="form-control" placeholder="{{ 'addressLine1Placeholder' | translate }}" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="company_addr2" class="field-label">{{
-                      'addressLine2' | translate
-                    }}</label>
-                    <input
-                      id="company_addr2"
-                      type="text"
-                      formControlName="company_addr2"
-                      class="form-control"
-                      placeholder="{{ 'addressLine2Placeholder' | translate }}"
-                    />
-                  </div>
-                </div>
-
-                <!-- Location Details -->
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label for="city" class="field-label">{{
-                      'city' | translate
-                    }}</label>
-                    <input
-                      id="city"
-                      type="text"
-                      formControlName="city"
-                      class="form-control"
-                    />
+                    <label for="company_addr2" class="field-label">{{ 'addressLine2' | translate }}</label>
+                    <input id="company_addr2" type="text" formControlName="company_addr2"
+                      class="form-control" placeholder="{{ 'addressLine2Placeholder' | translate }}" />
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label for="state_province" class="field-label">{{
-                      'stateProvince' | translate
-                    }}</label>
-                    <input
-                      id="state_province"
-                      type="text"
-                      formControlName="state_province"
-                      class="form-control"
-                    />
+                    <label for="city" class="field-label">{{ 'city' | translate }}</label>
+                    <input id="city" type="text" formControlName="city" class="form-control" />
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label for="post_code" class="field-label">{{
-                      'postalCode' | translate
-                    }}</label>
-                    <input
-                      id="post_code"
-                      type="text"
-                      formControlName="post_code"
-                      class="form-control"
-                    />
+                    <label for="state_province" class="field-label">{{ 'stateProvince' | translate }}</label>
+                    <input id="state_province" type="text" formControlName="state_province" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="post_code" class="field-label">{{ 'postalCode' | translate }}</label>
+                    <input id="post_code" type="text" formControlName="post_code" class="form-control" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="country_code" class="field-label">{{
-                      'country' | translate
-                    }}</label>
-                    <ng-select
-                      id="country_code"
-                      labelForId="country_code"
-                      formControlName="country_code"
-                      bindLabel="label"
-                      bindValue="value"
-                      placeholder="{{ 'selectCountry' | translate }}"
-                    >
+                    <label for="country_code" class="field-label">{{ 'country' | translate }}</label>
+                    <ng-select id="country_code" labelForId="country_code" formControlName="country_code"
+                      bindLabel="label" bindValue="value" placeholder="{{ 'selectCountry' | translate }}">
                       <ng-option [value]="null">Select</ng-option>
-                      @for (
-                        country of sysConstants.countries;
-                        track country.value
-                      ) {
-                        <ng-option [value]="country.value">
-                          {{ country.label }}
-                        </ng-option>
+                      @for (country of sysConstants.countries; track country.value) {
+                        <ng-option [value]="country.value">{{ country.label }}</ng-option>
                       }
                     </ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="website" class="field-label">{{
-                      'website' | translate
-                    }}</label>
-                    <input
-                      id="website"
-                      type="url"
-                      formControlName="website"
-                      class="form-control"
-                      placeholder="https://..."
-                    />
-                  </div>
-                </div>
-
-                <!-- Contact Info -->
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label for="mobile_no" class="field-label">{{
-                      'primaryPhone' | translate
-                    }}</label>
-                    <input
-                      id="mobile_no"
-                      type="text"
-                      formControlName="mobile_no"
-                      class="form-control"
-                      placeholder="Primary phone"
-                    />
+                    <label for="website" class="field-label">{{ 'website' | translate }}</label>
+                    <input id="website" type="url" formControlName="website" class="form-control" placeholder="https://..." />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="contact_no" class="field-label">{{
-                      'secondaryPhone' | translate
-                    }}</label>
-                    <input
-                      id="contact_no"
-                      type="text"
-                      formControlName="contact_no"
-                      class="form-control"
-                      placeholder="Secondary phone"
-                    />
+                    <label for="mobile_no" class="field-label">{{ 'primaryPhone' | translate }}</label>
+                    <input id="mobile_no" type="text" formControlName="mobile_no" class="form-control" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label for="email" class="field-label">{{
-                      'primaryEmail' | translate
-                    }}</label>
-                    <input
-                      id="email"
-                      type="email"
-                      formControlName="email"
-                      class="form-control"
-                      placeholder="Primary email"
-                    />
+                    <label for="contact_no" class="field-label">{{ 'secondaryPhone' | translate }}</label>
+                    <input id="contact_no" type="text" formControlName="contact_no" class="form-control" />
                   </div>
                 </div>
-                <!-- email_secondary removed per strict DB alignment -->
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label for="email" class="field-label">{{ 'primaryEmail' | translate }}</label>
+                    <input id="email" type="email" formControlName="email" class="form-control" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Right Column: Branding & Legal -->
+        </div><!-- /left -->
+
+        <!-- ── Right column: Branding + Legal ──────────────────────────── -->
         <div class="col-xl-3 col-lg-4">
-          <div class="form-section-card card branding-card">
+
+          <!-- Company Logo / Branding (top) -->
+          <div class="form-section-card card" style="position: relative;">
+
+            <!-- Upload/remove in-progress overlay -->
+            @if (model.isLogoUploading()) {
+              <div class="logo-uploading-overlay">
+                <mat-spinner diameter="32" />
+              </div>
+            }
+
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">brush</mat-icon>
@@ -277,17 +169,67 @@
               </h4>
             </div>
             <div class="card-body">
-              <app-logo-upload
-                [previewUrl]="model.logoPreview()"
-                [fileName]="model.logoFileName()"
-                [isSaving]="model.isSaving()"
-                (fileSelected)="model.onLogoSelected($event)"
-                (clear)="model.clearLogo()"
-              ></app-logo-upload>
+
+              @if (model.logoPreview()) {
+
+                <!-- Logo preview -->
+                <div class="logo-preview-box mb-2">
+                  <img [src]="model.logoPreview()" alt="Company logo" />
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-2">
+                  <label class="btn btn-sm btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                    style="cursor: pointer"
+                    [class.disabled]="model.isLogoUploading()">
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px">swap_horiz</mat-icon>
+                    Change
+                    <input type="file" class="d-none"
+                      accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif"
+                      [disabled]="model.isLogoUploading()"
+                      (change)="onFileChange($event)" />
+                  </label>
+                  <button type="button"
+                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                    [disabled]="model.isLogoUploading()"
+                    (click)="model.clearLogo()">
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px">delete_outline</mat-icon>
+                    Remove
+                  </button>
+                </div>
+
+              } @else {
+
+                <!-- Upload zone -->
+                <div class="logo-drop-zone"
+                  [class.drag-over]="isDragActive()"
+                  [class.disabled]="model.isLogoUploading()"
+                  (drop)="onDrop($event)"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                >
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif"
+                    [disabled]="model.isLogoUploading()"
+                    (change)="onFileChange($event)" />
+                  <mat-icon style="font-size: 36px; width: 36px; height: 36px; opacity: 0.35;">
+                    {{ isDragActive() ? 'file_download' : 'add_photo_alternate' }}
+                  </mat-icon>
+                  <div class="text-center text-secondary" style="font-size: 12px; line-height: 1.5;">
+                    @if (isDragActive()) {
+                      Drop to upload
+                    } @else {
+                      <span class="text-primary fw-semibold">Click to upload</span> or drag &amp; drop<br/>
+                      JPG, PNG, WebP, SVG · max 100 KB
+                    }
+                  </div>
+                </div>
+
+              }
+
             </div>
           </div>
 
-          <!-- Legal & Compliance -->
+          <!-- Legal Compliance (below branding) -->
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
@@ -299,70 +241,42 @@
               <div class="row row-group">
                 <div class="col-12">
                   <div class="field-group">
-                    <label for="reg_no" class="field-label">{{
-                      'registrationNo' | translate
-                    }}</label>
-                    <input
-                      id="reg_no"
-                      type="text"
-                      formControlName="reg_no"
-                      class="form-control"
-                    />
+                    <label for="reg_no" class="field-label">{{ 'registrationNo' | translate }}</label>
+                    <input id="reg_no" type="text" formControlName="reg_no" class="form-control" />
                   </div>
                 </div>
                 <div class="col-12">
                   <div class="field-group">
-                    <label for="trade_license_no" class="field-label">{{
-                      'tradeLicense' | translate
-                    }}</label>
-                    <input
-                      id="trade_license_no"
-                      type="text"
-                      formControlName="trade_license_no"
-                      class="form-control"
-                    />
+                    <label for="trade_license_no" class="field-label">{{ 'tradeLicense' | translate }}</label>
+                    <input id="trade_license_no" type="text" formControlName="trade_license_no" class="form-control" />
                   </div>
                 </div>
                 <div class="col-12">
                   <div class="field-group">
-                    <label for="vat_reg_no" class="field-label">{{
-                      'vatReg' | translate
-                    }}</label>
-                    <input
-                      id="vat_reg_no"
-                      type="text"
-                      formControlName="vat_reg_no"
-                      class="form-control"
-                    />
+                    <label for="vat_reg_no" class="field-label">{{ 'vatReg' | translate }}</label>
+                    <input id="vat_reg_no" type="text" formControlName="vat_reg_no" class="form-control" />
                   </div>
                 </div>
                 <div class="col-12">
                   <div class="field-group">
                     <label for="tin_no" class="field-label">TIN</label>
-                    <input
-                      id="tin_no"
-                      type="text"
-                      formControlName="tin_no"
-                      class="form-control"
-                    />
+                    <input id="tin_no" type="text" formControlName="tin_no" class="form-control" />
                   </div>
                 </div>
                 <div class="col-12">
                   <div class="field-group">
                     <label for="bin_no" class="field-label">BIN</label>
-                    <input
-                      id="bin_no"
-                      type="text"
-                      formControlName="bin_no"
-                      class="form-control"
-                    />
+                    <input id="bin_no" type="text" formControlName="bin_no" class="form-control" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+
+        </div><!-- /right -->
+
+      </div><!-- /main two-col row -->
+
     </form>
   </div>
 </app-page-form-layout>

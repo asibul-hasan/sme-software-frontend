@@ -7,7 +7,6 @@ import { HeaderComponent } from '../components/header/header.component';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { GlobalLoaderComponent } from '../../shared/components/global-loader/global-loader.component';
-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-main-layout',

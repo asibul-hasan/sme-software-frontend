@@ -32,6 +32,29 @@ export class PageFormLayoutComponent {
   @Input() searchTerm: string = '';
   @Output() searchTermChange = new EventEmitter<string>();
 
+  /** Show the ascending/descending sort toggle beside the search box. */
+  @Input() showSort: boolean = true;
+  /** Current list sort direction — two-way bindable: [(sortDirection)]. */
+  @Input() sortDirection: 'asc' | 'desc' = 'asc';
+  @Output() sortDirectionChange = new EventEmitter<'asc' | 'desc'>();
+
+  /**
+   * Optional paginator to drive sorting directly. Pass `[pager]="model.pager"` and the
+   * sort toggle flips the pager's own `sortDirection` — no per-form `[sortDirection]`
+   * wiring or model signal needed. (Provide `sortKey` to `makePaginator` so it sorts.)
+   */
+  @Input() pager: { sortDirection: () => 'asc' | 'desc'; toggleSortDirection: () => void } | null = null;
+
+  /** The direction the toggle should reflect — pager wins when present. */
+  get currentSort(): 'asc' | 'desc' {
+    return this.pager ? this.pager.sortDirection() : this.sortDirection;
+  }
+
+  /** True when the host form has one or more dropdown filters applied. Drives "Clear all". */
+  @Input() hasActiveFilters: boolean = false;
+  /** Emitted when the user hits "Clear all" — the host form should reset its filter dropdowns. */
+  @Output() clearFilters = new EventEmitter<void>();
+
   @Output() save = new EventEmitter<void>();
   @Output() new = new EventEmitter<void>();
   @Output() reset = new EventEmitter<void>();
@@ -39,5 +62,31 @@ export class PageFormLayoutComponent {
 
   onSearchChange(val: string) {
     this.searchTermChange.emit(val);
+  }
+
+  /** Flip the sort direction. Drives the pager directly when one is bound, else emits. */
+  toggleSort() {
+    if (this.pager) {
+      this.pager.toggleSortDirection();
+      return;
+    }
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.sortDirectionChange.emit(this.sortDirection);
+  }
+
+  /** Clear just the search text. */
+  clearSearch() {
+    this.searchTermChange.emit('');
+  }
+
+  /** Clear the search text AND tell the host form to reset its filters. */
+  clearAll() {
+    if (this.searchTerm) this.searchTermChange.emit('');
+    this.clearFilters.emit();
+  }
+
+  /** True when anything (search or filters) is narrowing the list. */
+  get isFiltering(): boolean {
+    return !!this.searchTerm || this.hasActiveFilters;
   }
 }

@@ -47,6 +47,13 @@ export interface ColumnDef {
   minWidth?: string;
   sort?: boolean;
   cellType?: CellType;
+  /**
+   * Logical value accessor used for SEARCH, SORT and EXPORT when the displayed value can't be
+   * read straight from `row[field]` — e.g. a `custom-template` column that shows a label for an
+   * id, or any computed cell. Return the human-readable value (string or number).
+   * Falls back to `row[field]` (with `select`/`badge`/`checkbox` resolution) when omitted.
+   */
+  value?: (row: Record<string, unknown>) => unknown;
   pin?: PinDirection;
   bottomTotal?: boolean;
   editable?: boolean;

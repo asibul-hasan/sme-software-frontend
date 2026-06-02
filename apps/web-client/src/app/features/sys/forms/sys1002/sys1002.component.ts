@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, effect, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
@@ -8,6 +8,7 @@ import { Sys1002ModelService } from './services/model.service';
 import { Sys1002DataService } from './services/data.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { DatePipe } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,8 +25,22 @@ export class Sys1002Component implements OnInit {
   public model = inject(Sys1002ModelService);
   readonly sysConstants = sysConstants;
 
-  public permissionService = inject(FormPermissionService);
-  private alertService = inject(AlertService);
+  public permissionService  = inject(FormPermissionService);
+  private alertService      = inject(AlertService);
+  private translate         = inject(TranslateService);
+  private el                = inject(ElementRef);
+
+  constructor() {
+    // Scroll the selected sidebar item into view whenever selection changes.
+    effect(() => {
+      this.model.selectedBranchNo(); // reactive dependency
+      setTimeout(() => {
+        this.el.nativeElement
+          .querySelector('.list-group-item.active')
+          ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 50);
+    });
+  }
 
   ngOnInit(): void {
     this.model.initForm();
@@ -62,7 +77,7 @@ export class Sys1002Component implements OnInit {
     if (!this.model.selectedBranchNo()) return;
 
     this.alertService
-      .deleteConfirm('Are you sure you want to delete this branch?')
+      .deleteConfirm(this.translate.instant('deleteConfirmBranch'))
       .subscribe((confirmed) => {
         if (confirmed) this.model.onDelete();
       });

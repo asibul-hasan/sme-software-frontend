@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
+import { makePaginator } from '../../../../../core/utils/paginator';
 import { Sys1103DataService } from './data.service';
 
 export interface RoleOption {
@@ -55,6 +56,15 @@ export class Sys1103ModelService {
   isLoading = signal(false);
   isSaving = signal(false);
 
+  // ── Matrix filters & view state ───────────────────────────────────────
+  formSearch = signal('');                 // free-text filter over form name / id
+  moduleFilter = signal<string>('');       // '' = all modules
+  submoduleFilter = signal<string>('');    // '' = all submodules
+  onlyGranted = signal(false);             // show only forms with at least one grant
+  collapsedModules = signal<ReadonlySet<string>>(new Set());
+  copySourceRoleNo = signal<number | null>(null);
+  isCopying = signal(false);
+
   readonly flagFields: { key: FlagField; label: string }[] = [
     { key: 'can_view', label: 'View' },
     { key: 'can_insert', label: 'Create' },
@@ -77,11 +87,18 @@ export class Sys1103ModelService {
     );
   });
 
+  /** Paginated sidebar list — standard master-detail pattern (see SYS1002/SYS1004). */
+  pager = makePaginator(this.filteredRoles, { sortKey: (r) => r.role_no });
+
+  private moduleKey(row: MatrixRow): string {
+    return row.module_name || row.module_code || '—';
+  }
+
   grouped = computed<ModuleGroup[]>(() => {
     const groups: ModuleGroup[] = [];
     const idx = new Map<string, ModuleGroup>();
     for (const row of this.matrix()) {
-      const key = row.module_name || row.module_code || '—';
+      const key = this.moduleKey(row);
       let g = idx.get(key);
       if (!g) {
         g = { module_name: key, rows: [] };
@@ -91,6 +108,84 @@ export class Sys1103ModelService {
       g.rows.push(row);
     }
     return groups;
+  });
+
+  /** Distinct module names present in the matrix — feeds the module filter. */
+  modules = computed<string[]>(() => this.grouped().map((g) => g.module_name));
+
+  /**
+   * Distinct submodule names — narrowed to the selected module when one is set,
+   * so the Submodule dropdown only offers relevant options.
+   */
+  submodules = computed<string[]>(() => {
+    const mod = this.moduleFilter();
+    const seen = new Set<string>();
+    for (const r of this.matrix()) {
+      if (mod && this.moduleKey(r) !== mod) continue;
+      if (r.submodule_name) seen.add(r.submodule_name);
+    }
+    return [...seen];
+  });
+
+  /** Roles other than the one being edited — copy-from source options. */
+  otherRoles = computed<RoleOption[]>(() =>
+    this.roles().filter((r) => r.role_no !== this.selectedRoleNo()),
+  );
+
+  /** Groups after applying the form-search / module / only-granted filters. */
+  filteredGrouped = computed<ModuleGroup[]>(() => {
+    const term = this.formSearch().toLowerCase().trim();
+    const mod = this.moduleFilter();
+    const sub = this.submoduleFilter();
+    const onlyG = this.onlyGranted();
+    const groups: ModuleGroup[] = [];
+    const idx = new Map<string, ModuleGroup>();
+    for (const row of this.matrix()) {
+      const key = this.moduleKey(row);
+      if (mod && key !== mod) continue;
+      if (sub && row.submodule_name !== sub) continue;
+      if (onlyG && this.flagCount(row) === 0) continue;
+      if (
+        term &&
+        !`${row.form_name} ${row.form_id} ${row.submodule_name}`.toLowerCase().includes(term)
+      )
+        continue;
+      let g = idx.get(key);
+      if (!g) {
+        g = { module_name: key, rows: [] };
+        idx.set(key, g);
+        groups.push(g);
+      }
+      g.rows.push(row);
+    }
+    return groups;
+  });
+
+  /** menu_nos currently visible after filters — column/global ops act on these only. */
+  private visibleMenuNos = computed<Set<number>>(() => {
+    const s = new Set<number>();
+    for (const g of this.filteredGrouped()) for (const r of g.rows) s.add(r.menu_no);
+    return s;
+  });
+
+  visibleGranted = computed(() => {
+    let n = 0;
+    for (const g of this.filteredGrouped()) for (const r of g.rows) n += this.flagCount(r);
+    return n;
+  });
+  visiblePossible = computed(() => this.visibleMenuNos().size * this.flagFields.length);
+  hasActiveFilters = computed(
+    () =>
+      !!this.formSearch().trim() ||
+      !!this.moduleFilter() ||
+      !!this.submoduleFilter() ||
+      this.onlyGranted(),
+  );
+
+  /** True when every visible module is collapsed — drives the single toggle button. */
+  isAllCollapsed = computed(() => {
+    const groups = this.filteredGrouped();
+    return groups.length > 0 && groups.every((g) => this.isCollapsed(g.module_name));
   });
 
   loadRoles(): void {
@@ -130,18 +225,154 @@ export class Sys1103ModelService {
     );
   }
 
+  private withAllFlags(r: MatrixRow, value: number): MatrixRow {
+    return {
+      ...r,
+      can_view: value, can_insert: value, can_update: value, can_delete: value,
+      can_approve: value, can_post: value, can_cancel: value, can_export: value,
+    };
+  }
+
   grantAll(menuNo: number, value: number): void {
     this.matrix.update((rows) =>
-      rows.map((r) =>
-        r.menu_no === menuNo
-          ? {
-              ...r,
-              can_view: value, can_insert: value, can_update: value, can_delete: value,
-              can_approve: value, can_post: value, can_cancel: value, can_export: value,
-            }
-          : r,
-      ),
+      rows.map((r) => (r.menu_no === menuNo ? this.withAllFlags(r, value) : r)),
     );
+  }
+
+  // ── Row / module / column helpers ─────────────────────────────────────
+
+  flagCount(row: MatrixRow): number {
+    return this.flagFields.reduce((n, f) => n + (row[f.key] === 1 ? 1 : 0), 0);
+  }
+  isRowAll(row: MatrixRow): boolean {
+    return this.flagCount(row) === this.flagFields.length;
+  }
+  isRowSome(row: MatrixRow): boolean {
+    const n = this.flagCount(row);
+    return n > 0 && n < this.flagFields.length;
+  }
+
+  moduleGranted(g: ModuleGroup): number {
+    return g.rows.reduce((n, r) => n + this.flagCount(r), 0);
+  }
+  moduleTotal(g: ModuleGroup): number {
+    return g.rows.length * this.flagFields.length;
+  }
+
+  isCollapsed(name: string): boolean {
+    return this.collapsedModules().has(name);
+  }
+  toggleModule(name: string): void {
+    this.collapsedModules.update((s) => {
+      const next = new Set(s);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
+  collapseAll(): void {
+    this.collapsedModules.set(new Set(this.filteredGrouped().map((g) => g.module_name)));
+  }
+  expandAll(): void {
+    this.collapsedModules.set(new Set());
+  }
+  /** Single button: collapse everything if anything is open, else expand everything. */
+  toggleAllCollapse(): void {
+    if (this.isAllCollapsed()) this.expandAll();
+    else this.collapseAll();
+  }
+
+  /** Grant/revoke every flag for all rows in one module. */
+  grantModule(g: ModuleGroup, value: number): void {
+    const menus = new Set(g.rows.map((r) => r.menu_no));
+    this.matrix.update((rows) =>
+      rows.map((r) => (menus.has(r.menu_no) ? this.withAllFlags(r, value) : r)),
+    );
+  }
+
+  /** Header tri-state for one action column, across the currently-visible rows. */
+  columnState(field: FlagField): 'all' | 'some' | 'none' {
+    const vis = this.visibleMenuNos();
+    let on = 0;
+    let total = 0;
+    for (const r of this.matrix()) {
+      if (!vis.has(r.menu_no)) continue;
+      total++;
+      if (r[field] === 1) on++;
+    }
+    if (total === 0 || on === 0) return 'none';
+    return on === total ? 'all' : 'some';
+  }
+  /** Set one action for every visible row. */
+  grantColumn(field: FlagField, value: number): void {
+    const vis = this.visibleMenuNos();
+    this.matrix.update((rows) =>
+      rows.map((r) => (vis.has(r.menu_no) ? { ...r, [field]: value } : r)),
+    );
+  }
+
+  /** Grant/revoke every flag for every visible row. */
+  grantAllVisible(value: number): void {
+    const vis = this.visibleMenuNos();
+    this.matrix.update((rows) =>
+      rows.map((r) => (vis.has(r.menu_no) ? this.withAllFlags(r, value) : r)),
+    );
+  }
+
+  clearFilters(): void {
+    this.formSearch.set('');
+    this.moduleFilter.set('');
+    this.submoduleFilter.set('');
+    this.onlyGranted.set(false);
+  }
+
+  /**
+   * Copy another role's grants into the current (in-memory) matrix by menu_no.
+   * Non-destructive until Save — the user reviews then persists, or resets to undo.
+   */
+  copyFromRole(): void {
+    const src = this.copySourceRoleNo();
+    if (!src) {
+      this.toastr.warning('Choose a role to copy from.');
+      return;
+    }
+    if (!this.selectedRoleNo()) {
+      this.toastr.warning('Select a target role first.');
+      return;
+    }
+    this.isCopying.set(true);
+    this.data
+      .getMatrix(src)
+      .pipe(finalize(() => this.isCopying.set(false)))
+      .subscribe((res) => {
+        if (!isSuccess(res) || !res.data) {
+          this.toastr.error('Could not load the source role permissions.');
+          return;
+        }
+        const byMenu = new Map<number, MatrixRow>();
+        for (const r of res.data) byMenu.set(r.menu_no, r);
+        let copied = 0;
+        this.matrix.update((rows) =>
+          rows.map((r) => {
+            const s = byMenu.get(r.menu_no);
+            if (!s) return r;
+            copied++;
+            return {
+              ...r,
+              can_view: s.can_view, can_insert: s.can_insert,
+              can_update: s.can_update, can_delete: s.can_delete,
+              can_approve: s.can_approve, can_post: s.can_post,
+              can_cancel: s.can_cancel, can_export: s.can_export,
+              perm_scope: s.perm_scope, record_filter: s.record_filter,
+            };
+          }),
+        );
+        const srcRole = this.roles().find((x) => x.role_no === src);
+        this.toastr.info(
+          `Copied from “${srcRole?.role_name ?? 'role'}” into ${copied} form(s). Review, then Save to apply.`,
+        );
+        this.copySourceRoleNo.set(null);
+      });
   }
 
   setScope(menuNo: number, value: number): void {
