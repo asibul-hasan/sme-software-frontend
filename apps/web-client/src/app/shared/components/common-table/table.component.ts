@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, inject,
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, inject,
   input, model, OnChanges, OnDestroy, output, signal, SimpleChanges, viewChild,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -131,13 +131,24 @@ import { TableViewModalComponent } from './table-view-modal.component';
         height: 30px;
       }
 
-      /* ng-select inline editor — compact, fills the cell */
-      .table-edit-ngselect { min-width: 150px; display: block; }
-      .table-edit-ngselect .ng-select-container {
-        min-height: 30px;
+      /* ─── Inline editors fill the FULL row height (no row-height jump on edit) ───
+         A cell in edit mode drops its vertical padding and stretches its control to
+         100% of the row, so the editor height matches the standard data rows exactly. */
+      .mat-mdc-cell.is-editing {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .mat-mdc-cell.is-editing .form-control,
+      .mat-mdc-cell.is-editing .table-edit-ngselect,
+      .mat-mdc-cell.is-editing .table-edit-ngselect .ng-select-container {
+        height: 100%;
+        min-height: 0;          /* override the fixed 28/30px so it tracks the row */
         border-radius: 6px;
         font-size: 12.5px;
       }
+      .table-edit-ngselect { min-width: 150px; display: block; }
+      /* Vertically centre ng-select value/placeholder now that it fills the row */
+      .table-edit-ngselect .ng-select-container .ng-value-container { align-items: center; }
     }
 
     /* Active row — highlight every cell, left indicator bar on first cell only */
@@ -194,6 +205,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly paginator = viewChild(MatPaginator);
 
   private readonly exportService = inject(TableExportService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly datePipe = new DatePipe('en-US');
   private readonly decimalPipe = new DecimalPipe('en-US');
   private readonly destroy$ = new Subject<void>();
@@ -205,8 +217,14 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly viewModalRow = signal<Record<string, unknown> | null>(null);
   readonly visibleColumns = signal<ColumnDef[]>([]);
   readonly showSkeleton = signal(false);
-  readonly editingCell = signal<{ row: Record<string, unknown>; field: string } | null>(null);
-  readonly editValue = signal<unknown>(null);
+  /**
+   * Index (within the current page) of the row in edit mode, or null.
+   * Tracked by INDEX, not object reference, so the edit survives the consumer
+   * replacing the row object immutably ({...r}) on every field change.
+   */
+  readonly editingRowIndex = signal<number | null>(null);
+  /** Working copy of the editing row's editable fields, keyed by field. */
+  readonly rowEdits = signal<Record<string, unknown>>({});
   /** Row whose kebab (⋯) menu is open — the shared action menu renders for this row. */
   readonly actionMenuRow = signal<Record<string, unknown> | null>(null);
 
@@ -237,7 +255,15 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     this.searchControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((t) => { this.searchTerm.set(t); this.dataSource.filter = t.trim().toLowerCase(); this.searchChange.emit(t); });
 
-    effect(() => { this.dataSource.data = this.data(); });
+    // Bridge the `data` input signal → MatTableDataSource. The host template reads
+    // dataSource.filteredData (record count, empty-state, footer totals) which are NOT
+    // signals, so under OnPush we must markForCheck for those to refresh when data changes.
+    // NOTE: consumers MUST update immutably (pass a new array/row refs) — an in-place
+    // mutation won't change the input reference and this effect won't re-run.
+    effect(() => {
+      this.dataSource.data = this.data() ?? [];
+      this.cdr.markForCheck();
+    });
 
     // Initialize visible columns — restore from localStorage if tableId provided
     effect(() => {
@@ -369,33 +395,68 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       default:       return 'Action';
     }
   }
-  onRowClick(row: Record<string, unknown>, event: MouseEvent): void {
+  onRowClick(row: Record<string, unknown>, index: number, event: MouseEvent): void {
+    // Clicking a DIFFERENT row finishes editing the previous one (its fields already
+    // committed on change/blur). Clicking inside the editing row keeps it open.
+    if (this.editingRowIndex() !== null && this.editingRowIndex() !== index) this.commitRow();
     this.selection.clear();
     this.selection.select(row);
     this.emitSelection();
     this.rowClick.emit(row);
   }
 
-  // ─── Inline Edit ────────────────────────────────────────────────────────
-  startEdit(row: Record<string, unknown>, col: ColumnDef): void { if (!col.editable) return; this.editingCell.set({ row, field: col.field }); this.editValue.set(row[col.field]); }
-  commitEdit(col: ColumnDef): void {
-    const cell = this.editingCell(); if (!cell) return;
-    cell.row[cell.field] = this.editValue();
-    this.editingCell.set(null);
-    if (col.onChange) col.onChange(this.editValue(), cell.row, col);
-    this.cellEdit.emit({ value: this.editValue(), row: cell.row, column: col });
+  // ─── Inline Edit (ROW-LEVEL, index-stable) ────────────────────────────────
+  /** Double-click a row → put EVERY editable cell in that row into edit mode at once. */
+  startRowEdit(row: Record<string, unknown>, index: number): void {
+    const editable = this.visibleColumns().filter((c) => c.editable);
+    if (!editable.length) return;
+    if (this.editingRowIndex() !== null && this.editingRowIndex() !== index) this.commitRow();
+    const seed: Record<string, unknown> = {};
+    for (const c of editable) seed[c.field] = row[c.field];
+    this.rowEdits.set(seed);
+    this.editingRowIndex.set(index);
   }
-  cancelEdit(): void { this.editingCell.set(null); this.editValue.set(null); }
+
+  /** True for every editable cell of the row (by index) currently in edit mode. */
+  isEditing(index: number, field: string): boolean {
+    if (this.editingRowIndex() !== index) return false;
+    return !!this.columns().find((c) => c.field === field)?.editable;
+  }
+
+  getEditValue(col: ColumnDef): unknown { return this.rowEdits()[col.field]; }
+  private setEditValue(col: ColumnDef, value: unknown): void { this.rowEdits.update((m) => ({ ...m, [col.field]: value })); }
+
   onEditInput(event: Event, col: ColumnDef): void {
     const t = event.target as HTMLInputElement | HTMLSelectElement;
     let v: unknown = t.value;
     if (['number', 'decimal', 'currency'].includes(col.cellType || '')) v = v === '' ? null : Number(v);
-    this.editValue.set(v);
+    this.setEditValue(col, v);
   }
-  onEditCheckbox(event: Event): void { this.editValue.set((event.target as HTMLInputElement).checked); }
-  /** ng-select inline editor: set the value and commit immediately on pick. */
-  onSelectEditChange(value: unknown, col: ColumnDef): void { this.editValue.set(value); this.commitEdit(col); }
-  isEditing(row: Record<string, unknown>, field: string): boolean { const c = this.editingCell(); return c !== null && c.row === row && c.field === field; }
+  onEditCheckbox(event: Event, row: Record<string, unknown>, col: ColumnDef): void {
+    this.setEditValue(col, (event.target as HTMLInputElement).checked); this.commitField(row, col);
+  }
+  /** ng-select inline editor: write the field immediately on pick, stay in row-edit. */
+  onSelectEditChange(value: unknown, row: Record<string, unknown>, col: ColumnDef): void {
+    this.setEditValue(col, value); this.commitField(row, col);
+  }
+
+  /**
+   * Write ONE field back to the row + emit, KEEPING the row in edit mode.
+   * `row` is the CURRENT object from the template — after the consumer replaces the
+   * row immutably, the index-stable trackBy hands us the fresh object here, so the
+   * consumer's onChange (e.g. indexOf-based lookups) always resolves correctly.
+   */
+  commitField(row: Record<string, unknown>, col: ColumnDef): void {
+    const value = this.rowEdits()[col.field];
+    if (row[col.field] === value) return;            // unchanged → no-op
+    row[col.field] = value;
+    if (col.onChange) col.onChange(value, row, col);
+    this.cellEdit.emit({ value, row, column: col });
+  }
+
+  /** Leave edit mode. Fields are already committed on change/blur, so this just resets state. */
+  commitRow(): void { this.editingRowIndex.set(null); this.rowEdits.set({}); }
+  cancelRowEdit(): void { this.editingRowIndex.set(null); this.rowEdits.set({}); }
   getSelectOptions(col: ColumnDef, row: Record<string, unknown>): SelectOption[] {
     if (!col.options) return []; return typeof col.options === 'function' ? col.options(row) : col.options;
   }
@@ -521,7 +582,12 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   trackByField(_i: number, f: string): string { return f; }
-  trackByRow(_i: number, r: Record<string, unknown>): unknown { return r['id'] ?? r; }
+  /**
+   * Prefer a stable id; otherwise track by INDEX (not object ref). Index-stable tracking
+   * lets mat-table REUSE the row view when the consumer replaces the row object immutably,
+   * so an open inline editor (ng-select dropdown) isn't destroyed mid-edit.
+   */
+  trackByRow = (i: number, r: Record<string, unknown>): unknown => r['id'] ?? i;
   trackByColumn(_i: number, c: ColumnDef): string { return c.field; }
   get skeletonRows(): number[] { return Array.from({ length: this.paginator()?.pageSize || 10 }, (_, i) => i); }
 }

@@ -129,10 +129,16 @@ export class AuthService {
     return this.authDataService.registerCompany(data);
   }
 
-  switchBranch(branchId: number): void {
-    this.authDataService.switchBranch(branchId).subscribe((response) => {
-      this.setSession(response);
-    });
+  /**
+   * Switch the active branch. Returns the cold Observable so the caller can
+   * sequence work (e.g. a page reload) AFTER the new branch token + session are
+   * persisted by setSession(). Do NOT fire-and-forget then reload — the reload
+   * aborts the in-flight request and the app rehydrates the OLD branch.
+   */
+  switchBranch(branchId: number): Observable<LoginResponse> {
+    return this.authDataService.switchBranch(branchId).pipe(
+      tap((response) => this.setSession(response))
+    );
   }
 
   /** Switch the active company (multi-company users); re-issues the JWT for the target company. */

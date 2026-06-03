@@ -30,6 +30,13 @@ export interface RoleOption extends Option {
 }
 
 export interface MappingRow {
+  /**
+   * Stable client-side row id. The model replaces row objects immutably ({...r}) on every
+   * edit, so object-reference lookups go stale after the first change. This id is copied by
+   * the spread and stays constant, so row lookups (indexOfRow) always resolve correctly —
+   * the same approach SYS1003 uses with its fin_period_id key.
+   */
+  __uid?: string;
   user_branch_no?: number | null;
   branch_no: number | null;
   role_no: number | null;
@@ -55,6 +62,10 @@ export class Sys1104ModelService {
   searchTerm = signal('');
   isLoading = signal(false);
   isSaving = signal(false);
+
+  /** Monotonic source for stable per-row client ids (see MappingRow.__uid). */
+  private uidSeq = 0;
+  private newUid(): string { return `r${++this.uidSeq}`; }
 
   // Sidebar filters (mirrors the user form): department + designation, derived from the list.
   filterDept = signal<string | null>(null);
@@ -215,6 +226,7 @@ export class Sys1104ModelService {
         if (isSuccess(res) && res.data) {
           this.mappings.set(
             res.data.map((m) => ({
+              __uid: this.newUid(),
               user_branch_no: m.user_branch_no ?? null,
               branch_no: m.branch_no ?? null,
               role_no: m.role_no ?? null,
@@ -234,7 +246,7 @@ export class Sys1104ModelService {
   addRow(): void {
     this.mappings.update((rows) => [
       ...rows,
-      { branch_no: null, role_no: null, is_default: rows.length === 0 ? 1 : 0, is_active: 1 },
+      { __uid: this.newUid(), branch_no: null, role_no: null, is_default: rows.length === 0 ? 1 : 0, is_active: 1 },
     ]);
   }
 
@@ -244,6 +256,8 @@ export class Sys1104ModelService {
 
   // ── Row-reference variants — used by the common-table custom templates ──────
   private indexOfRow(row: MappingRow): number {
+    // Look up by the stable __uid so a stale (immutably-replaced) row object still resolves.
+    if (row.__uid != null) return this.mappings().findIndex((r) => r.__uid === row.__uid);
     return this.mappings().indexOf(row);
   }
   setBranchForRow(row: MappingRow, value: number | null): void {
@@ -308,10 +322,19 @@ export class Sys1104ModelService {
       return;
     }
 
+    // Strip the client-only __uid before sending — the backend DTO has no such field.
+    const payload: MappingRow[] = rows.map((r) => ({
+      user_branch_no: r.user_branch_no ?? null,
+      branch_no: r.branch_no,
+      role_no: r.role_no,
+      is_default: r.is_default,
+      is_active: r.is_active,
+    }));
+
     // Bulk mode: apply the same rows to every effective target (active + checked).
     const targets = [...this.effectiveSelected()];
     if (targets.length > 1) {
-      this.bulkSave(targets, rows);
+      this.bulkSave(targets, payload);
       return;
     }
 
@@ -322,7 +345,7 @@ export class Sys1104ModelService {
     }
     this.isSaving.set(true);
     this.data
-      .saveMappings(userNo, rows)
+      .saveMappings(userNo, payload)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {

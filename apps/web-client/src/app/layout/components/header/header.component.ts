@@ -222,9 +222,14 @@ export class HeaderComponent implements OnInit {
   }
 
   onBranchChange(branchId: number) {
-    this.authService.switchBranch(branchId);
-    // Reload page to refresh all data for the new branch context
-    window.location.reload();
+    // Reload ONLY after the switch completes and the new branch token/session is
+    // persisted — otherwise the reload aborts the request and rehydrates the old branch.
+    this.authService.switchBranch(branchId).subscribe({
+      next: () => window.location.reload(),
+      error: () => {
+        // switch failed — stay on the current branch (no reload)
+      },
+    });
   }
 
   onNotifications() {

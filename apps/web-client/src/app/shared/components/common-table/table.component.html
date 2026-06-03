@@ -86,7 +86,7 @@
   <!-- TABLE -->
   <div class="card-body p-0">
     <div class="overflow-auto" [style.max-height]="mergedConfig().maxHeight">
-      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="w-100 mb-0"
+      <table mat-table [dataSource]="dataSource" [trackBy]="trackByRow" matSort (matSortChange)="onSortChange($event)" class="w-100 mb-0"
         [class.erp-striped]="mergedConfig().striped"
         [class.erp-compact]="mergedConfig().compact || mergedConfig().dense">
 
@@ -114,8 +114,8 @@
         @for (col of visibleColumns(); track col.field) {
           <ng-container [matColumnDef]="col.field">
             <th mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="!col.sort" [class]="getHeaderClass(col)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)">{{ col.title }}</th>
-            <td mat-cell *matCellDef="let row" [class]="getCellClass(col)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)" (dblclick)="col.editable ? startEdit(row, col) : null">
-              @if (isEditing(row, col.field)) {
+            <td mat-cell *matCellDef="let row; let i = index" [class]="getCellClass(col)" [class.is-editing]="isEditing(i, col.field)" [style.width]="col.width" [style.min-width]="col.minWidth" [style]="getPinStyle(col)">
+              @if (isEditing(i, col.field)) {
                 @switch (col.cellType) {
                   @case ('select') {
                     <ng-select
@@ -123,23 +123,21 @@
                       [items]="getSelectOptions(col, row)"
                       bindLabel="label"
                       bindValue="value"
-                      [ngModel]="editValue()"
-                      (ngModelChange)="onSelectEditChange($event, col)"
-                      (blur)="commitEdit(col)"
+                      [ngModel]="getEditValue(col)"
+                      (ngModelChange)="onSelectEditChange($event, row, col)"
                       [clearable]="false"
-                      [isOpen]="true"
                       appendTo="body"
                       placeholder="Select…"
                     ></ng-select>
                   }
                   @case ('checkbox') {
-                    <input type="checkbox" [checked]="!!editValue()" (change)="onEditCheckbox($event)" (blur)="commitEdit(col)" style="width:15px;height:15px;accent-color:var(--indigo);cursor:pointer" autofocus />
+                    <input type="checkbox" [checked]="!!getEditValue(col)" (change)="onEditCheckbox($event, row, col)" style="width:15px;height:15px;accent-color:var(--indigo);cursor:pointer" />
                   }
                   @case ('date') {
-                    <input type="date" [value]="editValue()" (input)="onEditInput($event, col)" (blur)="commitEdit(col)" (keydown.escape)="cancelEdit()" (keydown.enter)="commitEdit(col)" class="form-control" style="height:28px;font-size:12px;padding:0 6px;border-radius:6px" autofocus />
+                    <input type="date" [value]="getEditValue(col)" (input)="onEditInput($event, col)" (blur)="commitField(row, col)" (keydown.escape)="cancelRowEdit()" (keydown.enter)="commitField(row, col); commitRow()" class="form-control" style="font-size:12px;padding:0 6px;border-radius:6px" />
                   }
                   @default {
-                    <input [type]="col.cellType === 'number' || col.cellType === 'decimal' || col.cellType === 'currency' ? 'number' : 'text'" [value]="editValue() ?? ''" [attr.step]="col.cellType === 'decimal' || col.cellType === 'currency' ? '0.01' : null" (input)="onEditInput($event, col)" (blur)="commitEdit(col)" (keydown.escape)="cancelEdit()" (keydown.enter)="commitEdit(col)" class="form-control" style="height:28px;font-size:12px;padding:0 6px;border-radius:6px" autofocus />
+                    <input [type]="col.cellType === 'number' || col.cellType === 'decimal' || col.cellType === 'currency' ? 'number' : 'text'" [value]="getEditValue(col) ?? ''" [attr.step]="col.cellType === 'decimal' || col.cellType === 'currency' ? '0.01' : null" (input)="onEditInput($event, col)" (blur)="commitField(row, col)" (keydown.escape)="cancelRowEdit()" (keydown.enter)="commitField(row, col); commitRow()" class="form-control" style="font-size:12px;padding:0 6px;border-radius:6px" />
                   }
                 }
               } @else {
@@ -184,7 +182,7 @@
 
         <!-- Body Rows -->
         @if (!showSkeleton()) {
-          <tr mat-row *matRowDef="let row; columns: displayFields()" [class]="selection.isSelected(row) ? 'erp-row-active' : ''" (click)="onRowClick(row, $event)"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayFields(); let i = index" [class]="selection.isSelected(row) ? 'erp-row-active' : ''" (click)="onRowClick(row, i, $event)" (dblclick)="startRowEdit(row, i)"></tr>
         }
 
         <!-- Empty State -->

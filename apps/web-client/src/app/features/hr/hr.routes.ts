@@ -16,6 +16,11 @@ export const HR_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/hr1002/hr1002.component').then((m) => m.Hr1002Component),
   },
+  {
+    path: 'form/grade-setup',
+    loadComponent: () =>
+      import('./forms/hr1004/hr1004.component').then((m) => m.Hr1004Component),
+  },
   // HR_1003 — component not yet built
   // {
   //   path: 'form/shift-setup',

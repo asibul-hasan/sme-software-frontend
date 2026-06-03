@@ -110,7 +110,11 @@ export class BranchSwitcherComponent implements OnInit {
   }
 
   onBranchChange(branchId: number) {
-    this.selectedBranch.set(branchId);
-    this.authService.switchBranch(branchId);
+    const previous = this.selectedBranch();
+    this.selectedBranch.set(branchId); // optimistic
+    this.authService.switchBranch(branchId).subscribe({
+      // success: setSession() has updated the global user signal to the new branch
+      error: () => this.selectedBranch.set(previous), // roll back the dropdown on failure
+    });
   }
 }
