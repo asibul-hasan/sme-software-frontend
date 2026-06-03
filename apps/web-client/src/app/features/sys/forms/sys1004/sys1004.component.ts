@@ -11,7 +11,7 @@ import { Sys1006DataService } from '../sys1006/services/data.service';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ColumnDef, TableConfig, statusBadge } from '../../../../shared/components/common-table';
 import { CurrencySettingsService } from '../../../../core/services/currency-settings.service';
 
 @Component({
@@ -134,11 +134,7 @@ export class Sys1004Component implements OnInit {
       { title: 'Rate',      field: 'rate',             cellType: 'decimal', precision, align: 'right', sort: true },
       {
         title: 'Status', field: 'status_derived', cellType: 'badge', sort: false, width: '110px',
-        badgeConfig: (val) => {
-          if (val === 'current')  return { label: 'Current',  variant: 'success' };
-          if (val === 'active')   return { label: 'Active',   variant: 'success' };
-          return                         { label: 'Inactive', variant: 'danger'  };
-        },
+        badgeConfig: statusBadge,
       },
     ];
   });

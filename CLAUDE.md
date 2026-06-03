@@ -458,4 +458,13 @@ tableData = computed(() => this.model.items() as unknown as Record<string, unkno
   ```
   The table resolves `value` centrally for the search box, `sortingDataAccessor`, and all
   export formats — no per-form filtering hacks.
+- **Status columns** → `cellType: 'badge'` with the shared `statusBadge` mapper, so every
+  form renders the same pill:
+  ```ts
+  import { statusBadge } from '@app/shared/components/common-table';
+  { title: 'Status', field: 'status', cellType: 'badge', badgeConfig: statusBadge }
+  ```
+  It maps active flags (`1`/`0`) and common statuses (pending/posted/confirmed/…) to colored pills.
+- **Row actions** render as a single kebab (`⋯`) menu (config `actions: [...]`), not inline
+  icon buttons. Editable cells use `ng-select` (not native `<select>`) on double-click.
 - See `shared/components/common-table/example-usage.ts` for full feature demos.

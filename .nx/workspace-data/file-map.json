@@ -10,76 +10,76 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": "package.json",
-        "hash": "6946302363905463637"
-      },
-      {
-        "file": ".vscode/extensions.json",
-        "hash": "4305574964819615641"
-      },
-      {
-        "file": "form.md",
-        "hash": "1309492402131103580"
-      },
-      {
-        "file": "FRONTEND_ARCHITECTURE.md",
-        "hash": "16758213599549329489"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "12269743867629339573"
-      },
-      {
-        "file": ".postcssrc.json",
-        "hash": "17460548602263189673"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "6820402234827505055"
-      },
-      {
-        "file": "nx.json",
-        "hash": "9648514650165378930"
-      },
-      {
         "file": ".vscode/settings.json",
         "hash": "1389868326933519382"
-      },
-      {
-        "file": "CLAUDE.md",
-        "hash": "15016052869148179769"
-      },
-      {
-        "file": "README.md",
-        "hash": "5839997762649794868"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "4550606800230877487"
-      },
-      {
-        "file": ".github/workflows/build.yml",
-        "hash": "9145398669626485070"
-      },
-      {
-        "file": "eslint.config.mjs",
-        "hash": "1750064783103198479"
-      },
-      {
-        "file": "file_list.txt",
-        "hash": "14704005612023710536"
       },
       {
         "file": ".gitignore",
         "hash": "11751663399876450553"
       },
       {
-        "file": "fix.md",
-        "hash": "15335060814099474284"
+        "file": "README.md",
+        "hash": "5839997762649794868"
+      },
+      {
+        "file": ".postcssrc.json",
+        "hash": "17460548602263189673"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "12269743867629339573"
+      },
+      {
+        "file": "form.md",
+        "hash": "1309492402131103580"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "4550606800230877487"
+      },
+      {
+        "file": "CLAUDE.md",
+        "hash": "118612412248042019"
+      },
+      {
+        "file": "file_list.txt",
+        "hash": "14704005612023710536"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "6820402234827505055"
+      },
+      {
+        "file": "eslint.config.mjs",
+        "hash": "1750064783103198479"
+      },
+      {
+        "file": ".github/workflows/build.yml",
+        "hash": "9145398669626485070"
+      },
+      {
+        "file": "FRONTEND_ARCHITECTURE.md",
+        "hash": "16758213599549329489"
+      },
+      {
+        "file": ".vscode/extensions.json",
+        "hash": "4305574964819615641"
       },
       {
         "file": ".editorconfig",
         "hash": "11532813898455409296"
+      },
+      {
+        "file": "nx.json",
+        "hash": "9648514650165378930"
+      },
+      {
+        "file": "package.json",
+        "hash": "6946302363905463637"
+      },
+      {
+        "file": "fix.md",
+        "hash": "15335060814099474284"
       }
     ],
     "projectFileMap": {
@@ -992,7 +992,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1004/sys1004.component.ts",
-          "hash": "279556327748364999"
+          "hash": "1930060508541687966"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1005/services/data.service.ts",
@@ -1368,7 +1368,11 @@
         },
         {
           "file": "apps/web-client/src/app/shared/components/common-table/index.ts",
-          "hash": "12544851015049336078"
+          "hash": "13347667917536260137"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/components/common-table/status-badge.ts",
+          "hash": "2706601728993669314"
         },
         {
           "file": "apps/web-client/src/app/shared/components/common-table/table-export.service.ts",
@@ -1380,11 +1384,11 @@
         },
         {
           "file": "apps/web-client/src/app/shared/components/common-table/table.component.html",
-          "hash": "1122405371276120489"
+          "hash": "13792220273546520738"
         },
         {
           "file": "apps/web-client/src/app/shared/components/common-table/table.component.ts",
-          "hash": "6453128053750974020"
+          "hash": "14654485541038764450"
         },
         {
           "file": "apps/web-client/src/app/shared/components/common-table/table.types.ts",

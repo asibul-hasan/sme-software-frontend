@@ -2,7 +2,8 @@ import {
   AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, inject,
   input, model, OnChanges, OnDestroy, output, signal, SimpleChanges, viewChild,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort as MatSortEvent } from '@angular/material/sort';
@@ -19,7 +20,7 @@ import { UiTooltipDirective } from '@app/shared/ui/tooltip/ui-tooltip.directive'
 
 import {
   BadgeConfig, CellButtonConfig, ColumnDef, DEFAULT_TABLE_CONFIG,
-  ExportFormat, PageEvent, SelectOption, SortState, TableAction, TableConfig,
+  ExportFormat, PageEvent, SelectOption, SortState, TableAction, TableActionType, TableConfig,
 } from './table.types';
 import { TableExportService } from './table-export.service';
 import { TableViewModalComponent } from './table-view-modal.component';
@@ -29,7 +30,8 @@ import { TableViewModalComponent } from './table-view-modal.component';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ReactiveFormsModule, MatTableModule, MatSortModule, MatPaginatorModule, MatCheckboxModule, MatIconModule,
+    ReactiveFormsModule, FormsModule, NgSelectModule,
+    MatTableModule, MatSortModule, MatPaginatorModule, MatCheckboxModule, MatIconModule,
     NgTemplateOutlet, UiBadgeComponent, UiMenuComponent, UiMenuTriggerDirective, UiTooltipDirective,
     TableViewModalComponent,
   ],
@@ -86,10 +88,11 @@ import { TableViewModalComponent } from './table-view-modal.component';
         box-shadow: 0 2px 6px -3px rgba(0, 0, 0, 0.16);
       }
 
-      /* Compact mode */
-      .erp-compact .mat-mdc-header-cell { padding: 4px 10px; font-size: 11px; }
-      .erp-compact .mat-mdc-cell { padding: 3px 10px; font-size: 12px; }
-      .erp-compact .mat-mdc-row { height: 32px; }
+      /* Compact mode — still comfortable, just tighter */
+      .erp-compact .mat-mdc-header-row { min-height: 38px; }
+      .erp-compact .mat-mdc-header-cell { padding: 0 12px; font-size: 11px; }
+      .erp-compact .mat-mdc-cell { padding: 5px 12px; font-size: 12px; }
+      .erp-compact .mat-mdc-row { min-height: 36px; }
 
       /* Paginator shell — background and outer container height.
          The form-field and row-height overrides live in styles.scss (global)
@@ -127,6 +130,14 @@ import { TableViewModalComponent } from './table-view-modal.component';
         width: 30px;
         height: 30px;
       }
+
+      /* ng-select inline editor — compact, fills the cell */
+      .table-edit-ngselect { min-width: 150px; display: block; }
+      .table-edit-ngselect .ng-select-container {
+        min-height: 30px;
+        border-radius: 6px;
+        font-size: 12.5px;
+      }
     }
 
     /* Active row — highlight every cell, left indicator bar on first cell only */
@@ -136,17 +147,17 @@ import { TableViewModalComponent } from './table-view-modal.component';
     }
     .erp-row-active td:first-child {
       border-left: 3px solid var(--indigo) !important;
-      padding-left: 9px !important;  /* 12px cell-padding − 3px border = same visual gap */
+      padding-left: 11px !important;  /* 14px cell-padding − 3px border = same visual gap */
     }
 
-    /* Footer row — same bg as header */
+    /* Footer band — identical to the header band (same bg + 1px rule) */
     .erp-footer-row .erp-footer-cell {
-      padding: 6px 12px !important;
+      padding: 8px 14px !important;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-primary);
       background: var(--bg-secondary) !important;
-      border-top: 2px solid var(--border-color);
+      border-top: 1px solid var(--border-color);
     }
 
     .sticky-bottom { position: sticky; bottom: 0; z-index: 2; }
@@ -196,6 +207,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly showSkeleton = signal(false);
   readonly editingCell = signal<{ row: Record<string, unknown>; field: string } | null>(null);
   readonly editValue = signal<unknown>(null);
+  /** Row whose kebab (⋯) menu is open — the shared action menu renders for this row. */
+  readonly actionMenuRow = signal<Record<string, unknown> | null>(null);
 
   readonly mergedConfig = computed<TableConfig>(() => ({ ...DEFAULT_TABLE_CONFIG, ...this.config() }));
 
@@ -347,6 +360,15 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     if (action.onClick) action.onClick(row);
     this.rowAction.emit({ action, row });
   }
+  /** Fallback label for a kebab action that didn't set `label`. */
+  actionLabel(type: TableActionType): string {
+    switch (type) {
+      case 'view':   return 'View';
+      case 'edit':   return 'Edit';
+      case 'delete': return 'Delete';
+      default:       return 'Action';
+    }
+  }
   onRowClick(row: Record<string, unknown>, event: MouseEvent): void {
     this.selection.clear();
     this.selection.select(row);
@@ -371,6 +393,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     this.editValue.set(v);
   }
   onEditCheckbox(event: Event): void { this.editValue.set((event.target as HTMLInputElement).checked); }
+  /** ng-select inline editor: set the value and commit immediately on pick. */
+  onSelectEditChange(value: unknown, col: ColumnDef): void { this.editValue.set(value); this.commitEdit(col); }
   isEditing(row: Record<string, unknown>, field: string): boolean { const c = this.editingCell(); return c !== null && c.row === row && c.field === field; }
   getSelectOptions(col: ColumnDef, row: Record<string, unknown>): SelectOption[] {
     if (!col.options) return []; return typeof col.options === 'function' ? col.options(row) : col.options;
