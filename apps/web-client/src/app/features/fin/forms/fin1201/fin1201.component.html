@@ -1,0 +1,34 @@
+<app-page-form-layout
+  [title]="'Auto-Posting Monitor'"
+  [subtitle]="'Outbox events that become GL vouchers — re-drive parked (Failed) postings'"
+  [icon]="'sync_problem'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 200px">
+            <label class="field-label" for="status">Status</label>
+            <ng-select id="status" [(ngModel)]="status" (ngModelChange)="load()" [clearable]="false">
+              @for (o of statusOptions; track o.value) { <ng-option [value]="o.value">{{ o.label }}</ng-option> }
+            </ng-select>
+          </div>
+          <button type="button" class="btn-action btn-save" style="height:42px;padding:0 16px" (click)="drain()" [disabled]="isBusy()">
+            <mat-icon style="font-size:18px;width:18px;height:18px">play_circle</mat-icon> Drain Pending Now
+          </button>
+          <div class="ms-auto d-flex align-items-center gap-2 text-muted"><mat-icon>inbox</mat-icon><span>{{ rows().length }} event(s)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">sync_problem</mat-icon> Outbox Events</h4></div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

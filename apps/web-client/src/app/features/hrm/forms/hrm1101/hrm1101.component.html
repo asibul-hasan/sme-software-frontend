@@ -1,0 +1,153 @@
+<app-page-form-layout
+  [title]="'Manual Attendance'"
+  [subtitle]="'Record or correct a daily attendance entry'"
+  [icon]="'fact_check'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Attendance'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && !isLocked"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo() && !isLocked"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.attendance_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.attendance_no"
+        (click)="selectAttendance(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 1 || item.status === 3"
+          [class.status-dot--inactive]="item.status === 2 || item.status === 8"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.att_date }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ model.employeeName(item.employee_no) }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 1">{{ statusLabel(item.status) }}</span>
+          @if (item.is_locked === 1) {
+            <span class="list-item-tag list-item-tag--warning">Locked</span>
+          }
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>fact_check</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      @if (isLocked) {
+        <div class="alert alert-warning d-flex align-items-center gap-2 mb-2" style="padding:8px 12px">
+          <mat-icon>lock</mat-icon>
+          This attendance is locked by a finalized payroll run. Raise an adjustment (HRM_1103) to change it.
+        </div>
+      }
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">info</mat-icon>
+                Attendance Entry
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="employee_no">Employee</label>
+                    <ng-select id="employee_no" labelForId="employee_no" formControlName="employee_no" [clearable]="false"
+                      placeholder="Select employee">
+                      @for (emp of model.employees(); track emp.employee_no) {
+                        <ng-option [value]="emp.employee_no">{{ emp.full_name || emp.first_name }} ({{ emp.employee_id }})</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="att_date">Date</label>
+                    <input type="date" id="att_date" formControlName="att_date" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="status">Status</label>
+                    <ng-select id="status" labelForId="status" formControlName="status" [clearable]="false" placeholder="Status">
+                      @for (opt of statusOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="in_time">In Time</label>
+                    <input type="time" id="in_time" formControlName="in_time" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="out_time">Out Time</label>
+                    <input type="time" id="out_time" formControlName="out_time" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="late_minutes">Late (min)</label>
+                    <input type="number" id="late_minutes" formControlName="late_minutes" class="form-control" step="1" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="ot_hours">OT Hours</label>
+                    <input type="number" id="ot_hours" formControlName="ot_hours" class="form-control" step="0.25" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">settings</mat-icon>
+                Status
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group">
+                <label class="field-label">Active</label>
+                <div class="custom--checkbox">
+                  <mat-checkbox [checked]="formdata.get('is_active')?.value === 1" (change)="toggleFlag('is_active', $event)" color="primary">
+                    <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

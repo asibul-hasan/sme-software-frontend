@@ -1,0 +1,147 @@
+<app-page-form-layout
+  [title]="'Attendance Adjustment'"
+  [subtitle]="'Request and approve corrections to attendance, including locked rows'"
+  [icon]="'edit_calendar'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Adjustments'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && pending"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.adjustment_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.adjustment_no"
+        (click)="selectAdjustment(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 2"
+          [class.status-dot--inactive]="item.status === 3"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.att_date }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ model.employeeName(item.employee_no) }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-tag list-item-tag--primary">{{ attStatusLabel(item.requested_status) }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>edit_calendar</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">info</mat-icon>
+                Adjustment Request
+              </h4>
+              <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="employee_no">Employee</label>
+                    <ng-select id="employee_no" labelForId="employee_no" formControlName="employee_no" [readonly]="!pending" [clearable]="false" placeholder="Select employee">
+                      @for (emp of model.employees(); track emp.employee_no) {
+                        <ng-option [value]="emp.employee_no">{{ emp.full_name || emp.first_name }} ({{ emp.employee_id }})</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="att_date">Date</label>
+                    <input type="date" id="att_date" formControlName="att_date" class="form-control" [readonly]="!pending" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="requested_status">Requested Status</label>
+                    <ng-select id="requested_status" labelForId="requested_status" formControlName="requested_status" [readonly]="!pending" [clearable]="false" placeholder="Status">
+                      @for (opt of attStatusOptions; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="requested_in">In Time</label>
+                    <input type="time" id="requested_in" formControlName="requested_in" class="form-control" [readonly]="!pending" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="requested_out">Out Time</label>
+                    <input type="time" id="requested_out" formControlName="requested_out" class="form-control" [readonly]="!pending" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="reason">Reason</label>
+                    <textarea id="reason" formControlName="reason" class="form-control" rows="2" [readonly]="!pending" placeholder="Why is this correction needed?"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">approval</mat-icon>
+                Approval
+              </h4>
+            </div>
+            <div class="card-body">
+              @if (status === 1) {
+                <p class="field-label mb-2">This request is pending approval.</p>
+                @if (permissionService.canApprove()) {
+                  <div class="d-flex flex-wrap gap-1">
+                    <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving() || !model.selectedNo()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve
+                    </button>
+                    <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving() || !model.selectedNo()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject
+                    </button>
+                  </div>
+                }
+              } @else {
+                <div class="d-flex align-items-center gap-2">
+                  <mat-icon [class.text-success]="status === 2" [class.text-danger]="status === 3">{{ status === 2 ? 'verified' : 'block' }}</mat-icon>
+                  <span class="fw-semibold">{{ statusLabel(status) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

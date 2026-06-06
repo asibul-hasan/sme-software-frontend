@@ -1,0 +1,129 @@
+<app-page-form-layout
+  [title]="'Candidate / Application'"
+  [subtitle]="'Track applicants through the recruitment pipeline'"
+  [icon]="'person_search'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Candidates'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.candidate_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.candidate_no"
+        (click)="selectCandidate(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.application_status === 6"
+          [class.status-dot--inactive]="item.application_status === 7 || item.application_status === 8"
+          [title]="statusLabel(item.application_status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.full_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.candidate_id }} · {{ item.mobile_number }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.application_status)">{{ statusLabel(item.application_status) }}</span>
+          @if (model.reqLabel(item.requisition_no)) { <span class="list-item-tag">{{ model.reqLabel(item.requisition_no) }}</span> }
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>person_search</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">badge</mat-icon> Candidate</h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="candidate_id">Candidate ID</label>
+                    <input type="text" id="candidate_id" formControlName="candidate_id" class="form-control text-uppercase" placeholder="e.g. CAND-001" (input)="toUpper('candidate_id')" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="full_name">Full Name</label>
+                    <input type="text" id="full_name" formControlName="full_name" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="mobile_number">Mobile</label>
+                    <input type="text" id="mobile_number" formControlName="mobile_number" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="email">Email</label>
+                    <input type="email" id="email" formControlName="email" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="source">Source</label>
+                    <ng-select id="source" labelForId="source" formControlName="source" [clearable]="false" placeholder="Source">
+                      @for (opt of sources; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="requisition_no">Applied To (Requisition)</label>
+                    <ng-select id="requisition_no" labelForId="requisition_no" formControlName="requisition_no" bindLabel="requisition_id" bindValue="requisition_no"
+                      [items]="model.requisitions()" placeholder="Select requisition"></ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">timeline</mat-icon> Pipeline</h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group mb-3">
+                <label class="field-label required" for="application_status">Application Status</label>
+                <ng-select id="application_status" labelForId="application_status" formControlName="application_status" [clearable]="false" placeholder="Status">
+                  @for (opt of statuses; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                </ng-select>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="remarks">Remarks</label>
+                <textarea id="remarks" formControlName="remarks" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

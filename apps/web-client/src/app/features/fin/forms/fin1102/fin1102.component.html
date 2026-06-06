@@ -1,0 +1,82 @@
+<app-page-form-layout
+  [title]="'Bank Reconciliation'"
+  [subtitle]="'Reconcile a bank GL account against its statement — tick the lines that cleared'"
+  [icon]="'fact_check'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- Selection -->
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="row row-group align-items-end">
+          <div class="col-md-4">
+            <div class="field-group">
+              <label class="field-label" for="acc">Bank Account</label>
+              <ng-select id="acc" [(ngModel)]="accountNo" [clearable]="false" placeholder="Select bank account">
+                @for (a of bankAccounts(); track a.account_no) {
+                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
+                }
+              </ng-select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="field-group"><label class="field-label" for="sdate">Statement Date</label>
+              <input type="date" id="sdate" class="form-control" [(ngModel)]="statementDate" /></div>
+          </div>
+          <div class="col-md-3">
+            <div class="field-group"><label class="field-label" for="sbal">Statement Balance</label>
+              <input type="number" id="sbal" class="form-control text-end" [(ngModel)]="statementBalance" placeholder="0.00" /></div>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="loadWorksheet()">
+              <mat-icon>search</mat-icon> Load Worksheet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (loaded()) {
+      <!-- Summary -->
+      <div class="form-section-card card flex-shrink-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="text-end"><span class="field-label mb-0">Book Balance</span><div class="fw-bold">{{ bookBalance() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">Statement Balance</span><div class="fw-bold">{{ (statementBalance || 0) | number: '1.2-2' }}</div></div>
+            <div class="text-end">
+              <span class="field-label mb-0">Difference</span>
+              <div class="fw-bold" [class.text-success]="difference() === 0" [class.text-danger]="difference() !== 0">{{ difference() | number: '1.2-2' }}</div>
+            </div>
+            <div class="text-end"><span class="field-label mb-0">Cleared (this run)</span><div class="fw-bold">{{ clearedLines().length }} · {{ clearedBalance() | number: '1.2-2' }}</div></div>
+            <div class="ms-auto">
+              <div class="field-group" style="min-width: 260px"><label class="field-label" for="narr">Narration</label>
+                <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Optional note" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Worksheet -->
+      <div class="form-section-card card fill-card mt-1">
+        <div class="card-header d-flex align-items-center">
+          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">fact_check</mat-icon> Uncleared Ledger Lines</h4>
+          <button type="button" class="btn-action btn-save ms-auto" [disabled]="isSaving()" (click)="save()">
+            <mat-icon>save</mat-icon> Save Reconciliation
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+        </div>
+      </div>
+    } @else {
+      <div class="form-section-card card fill-card mt-1">
+        <div class="card-body d-flex align-items-center justify-content-center text-muted">
+          <div class="text-center"><mat-icon style="font-size:42px;width:42px;height:42px;opacity:.4">fact_check</mat-icon>
+            <p class="mt-2 mb-0">Select a bank account and load the worksheet to begin reconciling.</p></div>
+        </div>
+      </div>
+    }
+  </div>
+</app-page-form-layout>

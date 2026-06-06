@@ -1,34 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { AppConfigService } from '../../../core/services/app-config.service';
+import { BaseDataService } from '../../../core/services/base-data.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class PurDataService {
-  private get apiUrl() { return `${this.config.apiUrl}/pur`; }
-
-  constructor(private http: HttpClient, private config: AppConfigService) { }
-
-  // Generic CRUD Methods
-  getList<T>(path: string): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${path}`);
-  }
-
-  getDetails<T>(path: string, params: any): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${path}`, { params });
-  }
-
-  create<T>(path: string, payload: any): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}/${path}`, payload);
-  }
-
-  update<T>(path: string, payload: any): Observable<T> {
-    return this.http.put<T>(`${this.apiUrl}/${path}`, payload);
-  }
-
-  delete<T>(path: string, params: any): Observable<T> {
-    return this.http.delete<T>(`${this.apiUrl}/${path}`, { params });
-  }
+/**
+ * HTTP gateway for the PUR module (/api/v1/pur/...).
+ * Generic CRUD (getList/getDtl/insert/update/delete) inherited from BaseDataService.
+ */
+@Injectable({ providedIn: 'root' })
+export class PurDataService extends BaseDataService {
+  protected override readonly modulePath = 'pur';
 }

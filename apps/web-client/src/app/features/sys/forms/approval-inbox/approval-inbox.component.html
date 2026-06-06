@@ -1,0 +1,26 @@
+<div class="p-2 h-100 d-flex flex-column">
+  <div class="form-section-card card flex-grow-1 d-flex flex-column" style="min-height:0">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h4 class="card-header__title mb-0 fw-bold">
+        <mat-icon class="me-2 align-middle">inbox</mat-icon>
+        Approval Inbox
+        @if (pending().length > 0) {
+          <span class="list-item-tag list-item-tag--primary ms-2">{{ pending().length }} pending</span>
+        }
+      </h4>
+      <button type="button" class="btn-action btn-reset" style="height:30px;padding:0 10px" (click)="reload()" [disabled]="isLoading()">
+        <mat-icon style="font-size:17px;width:17px;height:17px">refresh</mat-icon> Refresh
+      </button>
+    </div>
+    <div class="card-body p-0 flex-grow-1" style="min-height:0">
+      @if (pending().length === 0 && !isLoading()) {
+        <div class="list-empty-state py-5">
+          <mat-icon>task_alt</mat-icon>
+          <p>Nothing awaiting your approval</p>
+        </div>
+      } @else {
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      }
+    </div>
+  </div>
+</div>

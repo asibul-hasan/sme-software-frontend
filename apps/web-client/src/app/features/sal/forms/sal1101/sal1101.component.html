@@ -1,0 +1,123 @@
+<app-page-form-layout
+  [title]="'Customer Management'"
+  [subtitle]="'Buyer master — credit terms, tier, tax; due is derived from the AR ledger'"
+  [icon]="'groups'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Customers'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [pager]="model.pager"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.customer_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.customer_no" (click)="select(item)">
+        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
+          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.customer_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.customer_id }}{{ item.mobile_no ? ' · ' + item.mobile_no : '' }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag">{{ typeLabel(item.customer_type) }}</span>
+          @if (item.current_due && item.current_due > 0) { <span class="list-item-value">{{ item.current_due | number: '1.0-0' }}</span> }
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>groups</mat-icon><p>No customers found</p></div> }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Identity -->
+        <div class="col-lg-8">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">person</mat-icon> Identity</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="customer_id">Customer ID</label>
+                  <input type="text" id="customer_id" formControlName="customer_id" class="form-control" placeholder="auto (CUS-…)" /></div></div>
+                <div class="col-md-5"><div class="field-group"><label class="field-label required" for="customer_name">Customer Name</label>
+                  <input type="text" id="customer_name" formControlName="customer_name" class="form-control" /></div></div>
+                <div class="col-md-2"><div class="field-group"><label class="field-label required" for="customer_type">Type</label>
+                  <ng-select id="customer_type" formControlName="customer_type" [items]="customerTypes" bindValue="value" bindLabel="label" [clearable]="false" /></div></div>
+                <div class="col-md-2"><div class="field-group"><label class="field-label" for="price_tier">Price Tier</label>
+                  <ng-select id="price_tier" formControlName="price_tier" [items]="priceTiers" bindValue="value" bindLabel="label" [clearable]="false" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="mobile_no">Mobile</label>
+                  <input type="text" id="mobile_no" formControlName="mobile_no" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="alt_mobile_no">Alt Mobile</label>
+                  <input type="text" id="alt_mobile_no" formControlName="alt_mobile_no" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="email">Email</label>
+                  <input type="email" id="email" formControlName="email" class="form-control" /></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">place</mat-icon> Address</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="address_line1">Address Line 1</label>
+                  <input type="text" id="address_line1" formControlName="address_line1" class="form-control" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="address_line2">Address Line 2</label>
+                  <input type="text" id="address_line2" formControlName="address_line2" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="city">City</label>
+                  <input type="text" id="city" formControlName="city" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="post_code">Post Code</label>
+                  <input type="text" id="post_code" formControlName="post_code" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="country_code">Country</label>
+                  <input type="text" id="country_code" formControlName="country_code" class="form-control" /></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: Credit + Tax + Status -->
+        <div class="col-lg-4">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">credit_score</mat-icon> Credit Control</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-12"><div class="field-group"><label class="field-label">Credit Allowed</label>
+                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_credit_allowed')?.value === 1" (change)="formdata.get('is_credit_allowed')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Allow credit sales</span></mat-checkbox></div>
+                </div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="credit_limit">Credit Limit</label>
+                  <input type="number" id="credit_limit" formControlName="credit_limit" class="form-control" step="0.01" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="credit_days">Credit Days</label>
+                  <input type="number" id="credit_days" formControlName="credit_days" class="form-control" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="opening_balance">Opening Due</label>
+                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" step="0.01" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="opening_balance_date">As of</label>
+                  <input type="date" id="opening_balance_date" formControlName="opening_balance_date" class="form-control" /></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">receipt_long</mat-icon> Tax & Status</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="vat_reg_no">VAT Reg No</label>
+                  <input type="text" id="vat_reg_no" formControlName="vat_reg_no" class="form-control" /></div></div>
+                <div class="col-md-6"><div class="field-group"><label class="field-label" for="tin_no">TIN</label>
+                  <input type="text" id="tin_no" formControlName="tin_no" class="form-control" /></div></div>
+                <div class="col-md-12"><div class="field-group"><label class="field-label">Status</label>
+                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
+                </div></div>
+                <div class="col-md-12"><div class="field-group"><label class="field-label" for="remarks">Remarks</label>
+                  <textarea id="remarks" formControlName="remarks" class="form-control" rows="2"></textarea></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

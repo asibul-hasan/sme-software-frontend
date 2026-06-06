@@ -1,0 +1,179 @@
+<app-page-form-layout
+  [title]="'Offer & Onboarding'"
+  [subtitle]="'Issue the recruitment offer letter and hire the candidate'"
+  [icon]="'description'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Offers'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.offer_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.offer_no"
+        (click)="selectOffer(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 3"
+          [class.status-dot--inactive]="item.status === 4 || item.status === 6"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ model.candidateName(item.candidate_no) }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.offer_id }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.offered_salary }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>description</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">work_outline</mat-icon> Offer Terms</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="offer_id">Offer ID</label>
+                    <input type="text" id="offer_id" formControlName="offer_id" class="form-control text-uppercase" placeholder="e.g. OFR-001" [readonly]="!editable" (input)="toUpper('offer_id')" />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label required" for="candidate_no">Candidate</label>
+                    <ng-select id="candidate_no" labelForId="candidate_no" formControlName="candidate_no" [readonly]="!editable"
+                      [clearable]="false" bindLabel="full_name" bindValue="candidate_no" [items]="model.candidates()" placeholder="Select a selected candidate">
+                      <ng-template ng-option-tmp let-item="item">{{ item.full_name }} ({{ item.candidate_id }})</ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="designation_no">Designation</label>
+                    <ng-select id="designation_no" labelForId="designation_no" formControlName="designation_no" [readonly]="!editable"
+                      bindLabel="designation_name" bindValue="designation_no" [items]="model.designations()" placeholder="Select designation"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="grade_no">Grade</label>
+                    <ng-select id="grade_no" labelForId="grade_no" formControlName="grade_no" [readonly]="!editable"
+                      bindLabel="grade_name" bindValue="grade_no" [items]="model.grades()" placeholder="Select grade"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="offered_salary">Offered Salary</label>
+                    <input type="number" id="offered_salary" formControlName="offered_salary" class="form-control" step="0.01" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="joining_date">Joining Date</label>
+                    <input type="date" id="joining_date" formControlName="joining_date" class="form-control" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="notes">Notes</label>
+                    <textarea id="notes" formControlName="notes" class="form-control" rows="2" [readonly]="!editable"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- The recruitment / offer letter -->
+          @if (model.letter(); as letter) {
+            <div class="form-section-card card">
+              <div class="card-header d-flex align-items-center justify-content-between">
+                <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">mail</mat-icon> Offer Letter</h4>
+                <button type="button" class="btn-action btn-reset" style="height:28px;padding:0 10px" (click)="printLetter()">
+                  <mat-icon style="font-size:16px;width:16px;height:16px">print</mat-icon> Print
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="offer-letter">{{ letter.letter_text }}</div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Workflow -->
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">flag</mat-icon> Lifecycle</h4>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <mat-icon [class.text-success]="status === 3">flag</mat-icon>
+                <span class="fw-semibold">{{ statusLabel(status) }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                @if (model.selectedNo()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="generateLetter()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">visibility</mat-icon> View Letter
+                  </button>
+                }
+                @if (status === 1 && permissionService.canInsert() && model.selectedNo()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="send()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">send</mat-icon> Send
+                  </button>
+                }
+                @if (status === 2 && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="accept()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">how_to_reg</mat-icon> Accept
+                  </button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="decline()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Decline
+                  </button>
+                }
+                @if ((status === 1 || status === 2) && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="revoke()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Revoke
+                  </button>
+                }
+              </div>
+              @if (status === 3) {
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
+                  <mat-icon>how_to_reg</mat-icon>
+                  Candidate hired — complete onboarding in Employee Management (HRM_1001).
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

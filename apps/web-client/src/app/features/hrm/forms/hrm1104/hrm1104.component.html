@@ -1,0 +1,119 @@
+<app-page-form-layout
+  [title]="'Shift Roster'"
+  [subtitle]="'Assign shifts to employees for a date range'"
+  [icon]="'calendar_month'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Rosters'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && (status === 1 || status === 3)"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.roster_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.roster_no" (click)="selectRoster(item)">
+        <span class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 2" [class.status-dot--inactive]="item.status === 3"
+          [title]="statusLabel(item.status)"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.roster_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.roster_id }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-chip"><mat-icon>date_range</mat-icon><span>{{ item.from_date }} → {{ item.to_date }}</span></span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state"><mat-icon>calendar_month</mat-icon><p>No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">calendar_month</mat-icon> Roster</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="roster_id">Roster ID</label>
+                  <input type="text" id="roster_id" formControlName="roster_id" class="form-control text-uppercase" placeholder="e.g. RST-001" [readonly]="!editable" (input)="toUpper('roster_id')" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label required" for="roster_name">Roster Name</label>
+                  <input type="text" id="roster_name" formControlName="roster_name" class="form-control" placeholder="e.g. March Day Shift" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-2"><div class="field-group">
+                  <label class="field-label required" for="from_date">From</label>
+                  <input type="date" id="from_date" formControlName="from_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-2"><div class="field-group">
+                  <label class="field-label required" for="to_date">To</label>
+                  <input type="date" id="to_date" formControlName="to_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+              </div>
+            </div>
+          </div>
+
+          @if (editable) {
+            <div class="form-section-card card">
+              <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">person_add</mat-icon> Add Employee</h4></div>
+              <div class="card-body">
+                <div class="d-flex align-items-end gap-2 flex-wrap">
+                  <div class="field-group flex-grow-1" style="min-width: 220px">
+                    <label class="field-label">Employee</label>
+                    <ng-select [(ngModel)]="newEmployee" [ngModelOptions]="{ standalone: true }" bindLabel="full_name" bindValue="employee_no" [items]="model.employees()" placeholder="Select employee">
+                      <ng-template ng-option-tmp let-item="item">{{ item.full_name || item.first_name }} ({{ item.employee_id }})</ng-template>
+                    </ng-select>
+                  </div>
+                  <div class="field-group" style="min-width: 180px">
+                    <label class="field-label">Shift</label>
+                    <ng-select [(ngModel)]="newShift" [ngModelOptions]="{ standalone: true }" bindLabel="shift_name" bindValue="shift_no" [items]="model.shifts()" placeholder="Select shift"></ng-select>
+                  </div>
+                  <div class="field-group" style="min-width: 160px">
+                    <label class="field-label">Weekly Off</label>
+                    <ng-select [(ngModel)]="newWeeklyOff" [ngModelOptions]="{ standalone: true }" placeholder="None">
+                      @for (d of weekdays; track d.value) { <ng-option [value]="d.value">{{ d.label }}</ng-option> }
+                    </ng-select>
+                  </div>
+                  <button type="button" class="btn-action btn-save" style="height:42px;padding:0 16px" (click)="addLine()">
+                    <mat-icon style="font-size:18px;width:18px;height:18px">add</mat-icon> Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">groups</mat-icon> Roster Lines</h4>
+              <div class="d-flex gap-1">
+                @if (status === 1 && model.selectedNo() && permissionService.canUpdate()) {
+                  <button type="button" class="btn-action btn-save" style="height:30px;padding:0 12px" (click)="publish()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">publish</mat-icon> Publish</button>
+                }
+                @if ((status === 1 || status === 2) && model.selectedNo() && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:30px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel</button>
+                }
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

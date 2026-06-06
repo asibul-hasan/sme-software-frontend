@@ -1,0 +1,41 @@
+<app-page-form-layout
+  [title]="'Salary Sheet'"
+  [subtitle]="'Consolidated salary sheet for a payroll run'"
+  [icon]="'receipt_long'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 260px">
+            <label class="field-label" for="run">Payroll Run</label>
+            <ng-select id="run" [ngModel]="model.selectedRun()" (ngModelChange)="onRunChange($event)" [clearable]="false" placeholder="Select a run">
+              @for (r of model.runs(); track r.payroll_run_no) {
+                <ng-option [value]="r.payroll_run_no">{{ r.pay_period }} — {{ statusLabel(r.status) }}</ng-option>
+              }
+            </ng-select>
+          </div>
+          @if (model.selectedRunMeta(); as meta) {
+            <div class="d-flex align-items-center gap-2"><span class="list-item-tag">{{ statusLabel(meta.status) }}</span></div>
+            <div class="d-flex flex-column"><span class="field-label mb-0">Employees</span><span class="fw-semibold">{{ meta.employee_count || 0 }}</span></div>
+            <div class="d-flex flex-column ms-auto text-end"><span class="field-label mb-0">Total Net</span><span class="fw-bold" style="color:var(--success)">{{ (meta.total_net || 0) | number: '1.2-2' }}</span></div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">receipt_long</mat-icon> Salary Sheet</h4>
+      </div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="model.rows()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

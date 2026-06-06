@@ -45,11 +45,7 @@ export class Sys1003Component implements OnInit {
   readonly SYS_CONSTS   = sysConstants;
 
   // ─── Status options for period dropdown (numeric values matching backend) ───
-  readonly periodStatusOptions = [
-    { label: 'Open', value: 1 },
-    { label: 'Closed', value: 2 },
-    { label: 'Locked', value: 3 },
-  ];
+  readonly periodStatusOptions = sysConstants.periodStatuses;
 
   periodsSignal = signal<Record<string, unknown>[]>([]);
 

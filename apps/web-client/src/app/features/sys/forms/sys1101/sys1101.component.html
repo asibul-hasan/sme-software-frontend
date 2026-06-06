@@ -127,12 +127,27 @@
                 <mat-icon class="me-2 align-middle">badge</mat-icon>
                 Employee Summary
               </h4>
-              <span class="security-pill">
-                <mat-icon class="icon-small">{{
-                  model.selectedUserNo() ? 'verified_user' : 'person_add'
-                }}</mat-icon>
-                {{ model.selectedUserNo() ? 'Mapped User' : 'Pending User' }}
-              </span>
+              <div class="d-flex align-items-center gap-2">
+                @if (!model.selectedUserNo() && model.selectedEmployee() && permissionService.canInsert()) {
+                  <button
+                    type="button"
+                    class="btn-action btn-save"
+                    style="height: 32px; padding: 0 12px"
+                    (click)="model.createFromEmployee()"
+                    [disabled]="model.isSaving()"
+                    title="Create a login user using employee data (login id & initial password = Employee ID)"
+                  >
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px">person_add</mat-icon>
+                    Create user from employee
+                  </button>
+                }
+                <span class="security-pill">
+                  <mat-icon class="icon-small">{{
+                    model.selectedUserNo() ? 'verified_user' : 'person_add'
+                  }}</mat-icon>
+                  {{ model.selectedUserNo() ? 'Mapped User' : 'Pending User' }}
+                </span>
+              </div>
             </div>
             <div class="card-body">
               @let emp = model.selectedEmployee();

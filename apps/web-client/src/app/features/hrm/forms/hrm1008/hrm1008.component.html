@@ -1,0 +1,112 @@
+<app-page-form-layout
+  [title]="'HR Policy / Settings'"
+  [subtitle]="'Country pack switch and payroll/leave policy'"
+  [icon]="'tune'"
+  [hasSidebar]="false"
+  (save)="onSave()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canUpdate() || permissionService.canInsert()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Country / Region pack -->
+        <div class="col-xl-6 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">public</mat-icon>
+                Region / Country Pack
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="country_code">Country Pack</label>
+                    <ng-select id="country_code" labelForId="country_code" formControlName="country_code" [clearable]="false"
+                      (change)="onCountryChange($event.value)" placeholder="Select country">
+                      @for (opt of countries; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="currency_code">Currency</label>
+                    <input type="text" id="currency_code" formControlName="currency_code" class="form-control text-uppercase" maxlength="4" placeholder="e.g. BDT" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="weekend_days">Weekend Days</label>
+                    <input type="text" id="weekend_days" formControlName="weekend_days" class="form-control text-uppercase" placeholder="e.g. FRI,SAT" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="fiscal_year_start">Fiscal Year Start (MM-DD)</label>
+                    <input type="text" id="fiscal_year_start" formControlName="fiscal_year_start" class="form-control" placeholder="e.g. 07-01" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payroll / Leave policy -->
+        <div class="col-xl-6 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">policy</mat-icon>
+                Payroll & Leave Policy
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="overtime_multiplier">Overtime Multiplier</label>
+                    <input type="number" id="overtime_multiplier" formControlName="overtime_multiplier" class="form-control" step="0.1" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="maternity_weeks">Maternity Weeks</label>
+                    <input type="number" id="maternity_weeks" formControlName="maternity_weeks" class="form-control" step="1" />
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label">Statutory Components</label>
+                    <div class="custom--checkbox mb-1">
+                      <mat-checkbox [checked]="formdata.get('enable_provident_fund')?.value === 1" (change)="toggleFlag('enable_provident_fund', $event)" color="primary">
+                        <span class="field-label mb-0" style="cursor: pointer">Provident Fund</span>
+                      </mat-checkbox>
+                    </div>
+                    <div class="custom--checkbox mb-1">
+                      <mat-checkbox [checked]="formdata.get('enable_gratuity')?.value === 1" (change)="toggleFlag('enable_gratuity', $event)" color="primary">
+                        <span class="field-label mb-0" style="cursor: pointer">Gratuity</span>
+                      </mat-checkbox>
+                    </div>
+                    <div class="custom--checkbox">
+                      <mat-checkbox [checked]="formdata.get('enable_festival_bonus')?.value === 1" (change)="toggleFlag('enable_festival_bonus', $event)" color="primary">
+                        <span class="field-label mb-0" style="cursor: pointer">Festival Bonus</span>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</app-page-form-layout>

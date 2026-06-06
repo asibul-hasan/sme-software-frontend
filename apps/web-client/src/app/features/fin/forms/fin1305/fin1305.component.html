@@ -1,0 +1,64 @@
+<app-page-form-layout
+  [title]="'Balance Sheet'"
+  [subtitle]="'Statement of financial position — Assets = Liabilities + Equity (incl. current earnings)'"
+  [icon]="'account_balance'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 180px">
+            <label class="field-label" for="asOf">As of Date</label>
+            <input type="date" id="asOf" class="form-control" [(ngModel)]="asOf" (change)="load()" />
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-4">
+            <div class="text-end"><span class="field-label mb-0">Total Assets</span><div class="fw-bold">{{ totalAssets() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">Liabilities + Equity</span><div class="fw-bold">{{ totalLiabEquity() | number: '1.2-2' }}</div></div>
+            <span class="list-item-tag" [class.list-item-tag--primary]="balanced()" [class.list-item-tag--warning]="!balanced()">
+              {{ balanced() ? 'Balanced' : 'Out of balance' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row row-group flex-grow-1" style="min-height:0">
+      <div class="col-lg-6 d-flex flex-column" style="min-height:0">
+        <div class="form-section-card card fill-card">
+          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">savings</mat-icon> Assets</h4></div>
+          <div class="card-body p-0">
+            <app-common-table [columns]="columns" [data]="assetsData()" [config]="config" />
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 d-flex flex-column" style="min-height:0">
+        <div class="form-section-card card fill-card">
+          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">request_quote</mat-icon> Liabilities</h4></div>
+          <div class="card-body p-0">
+            <app-common-table [columns]="columns" [data]="liabData()" [config]="config" />
+          </div>
+        </div>
+        <div class="form-section-card card fill-card mt-1">
+          <div class="card-header">
+            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">account_balance_wallet</mat-icon> Equity</h4>
+          </div>
+          <div class="card-body p-0">
+            <app-common-table [columns]="columns" [data]="equityData()" [config]="config" />
+          </div>
+          <div class="card-body py-2 d-flex justify-content-between align-items-center border-top">
+            <span class="field-label mb-0">Current Year Earnings</span>
+            <span class="fw-bold">{{ currentEarnings() | number: '1.2-2' }}</span>
+          </div>
+          <div class="card-body py-2 d-flex justify-content-between align-items-center border-top">
+            <span class="field-label mb-0 fw-bold">Total Equity</span>
+            <span class="fw-bold">{{ totalEquity() | number: '1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

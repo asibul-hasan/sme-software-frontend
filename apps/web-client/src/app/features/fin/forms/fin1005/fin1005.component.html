@@ -1,0 +1,77 @@
+<app-page-form-layout
+  [title]="'Bank / Cash Account'"
+  [subtitle]="'Banking detail linked to a GL Bank/Cash account'"
+  [icon]="'account_balance'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Bank Accounts'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.bank_account_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.bank_account_no" (click)="select(item)">
+        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
+          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.bank_name || item.account_title || item.bank_account_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.bank_account_id }} · {{ item.account_number }}</p>
+        <div class="list-item-meta"><span class="list-item-chip"><mat-icon>account_balance</mat-icon><span>{{ item.account_name }}</span></span></div>
+      </button>
+    }
+    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>account_balance</mat-icon><p>No records found</p></div> }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">account_balance</mat-icon> Bank / Cash Account</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="bank_account_id">Account ID</label>
+                  <input type="text" id="bank_account_id" formControlName="bank_account_id" class="form-control text-uppercase" placeholder="e.g. BANK-01" (input)="toUpper('bank_account_id')" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label required" for="account_no">GL Bank/Cash Account</label>
+                  <ng-select id="account_no" formControlName="account_no" bindLabel="account_name" bindValue="account_no" [items]="model.bankCashAccounts()" placeholder="Select Bank/Cash account">
+                    <ng-template ng-option-tmp let-item="item">{{ item.account_name }} ({{ item.account_code }})</ng-template>
+                  </ng-select>
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="opening_balance">Opening Balance</label>
+                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" step="0.01" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="bank_name">Bank Name</label>
+                  <input type="text" id="bank_name" formControlName="bank_name" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="branch_name">Branch Name</label>
+                  <input type="text" id="branch_name" formControlName="branch_name" class="form-control" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="account_title">Account Title</label>
+                  <input type="text" id="account_title" formControlName="account_title" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="account_number">Account Number</label>
+                  <input type="text" id="account_number" formControlName="account_number" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="routing_number">Routing No</label>
+                  <input type="text" id="routing_number" formControlName="routing_number" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label" for="swift_code">SWIFT</label>
+                  <input type="text" id="swift_code" formControlName="swift_code" class="form-control" /></div></div>
+                <div class="col-md-3"><div class="field-group"><label class="field-label">Status</label>
+                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
+                </div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

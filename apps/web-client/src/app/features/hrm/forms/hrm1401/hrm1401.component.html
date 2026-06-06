@@ -1,0 +1,196 @@
+<app-page-form-layout
+  [title]="'Job Requisition'"
+  [subtitle]="'Raise hiring requests and route them through approval'"
+  [icon]="'post_add'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Requisitions'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.requisition_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.requisition_no"
+        (click)="selectRequisition(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 3"
+          [class.status-dot--inactive]="item.status === 5 || item.status === 6"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.requisition_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ model.desigName(item.designation_no) }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.no_of_vacancies }} pos</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>post_add</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">work</mat-icon>
+                Requisition Details
+              </h4>
+              @if (!model.isDraft() || model.selectedNo()) {
+                <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span>
+              }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="requisition_id">Requisition ID</label>
+                    <input type="text" id="requisition_id" formControlName="requisition_id" class="form-control text-uppercase" placeholder="e.g. REQ-2026-001" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="department_no">Department</label>
+                    <ng-select id="department_no" labelForId="department_no" formControlName="department_no" [readonly]="!editable"
+                      [clearable]="false" (change)="onDeptChange(formdata.get('department_no')?.value ?? null)" bindLabel="department_name" bindValue="department_no"
+                      [items]="model.departments()" placeholder="Select department"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="designation_no">Designation</label>
+                    <ng-select id="designation_no" labelForId="designation_no" formControlName="designation_no" [readonly]="!editable"
+                      [clearable]="false" bindLabel="designation_name" bindValue="designation_no"
+                      [items]="model.designationsForDept()" placeholder="Select designation"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="grade_no">Grade</label>
+                    <ng-select id="grade_no" labelForId="grade_no" formControlName="grade_no" [readonly]="!editable"
+                      bindLabel="grade_name" bindValue="grade_no" [items]="model.grades()" placeholder="Select grade"></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="no_of_vacancies">Vacancies</label>
+                    <input type="number" id="no_of_vacancies" formControlName="no_of_vacancies" class="form-control" min="1" step="1" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="employment_type">Employment Type</label>
+                    <ng-select id="employment_type" labelForId="employment_type" formControlName="employment_type" [readonly]="!editable" [clearable]="false" placeholder="Type">
+                      @for (opt of employmentTypes; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="budget_min">Budget Min</label>
+                    <input type="number" id="budget_min" formControlName="budget_min" class="form-control" step="0.01" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="budget_max">Budget Max</label>
+                    <input type="number" id="budget_max" formControlName="budget_max" class="form-control" step="0.01" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="required_by_date">Required By</label>
+                    <input type="date" id="required_by_date" formControlName="required_by_date" class="form-control" [readonly]="!editable" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="job_description">Job Description</label>
+                    <textarea id="job_description" formControlName="job_description" class="form-control" rows="3" [readonly]="!editable"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workflow -->
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">approval</mat-icon>
+                Workflow
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <mat-icon [class.text-success]="status === 3">flag</mat-icon>
+                <span class="fw-semibold">{{ statusLabel(status) }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                @if (status === 1 && model.selectedNo() && permissionService.canInsert()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="submit()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">send</mat-icon> Submit
+                  </button>
+                }
+                @if (status === 2 && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve
+                  </button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject
+                  </button>
+                }
+                @if (status === 3) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="hold()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">pause_circle</mat-icon> Hold
+                  </button>
+                }
+                @if (status === 4) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="resume()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">play_circle</mat-icon> Resume
+                  </button>
+                }
+                @if (status === 3 || status === 4) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="close()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">task_alt</mat-icon> Close
+                  </button>
+                }
+                @if (status !== 5 && status !== 6 && model.selectedNo()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()">
+                    <mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

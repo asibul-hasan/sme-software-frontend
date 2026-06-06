@@ -1,0 +1,144 @@
+<app-page-form-layout
+  [title]="'Salary Processing'"
+  [subtitle]="'Run payroll: calculate payslips, approve and pay'"
+  [icon]="'payments'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Payroll Runs'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() && isNew"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && (status === 1 || status === 5)"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.payroll_run_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.payroll_run_no"
+        (click)="selectRun(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 3 || item.status === 4"
+          [class.status-dot--inactive]="item.status === 5"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.pay_period }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ runTypeLabel(item.run_type) }} · {{ item.employee_count }} emp</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.total_net | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>payments</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Run header -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">calendar_month</mat-icon>
+                Payroll Run
+              </h4>
+              @if (!isNew) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="pay_period">Pay Period</label>
+                    <input type="text" id="pay_period" formControlName="pay_period" class="form-control" placeholder="YYYY-MM" [readonly]="!isNew" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="run_type">Run Type</label>
+                    <ng-select id="run_type" labelForId="run_type" formControlName="run_type" [clearable]="false" [readonly]="!isNew" placeholder="Type">
+                      @for (opt of runTypes; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="period_start">Period Start</label>
+                    <input type="date" id="period_start" formControlName="period_start" class="form-control" [readonly]="!isNew" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="period_end">Period End</label>
+                    <input type="date" id="period_end" formControlName="period_end" class="form-control" [readonly]="!isNew" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Workflow actions -->
+              @if (!isNew) {
+                <div class="d-flex flex-wrap gap-1 mt-3">
+                  @if ((status === 1 || status === 2) && permissionService.canInsert()) {
+                    <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="calculate()" [disabled]="model.isSaving()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">calculate</mat-icon> {{ status === 2 ? 'Recalculate' : 'Calculate' }}
+                    </button>
+                  }
+                  @if (status === 2 && permissionService.canApprove()) {
+                    <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">verified</mat-icon> Approve
+                    </button>
+                  }
+                  @if (status === 3 && permissionService.canApprove()) {
+                    <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="pay()" [disabled]="model.isSaving()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">account_balance</mat-icon> Mark Paid
+                    </button>
+                  }
+                  @if ((status === 1 || status === 2) && permissionService.canDelete()) {
+                    <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Payslips grid (shared common-table) -->
+        @if (!isNew) {
+          <div class="col-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">receipt_long</mat-icon>
+                  Payslips ({{ model.payslips().length }})
+                </h4>
+              </div>
+              <div class="card-body p-0">
+                <app-common-table [columns]="payslipColumns" [data]="payslipData()" [config]="payslipConfig" />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

@@ -1,0 +1,135 @@
+<app-page-form-layout
+  [title]="'Voucher Entry'"
+  [subtitle]="'Journal / Payment / Receipt / Contra — one balanced double-entry document'"
+  [icon]="'receipt'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Vouchers'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.voucher_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.voucher_no" (click)="select(item)">
+        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.status === 2" [class.status-dot--inactive]="item.status === 3"
+          [title]="statusLabel(item.status)"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.voucher_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.voucher_date }} · {{ item.voucher_type_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.total_debit }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>receipt</mat-icon><p>No records found</p></div> }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-9 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">receipt</mat-icon> Voucher</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }} · {{ model.current()?.voucher_id }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="voucher_type_no">Voucher Type</label>
+                  <ng-select id="voucher_type_no" formControlName="voucher_type_no" [readonly]="!editable" [clearable]="false" bindLabel="type_name" bindValue="voucher_type_no" [items]="model.voucherTypes()" placeholder="Select type"></ng-select>
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="voucher_date">Date</label>
+                  <input type="date" id="voucher_date" formControlName="voucher_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label" for="reference_no">Reference</label>
+                  <input type="text" id="reference_no" formControlName="reference_no" class="form-control" [readonly]="!editable" placeholder="cheque / external ref" />
+                </div></div>
+                <div class="col-12"><div class="field-group">
+                  <label class="field-label" for="narration">Narration</label>
+                  <textarea id="narration" formControlName="narration" class="form-control" rows="1" [readonly]="!editable"></textarea>
+                </div></div>
+              </div>
+            </div>
+          </div>
+
+          @if (editable) {
+            <div class="form-section-card card">
+              <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">playlist_add</mat-icon> Add Line</h4></div>
+              <div class="card-body">
+                <div class="d-flex align-items-end gap-2 flex-wrap">
+                  <div class="field-group flex-grow-1" style="min-width: 220px"><label class="field-label">Account</label>
+                    <ng-select [(ngModel)]="newAccount" [ngModelOptions]="{ standalone: true }" bindLabel="account_name" bindValue="account_no" [items]="model.postableAccounts()" placeholder="Select account">
+                      <ng-template ng-option-tmp let-item="item">{{ item.account_name }} ({{ item.account_code }})</ng-template>
+                    </ng-select>
+                  </div>
+                  <div class="field-group" style="width:130px"><label class="field-label">Debit</label>
+                    <input type="number" class="form-control" step="0.01" [(ngModel)]="newDebit" [ngModelOptions]="{ standalone: true }" /></div>
+                  <div class="field-group" style="width:130px"><label class="field-label">Credit</label>
+                    <input type="number" class="form-control" step="0.01" [(ngModel)]="newCredit" [ngModelOptions]="{ standalone: true }" /></div>
+                  <div class="field-group flex-grow-1" style="min-width:160px"><label class="field-label">Narration</label>
+                    <input type="text" class="form-control" [(ngModel)]="newNarration" [ngModelOptions]="{ standalone: true }" /></div>
+                  <button type="button" class="btn-action btn-save" style="height:42px;padding:0 16px" (click)="addLine()"><mat-icon style="font-size:18px;width:18px;height:18px">add</mat-icon> Add</button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">format_list_numbered</mat-icon> Lines</h4></div>
+            <div class="card-body p-0"><app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" /></div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">balance</mat-icon> Balance</h4></div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Total Debit</span><span class="fw-semibold">{{ model.totalDebit() | number: '1.2-2' }}</span></div>
+              <div class="d-flex justify-content-between mb-2"><span class="field-label mb-0">Total Credit</span><span class="fw-semibold">{{ model.totalCredit() | number: '1.2-2' }}</span></div>
+              <div class="d-flex justify-content-center pt-2" style="border-top:1px solid var(--border-color)">
+                <span class="list-item-tag" [class.list-item-tag--primary]="model.balanced()" [class.list-item-tag--warning]="!model.balanced()">
+                  <mat-icon style="font-size:16px;width:16px;height:16px" class="me-1">{{ model.balanced() ? 'check_circle' : 'error' }}</mat-icon>
+                  {{ model.balanced() ? 'Balanced' : 'Out of balance' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">approval</mat-icon> Workflow</h4></div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3"><mat-icon [class.text-success]="status === 2">flag</mat-icon><span class="fw-semibold">{{ statusLabel(status) }}</span></div>
+              <div class="d-flex flex-wrap gap-1">
+                @if (status === 1 && model.selectedNo() && permissionService.canInsert()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="submit()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">send</mat-icon> Submit / Post</button>
+                }
+                @if (status === 1 && model.selectedNo() && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve</button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject</button>
+                }
+                @if ((status === 1 || status === 2) && model.selectedNo() && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel</button>
+                }
+              </div>
+              @if (status === 2) {
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px"><mat-icon>check_circle</mat-icon> Posted to the ledger.</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

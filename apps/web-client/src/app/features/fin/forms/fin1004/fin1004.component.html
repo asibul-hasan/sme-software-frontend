@@ -1,0 +1,94 @@
+<app-page-form-layout
+  [title]="'Opening Balance'"
+  [subtitle]="'Seed GL account opening balances — posted as one balanced Opening voucher'"
+  [icon]="'flag'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- Header settings -->
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="row row-group align-items-end">
+          <div class="col-md-3">
+            <div class="field-group">
+              <label class="field-label" for="vdate">Voucher Date</label>
+              <input type="date" id="vdate" class="form-control" [(ngModel)]="voucherDate" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="field-group">
+              <label class="field-label" for="equity">Opening-Balance Equity Account</label>
+              <ng-select id="equity" [(ngModel)]="openingEquityAccountNo" [clearable]="true" placeholder="Absorbs the imbalance">
+                @for (a of accounts(); track a.account_no) {
+                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
+                }
+              </ng-select>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="field-group">
+              <label class="field-label" for="narr">Narration</label>
+              <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Opening balances as of…" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add line -->
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="row row-group align-items-end">
+          <div class="col-md-5">
+            <div class="field-group">
+              <label class="field-label" for="acc">Account</label>
+              <ng-select id="acc" [(ngModel)]="newAccount" [clearable]="true" placeholder="Select account">
+                @for (a of accounts(); track a.account_no) {
+                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
+                }
+              </ng-select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="field-group"><label class="field-label">Debit</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newDebit" placeholder="0.00" /></div>
+          </div>
+          <div class="col-md-3">
+            <div class="field-group"><label class="field-label">Credit</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newCredit" placeholder="0.00" /></div>
+          </div>
+          <div class="col-md-1">
+            <button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lines -->
+    <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Opening Lines</h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end"><span class="field-label mb-0">Total Debit</span><div class="fw-bold">{{ totalDebit() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Total Credit</span><div class="fw-bold">{{ totalCredit() | number: '1.2-2' }}</div></div>
+          <div class="text-end">
+            <span class="field-label mb-0">To Equity</span>
+            <div class="fw-bold" [class.text-warning]="difference() !== 0">{{ (difference() < 0 ? -difference() : difference()) | number: '1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+      </div>
+      <div class="card-body d-flex justify-content-end gap-2 flex-shrink-0">
+        <button type="button" class="btn-action btn-save" [disabled]="isSaving() || lines().length === 0" (click)="post()">
+          <mat-icon>post_add</mat-icon> Post Opening Balances
+        </button>
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

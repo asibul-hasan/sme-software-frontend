@@ -1,209 +1,457 @@
-<div class="p-3">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0 fw-bold">
-      <mat-icon class="me-2 align-middle">account_tree</mat-icon>
-      Dynamic Menu Builder
-    </h4>
-    <span class="badge text-bg-light border">{{ model.recordCount() }} records</span>
+<app-page-form-layout
+  [title]="'Dynamic Menu Builder'"
+  [subtitle]="'Maintain the global module, submodule, and menu catalog'"
+  [icon]="'account_tree'"
+  [recordsCount]="model.recordCount()"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showReset]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <div tabBarContent class="form-tab-bar d-flex gap-1 px-3 pt-2">
+    <button
+      type="button"
+      class="form-tab-btn"
+      [class.active]="model.activeTab() === 'modules'"
+      (click)="model.setTab('modules')"
+    >
+      <mat-icon class="tab-icon">widgets</mat-icon>
+      Modules
+    </button>
+    <button
+      type="button"
+      class="form-tab-btn"
+      [class.active]="model.activeTab() === 'submodules'"
+      (click)="model.setTab('submodules')"
+    >
+      <mat-icon class="tab-icon">category</mat-icon>
+      Submodules
+    </button>
+    <button
+      type="button"
+      class="form-tab-btn"
+      [class.active]="model.activeTab() === 'menus'"
+      (click)="model.setTab('menus')"
+    >
+      <mat-icon class="tab-icon">list_alt</mat-icon>
+      Menus
+    </button>
   </div>
 
-  <!-- Tabs -->
-  <div class="form-tab-bar d-flex gap-1 mb-3">
-    <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'modules'" (click)="model.setTab('modules')">
-      <mat-icon class="tab-icon">widgets</mat-icon> Modules
-    </button>
-    <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'submodules'" (click)="model.setTab('submodules')">
-      <mat-icon class="tab-icon">category</mat-icon> Submodules
-    </button>
-    <button type="button" class="form-tab-btn" [class.active]="model.activeTab() === 'menus'" (click)="model.setTab('menus')">
-      <mat-icon class="tab-icon">list_alt</mat-icon> Menus
-    </button>
+  <div formContent class="sys1201-content h-100 d-flex flex-column">
+    @if (model.activeTab() === 'modules') {
+      <div class="row row-group sys1201-tab-pane">
+        <div class="col-xl-8 col-lg-7 sys1201-list-col d-flex flex-column">
+          <app-common-table
+            class="sys1201-table"
+            [columns]="moduleTableColumns"
+            [data]="moduleRows()"
+            [config]="moduleTableConfig()"
+            [tableId]="'sys1201-modules'"
+            [loading]="model.isLoading()"
+            (rowClick)="onModuleRow($event)"
+          ></app-common-table>
+        </div>
+
+        <div class="col-xl-4 col-lg-5 sys1201-form-col">
+          <div class="form-section-card card sys1201-edit-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center">
+                <mat-icon class="me-2 align-middle">widgets</mat-icon>
+                {{ model.moduleForm().module_no ? 'Edit Module' : 'New Module' }}
+              </h4>
+              <button type="button" class="btn-action btn-new" (click)="model.newModule()">
+                <mat-icon>add</mat-icon>
+                <span class="btn-action-label">New</span>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_module_code">Code</label>
+                    <input
+                      id="sys1201_module_code"
+                      class="form-control text-uppercase"
+                      [(ngModel)]="model.moduleForm().module_code"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="10"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_module_order">Order</label>
+                    <input
+                      id="sys1201_module_order"
+                      type="number"
+                      class="form-control"
+                      [(ngModel)]="model.moduleForm().order_sl"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_module_name">Name</label>
+                    <input
+                      id="sys1201_module_name"
+                      class="form-control"
+                      [(ngModel)]="model.moduleForm().module_name"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="250"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_module_icon">Icon</label>
+                    <input
+                      id="sys1201_module_icon"
+                      class="form-control"
+                      [(ngModel)]="model.moduleForm().module_icon"
+                      [ngModelOptions]="{ standalone: true }"
+                      placeholder="settings"
+                      maxlength="100"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_module_route">Route</label>
+                    <input
+                      id="sys1201_module_route"
+                      class="form-control"
+                      [(ngModel)]="model.moduleForm().module_route"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="50"
+                    />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_module_desc">Description</label>
+                    <input
+                      id="sys1201_module_desc"
+                      class="form-control"
+                      [(ngModel)]="model.moduleForm().module_desc"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="500"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">Status</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="model.moduleForm().is_active === 1"
+                        (change)="setModuleActive($event.checked)"
+                      >
+                        <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (permissionService.canInsert() || permissionService.canUpdate()) {
+                <div class="btn-action-group mt-2">
+                  <button type="button" class="btn-action btn-save" (click)="model.saveModule()" [disabled]="model.isSaving()">
+                    <mat-icon>{{ model.isSaving() ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+                    <span class="btn-action-label">Save</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (model.activeTab() === 'submodules') {
+      <div class="row row-group sys1201-tab-pane">
+        <div class="col-xl-8 col-lg-7 sys1201-list-col d-flex flex-column">
+          <app-common-table
+            class="sys1201-table"
+            [columns]="submoduleTableColumns"
+            [data]="submoduleRows()"
+            [config]="submoduleTableConfig()"
+            [tableId]="'sys1201-submodules'"
+            (rowClick)="onSubmoduleRow($event)"
+          ></app-common-table>
+        </div>
+
+        <div class="col-xl-4 col-lg-5 sys1201-form-col">
+          <div class="form-section-card card sys1201-edit-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center">
+                <mat-icon class="me-2 align-middle">category</mat-icon>
+                {{ model.submoduleForm().submodule_no ? 'Edit Submodule' : 'New Submodule' }}
+              </h4>
+              <button type="button" class="btn-action btn-new" (click)="model.newSubmodule()">
+                <mat-icon>add</mat-icon>
+                <span class="btn-action-label">New</span>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_submodule_module">Module</label>
+                    <ng-select
+                      id="sys1201_submodule_module"
+                      [items]="model.moduleOptions()"
+                      bindLabel="label"
+                      bindValue="value"
+                      [(ngModel)]="model.submoduleForm().module_no"
+                      [ngModelOptions]="{ standalone: true }"
+                      [clearable]="false"
+                      placeholder="Select module"
+                    ></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_submodule_code">Code</label>
+                    <input
+                      id="sys1201_submodule_code"
+                      class="form-control text-uppercase"
+                      [(ngModel)]="model.submoduleForm().submodule_code"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="20"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_submodule_order">Order</label>
+                    <input
+                      id="sys1201_submodule_order"
+                      type="number"
+                      class="form-control"
+                      [(ngModel)]="model.submoduleForm().order_sl"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_submodule_name">Name</label>
+                    <input
+                      id="sys1201_submodule_name"
+                      class="form-control"
+                      [(ngModel)]="model.submoduleForm().submodule_name"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="250"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_submodule_icon">Icon</label>
+                    <input
+                      id="sys1201_submodule_icon"
+                      class="form-control"
+                      [(ngModel)]="model.submoduleForm().submodule_icon"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="100"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_submodule_route">Route</label>
+                    <input
+                      id="sys1201_submodule_route"
+                      class="form-control"
+                      [(ngModel)]="model.submoduleForm().submodule_route"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="100"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">Status</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="model.submoduleForm().is_active === 1"
+                        (change)="setSubmoduleActive($event.checked)"
+                      >
+                        <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (permissionService.canInsert() || permissionService.canUpdate()) {
+                <div class="btn-action-group mt-2">
+                  <button type="button" class="btn-action btn-save" (click)="model.saveSubmodule()" [disabled]="model.isSaving()">
+                    <mat-icon>{{ model.isSaving() ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+                    <span class="btn-action-label">Save</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (model.activeTab() === 'menus') {
+      <div class="row row-group sys1201-tab-pane">
+        <div class="col-xl-8 col-lg-7 sys1201-list-col d-flex flex-column">
+          <app-common-table
+            class="sys1201-table"
+            [columns]="menuTableColumns"
+            [data]="menuRows()"
+            [config]="menuTableConfig()"
+            [tableId]="'sys1201-menus'"
+            (rowClick)="onMenuRow($event)"
+          ></app-common-table>
+        </div>
+
+        <div class="col-xl-4 col-lg-5 sys1201-form-col">
+          <div class="form-section-card card sys1201-edit-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center">
+                <mat-icon class="me-2 align-middle">list_alt</mat-icon>
+                {{ model.menuForm().menu_no ? 'Edit Menu' : 'New Menu' }}
+              </h4>
+              <button type="button" class="btn-action btn-new" (click)="model.newMenu()">
+                <mat-icon>add</mat-icon>
+                <span class="btn-action-label">New</span>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_menu_submodule">Submodule</label>
+                    <ng-select
+                      id="sys1201_menu_submodule"
+                      [items]="model.submoduleOptions()"
+                      bindLabel="label"
+                      bindValue="value"
+                      [(ngModel)]="model.menuForm().submodule_no"
+                      [ngModelOptions]="{ standalone: true }"
+                      [clearable]="false"
+                      placeholder="Select submodule"
+                    ></ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_menu_form_id">Form ID</label>
+                    <input
+                      id="sys1201_menu_form_id"
+                      class="form-control text-uppercase"
+                      [(ngModel)]="model.menuForm().form_id"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="30"
+                      placeholder="SYS_1001"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_menu_type">Type</label>
+                    <ng-select
+                      id="sys1201_menu_type"
+                      [(ngModel)]="model.menuForm().menu_type"
+                      [ngModelOptions]="{ standalone: true }"
+                      [clearable]="false"
+                      placeholder="Select type"
+                    >
+                      @for (type of model.menuTypes; track type) {
+                        <ng-option [value]="type">{{ type }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label required" for="sys1201_menu_name">Form Name</label>
+                    <input
+                      id="sys1201_menu_name"
+                      class="form-control"
+                      [(ngModel)]="model.menuForm().form_name"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="250"
+                    />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_menu_route">Route Path</label>
+                    <input
+                      id="sys1201_menu_route"
+                      class="form-control"
+                      [(ngModel)]="model.menuForm().route_path"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="250"
+                      placeholder="form/company-setup"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_menu_icon">Icon</label>
+                    <input
+                      id="sys1201_menu_icon"
+                      class="form-control"
+                      [(ngModel)]="model.menuForm().icon_name"
+                      [ngModelOptions]="{ standalone: true }"
+                      maxlength="100"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="sys1201_menu_order">Order</label>
+                    <input
+                      id="sys1201_menu_order"
+                      type="number"
+                      class="form-control"
+                      [(ngModel)]="model.menuForm().order_sl"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label">Status</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="model.menuForm().is_active === 1"
+                        (change)="setMenuActive($event.checked)"
+                      >
+                        <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (permissionService.canInsert() || permissionService.canUpdate()) {
+                <div class="btn-action-group mt-2">
+                  <button type="button" class="btn-action btn-save" (click)="model.saveMenu()" [disabled]="model.isSaving()">
+                    <mat-icon>{{ model.isSaving() ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+                    <span class="btn-action-label">Save</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </div>
-
-  <!-- ========================= MODULES ========================= -->
-  @if (model.activeTab() === 'modules') {
-    <div class="row row-group">
-      <div class="col-lg-7">
-        <div class="form-section-card card">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-sm table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Order</th><th>Status</th><th></th></tr></thead>
-                <tbody>
-                  @for (m of model.modules(); track m.module_no) {
-                    <tr style="cursor: pointer" (click)="model.editModule(m)">
-                      <td class="fw-semibold small">{{ m.module_code }}</td>
-                      <td class="small">{{ m.module_name }}</td>
-                      <td class="small">{{ m.order_sl }}</td>
-                      <td><span class="badge" [ngClass]="m.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'">{{ m.is_active === 1 ? 'Active' : 'Inactive' }}</span></td>
-                      <td class="text-center">
-                        @if (permissionService.canDelete()) {
-                          <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="$event.stopPropagation(); confirmDeleteModule(m.module_no!)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                  @if (model.modules().length === 0) { <tr><td colspan="5" class="text-center opacity-75 p-4">No modules.</td></tr> }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-5">
-        <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold">{{ model.moduleForm().module_no ? 'Edit' : 'New' }} Module</h4>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="model.newModule()">New</button>
-          </div>
-          <div class="card-body">
-            <div class="row row-group">
-              <div class="col-6"><div class="field-group"><label class="field-label required">Code</label><input class="form-control text-uppercase" [(ngModel)]="model.moduleForm().module_code" [ngModelOptions]="{standalone:true}" maxlength="10" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Order</label><input type="number" class="form-control" [(ngModel)]="model.moduleForm().order_sl" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-12"><div class="field-group"><label class="field-label required">Name</label><input class="form-control" [(ngModel)]="model.moduleForm().module_name" [ngModelOptions]="{standalone:true}" maxlength="250" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Icon</label><input class="form-control" [(ngModel)]="model.moduleForm().module_icon" [ngModelOptions]="{standalone:true}" placeholder="e.g. settings" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Route</label><input class="form-control" [(ngModel)]="model.moduleForm().module_route" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-12"><div class="field-group"><label class="field-label">Description</label><input class="form-control" [(ngModel)]="model.moduleForm().module_desc" [ngModelOptions]="{standalone:true}" maxlength="500" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Status</label>
-                <select class="form-select" [(ngModel)]="model.moduleForm().is_active" [ngModelOptions]="{standalone:true}"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select>
-              </div></div>
-            </div>
-            @if (permissionService.canInsert() || permissionService.canUpdate()) {
-              <button type="button" class="btn btn-primary mt-2" (click)="model.saveModule()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">save</mat-icon> Save</button>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ========================= SUBMODULES ========================= -->
-  @if (model.activeTab() === 'submodules') {
-    <div class="row row-group">
-      <div class="col-lg-7">
-        <div class="form-section-card card">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-sm table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Module</th><th>Code</th><th>Name</th><th>Order</th><th></th></tr></thead>
-                <tbody>
-                  @for (s of model.submodules(); track s.submodule_no) {
-                    <tr style="cursor: pointer" (click)="model.editSubmodule(s)">
-                      <td class="small">{{ s.module_name }}</td>
-                      <td class="fw-semibold small">{{ s.submodule_code }}</td>
-                      <td class="small">{{ s.submodule_name }}</td>
-                      <td class="small">{{ s.order_sl }}</td>
-                      <td class="text-center">
-                        @if (permissionService.canDelete()) {
-                          <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="$event.stopPropagation(); confirmDeleteSubmodule(s.submodule_no!)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                  @if (model.submodules().length === 0) { <tr><td colspan="5" class="text-center opacity-75 p-4">No submodules.</td></tr> }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-5">
-        <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold">{{ model.submoduleForm().submodule_no ? 'Edit' : 'New' }} Submodule</h4>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="model.newSubmodule()">New</button>
-          </div>
-          <div class="card-body">
-            <div class="row row-group">
-              <div class="col-12"><div class="field-group"><label class="field-label required">Module</label>
-                <select class="form-select" [(ngModel)]="model.submoduleForm().module_no" [ngModelOptions]="{standalone:true}">
-                  <option [ngValue]="null">Select module…</option>
-                  @for (o of model.moduleOptions(); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              </div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label required">Code</label><input class="form-control text-uppercase" [(ngModel)]="model.submoduleForm().submodule_code" [ngModelOptions]="{standalone:true}" maxlength="20" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Order</label><input type="number" class="form-control" [(ngModel)]="model.submoduleForm().order_sl" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-12"><div class="field-group"><label class="field-label required">Name</label><input class="form-control" [(ngModel)]="model.submoduleForm().submodule_name" [ngModelOptions]="{standalone:true}" maxlength="250" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Icon</label><input class="form-control" [(ngModel)]="model.submoduleForm().submodule_icon" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Route</label><input class="form-control" [(ngModel)]="model.submoduleForm().submodule_route" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Status</label>
-                <select class="form-select" [(ngModel)]="model.submoduleForm().is_active" [ngModelOptions]="{standalone:true}"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select>
-              </div></div>
-            </div>
-            @if (permissionService.canInsert() || permissionService.canUpdate()) {
-              <button type="button" class="btn btn-primary mt-2" (click)="model.saveSubmodule()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">save</mat-icon> Save</button>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ========================= MENUS ========================= -->
-  @if (model.activeTab() === 'menus') {
-    <div class="row row-group">
-      <div class="col-lg-7">
-        <div class="form-section-card card">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-sm table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Form ID</th><th>Name</th><th>Submodule</th><th>Route</th><th></th></tr></thead>
-                <tbody>
-                  @for (m of model.menus(); track m.menu_no) {
-                    <tr style="cursor: pointer" (click)="model.editMenu(m)">
-                      <td class="fw-semibold small">{{ m.form_id }}</td>
-                      <td class="small">{{ m.form_name }}</td>
-                      <td class="small">{{ m.submodule_name }}</td>
-                      <td class="small text-truncate" style="max-width: 180px">{{ m.route_path }}</td>
-                      <td class="text-center">
-                        @if (permissionService.canDelete()) {
-                          <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="$event.stopPropagation(); confirmDeleteMenu(m.menu_no!)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                  @if (model.menus().length === 0) { <tr><td colspan="5" class="text-center opacity-75 p-4">No menus.</td></tr> }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-5">
-        <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold">{{ model.menuForm().menu_no ? 'Edit' : 'New' }} Menu</h4>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="model.newMenu()">New</button>
-          </div>
-          <div class="card-body">
-            <div class="row row-group">
-              <div class="col-12"><div class="field-group"><label class="field-label required">Submodule</label>
-                <select class="form-select" [(ngModel)]="model.menuForm().submodule_no" [ngModelOptions]="{standalone:true}">
-                  <option [ngValue]="null">Select submodule…</option>
-                  @for (o of model.submoduleOptions(); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              </div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label required">Form ID</label><input class="form-control text-uppercase" [(ngModel)]="model.menuForm().form_id" [ngModelOptions]="{standalone:true}" maxlength="30" placeholder="e.g. SYS_1001" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Type</label>
-                <select class="form-select" [(ngModel)]="model.menuForm().menu_type" [ngModelOptions]="{standalone:true}">
-                  @for (t of model.menuTypes; track t) { <option [ngValue]="t">{{ t }}</option> }
-                </select>
-              </div></div>
-              <div class="col-12"><div class="field-group"><label class="field-label required">Form Name</label><input class="form-control" [(ngModel)]="model.menuForm().form_name" [ngModelOptions]="{standalone:true}" maxlength="250" /></div></div>
-              <div class="col-12"><div class="field-group"><label class="field-label">Route Path</label><input class="form-control" [(ngModel)]="model.menuForm().route_path" [ngModelOptions]="{standalone:true}" maxlength="250" placeholder="e.g. form/company-setup" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Icon</label><input class="form-control" [(ngModel)]="model.menuForm().icon_name" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Order</label><input type="number" class="form-control" [(ngModel)]="model.menuForm().order_sl" [ngModelOptions]="{standalone:true}" /></div></div>
-              <div class="col-6"><div class="field-group"><label class="field-label">Status</label>
-                <select class="form-select" [(ngModel)]="model.menuForm().is_active" [ngModelOptions]="{standalone:true}"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select>
-              </div></div>
-            </div>
-            @if (permissionService.canInsert() || permissionService.canUpdate()) {
-              <button type="button" class="btn btn-primary mt-2" (click)="model.saveMenu()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">save</mat-icon> Save</button>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-</div>
+</app-page-form-layout>

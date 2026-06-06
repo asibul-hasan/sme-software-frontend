@@ -1,0 +1,75 @@
+<app-page-form-layout
+  [title]="'Supplier Payment'"
+  [subtitle]="'Pay a supplier — debits the payable, posts the GL, applies to open bills'"
+  [icon]="'payments'"
+  [recordsCount]="filtered().length"
+  [sidebarTitle]="'Payments'"
+  [searchTerm]="searchTerm()"
+  (searchTermChange)="searchTerm.set($event)"
+  [showSort]="false"
+  (new)="onNew()"
+  [showSave]="false"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div sidebarList>
+    @for (item of filtered(); track item.payment_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="selectedNo() === item.payment_no" (click)="select(item)">
+        <h6 class="list-item-title mb-0 text-truncate">{{ item.payment_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.supplier_name }} · {{ methodLabel(item.payment_method) }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 2" [class.list-item-tag--warning]="item.status === 3">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.amount | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>payments</mat-icon><p>No payments found</p></div> }
+  </div>
+
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- Header -->
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">payments</mat-icon> {{ selectedNo() ? ('Payment · ' + statusLabel(status())) : 'New Payment' }}</h4>
+        <div class="ms-auto d-flex gap-2">
+          @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="onSave()"><mat-icon>check</mat-icon> Post Payment</button> }
+          @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row row-group">
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
+            <ng-select [(ngModel)]="supplierNo" (ngModelChange)="onSupplierChange()" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Method</label>
+            <ng-select [(ngModel)]="paymentMethod" [items]="methods" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
+            <input type="date" class="form-control" [(ngModel)]="paymentDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
+            <input type="number" class="form-control text-end" [(ngModel)]="amount" [disabled]="!editable()" /></div></div>
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Txn / Cheque Ref</label>
+            <input type="text" class="form-control" [(ngModel)]="txnRef" [disabled]="!editable()" /></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allocation -->
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">rule</mat-icon> Apply to Open Bills</h4>
+        <div class="ms-auto d-flex align-items-center gap-3">
+          @if (editable()) { <button type="button" class="btn-action btn-save" (click)="autoAllocate()"><mat-icon>auto_fix_high</mat-icon> Auto-allocate</button> }
+          <div class="text-end"><span class="field-label mb-0">Allocated</span><div class="fw-bold">{{ allocatedTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Unallocated (advance)</span><div class="fw-bold" [class.text-warning]="unallocated() > 0.005">{{ unallocated() | number: '1.2-2' }}</div></div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
+        <app-common-table [columns]="allocColumns" [data]="allocData()" [config]="allocConfig" />
+      </div>
+      <div class="card-body py-2 text-muted">
+        <small><mat-icon style="font-size:15px;width:15px;height:15px;vertical-align:middle">info</mat-icon> Enter the amount, then Auto-allocate applies it to the oldest dues first. Any unallocated amount is recorded as a supplier advance.</small>
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

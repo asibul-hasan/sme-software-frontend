@@ -1,0 +1,92 @@
+<app-page-form-layout
+  [title]="'Purchase Return'"
+  [subtitle]="'Return goods to a supplier — relieves stock and debits the payable (debit note)'"
+  [icon]="'assignment_return'"
+  [recordsCount]="filtered().length"
+  [sidebarTitle]="'Returns'"
+  [searchTerm]="searchTerm()"
+  (searchTermChange)="searchTerm.set($event)"
+  [showSort]="false"
+  (new)="onNew()"
+  [showSave]="false"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div sidebarList>
+    @for (item of filtered(); track item.return_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="selectedNo() === item.return_no" (click)="select(item)">
+        <h6 class="list-item-title mb-0 text-truncate">{{ item.return_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.supplier_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 2" [class.list-item-tag--warning]="item.status === 3">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.grand_total | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>assignment_return</mat-icon><p>No returns found</p></div> }
+  </div>
+
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">assignment_return</mat-icon> {{ selectedNo() ? ('Return · ' + statusLabel(status())) : 'New Return' }}</h4>
+        <div class="ms-auto d-flex gap-2">
+          @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="post()"><mat-icon>check</mat-icon> Post Return</button> }
+          @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row row-group">
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
+            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
+            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Return from" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
+            <input type="date" class="form-control" [(ngModel)]="returnDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Reason</label>
+            <ng-select [(ngModel)]="reason" [items]="reasons" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Settlement</label>
+            <ng-select [(ngModel)]="settlementMode" [items]="settlementModes" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" /></div></div>
+        </div>
+      </div>
+    </div>
+
+    @if (editable()) {
+      <div class="form-section-card card flex-shrink-0">
+        <div class="card-body">
+          <div class="row row-group align-items-end">
+            <div class="col-md-4"><div class="field-group"><label class="field-label">Product</label>
+              <ng-select [(ngModel)]="newProduct" [items]="products()" bindValue="no" bindLabel="name" placeholder="Product" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">UOM</label>
+              <ng-select [(ngModel)]="newUom" [items]="uoms()" bindValue="no" bindLabel="name" placeholder="UOM" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">Unit Cost</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newCost" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newTaxPct" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Batch</label>
+              <input type="text" class="form-control" [(ngModel)]="newBatch" /></div></div>
+            <div class="col-md-1"><button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()"><mat-icon>add</mat-icon></button></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Lines</h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end"><span class="field-label mb-0">Sub-total</span><div class="fw-bold">{{ subTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Tax</span><div class="fw-bold">{{ taxTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Grand Total</span><div class="fw-bold text-primary">{{ grandTotal() | number: '1.2-2' }}</div></div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
+        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

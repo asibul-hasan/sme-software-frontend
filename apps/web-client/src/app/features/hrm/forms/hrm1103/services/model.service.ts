@@ -1,0 +1,213 @@
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs';
+import { Hrm1103DataService } from './data.service';
+import { BaseEntity } from '../../../../../core/models/base-entity.model';
+import { isSuccess } from '../../../../../core/models/response.model';
+import { makePaginator } from '../../../../../core/utils/paginator';
+import { AuthContextService } from '../../../../../core/services/auth-context.service';
+import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
+
+export interface Adjustment extends BaseEntity {
+  adjustment_no: number;
+  employee_no: number;
+  att_date: string;
+  requested_status: number;
+  requested_in?: string | null;
+  requested_out?: string | null;
+  reason?: string | null;
+  status: number;            // 1=Pending 2=Approved 3=Rejected
+  approved_by?: number | null;
+  approved_at?: string | null;
+  branch_no?: number | null;
+  is_active: number;
+  row_version: number;
+}
+
+type AdjAction = 'approve' | 'reject';
+
+/** State + form + workflow orchestration for HRM_1103 – Attendance Adjustment. */
+@Injectable()
+export class Hrm1103ModelService {
+  private fb      = inject(FormBuilder);
+  private data    = inject(Hrm1103DataService);
+  private commApi = inject(CommonDataService);
+  private toastr  = inject(ToastrService);
+  private authCtx = inject(AuthContextService);
+
+  private get currentBranchNo(): number | null {
+    return this.authCtx.user()?.branch_no ?? null;
+  }
+
+  adjustments   = signal<Adjustment[]>([]);
+  employees     = signal<EmployeeLookup[]>([]);
+  isLoading     = signal(false);
+  isSaving      = signal(false);
+  searchTerm    = signal('');
+  selectedNo    = signal<number | null>(null);
+  status        = signal<number>(1);
+  sortDirection = signal<'asc' | 'desc'>('desc');
+
+  employeeName(employeeNo?: number | null): string {
+    if (employeeNo == null) return '';
+    const e = this.employees().find((x) => x.employee_no === employeeNo);
+    return e ? (e.full_name || `${e.first_name} ${e.last_name ?? ''}`.trim()) : `#${employeeNo}`;
+  }
+
+  readonly isPending = computed(() => this.status() === 1);
+
+  filtered = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const sorted = this.adjustments()
+      .filter((a) => this.employeeName(a.employee_no).toLowerCase().includes(term) || (a.att_date || '').includes(term))
+      .sort((a, b) => b.adjustment_no - a.adjustment_no);
+    return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
+  });
+
+  pager = makePaginator(this.filtered);
+
+  form!: FormGroup;
+
+  initForm(): void {
+    this.form = this.fb.group({
+      adjustment_no:    [null],
+      employee_no:      [null, [Validators.required]],
+      att_date:         [new Date().toISOString().split('T')[0], [Validators.required]],
+      requested_status: [1, [Validators.required]],
+      requested_in:     [null],
+      requested_out:    [null],
+      reason:           ['', [Validators.required]],
+      is_active:        [1],
+    });
+  }
+
+  loadEmployees(): void {
+    this.commApi.getEmployeeList({ is_active: 1 }).subscribe({
+      next: (res) => { if (isSuccess(res) && res.data) this.employees.set(res.data); },
+    });
+  }
+
+  loadAdjustments(reselectNo?: number | null): void {
+    this.isLoading.set(true);
+    this.data.loadAdjustments().pipe(finalize(() => this.isLoading.set(false))).subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          this.adjustments.set(res.data);
+          if (res.data.length > 0) {
+            const target = reselectNo != null ? res.data.find((a) => a.adjustment_no === reselectNo) : null;
+            this.selectAdjustment(target ?? res.data[0]);
+          } else {
+            this.onNew();
+          }
+        }
+      },
+      error: () => this.toastr.error('Failed to load adjustments'),
+    });
+  }
+
+  selectAdjustment(item: Adjustment): void {
+    this.selectedNo.set(item.adjustment_no);
+    this.status.set(item.status);
+    this.isLoading.set(true);
+    this.data.loadAdjustmentDetail(item.adjustment_no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          const d = res.data;
+          this.status.set(d.status);
+          this.form.patchValue({
+            adjustment_no:    d.adjustment_no,
+            employee_no:      d.employee_no,
+            att_date:         (d.att_date ?? '').slice(0, 10),
+            requested_status: d.requested_status ?? 1,
+            requested_in:     (d.requested_in as string ?? '')?.slice(0, 5) || null,
+            requested_out:    (d.requested_out as string ?? '')?.slice(0, 5) || null,
+            reason:           d.reason,
+            is_active:        d.is_active,
+          });
+        }
+      },
+      error: () => this.toastr.error('Failed to load adjustment details'),
+    });
+  }
+
+  onSave(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.toastr.warning('Please correct the errors before saving.');
+      return;
+    }
+    this.isSaving.set(true);
+    const val = this.form.getRawValue();
+    const isUpdate = !!this.selectedNo();
+    const payload = {
+      adjustment_no:    val.adjustment_no,
+      employee_no:      val.employee_no,
+      att_date:         val.att_date,
+      requested_status: val.requested_status,
+      requested_in:     val.requested_in || null,
+      requested_out:    val.requested_out || null,
+      reason:           val.reason,
+      branch_no:        this.currentBranchNo,
+      is_active:        val.is_active,
+    };
+    const obs = isUpdate ? this.data.updateAdjustment(this.selectedNo()!, payload) : this.data.saveAdjustment(payload);
+    obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: (res) => {
+        if (isSuccess(res)) {
+          this.toastr.success(isUpdate ? 'Adjustment updated' : 'Adjustment requested');
+          const savedNo = isUpdate ? this.selectedNo() : (res.data?.adjustment_no ?? null);
+          this.loadAdjustments(savedNo);
+        } else {
+          this.toastr.error(res.message || 'Save failed');
+        }
+      },
+      error: () => this.toastr.error('Server error during save'),
+    });
+  }
+
+  doAction(action: AdjAction): void {
+    const no = this.selectedNo();
+    if (!no) return;
+    this.isSaving.set(true);
+    this.data.action(no, action).pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: (res) => {
+        if (isSuccess(res)) {
+          this.toastr.success(`Adjustment ${action}${action === 'approve' ? 'd' : 'ed'}`);
+          this.loadAdjustments(no);
+        } else {
+          this.toastr.error(res.message || `${action} failed`);
+        }
+      },
+      error: (err) => this.toastr.error(err?.error?.message || `Server error during ${action}`),
+    });
+  }
+
+  onDelete(callback?: () => void): void {
+    const no = this.selectedNo();
+    if (!no) return;
+    this.isLoading.set(true);
+    this.data.deleteAdjustment(no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
+      next: (res) => {
+        if (isSuccess(res)) {
+          this.toastr.success('Adjustment deleted');
+          this.loadAdjustments(null);
+          if (callback) callback();
+        } else {
+          this.toastr.error(res.message || 'Delete failed');
+        }
+      },
+      error: () => this.toastr.error('Server error during delete'),
+    });
+  }
+
+  onNew(): void {
+    this.selectedNo.set(null);
+    this.status.set(1);
+    this.form?.reset({
+      att_date: new Date().toISOString().split('T')[0],
+      requested_status: 1,
+      is_active: 1,
+    });
+  }
+}

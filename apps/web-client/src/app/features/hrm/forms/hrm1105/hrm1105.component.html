@@ -1,0 +1,117 @@
+<app-page-form-layout
+  [title]="'Overtime'"
+  [subtitle]="'Record and approve employee overtime claims'"
+  [icon]="'more_time'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Overtime Claims'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.overtime_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.overtime_no" (click)="selectOvertime(item)">
+        <span class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 2" [class.status-dot--inactive]="item.status === 3"
+          [title]="statusLabel(item.status)"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ model.employeeName(item.employee_no) }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.overtime_id }} · {{ item.ot_date }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.ot_amount }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state"><mat-icon>more_time</mat-icon><p>No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">more_time</mat-icon> Overtime Claim</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="overtime_id">Overtime ID</label>
+                  <input type="text" id="overtime_id" formControlName="overtime_id" class="form-control text-uppercase" placeholder="e.g. OT-001" [readonly]="!editable" (input)="toUpper('overtime_id')" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label required" for="employee_no">Employee</label>
+                  <ng-select id="employee_no" formControlName="employee_no" [readonly]="!editable" [clearable]="false" bindLabel="full_name" bindValue="employee_no" [items]="model.employees()" placeholder="Select employee">
+                    <ng-template ng-option-tmp let-item="item">{{ item.full_name || item.first_name }} ({{ item.employee_id }})</ng-template>
+                  </ng-select>
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="ot_date">Date</label>
+                  <input type="date" id="ot_date" formControlName="ot_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="hours">Hours</label>
+                  <input type="number" id="hours" formControlName="hours" class="form-control" step="0.5" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="rate_multiplier">Rate ×</label>
+                  <input type="number" id="rate_multiplier" formControlName="rate_multiplier" class="form-control" step="0.25" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label" for="hourly_rate">Hourly Rate</label>
+                  <input type="number" id="hourly_rate" formControlName="hourly_rate" class="form-control" step="0.01" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label">OT Amount</label>
+                  <input type="text" class="form-control fw-bold" [value]="model.otAmount() | number: '1.2-2'" readonly />
+                </div></div>
+                <div class="col-12"><div class="field-group">
+                  <label class="field-label" for="reason">Reason</label>
+                  <textarea id="reason" formControlName="reason" class="form-control" rows="2" [readonly]="!editable"></textarea>
+                </div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">approval</mat-icon> Workflow</h4></div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3"><mat-icon [class.text-success]="status === 2">flag</mat-icon><span class="fw-semibold">{{ statusLabel(status) }}</span></div>
+              <div class="d-flex flex-wrap gap-1">
+                @if (status === 1 && model.selectedNo() && permissionService.canInsert()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="submit()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">send</mat-icon> Submit</button>
+                }
+                @if (status === 1 && model.selectedNo() && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve</button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject</button>
+                }
+                @if (status === 1 && model.selectedNo() && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel</button>
+                }
+              </div>
+              @if (status === 2) {
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
+                  <mat-icon>check_circle</mat-icon> Approved — ready for payroll.
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

@@ -1,0 +1,133 @@
+<app-page-form-layout
+  [title]="'Bonus & Festival'"
+  [subtitle]="'Calculate and approve festival, performance and profit-share bonuses'"
+  [icon]="'celebration'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Bonus Runs'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && (status === 1 || status === 5)"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.bonus_run_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.bonus_run_no" (click)="selectRun(item)">
+        <span class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 3 || item.status === 4" [class.status-dot--inactive]="item.status === 5"
+          [title]="statusLabel(item.status)"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.bonus_name }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.bonus_id }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.total_amount }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state"><mat-icon>celebration</mat-icon><p>No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">celebration</mat-icon> Bonus Setup</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label required" for="bonus_id">Bonus ID</label>
+                  <input type="text" id="bonus_id" formControlName="bonus_id" class="form-control text-uppercase" placeholder="e.g. BON-001" [readonly]="!editable" (input)="toUpper('bonus_id')" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label required" for="bonus_name">Bonus Name</label>
+                  <input type="text" id="bonus_name" formControlName="bonus_name" class="form-control" placeholder="e.g. Eid Festival Bonus" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="bonus_type">Type</label>
+                  <ng-select id="bonus_type" formControlName="bonus_type" [readonly]="!editable" [clearable]="false">
+                    @for (opt of bonusTypes; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                  </ng-select>
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="bonus_period">Period Label</label>
+                  <input type="text" id="bonus_period" formControlName="bonus_period" class="form-control" placeholder="e.g. Eid-ul-Fitr 2026" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="percentage_of_basic">% of Salary</label>
+                  <input type="number" id="percentage_of_basic" formControlName="percentage_of_basic" class="form-control" step="0.01" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="fixed_amount">Fixed Amount (+)</label>
+                  <input type="number" id="fixed_amount" formControlName="fixed_amount" class="form-control" step="0.01" [readonly]="!editable" />
+                </div></div>
+              </div>
+            </div>
+          </div>
+
+          @if (model.lines().length > 0) {
+            <div class="form-section-card card">
+              <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">groups</mat-icon> Bonus Lines</h4></div>
+              <div class="card-body p-0">
+                <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">approval</mat-icon> Workflow</h4></div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3"><mat-icon [class.text-success]="status === 3 || status === 4">flag</mat-icon><span class="fw-semibold">{{ statusLabel(status) }}</span></div>
+
+              @if (model.current(); as cur) {
+                <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Employees</span><span class="fw-semibold">{{ cur.employee_count || 0 }}</span></div>
+                <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom:1px solid var(--border-color)"><span class="field-label mb-0">Total Amount</span><span class="fw-bold" style="color:var(--success)">{{ (cur.total_amount || 0) | number: '1.2-2' }}</span></div>
+              }
+
+              <div class="d-flex flex-wrap gap-1">
+                @if ((status === 1 || status === 2) && model.selectedNo() && permissionService.canUpdate()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="calculate()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">calculate</mat-icon> Calculate</button>
+                }
+                @if (status === 2 && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve</button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject</button>
+                }
+                @if (status === 3 && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="pay()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">account_balance</mat-icon> Pay</button>
+                }
+                @if ((status === 1 || status === 2) && model.selectedNo() && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel</button>
+                }
+              </div>
+
+              @if (status === 1 && model.selectedNo()) {
+                <div class="alert alert-info d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
+                  <mat-icon>info</mat-icon> Calculate to generate bonus lines for active employees.
+                </div>
+              }
+              @if (status === 4) {
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
+                  <mat-icon>paid</mat-icon> Bonus paid.
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

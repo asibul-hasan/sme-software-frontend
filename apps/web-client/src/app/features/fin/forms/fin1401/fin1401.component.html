@@ -1,0 +1,57 @@
+<app-page-form-layout
+  [title]="'Period / Year-End Close'"
+  [subtitle]="'Open, close or lock financial periods and run the year-end close'"
+  [icon]="'event_available'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- Year selector + year-end close -->
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="row row-group align-items-end">
+          <div class="col-md-4">
+            <div class="field-group">
+              <label class="field-label" for="year">Financial Year</label>
+              <ng-select id="year" [(ngModel)]="selectedYearNo" (ngModelChange)="loadPeriods()" [clearable]="false">
+                @for (y of years(); track y.fin_year_no) {
+                  <ng-option [value]="y.fin_year_no">{{ y.fin_year_name }}{{ y.is_closed === 1 ? ' (Closed)' : '' }}</ng-option>
+                }
+              </ng-select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="field-group">
+              <label class="field-label" for="re">Retained-Earnings Account</label>
+              <ng-select id="re" [(ngModel)]="retainedEarningsAccountNo" [clearable]="true" [disabled]="yearClosed()" placeholder="For year-end close">
+                @for (a of accounts(); track a.account_no) {
+                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
+                }
+              </ng-select>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            @if (yearClosed()) {
+              <span class="list-item-tag list-item-tag--warning" style="height:42px;display:inline-flex;align-items:center;padding:0 14px">
+                <mat-icon class="me-1" style="font-size:18px;width:18px;height:18px">lock</mat-icon> Year closed & locked
+              </span>
+            } @else {
+              <button type="button" class="btn-action btn-save w-100" style="height:42px" [disabled]="isClosing()" (click)="runYearEndClose()">
+                <mat-icon>event_available</mat-icon> Run Year-End Close
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Periods -->
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">calendar_month</mat-icon> Financial Periods</h4></div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

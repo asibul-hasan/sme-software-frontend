@@ -1,0 +1,80 @@
+<app-page-form-layout
+  [title]="'Device-Sync Attendance'"
+  [subtitle]="'Reconcile biometric / device punches into attendance'"
+  [icon]="'fingerprint'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="row row-group flex-shrink-0">
+      <div class="col-12">
+        <div class="form-section-card card">
+          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">add_alarm</mat-icon> Add Punch</h4></div>
+          <div class="card-body">
+            <div class="d-flex align-items-end gap-2 flex-wrap">
+              <div class="field-group flex-grow-1" style="min-width: 200px">
+                <label class="field-label">Employee</label>
+                <ng-select [(ngModel)]="newEmployee" bindLabel="full_name" bindValue="employee_no" [items]="model.employees()" placeholder="Select employee">
+                  <ng-template ng-option-tmp let-item="item">{{ item.full_name || item.first_name }} ({{ item.employee_id }})</ng-template>
+                </ng-select>
+              </div>
+              <div class="field-group" style="min-width: 150px">
+                <label class="field-label">Date</label>
+                <input type="date" class="form-control" [(ngModel)]="newDate" />
+              </div>
+              <div class="field-group" style="width: 120px">
+                <label class="field-label">In</label>
+                <input type="time" class="form-control" [(ngModel)]="newIn" />
+              </div>
+              <div class="field-group" style="width: 120px">
+                <label class="field-label">Out</label>
+                <input type="time" class="form-control" [(ngModel)]="newOut" />
+              </div>
+              <div class="field-group" style="min-width: 160px">
+                <label class="field-label">Shift</label>
+                <ng-select [(ngModel)]="newShift" bindLabel="shift_name" bindValue="shift_no" [items]="model.shifts()" placeholder="Optional"></ng-select>
+              </div>
+              <button type="button" class="btn-action btn-save" style="height:42px;padding:0 16px" (click)="addPunch()">
+                <mat-icon style="font-size:18px;width:18px;height:18px">add</mat-icon> Add
+              </button>
+            </div>
+          </div>
+        </div>
+
+        @if (model.hasPunches()) {
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">pending_actions</mat-icon> Staged Punches ({{ model.punches().length }})</h4>
+              <div class="d-flex gap-1">
+                <button type="button" class="btn-action btn-reset" style="height:30px;padding:0 12px" (click)="clearPunches()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">clear_all</mat-icon> Clear</button>
+                @if (permissionService.canInsert() || permissionService.canUpdate()) {
+                  <button type="button" class="btn-action btn-save" style="height:30px;padding:0 12px" (click)="sync()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">sync</mat-icon> Sync Now</button>
+                }
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <app-common-table [columns]="punchColumns" [data]="punchData()" [config]="punchConfig" />
+            </div>
+          </div>
+        }
+
+        @if (model.lastResult(); as r) {
+          <div class="alert alert-success d-flex align-items-center gap-3 mb-0" style="padding:8px 12px">
+            <mat-icon>check_circle</mat-icon>
+            <span>Last sync: <strong>{{ r.created }}</strong> created, <strong>{{ r.updated }}</strong> updated, <strong>{{ r.skipped }}</strong> skipped (of {{ r.total }}).</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">history</mat-icon> Recent Attendance</h4></div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+        <app-common-table [columns]="recentColumns" [data]="recentData()" [config]="recentConfig" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

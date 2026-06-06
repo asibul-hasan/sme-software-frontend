@@ -1,0 +1,55 @@
+<app-page-form-layout
+  [title]="'Profit & Loss'"
+  [subtitle]="'Income statement over a date window — net profit = income − expense'"
+  [icon]="'trending_up'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 170px">
+            <label class="field-label" for="from">From Date</label>
+            <input type="date" id="from" class="form-control" [(ngModel)]="from" (change)="load()" />
+          </div>
+          <div class="field-group" style="min-width: 170px">
+            <label class="field-label" for="to">To Date</label>
+            <input type="date" id="to" class="form-control" [(ngModel)]="to" (change)="load()" />
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-4">
+            <div class="text-end"><span class="field-label mb-0">Total Income</span><div class="fw-bold">{{ totalIncome() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">Total Expense</span><div class="fw-bold">{{ totalExpense() | number: '1.2-2' }}</div></div>
+            <div class="text-end">
+              <span class="field-label mb-0">Net {{ isProfit() ? 'Profit' : 'Loss' }}</span>
+              <div class="fw-bold" [class.text-success]="isProfit()" [class.text-danger]="!isProfit()">{{ netProfit() | number: '1.2-2' }}</div>
+            </div>
+            <span class="list-item-tag" [class.list-item-tag--primary]="isProfit()" [class.list-item-tag--warning]="!isProfit()">
+              {{ isProfit() ? 'Profit' : 'Loss' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row row-group flex-grow-1" style="min-height:0">
+      <div class="col-lg-6 d-flex flex-column" style="min-height:0">
+        <div class="form-section-card card fill-card">
+          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">south_west</mat-icon> Income</h4></div>
+          <div class="card-body p-0">
+            <app-common-table [columns]="columns" [data]="incomeData()" [config]="config" />
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-flex flex-column" style="min-height:0">
+        <div class="form-section-card card fill-card">
+          <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">north_east</mat-icon> Expense</h4></div>
+          <div class="card-body p-0">
+            <app-common-table [columns]="columns" [data]="expenseData()" [config]="config" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

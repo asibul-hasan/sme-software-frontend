@@ -297,6 +297,23 @@ export class Sys1101ModelService {
     }
   }
 
+  /** One-click provision: create a login user from the selected employee (user id + initial password = employee id). */
+  createFromEmployee(): void {
+    const emp = this.selectedEmployee();
+    if (!emp) { this.toastr.warning('Select an employee first.'); return; }
+    if (this.selectedUserNo()) { this.toastr.info('This employee already has a user account.'); return; }
+    this.isSaving.set(true);
+    this.data
+      .createUserFromEmployee(emp.employee_no)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe((res) => {
+        if (isSuccess(res) && res.data) {
+          this.toastr.success('User created from employee — login id & initial password are the Employee ID.');
+          this.applyUser(res.data);
+        }
+      });
+  }
+
   onDelete(): void {
     const userNo = this.selectedUserNo();
     if (!userNo) return;

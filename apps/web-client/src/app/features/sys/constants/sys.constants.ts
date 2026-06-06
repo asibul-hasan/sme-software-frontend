@@ -303,6 +303,12 @@ export const sysConstants = {
     { label: 'Closed', value: 'Closed' },
     { label: 'Locked', value: 'Locked' },
   ],
+  // period_status is a SMALLINT column (DB-first numeric codes)
+  periodStatuses: [
+    { value: 1, label: 'Open' },
+    { value: 2, label: 'Closed' },
+    { value: 3, label: 'Locked' },
+  ],
   taxTypes: [
     { label: 'VAT',                  value: 1 },
     { label: 'SD (Supplementary Duty)', value: 2 },

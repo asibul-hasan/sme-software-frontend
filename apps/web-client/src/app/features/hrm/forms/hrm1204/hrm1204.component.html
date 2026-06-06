@@ -1,0 +1,92 @@
+<app-page-form-layout
+  [title]="'Payslip Generator'"
+  [subtitle]="'View and print individual employee payslips'"
+  [icon]="'receipt'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 240px">
+            <label class="field-label" for="run">Payroll Run</label>
+            <ng-select id="run" [ngModel]="model.selectedRun()" (ngModelChange)="onRunChange($event)" [clearable]="false" placeholder="Select a run">
+              @for (r of model.runs(); track r.payroll_run_no) {
+                <ng-option [value]="r.payroll_run_no">{{ r.pay_period }} — {{ statusLabel(r.status) }}</ng-option>
+              }
+            </ng-select>
+          </div>
+          <div class="field-group" style="min-width: 280px">
+            <label class="field-label" for="payslip">Employee</label>
+            <ng-select id="payslip" [ngModel]="model.selectedPayslip()" (ngModelChange)="onPayslipChange($event)" [clearable]="false" placeholder="Select an employee">
+              @for (p of model.payslips(); track p.payslip_no) {
+                <ng-option [value]="p.payslip_no">{{ model.employeeName(p.employee_no) }}</ng-option>
+              }
+            </ng-select>
+          </div>
+          @if (model.payslip()) {
+            <button type="button" class="btn-action btn-save ms-auto" style="height:42px;padding:0 16px" (click)="print()">
+              <mat-icon style="font-size:18px;width:18px;height:18px">print</mat-icon> Print
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto; min-height:0; overflow:auto">
+      <div class="card-body">
+        @if (model.payslip(); as ps) {
+          <div class="payslip-sheet">
+            <div class="ps-head d-flex justify-content-between align-items-start pb-2 mb-3">
+              <div>
+                <h4 class="fw-bold mb-0">Payslip</h4>
+                <div class="text-muted">Pay Period: {{ ps.pay_period }}</div>
+                @if (ps.period_start) { <div class="text-muted">{{ ps.period_start }} → {{ ps.period_end }}</div> }
+              </div>
+              <div class="text-end">
+                <div class="fw-bold">{{ model.employeeName(ps.employee_no) }}</div>
+                @if (model.employeeMeta(ps.employee_no); as emp) { <div class="text-muted">{{ emp.employee_id }}</div> }
+                <span class="list-item-tag mt-1" [class.list-item-tag--primary]="ps.payment_status === 2">{{ ps.payment_status === 2 ? 'Paid' : 'Pending' }}</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="ps-col-title text-success mb-2"><mat-icon class="align-middle me-1" style="font-size:18px">add_circle</mat-icon> Earnings</h6>
+                @for (e of model.earnings(); track e.component_no) {
+                  <div class="ps-row"><span>{{ e.component_name }}</span><span>{{ e.amount | number: '1.2-2' }}</span></div>
+                }
+                <div class="ps-row fw-bold"><span>Gross Earnings</span><span>{{ ps.gross_earning | number: '1.2-2' }}</span></div>
+              </div>
+              <div class="col-md-6">
+                <h6 class="ps-col-title text-danger mb-2"><mat-icon class="align-middle me-1" style="font-size:18px">remove_circle</mat-icon> Deductions</h6>
+                @for (d of model.deductions(); track d.component_no) {
+                  <div class="ps-row"><span>{{ d.component_name }}</span><span>{{ d.amount | number: '1.2-2' }}</span></div>
+                }
+                <div class="ps-row fw-bold"><span>Total Deductions</span><span>{{ ps.total_deduction | number: '1.2-2' }}</span></div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2" style="border-top:2px solid var(--border-color)">
+              <span class="fw-bold">Net Pay</span>
+              <h4 class="fw-bold mb-0" style="color:var(--success)">{{ ps.net_pay | number: '1.2-2' }}</h4>
+            </div>
+
+            <div class="d-flex gap-4 mt-3 text-muted" style="font-size:12px">
+              <span>Present: {{ ps.present_days }}</span>
+              <span>Absent: {{ ps.absent_days }}</span>
+              <span>Leave: {{ ps.leave_days }}</span>
+              <span>LWP: {{ ps.lwp_days }}</span>
+            </div>
+          </div>
+        } @else {
+          <div class="list-empty-state"><mat-icon>receipt</mat-icon><p>Select a run and employee to view a payslip</p></div>
+        }
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

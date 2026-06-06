@@ -1,0 +1,29 @@
+<app-page-form-layout
+  [title]="'Day Book'"
+  [subtitle]="'All posted ledger lines in a date window'"
+  [icon]="'menu_book'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width:150px"><label class="field-label" for="from">From</label>
+            <input type="date" id="from" class="form-control" [(ngModel)]="from" (change)="load()" /></div>
+          <div class="field-group" style="min-width:150px"><label class="field-label" for="to">To</label>
+            <input type="date" id="to" class="form-control" [(ngModel)]="to" (change)="load()" /></div>
+          <div class="ms-auto d-flex align-items-center gap-2 text-muted"><mat-icon>receipt</mat-icon><span>{{ rows().length }} line(s)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">menu_book</mat-icon> Day Book</h4></div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

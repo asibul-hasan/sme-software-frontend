@@ -1,0 +1,35 @@
+<app-page-form-layout
+  [title]="'Trial Balance'"
+  [subtitle]="'Per-account balances as of a date — debit total must equal credit total'"
+  [icon]="'balance'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 180px">
+            <label class="field-label" for="asOf">As of Date</label>
+            <input type="date" id="asOf" class="form-control" [(ngModel)]="asOf" (change)="load()" />
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-4">
+            <div class="text-end"><span class="field-label mb-0">Total Debit</span><div class="fw-bold">{{ totalDebit() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">Total Credit</span><div class="fw-bold">{{ totalCredit() | number: '1.2-2' }}</div></div>
+            <span class="list-item-tag" [class.list-item-tag--primary]="balanced()" [class.list-item-tag--warning]="!balanced()">
+              {{ balanced() ? 'Balanced' : 'Out of balance' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">balance</mat-icon> Trial Balance</h4></div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

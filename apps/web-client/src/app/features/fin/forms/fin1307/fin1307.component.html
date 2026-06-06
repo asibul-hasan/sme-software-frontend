@@ -1,0 +1,43 @@
+<app-page-form-layout
+  [title]="'AR / AP Aging'"
+  [subtitle]="'Outstanding by party, bucketed by document age (0–30 / 31–60 / 61–90 / 90+)'"
+  [icon]="'hourglass_bottom'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 200px">
+            <label class="field-label" for="ptype">Ledger</label>
+            <ng-select id="ptype" [(ngModel)]="partyType" (ngModelChange)="load()" [clearable]="false">
+              @for (o of partyTypeOptions; track o.value) {
+                <ng-option [value]="o.value">{{ o.value === 1 ? 'Receivable (Customers)' : 'Payable (Suppliers)' }}</ng-option>
+              }
+            </ng-select>
+          </div>
+          <div class="field-group" style="min-width: 180px">
+            <label class="field-label" for="asOf">As of Date</label>
+            <input type="date" id="asOf" class="form-control" [(ngModel)]="asOf" (change)="load()" />
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-4 flex-wrap">
+            <div class="text-end"><span class="field-label mb-0">0–30</span><div class="fw-bold">{{ totalCurrent() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">31–60</span><div class="fw-bold">{{ totalB1() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">61–90</span><div class="fw-bold">{{ totalB2() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">90+</span><div class="fw-bold text-danger">{{ totalB3() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0">Outstanding</span><div class="fw-bold">{{ totalOut() | number: '1.2-2' }}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">hourglass_bottom</mat-icon> Aging by Party</h4></div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

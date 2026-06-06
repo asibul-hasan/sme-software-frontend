@@ -1,0 +1,185 @@
+<app-page-form-layout
+  [title]="'Salary Structure Setup'"
+  [subtitle]="'Build the effective-dated earning breakdown per employee'"
+  [icon]="'request_quote'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Structures'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.salary_structure_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.salary_structure_no"
+        (click)="selectStructure(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 1"
+          [class.status-dot--inactive]="item.status !== 1"
+          [title]="statusLabel(item.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ model.employeeName(item.employee_no) }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">From {{ item.effective_from }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 1">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.gross_salary }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>request_quote</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <!-- Header -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">badge</mat-icon>
+                Structure Header
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="employee_no">Employee</label>
+                    <ng-select id="employee_no" labelForId="employee_no" formControlName="employee_no" [clearable]="false" placeholder="Select employee">
+                      @for (emp of model.employees(); track emp.employee_no) {
+                        <ng-option [value]="emp.employee_no">{{ emp.full_name || emp.first_name }} ({{ emp.employee_id }})</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="effective_from">Effective From</label>
+                    <input type="date" id="effective_from" formControlName="effective_from" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="effective_to">Effective To</label>
+                    <input type="date" id="effective_to" formControlName="effective_to" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="field-group">
+                    <label class="field-label required" for="status">Status</label>
+                    <ng-select id="status" labelForId="status" formControlName="status" [clearable]="false" placeholder="Status">
+                      @for (opt of statusOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Component lines -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">view_list</mat-icon>
+                Salary Components
+              </h4>
+              <button type="button" class="btn-action btn-save" style="height:28px;padding:0 10px" (click)="model.addLine()">
+                <mat-icon style="font-size:16px;width:16px;height:16px">add</mat-icon> Add line
+              </button>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm mb-0" formArrayName="lines">
+                <thead>
+                  <tr>
+                    <th style="width:55%">Component</th>
+                    <th style="width:35%">Amount</th>
+                    <th style="width:10%" class="text-center">—</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of model.linesArray.controls; track $index) {
+                    <tr [formGroupName]="$index">
+                      <td>
+                        <ng-select formControlName="component_no" bindLabel="component_name" bindValue="component_no"
+                          [items]="model.components()" [clearable]="false" placeholder="Select component" appendTo="body">
+                          <ng-template ng-option-tmp let-item="item">{{ item.component_name }} ({{ item.component_id }})</ng-template>
+                        </ng-select>
+                      </td>
+                      <td>
+                        <input type="number" class="form-control" formControlName="amount" step="0.01" />
+                      </td>
+                      <td class="text-center">
+                        <button type="button" class="btn-action btn-delete" style="width:28px;height:28px;padding:0" (click)="model.removeLine($index)">
+                          <mat-icon style="font-size:16px;width:16px;height:16px">delete</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td class="text-end fw-bold">Gross (earnings total)</td>
+                    <td class="fw-bold">{{ model.grossTotal() | number: '1.2-2' }}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remarks + status -->
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-body">
+              <div class="row row-group align-items-end">
+                <div class="col-md-8">
+                  <div class="field-group">
+                    <label class="field-label" for="remarks">Remarks</label>
+                    <textarea id="remarks" formControlName="remarks" class="form-control" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label">Status</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox [checked]="formdata.get('is_active')?.value === 1" (change)="toggleFlag('is_active', $event)" color="primary">
+                        <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

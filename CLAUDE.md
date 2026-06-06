@@ -8,7 +8,7 @@ Angular frontend for Aidly ERP, organized as an Nx workspace.
 - **Global styles:** `apps/web-client/src/assets/styles` (`_form-page.scss`, `styles.scss`)
 - **Build:** `npx nx build web-client` | **Serve:** `npx nx serve web-client`
 
-Broader architecture notes live in `FRONTEND_ARCHITECTURE.md`.
+Broader architecture & business docs live in `../aidly-business-doc/frontend/` (e.g. `FRONTEND_ARCHITECTURE.md`, `*-forms-design.md`). DB schema design, migrations and backend design docs live in `../aidly-business-doc/backend/` (incl. `db-migration/`).
 
 ---
 
@@ -310,6 +310,65 @@ Style: `assets/styles/_form-page.scss` (`.custom--checkbox`).
 - Reference forms: `SYS1002` (`is_main_branch`), `SYS1004` (`is_base_currency`),
   `SYS1005` / `SYS1007` (`is_active`), `SYS1101` (account lock).
 
+### Select Options & Enums — centralize in `{module}.constants.ts` (NO inline option arrays) (CRITICAL)
+
+**Never hard-code a `select` / `ng-select` option list inside a component.** Every
+enum / status / type / category dropdown is defined ONCE in the module's constants
+file and imported into forms. Inline arrays (`statusOptions = [{ value: 1, label: 'Draft' }, …]`
+scattered across components) drift, duplicate, and are the opposite of a single source of truth.
+
+**Where:** `features/{module}/constants/{module}.constants.ts` — one exported object per
+module (`sysConstants`, `hrmConstants`, `invConstants`, `finConstants`, …) holding named
+`SelectOption[]` lists. Truly cross-module enums (yes/no, active/inactive) go in
+`core/constants/global.constants.ts`. Shape (already in `features/sys/constants/sys.constants.ts`):
+
+```ts
+export interface SelectOption { label: string; value: unknown; }
+export const hrmConstants = {
+  movementTypes:    [ { value: 1, label: 'Promotion' }, { value: 2, label: 'Transfer' }, { value: 3, label: 'Demotion' } ],
+  movementStatuses: [ { value: 1, label: 'Draft' }, { value: 2, label: 'Submitted' }, { value: 3, label: 'Approved' }, { value: 4, label: 'Cancelled' } ],
+  genderList:       [ { value: 'M', label: 'Male' }, { value: 'F', label: 'Female' }, { value: 'O', label: 'Other' } ],
+  approvalStatus:   [ { value: 'A', label: 'Approved' }, { value: 'W', label: 'Waiting' }, { value: 'R', label: 'Rejected' }, { value: 'P', label: 'Processing' } ],
+};
+```
+
+**The value contract — DB-first (CRITICAL):** the option `value` MUST be exactly what
+the backend persists for that column, so it binds straight to the reactive control and
+posts back with **zero mapping**.
+- **Number** for `SMALLINT` enum columns — the majority of this codebase (status, type,
+  movement_type, separation_type, loan_type, run_type…). Use `1, 2, 3…` matching the
+  backend's `CHECK (col IN (…))` codes.
+- **Single-char** only where the column actually stores a char code — e.g. `genderList`
+  (`'M'/'F'/'O'`), an `approvalStatus` (`'A'` approved · `'W'` waiting · `'R'` rejected ·
+  `'P'` processing). Match the stored char exactly (case included).
+- **Never** invent a UI-only value and translate it before saving. If unsure of a column's
+  type, check the entity (`Short` ⇒ number, `String`/`CHAR` ⇒ char) — round-tripping is the
+  whole point.
+
+**Use it in a form** (no local arrays, no magic numbers in the template):
+
+```ts
+import { hrmConstants } from '../../constants/hrm.constants';
+// component
+readonly movementTypes = hrmConstants.movementTypes;
+readonly statusOptions = hrmConstants.movementStatuses;
+// label from value (don't re-type status strings): a shared helper, not a per-form switch
+statusLabel = (v: unknown) => this.statusOptions.find(o => o.value === v)?.label ?? String(v ?? '');
+```
+
+```html
+<ng-select formControlName="movement_type" [items]="movementTypes" bindValue="value" bindLabel="label" />
+<!-- or -->
+@for (o of statusOptions; track o.value) { <ng-option [value]="o.value">{{ o.label }}</ng-option> }
+```
+
+**Rules:**
+- Status pills/labels resolve via the constant list (`statusLabel(v)`), never a duplicated inline map.
+- When you touch a form that still hard-codes options, **migrate them** into the module constants file.
+- Lookups loaded from the API (employees, branches, accounts) stay in `CommonDataService` /
+  the form's model — the constants file is for **static enums**, not server data.
+- Reference: `features/sys/constants/sys.constants.ts` (`sysConstants.taxTypes`/`currencies`/`months` = numeric; `countries`/`dateFormats` = char codes).
+
 ### Content Area Height — fill 100%, NEVER viewport math (CRITICAL)
 
 `app-page-form-layout` already gives `[formContent]` a **flex-filled column** of the
@@ -395,6 +454,12 @@ Cards within a form column stack vertically. The spacing system is:
 
 Reusable ERP table at `shared/components/common-table`. Use it instead of
 ad-hoc `mat-table` markup for any data list.
+
+**Fixed table rule (frontend + backend):** every tabular data list in a form MUST render
+with `<app-common-table>`; do not hand-roll `<table>`, `mat-table`, or Bootstrap table
+markup. The backing form API must return DTO fields whose snake_case names match the
+`ColumnDef.field` values exactly, so search, sort, export, and custom-template `value`
+accessors all work from the same data contract.
 
 **Quick usage:**
 

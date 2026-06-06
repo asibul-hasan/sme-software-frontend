@@ -91,6 +91,11 @@ export const SETTINGS_ROUTES: Routes = [
       import('./forms/sys1108/sys1108.component').then((m) => m.Sys1108Component),
   },
   {
+    path: 'form/approval-inbox',
+    loadComponent: () =>
+      import('./forms/approval-inbox/approval-inbox.component').then((m) => m.ApprovalInboxComponent),
+  },
+  {
     path: 'form/session-login-monitor',
     loadComponent: () =>
       import('./forms/sys1109/sys1109.component').then((m) => m.Sys1109Component),

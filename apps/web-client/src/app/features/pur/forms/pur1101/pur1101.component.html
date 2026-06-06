@@ -1,0 +1,96 @@
+<app-page-form-layout
+  [title]="'Purchase Order'"
+  [subtitle]="'Procurement commitment with approval — no stock or GL impact until receipt'"
+  [icon]="'shopping_cart'"
+  [recordsCount]="filtered().length"
+  [sidebarTitle]="'Purchase Orders'"
+  [searchTerm]="searchTerm()"
+  (searchTermChange)="searchTerm.set($event)"
+  [showSort]="false"
+  (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
+  [showSave]="editable() && (permissionService.canInsert() || permissionService.canUpdate())"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!selectedNo() && status() === 1"
+  [isSaving]="isSaving()" [isLoading]="isLoading()"
+>
+  <div sidebarList>
+    @for (item of filtered(); track item.order_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="selectedNo() === item.order_no" (click)="select(item)">
+        <h6 class="list-item-title mb-0 text-truncate">{{ item.order_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.supplier_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [ngClass]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.grand_total | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>shopping_cart</mat-icon><p>No purchase orders found</p></div> }
+  </div>
+
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">shopping_cart</mat-icon> {{ selectedNo() ? 'PO · ' + statusLabel(status()) : 'New PO' }}</h4>
+        <div class="ms-auto d-flex gap-2">
+          @if (editable() && selectedNo()) { <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button> }
+          @if (status() !== 1 && status() !== 7 && status() !== 5) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>cancel</mat-icon> Cancel</button> }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row row-group">
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
+            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Receive Warehouse</label>
+            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Intended warehouse" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Order Date</label>
+            <input type="date" class="form-control" [(ngModel)]="orderDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Expected</label>
+            <input type="date" class="form-control" [(ngModel)]="expectedDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Shipping Est.</label>
+            <input type="number" class="form-control text-end" [(ngModel)]="shippingEstimate" [disabled]="!editable()" /></div></div>
+        </div>
+      </div>
+    </div>
+
+    @if (editable()) {
+      <div class="form-section-card card flex-shrink-0">
+        <div class="card-body">
+          <div class="row row-group align-items-end">
+            <div class="col-md-4"><div class="field-group"><label class="field-label">Product</label>
+              <ng-select [(ngModel)]="newProduct" [items]="products()" bindValue="no" bindLabel="name" placeholder="Product" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">UOM</label>
+              <ng-select [(ngModel)]="newUom" [items]="uoms()" bindValue="no" bindLabel="name" placeholder="UOM" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">Unit Price</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Disc %</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newDiscPct" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newTaxPct" /></div></div>
+            <div class="col-md-1"><button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()"><mat-icon>add</mat-icon></button></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Order Lines</h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end"><span class="field-label mb-0">Sub-total</span><div class="fw-bold">{{ subTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Tax</span><div class="fw-bold">{{ taxTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Grand Total</span><div class="fw-bold text-primary">{{ grandTotal() | number: '1.2-2' }}</div></div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
+        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+      </div>
+      <div class="card-body">
+        <div class="field-group"><label class="field-label">Terms / Notes</label>
+          <input type="text" class="form-control" [(ngModel)]="termsNote" [disabled]="!editable()" placeholder="Payment terms, delivery notes…" /></div>
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

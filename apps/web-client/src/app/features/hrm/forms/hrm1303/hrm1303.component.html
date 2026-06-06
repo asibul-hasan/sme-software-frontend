@@ -1,0 +1,38 @@
+<app-page-form-layout
+  [title]="'Leave Balance'"
+  [subtitle]="'Per-employee leave entitlement, consumption and available balance'"
+  [icon]="'event_available'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 160px">
+            <label class="field-label" for="year">Leave Year</label>
+            <ng-select id="year" [ngModel]="model.year()" (ngModelChange)="onYearChange($event)" [clearable]="false">
+              @for (y of model.yearOptions; track y) { <ng-option [value]="y">{{ y }}</ng-option> }
+            </ng-select>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-2 text-muted">
+            <mat-icon>groups</mat-icon>
+            <span>{{ model.rows().length }} balance record(s)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">event_available</mat-icon> Balances</h4>
+      </div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="model.rows()" [config]="config" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

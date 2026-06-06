@@ -45,6 +45,13 @@ export interface DesignationLookupDto {
   department_no:    number;
 }
 
+/** Uniform option for the generic master lists (currencies, products, suppliers, …): no=value, name=label. */
+export interface LookupOption {
+  no:   number;
+  code: string | null;
+  name: string;
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 /**
@@ -103,4 +110,20 @@ export class CommonLookupService {
       .get<ApiResponse<DesignationLookupDto[]>>(`${this.base}/designations`, { params })
       .pipe(map(r => r.data ?? []));
   }
+
+  // ── Generic master lists (uniform LookupOption: no / code / name) ──────────────
+
+  private generic(resource: string): Observable<LookupOption[]> {
+    return this.http
+      .get<ApiResponse<LookupOption[]>>(`${this.base}/${resource}`)
+      .pipe(map(r => r.data ?? []));
+  }
+
+  getCurrencies(): Observable<LookupOption[]> { return this.generic('currencies'); }
+  getWarehouses(): Observable<LookupOption[]> { return this.generic('warehouses'); }
+  getProducts():   Observable<LookupOption[]> { return this.generic('products'); }
+  getUoms():       Observable<LookupOption[]> { return this.generic('uoms'); }
+  getAccounts():   Observable<LookupOption[]> { return this.generic('accounts'); }
+  getSuppliers():  Observable<LookupOption[]> { return this.generic('suppliers'); }
+  getCustomers():  Observable<LookupOption[]> { return this.generic('customers'); }
 }

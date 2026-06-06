@@ -1,0 +1,44 @@
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { SharedModule } from '../../../../shared/shared.module';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { Fin1003ModelService, VoucherType } from './services/model.service';
+import { Fin1003DataService } from './services/data.service';
+import { FormPermissionService } from '../../../../core/services/form-permission.service';
+import { AlertService } from '../../../../core/services/alert.service';
+import { finConstants } from '../../constants/fin.constants';
+
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-fin1003',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  providers: [Fin1003ModelService, Fin1003DataService],
+  templateUrl: './fin1003.component.html',
+  styles: [`:host { display: block; height: 100%; }`],
+})
+export class Fin1003Component implements OnInit {
+  public model             = inject(Fin1003ModelService);
+  public permissionService = inject(FormPermissionService);
+  private alertService     = inject(AlertService);
+
+  readonly baseKinds = finConstants.voucherBaseKinds;
+
+  ngOnInit(): void {
+    this.model.initForm();
+    setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1003'); this.model.load(); });
+  }
+
+  onSearchTermChange(v: string): void { this.model.searchTerm.set(v); this.model.pager.reset(); }
+  get formdata() { return this.model.form; }
+
+  onSave(): void { this.model.onSave(); }
+  onNew(): void  { this.model.onNew(); }
+  onReset(): void { const o = this.model.types().find((t) => t.voucher_type_no === this.model.selectedNo()); if (o) this.model.select(o); else this.model.onNew(); }
+  onDelete(): void { if (!this.model.selectedNo()) return; this.alertService.deleteConfirm().subscribe((ok) => { if (ok) this.model.onDelete(); }); }
+  select(item: VoucherType): void { this.model.select(item); }
+  toUpper(c: string): void { const ctrl = this.formdata.get(c); if (ctrl?.value) ctrl.setValue(ctrl.value.toUpperCase(), { emitEvent: false }); }
+
+  baseKindLabel(v?: number | null): string { return this.baseKinds.find((b) => b.value === v)?.label ?? ''; }
+}

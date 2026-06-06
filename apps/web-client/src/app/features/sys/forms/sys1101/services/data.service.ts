@@ -39,6 +39,11 @@ export class Sys1101DataService {
     return this.http.post<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users`, payload);
   }
 
+  /** Provision a user straight from employee data (login id + initial password = employee id). */
+  createUserFromEmployee(employeeNo: number): Observable<ApiResponse<Sys1101UserDto>> {
+    return this.http.post<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users/from-employee/${employeeNo}`, {});
+  }
+
   updateUser(userNo: number, payload: Partial<Sys1101UserDto>): Observable<ApiResponse<Sys1101UserDto>> {
     return this.http.put<ApiResponse<Sys1101UserDto>>(`${this.baseUrl}/users/${userNo}`, payload);
   }

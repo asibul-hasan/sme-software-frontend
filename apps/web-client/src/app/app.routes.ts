@@ -45,9 +45,9 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'hr',
+        path: 'hrm',
         loadChildren: () =>
-          import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+          import('./features/hrm/hrm.routes').then((m) => m.HRM_ROUTES),
       },
       {
         path: 'inv',

@@ -1,0 +1,152 @@
+<app-page-form-layout
+  [title]="'Loan & Advance'"
+  [subtitle]="'Disburse and recover employee loans and salary advances'"
+  [icon]="'payments'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Loans'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && status === 1"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.pager.paged(); track item.loan_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.loan_no" (click)="selectLoan(item)">
+        <span class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.status === 2 || item.status === 3 || item.status === 4" [class.status-dot--inactive]="item.status === 5"
+          [title]="statusLabel(item.status)"></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ model.employeeName(item.employee_no) }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.loan_id }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.principal_amount }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state"><mat-icon>payments</mat-icon><p>No records found</p></div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-xl-8 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">badge</mat-icon> Loan Details</h4>
+              @if (model.selectedNo()) { <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }}</span> }
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="loan_id">Loan ID</label>
+                  <input type="text" id="loan_id" formControlName="loan_id" class="form-control text-uppercase" placeholder="e.g. LN-001" [readonly]="!editable" (input)="toUpper('loan_id')" />
+                </div></div>
+                <div class="col-md-5"><div class="field-group">
+                  <label class="field-label required" for="employee_no">Employee</label>
+                  <ng-select id="employee_no" formControlName="employee_no" [readonly]="!editable" [clearable]="false" bindLabel="full_name" bindValue="employee_no" [items]="model.employees()" placeholder="Select employee">
+                    <ng-template ng-option-tmp let-item="item">{{ item.full_name || item.first_name }} ({{ item.employee_id }})</ng-template>
+                  </ng-select>
+                </div></div>
+                <div class="col-md-3"><div class="field-group">
+                  <label class="field-label" for="loan_type">Type</label>
+                  <ng-select id="loan_type" formControlName="loan_type" [readonly]="!editable" [clearable]="false">
+                    @for (opt of loanTypes; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                  </ng-select>
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="principal_amount">Principal Amount</label>
+                  <input type="number" id="principal_amount" formControlName="principal_amount" class="form-control" step="0.01" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="installment_count">Installments</label>
+                  <input type="number" id="installment_count" formControlName="installment_count" class="form-control" step="1" min="1" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label">Per Installment</label>
+                  <input type="text" class="form-control" [value]="model.installmentAmount() | number: '1.2-2'" readonly />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="disbursement_date">Disbursement Date</label>
+                  <input type="date" id="disbursement_date" formControlName="disbursement_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="recovery_start">Recovery Start</label>
+                  <input type="date" id="recovery_start" formControlName="recovery_start" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-12"><div class="field-group">
+                  <label class="field-label" for="reason">Reason</label>
+                  <textarea id="reason" formControlName="reason" class="form-control" rows="2" [readonly]="!editable"></textarea>
+                </div></div>
+              </div>
+            </div>
+          </div>
+
+          @if (model.current(); as cur) {
+            @if (status === 3 || status === 4) {
+              <div class="form-section-card card">
+                <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">savings</mat-icon> Recovery</h4></div>
+                <div class="card-body">
+                  <div class="row row-group">
+                    <div class="col-md-4"><div class="field-group"><label class="field-label">Recovered</label>
+                      <input type="text" class="form-control" [value]="(cur.recovered_amount || 0) | number: '1.2-2'" readonly /></div></div>
+                    <div class="col-md-4"><div class="field-group"><label class="field-label">Outstanding</label>
+                      <input type="text" class="form-control fw-bold" [value]="(cur.outstanding_amount || 0) | number: '1.2-2'" readonly /></div></div>
+                    <div class="col-md-4"><div class="field-group"><label class="field-label">Per Installment</label>
+                      <input type="text" class="form-control" [value]="(cur.installment_amount || 0) | number: '1.2-2'" readonly /></div></div>
+                  </div>
+                  @if (status === 3 && permissionService.canUpdate()) {
+                    <div class="d-flex align-items-end gap-2 mt-2 pt-2" style="border-top:1px solid var(--border-color)">
+                      <div class="field-group flex-grow-1"><label class="field-label">Record Recovery Amount</label>
+                        <input type="number" class="form-control" step="0.01" [(ngModel)]="recoveryAmount" [ngModelOptions]="{ standalone: true }" placeholder="0.00" /></div>
+                      <button type="button" class="btn-action btn-save" style="height:42px;padding:0 16px" (click)="recover()" [disabled]="model.isSaving()">
+                        <mat-icon style="font-size:16px;width:16px;height:16px">add</mat-icon> Record</button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">approval</mat-icon> Workflow</h4></div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-3"><mat-icon [class.text-success]="status === 2 || status === 3 || status === 4">flag</mat-icon><span class="fw-semibold">{{ statusLabel(status) }}</span></div>
+              <div class="d-flex flex-wrap gap-1">
+                @if (status === 1 && model.selectedNo() && permissionService.canInsert()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="submit()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">send</mat-icon> Submit</button>
+                }
+                @if (status === 1 && model.selectedNo() && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="approve()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Approve</button>
+                  <button type="button" class="btn-action btn-delete" style="height:32px;padding:0 12px" (click)="reject()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> Reject</button>
+                }
+                @if (status === 2 && permissionService.canApprove()) {
+                  <button type="button" class="btn-action btn-save" style="height:32px;padding:0 12px" (click)="disburse()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">account_balance</mat-icon> Disburse</button>
+                }
+                @if ((status === 1 || status === 2 || status === 3) && model.selectedNo() && permissionService.canDelete()) {
+                  <button type="button" class="btn-action btn-reset" style="height:32px;padding:0 12px" (click)="cancel()" [disabled]="model.isSaving()"><mat-icon style="font-size:16px;width:16px;height:16px">block</mat-icon> Cancel</button>
+                }
+              </div>
+              @if (status === 4) {
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
+                  <mat-icon>task_alt</mat-icon> Fully recovered — loan closed.
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>
