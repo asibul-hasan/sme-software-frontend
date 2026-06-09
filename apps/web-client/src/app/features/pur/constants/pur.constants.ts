@@ -62,4 +62,26 @@ export const purConstants = {
     { value: 6, label: 'Closed' },
     { value: 7, label: 'Cancelled' },
   ] as SelectOption[],
+  receiptStatuses: [
+    { value: 1, label: 'Draft' },
+    { value: 2, label: 'Posted' },
+    { value: 3, label: 'Cancelled' },
+  ] as SelectOption[],
+  landedCostTypes: [
+    { value: 1, label: 'Freight' },
+    { value: 2, label: 'Duty' },
+    { value: 3, label: 'Clearing' },
+    { value: 4, label: 'Insurance' },
+    { value: 5, label: 'Handling' },
+    { value: 6, label: 'Other' },
+  ] as SelectOption[],
+  landedAllocBases: [
+    { value: 1, label: 'Value' },
+    { value: 2, label: 'Qty' },
+  ] as SelectOption[],
+  landedStatuses: [
+    { value: 1, label: 'Draft' },
+    { value: 2, label: 'Applied' },
+    { value: 3, label: 'Cancelled' },
+  ] as SelectOption[],
 };

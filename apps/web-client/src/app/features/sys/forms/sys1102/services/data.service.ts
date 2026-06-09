@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
 import { IRole, IBranchLookup } from './model.service';
+import { CommonDataService } from '../../../../../shared/services/common-data.service';
 
 /**
  * Form-level HTTP service for SYS1102 – Role Management.
@@ -10,13 +11,14 @@ import { IRole, IBranchLookup } from './model.service';
 @Injectable()
 export class Sys1102DataService {
   private sysService = inject(SysDataService);
+  private commonDataService = inject(CommonDataService);
 
   loadRoles(): Observable<ApiResponse<IRole[]>> {
     return this.sysService.getRoleLookupList() as Observable<ApiResponse<IRole[]>>;
   }
 
   loadBranches(): Observable<ApiResponse<IBranchLookup[]>> {
-    return this.sysService.getList<IBranchLookup[]>('branches/list');
+    return this.commonDataService.getBranchList() as unknown as Observable<ApiResponse<IBranchLookup[]>>;
   }
 
   loadRoleDetail(roleNo: number): Observable<ApiResponse<IRole>> {

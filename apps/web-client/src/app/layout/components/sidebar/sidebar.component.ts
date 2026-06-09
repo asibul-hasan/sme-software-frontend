@@ -7,9 +7,9 @@ import {
   computed,
   effect,
   inject,
-  signal,    // still used for isCollapsed, searchTerm, isAllExpanded
+  signal,
 } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { MenuItem } from './models/menu.model';
 import { MenuService } from './services/menu-builder.service';
 import { SharedModule } from '../../../shared';
@@ -51,6 +51,7 @@ export class SidebarComponent {
   readonly isCollapsed   = signal(false);
   readonly searchTerm    = signal('');
   readonly isAllExpanded = signal(false);
+  readonly selectedModuleId = signal<string | null>(null);
 
   /**
    * Source-of-truth menu signal. Reactively rebuilt whenever the auth
@@ -61,23 +62,35 @@ export class SidebarComponent {
   readonly menuItems = computed<MenuItem[]>(() => {
     const tree = this.menuService.tree();
     this.applyExpandedState(tree, this.loadExpandedState());
+    this.expandActivePath(tree);
     return tree;
+  });
+
+  readonly selectedModule = computed<MenuItem | null>(() => {
+    const modules = this.menuItems();
+    if (!modules.length) return null;
+
+    const selectedId = this.selectedModuleId();
+    const selected = selectedId ? modules.find((item) => item.formId === selectedId) : null;
+    if (selected) return selected;
+
+    return modules.find((item) => this.containsActiveRoute(item)) ?? modules[0];
   });
 
   /**
    * Filtered tree for the search input — pruned breadth-first; parents whose
    * descendants match are auto-expanded so the result is reachable.
    */
-  readonly filteredMenuItems = computed<MenuItem[]>(() => {
+  readonly filteredSubMenuItems = computed<MenuItem[]>(() => {
     const term  = this.searchTerm().toLowerCase().trim();
-    const items = this.menuItems();
+    const items = this.selectedModule()?.children ?? [];
     if (!term) return items;
 
     const filter = (nodes: MenuItem[]): MenuItem[] => {
       const out: MenuItem[] = [];
       for (const node of nodes) {
         const copy = { ...node };
-        let matched = !!copy.formName?.toLowerCase().includes(term);
+        let matched = this.matchesSearch(copy, term);
 
         if (copy.children?.length) {
           const kids = filter(copy.children);
@@ -98,6 +111,8 @@ export class SidebarComponent {
     return filter(items);
   });
 
+  readonly selectedModuleLabel = computed(() => this.selectedModule()?.formName ?? '');
+
   constructor() {
     // Persist expanded-state set whenever the menu changes shape.
     effect(() => {
@@ -111,6 +126,14 @@ export class SidebarComponent {
     event.stopPropagation();
     node.expanded = !node.expanded;
     this.persistExpandedState(this.menuItems());
+  }
+
+  selectModule(module: MenuItem): void {
+    this.selectedModuleId.set(module.formId);
+    this.searchTerm.set('');
+    if (this.isCollapsed()) {
+      this.toggleCollapse.emit();
+    }
   }
 
   toggleSidebar(): void {
@@ -127,7 +150,8 @@ export class SidebarComponent {
         if (node.children?.length) apply(node.children);
       }
     };
-    apply(this.menuItems());
+    const selected = this.selectedModule();
+    if (selected?.children?.length) apply(selected.children);
     this.persistExpandedState(this.menuItems());
 
     if (!next) this.searchTerm.set('');
@@ -139,7 +163,26 @@ export class SidebarComponent {
   }
 
   hasActiveChild(item: MenuItem): boolean {
-    return !!item.children?.some((child) => this.isActive(child.route));
+    return this.containsActiveRoute(item);
+  }
+
+  isModuleSelected(module: MenuItem): boolean {
+    return this.selectedModule()?.formId === module.formId;
+  }
+
+  moduleShortLabel(module: MenuItem): string {
+    const raw = String(module.module ?? module.formId ?? module.formName ?? '').toUpperCase();
+    const compact = raw.replace(/[^A-Z0-9]/g, '');
+
+    if (compact.includes('HRM') || compact.includes('HR')) return 'HR';
+    if (compact.includes('INV') || compact.includes('INVENTORY')) return 'INV';
+    if (compact.includes('FIN') || compact.includes('ACCOUNT')) return 'FIN';
+    if (compact.includes('PUR') || compact.includes('PROC')) return 'PUR';
+    if (compact.includes('SAL') || compact.includes('SALE')) return 'SAL';
+    if (compact.includes('RPT') || compact.includes('REPORT')) return 'RPT';
+    if (compact.includes('SYS') || compact.includes('ADMIN')) return 'ADMIN';
+
+    return (compact || module.formName || 'MOD').slice(0, 5);
   }
 
   // ─── Persistence helpers ───────────────────────────────────────────────────
@@ -170,5 +213,34 @@ export class SidebarComponent {
     };
     collect(nodes);
     localStorage.setItem(SIDEBAR_EXPANDED_KEY, JSON.stringify([...ids]));
+  }
+
+  private containsActiveRoute(item: MenuItem): boolean {
+    if (this.isActive(item.route)) return true;
+    return !!item.children?.some((child) => this.containsActiveRoute(child));
+  }
+
+  private expandActivePath(nodes: MenuItem[]): boolean {
+    let anyActive = false;
+    for (const node of nodes) {
+      const active = this.isActive(node.route) || this.expandActivePath(node.children ?? []);
+      if (active) {
+        node.expanded = true;
+        anyActive = true;
+      }
+    }
+    return anyActive;
+  }
+
+  private matchesSearch(item: MenuItem, term: string): boolean {
+    return [
+      item.formName,
+      item.formId,
+      item.code,
+      item.module,
+      item.subModule,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(term));
   }
 }

@@ -52,6 +52,18 @@ export interface CompanyLookup {
   is_active: number;
 }
 
+export interface CurrencyLookup {
+  currency_no: number;
+  currency_code: string;
+  currency_name: string;
+  currency_symbol: string;
+  fraction_name: string;
+  decimal_places: number;
+  number_system: number;
+  is_base_currency: number;
+}
+
+
 /**
  * Shared service for common lookup APIs used across different modules.
  * This service centralizes access to data that is needed by multiple features
@@ -79,24 +91,28 @@ export class CommonDataService extends BaseDataService {
       if (filters.department_no != null)
         params['department_no'] = filters.department_no;
     }
-    return this.getList<EmployeeLookup[]>('hr/employees', params);
+    return this.getList<EmployeeLookup[]>('common/lookups/employees', params);
   }
 
   getDepartmentList(): Observable<ApiResponse<DepartmentLookup[]>> {
-    return this.getList<DepartmentLookup[]>('hr/departments');
+    return this.getList<DepartmentLookup[]>('common/lookups/departments');
   }
 
   getDesignationList(): Observable<ApiResponse<DesignationLookup[]>> {
-    return this.getList<DesignationLookup[]>('hr/designations');
+    return this.getList<DesignationLookup[]>('common/lookups/designations');
   }
 
   // ─── System Lookups ────────────────────────────────────────────────────────
 
   getBranchList(): Observable<ApiResponse<BranchLookup[]>> {
-    return this.getList<BranchLookup[]>('sys/branches');
+    return this.getList<BranchLookup[]>('common/lookups/branches');
   }
 
   getCompanyList(): Observable<ApiResponse<CompanyLookup[]>> {
     return this.getList<CompanyLookup[]>('sys/companies');
+  }
+
+  getCurrencyList(): Observable<ApiResponse<CurrencyLookup[]>> {
+    return this.getList<CurrencyLookup[]>('common/lookups/currencies');
   }
 }

@@ -22,7 +22,7 @@ interface WorkLine extends OrderLine { __uid: number; }
   imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
   providers: [Pur1101DataService],
   templateUrl: './pur1101.component.html',
-  styles: [`:host { display: block; height: 100%; }`],
+  styles: [`:host { display: block; height: 100%; } /* trigger rebuild */`],
 })
 export class Pur1101Component implements OnInit {
   public permissionService = inject(FormPermissionService);

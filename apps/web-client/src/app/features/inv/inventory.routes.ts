@@ -69,11 +69,11 @@ export const INVENTORY_ROUTES: Routes = [
   },
 
   // ── Batch Control — INV_2304 component not yet built ─────────────────────
-  // {
-  //   path: 'form/batch-expiry-management',
-  //   loadComponent: () =>
-  //     import('./forms/inv2004/inv2004.component').then((m) => m.Inv2004Component),
-  // },
+  {
+    path: 'form/batch-expiry-management',
+    loadComponent: () =>
+      import('./forms/inv2004/inv2004.component').then((m) => m.Inv2004Component),
+  },
 
   // ── Reorder Control ───────────────────────────────────────────────────────
   {

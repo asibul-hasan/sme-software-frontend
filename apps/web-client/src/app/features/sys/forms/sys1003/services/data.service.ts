@@ -4,6 +4,7 @@ import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
 import { IBranch } from '../../sys1002/services/model.service';
 import { FinancialYear } from './model.service';
+import { CommonDataService } from '../../../../../shared/services/common-data.service';
 
 /**
  * Form-level HTTP service for SYS1003 – Financial Year Setup.
@@ -17,13 +18,14 @@ import { FinancialYear } from './model.service';
 @Injectable()
 export class Sys1003DataService {
   private sysService = inject(SysDataService);
+  private commonDataService = inject(CommonDataService);
 
   /**
    * Branch list for the dropdown.
-   * Uses generic endpoint: GET /api/v1/sys/branches
+   * Uses generic endpoint: GET /api/v1/common/lookups/branches
    */
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branches/list');
+    return this.commonDataService.getBranchList() as unknown as Observable<ApiResponse<IBranch[]>>;
   }
 
   /**

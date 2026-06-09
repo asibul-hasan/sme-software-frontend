@@ -1,0 +1,98 @@
+<app-page-form-layout
+  [title]="'Goods Receipt Note'"
+  [subtitle]="'Two-step receiving: posts provisional stock and GRN clearing'"
+  [icon]="'inventory'"
+  [recordsCount]="filtered().length"
+  [sidebarTitle]="'GRNs'"
+  [searchTerm]="searchTerm()"
+  (searchTermChange)="searchTerm.set($event); pager.reset()"
+  [showSort]="false"
+  (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
+  [showSave]="editable() && (permissionService.canInsert() || permissionService.canUpdate())"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!selectedNo() && status() === 1"
+  [isSaving]="isSaving()" [isLoading]="isLoading()"
+>
+  <div sidebarList>
+    @for (item of pager.paged(); track item.receipt_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="selectedNo() === item.receipt_no" (click)="select(item)">
+        <h6 class="list-item-title mb-0 text-truncate">{{ item.receipt_id || 'Draft GRN' }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.supplier_name }} · {{ item.warehouse_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 2" [class.list-item-tag--warning]="item.status === 3">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.grand_total | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>inventory</mat-icon><p>No GRNs found</p></div> }
+  </div>
+
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">inventory</mat-icon> {{ selectedNo() ? 'GRN ' + statusLabel(status()) : 'New GRN' }}</h4>
+        <div class="ms-auto d-flex gap-2">
+          @if (editable() && selectedNo()) {
+            <button type="button" class="btn-action btn-save" (click)="post()"><mat-icon>task_alt</mat-icon> Post</button>
+          }
+          @if (status() === 2) {
+            <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button>
+          }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row row-group">
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
+            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
+            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Receipt Date</label>
+            <input type="date" class="form-control" [(ngModel)]="receiptDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">PO No</label>
+            <input type="number" class="form-control text-end" [(ngModel)]="orderNo" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
+            <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" /></div></div>
+        </div>
+      </div>
+    </div>
+
+    @if (editable()) {
+      <div class="form-section-card card flex-shrink-0">
+        <div class="card-body">
+          <div class="row row-group align-items-end">
+            <div class="col-md-3"><div class="field-group"><label class="field-label">Product</label>
+              <ng-select [(ngModel)]="newProduct" [items]="products()" bindValue="no" bindLabel="name" placeholder="Product" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">UOM</label>
+              <ng-select [(ngModel)]="newUom" [items]="uoms()" bindValue="no" bindLabel="name" placeholder="UOM" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
+            <div class="col-md-2"><div class="field-group"><label class="field-label">Unit Cost</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newCost" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="newTaxPct" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Batch</label>
+              <input type="text" class="form-control" [(ngModel)]="newBatch" /></div></div>
+            <div class="col-md-1"><div class="field-group"><label class="field-label">Expiry</label>
+              <input type="date" class="form-control" [(ngModel)]="newExpiryDate" /></div></div>
+            <div class="col-md-1"><button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()"><mat-icon>add</mat-icon></button></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Received Lines</h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end"><span class="field-label mb-0">Cost</span><div class="fw-bold">{{ subTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Tax</span><div class="fw-bold">{{ taxTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">GRN Total</span><div class="fw-bold text-primary">{{ grandTotal() | number: '1.2-2' }}</div></div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
+        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

@@ -1,0 +1,73 @@
+<app-page-form-layout
+  [title]="'Landed Cost'"
+  [subtitle]="'Allocate freight, duty and handling to posted purchase invoice lines'"
+  [icon]="'price_change'"
+  [recordsCount]="filtered().length"
+  [sidebarTitle]="'Landed Costs'"
+  [searchTerm]="searchTerm()"
+  (searchTermChange)="searchTerm.set($event); pager.reset()"
+  [showSort]="false"
+  (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
+  [showSave]="editable() && (permissionService.canInsert() || permissionService.canUpdate())"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!selectedNo() && status() === 1"
+  [isSaving]="isSaving()" [isLoading]="isLoading()"
+>
+  <div sidebarList>
+    @for (item of pager.paged(); track item.landed_cost_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+        [class.active]="selectedNo() === item.landed_cost_no" (click)="select(item)">
+        <h6 class="list-item-title mb-0 text-truncate">{{ item.landed_cost_id }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ item.invoice_id }} · {{ item.supplier_name }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [class.list-item-tag--primary]="item.status === 2">{{ statusLabel(item.status) }}</span>
+          <span class="list-item-value">{{ item.amount | number: '1.0-0' }}</span>
+        </div>
+      </button>
+    }
+    @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>price_change</mat-icon><p>No landed costs found</p></div> }
+  </div>
+
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">price_change</mat-icon> {{ selectedNo() ? statusLabel(status()) : 'New Landed Cost' }}</h4>
+        <div class="ms-auto d-flex gap-2">
+          @if (editable() && selectedNo()) {
+            <button type="button" class="btn-action btn-save" (click)="apply()"><mat-icon>task_alt</mat-icon> Apply</button>
+          }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row row-group">
+          <div class="col-md-3"><div class="field-group"><label class="field-label">Posted Invoice</label>
+            <ng-select [(ngModel)]="invoiceNo" [items]="postedInvoices()" bindValue="invoice_no" bindLabel="invoice_id" [disabled]="!editable()" placeholder="Select invoice" (change)="preview()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Cost Date</label>
+            <input type="date" class="form-control" [(ngModel)]="costDate" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Cost Type</label>
+            <ng-select [(ngModel)]="costType" [items]="costTypes" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
+            <input type="number" class="form-control text-end" [(ngModel)]="amount" [disabled]="!editable()" (blur)="preview()" /></div></div>
+          <div class="col-md-1"><div class="field-group"><label class="field-label">Basis</label>
+            <ng-select [(ngModel)]="allocBasis" [items]="allocBases" bindValue="value" bindLabel="label" [disabled]="!editable()" (change)="preview()" /></div></div>
+          <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
+            <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" /></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">calculate</mat-icon> Allocation Preview</h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end"><span class="field-label mb-0">Invoice</span><div class="fw-bold">{{ selectedInvoice()?.invoice_id || '-' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Supplier</span><div class="fw-bold">{{ selectedInvoice()?.supplier_name || '-' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Allocated</span><div class="fw-bold text-primary">{{ totalAllocated() | number: '1.2-2' }}</div></div>
+        </div>
+      </div>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
+        <app-common-table [columns]="allocColumns" [data]="allocTableData()" [config]="allocConfig" />
+      </div>
+    </div>
+  </div>
+</app-page-form-layout>

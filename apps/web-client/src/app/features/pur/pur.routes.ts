@@ -12,6 +12,10 @@ export const PUR_ROUTES: Routes = [
 
   // ── Purchase Workflow ─────────────────────────────────────────────────────
   {
+    path: 'form/supplier-price-list',
+    loadComponent: () => import('./forms/pur1002/pur1002.component').then((m) => m.Pur1002Component),
+  },
+  {
     path: 'form/purchase-order',
     loadComponent: () => import('./forms/pur1101/pur1101.component').then((m) => m.Pur1101Component),
   },
@@ -20,6 +24,14 @@ export const PUR_ROUTES: Routes = [
   {
     path: 'form/purchase-invoice',
     loadComponent: () => import('./forms/pur1102/pur1102.component').then((m) => m.Pur1102Component),
+  },
+  {
+    path: 'form/goods-receipt-note',
+    loadComponent: () => import('./forms/pur1105/pur1105.component').then((m) => m.Pur1105Component),
+  },
+  {
+    path: 'form/landed-cost',
+    loadComponent: () => import('./forms/pur1106/pur1106.component').then((m) => m.Pur1106Component),
   },
   {
     path: 'form/purchase-return',

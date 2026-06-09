@@ -4,6 +4,7 @@ import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
 import { TaxRule } from './model.service';
 import { IBranch } from '../../sys1002/services/model.service';
+import { CommonDataService } from '../../../../../shared/services/common-data.service';
 
 /**
  * Form-level HTTP service for SYS1005 – VAT / Tax Setup.
@@ -13,9 +14,10 @@ import { IBranch } from '../../sys1002/services/model.service';
 @Injectable()
 export class Sys1005DataService {
   private sysService = inject(SysDataService);
+  private commonDataService = inject(CommonDataService);
 
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branches/list');
+    return this.commonDataService.getBranchList() as unknown as Observable<ApiResponse<IBranch[]>>;
   }
 
   loadTaxRules(): Observable<ApiResponse<TaxRule[]>> {

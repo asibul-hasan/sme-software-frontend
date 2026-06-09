@@ -31,12 +31,11 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/sys1005/sys1005.component').then((m) => m.Sys1005Component),
   },
-  // SYS_1006 — Exchange Rate Setup is now integrated as a tab inside Currency Setup (sys/form/currency-setup)
-  // {
-  //   path: 'form/exchange-rate-setup',
-  //   loadComponent: () =>
-  //     import('./forms/sys1006/sys1006.component').then((m) => m.Sys1006Component),
-  // },
+  {
+    path: 'form/exchange-rate-setup',
+    loadComponent: () =>
+      import('./forms/sys1006/sys1006.component').then((m) => m.Sys1006Component),
+  },
   {
     path: 'form/cost-center-setup',
     loadComponent: () =>

@@ -4,6 +4,7 @@ import { SysDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
 import { IBranch } from '../../sys1002/services/model.service';
 import { Currency, CurrencyLookup, RateHistory } from './model.service';
+import { CommonDataService } from '../../../../../shared/services/common-data.service';
 
 /**
  * Form-level HTTP service for SYS1004 – Currency Setup.
@@ -15,15 +16,16 @@ import { Currency, CurrencyLookup, RateHistory } from './model.service';
 @Injectable()
 export class Sys1004DataService {
   private sysService = inject(SysDataService);
+  private commonDataService = inject(CommonDataService);
 
-  /** Branch list (common). GET /api/v1/sys/branches */
+  /** Branch list (common). GET /api/v1/common/lookups/branches */
   loadBranches(): Observable<ApiResponse<IBranch[]>> {
-    return this.sysService.getList<IBranch[]>('branches/list');
+    return this.commonDataService.getBranchList() as unknown as Observable<ApiResponse<IBranch[]>>;
   }
 
-  /** GET /api/v1/sys/currency/list */
+  /** GET /api/v1/common/lookups/currencies */
   loadCurrencies(): Observable<ApiResponse<CurrencyLookup[]>> {
-    return this.sysService.getList<CurrencyLookup[]>('currency/list');
+    return this.commonDataService.getCurrencyList() as unknown as Observable<ApiResponse<CurrencyLookup[]>>;
   }
 
   /** GET /api/v1/sys/forms/sys1004/currencies/{currencyNo} */
