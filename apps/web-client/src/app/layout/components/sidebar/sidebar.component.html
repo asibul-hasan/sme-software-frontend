@@ -1,9 +1,9 @@
 <aside
   class="sidebar h-full overflow-hidden"
-  [style.width.px]="isCollapsed() ? 76 : 312"
+  [style.width.px]="isCollapsed() ? 68 : 292"
   [class.collapsed]="isCollapsed()"
 >
-  <div class="sb-rail flex flex-col h-full flex-shrink-0">
+  <header class="sb-topbar flex items-center gap-2 flex-shrink-0">
     <a
       class="sb-rail-brand flex items-center justify-center flex-shrink-0"
       [routerLink]="['/']"
@@ -18,7 +18,15 @@
       </ng-template>
     </a>
 
-    <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
+    <div *ngIf="!isCollapsed()" class="min-w-0 flex-1">
+      <h2 class="sb-company mb-0 truncate">{{ companyName() }}</h2>
+    </div>
+  </header>
+
+  <div class="sb-body flex flex-1 min-h-0">
+    <div class="sb-rail flex flex-col h-full flex-shrink-0">
+
+      <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
       <button
         *ngFor="let module of menuItems()"
         type="button"
@@ -34,9 +42,9 @@
         </span>
         <span class="sb-module-label">{{ moduleShortLabel(module) }}</span>
       </button>
-    </nav>
+      </nav>
 
-    <div class="sb-rail-footer flex items-center justify-center flex-shrink-0">
+      <div class="sb-rail-footer flex items-center justify-center flex-shrink-0">
       <button
         type="button"
         class="sb-toggle-btn"
@@ -45,28 +53,13 @@
       >
         <ui-icon [size]="14">{{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}</ui-icon>
       </button>
-    </div>
-  </div>
-
-  <section *ngIf="!isCollapsed()" class="sb-panel flex flex-col h-full min-w-0">
-    <header class="sb-panel-header flex items-center gap-2 flex-shrink-0">
-      <div class="min-w-0 flex-1">
-        <p class="sb-company mb-0 truncate">{{ companyName() }}</p>
-        <h2 class="sb-module-title mb-0 truncate">{{ selectedModuleLabel() | translate }}</h2>
       </div>
-      <button
-        type="button"
-        class="sb-action-btn"
-        (click)="toggleExpandAll()"
-        [uiTooltip]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
-        uiTooltipPosition="above"
-      >
-        <ui-icon [size]="17">{{ isAllExpanded() ? 'unfold_less_double' : 'unfold_more_double' }}</ui-icon>
-      </button>
-    </header>
+    </div>
 
-    <div class="sb-search-row flex-shrink-0">
-      <div class="sb-search-wrap">
+    <section *ngIf="!isCollapsed()" class="sb-panel flex flex-col h-full min-w-0">
+
+    <div class="sb-search-row flex items-center gap-2 flex-shrink-0">
+      <div class="sb-search-wrap flex-1 min-w-0">
         <ui-icon class="sb-search-icon" [size]="16">search</ui-icon>
         <input
           type="text"
@@ -85,12 +78,32 @@
           <ui-icon [size]="15">close</ui-icon>
         </button>
       </div>
+      <button
+        type="button"
+        class="sb-action-btn"
+        (click)="toggleExpandAll()"
+        [uiTooltip]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
+        uiTooltipPosition="above"
+      >
+        <ui-icon [size]="17">{{ isAllExpanded() ? 'unfold_less_double' : 'unfold_more_double' }}</ui-icon>
+      </button>
     </div>
 
     <nav class="sb-menu-panel flex-1 overflow-y-auto overflow-x-hidden">
       <ng-container *ngFor="let sub of filteredSubMenuItems(); let isLastSub = last">
         <div class="sb-sub-group">
-          <div class="sb-sub-connect" *ngIf="!isLastSub"></div>
+          <a
+            *ngIf="sub.route && !sub.children?.length; else subGroupButton"
+            class="sb-sub-btn sb-sub-link"
+            [routerLink]="sub.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <ui-icon class="sb-sub-icon" [size]="18">{{ sub.icon }}</ui-icon>
+            <span class="sb-sub-label truncate">{{ sub.formName | translate }}</span>
+          </a>
+
+          <ng-template #subGroupButton>
           <button
             type="button"
             class="sb-sub-btn"
@@ -101,11 +114,11 @@
             <span class="sb-sub-label truncate">{{ sub.formName | translate }}</span>
             <ui-icon class="sb-chevron" [size]="17">{{ sub.expanded ? 'expand_less' : 'expand_more' }}</ui-icon>
           </button>
+          </ng-template>
 
           <div *ngIf="sub.expanded && sub.children?.length" class="sb-form-list">
             <ng-container *ngFor="let form of sub.children; let isLastForm = last">
               <div class="sb-form-row">
-                <div class="sb-form-connect" *ngIf="!isLastForm"></div>
                 <a
                   class="sb-form-link"
                   [routerLink]="form.route"
@@ -126,5 +139,6 @@
         <span>No menu found</span>
       </div>
     </nav>
-  </section>
+    </section>
+  </div>
 </aside>

@@ -131,6 +131,10 @@ export class SidebarComponent {
   selectModule(module: MenuItem): void {
     this.selectedModuleId.set(module.formId);
     this.searchTerm.set('');
+    const dashboard = module.children?.find((child) => !!child.route);
+    if (dashboard?.route && !this.isActive(dashboard.route)) {
+      this.router.navigateByUrl(dashboard.route);
+    }
     if (this.isCollapsed()) {
       this.toggleCollapse.emit();
     }
@@ -174,7 +178,7 @@ export class SidebarComponent {
     const raw = String(module.module ?? module.formId ?? module.formName ?? '').toUpperCase();
     const compact = raw.replace(/[^A-Z0-9]/g, '');
 
-    if (compact.includes('HRM') || compact.includes('HR')) return 'HR';
+    if (compact.includes('HRM') || compact.includes('HR') || compact.includes('HUMAN')) return 'HUMAN';
     if (compact.includes('INV') || compact.includes('INVENTORY')) return 'INV';
     if (compact.includes('FIN') || compact.includes('ACCOUNT')) return 'FIN';
     if (compact.includes('PUR') || compact.includes('PROC')) return 'PUR';

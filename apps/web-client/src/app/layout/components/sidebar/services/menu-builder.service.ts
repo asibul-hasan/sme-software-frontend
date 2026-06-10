@@ -50,6 +50,7 @@ export class MenuService {
       formId: string;
       formName: string;
       icon: string;
+      route?: string;
       children: MenuItem[];
     }
     interface ModuleMap {
@@ -78,13 +79,14 @@ export class MenuService {
       }
 
       const module = moduleMap[moduleKey];
-      const subModuleKey = form.sub_module || 'General';
+      const isReport = String(form.type ?? '').toLowerCase() === 'report';
+      const subModuleKey = isReport ? 'Report' : (form.sub_module || 'General');
 
       if (!module.children[subModuleKey]) {
         module.children[subModuleKey] = {
           formId: subModuleKey,
           formName: this.toCamelCaseRoute(subModuleKey),
-          icon: form.sub_module_icon || 'folder_open',
+          icon: isReport ? 'assessment' : (form.sub_module_icon || 'folder_open'),
           children: [],
         };
       }
@@ -103,6 +105,14 @@ export class MenuService {
 
     return Object.values(moduleMap)
       .map((m) => {
+        const dashboard: MenuItem = {
+          formId: `${m.formId}_DASHBOARD`,
+          formName: 'dashboard',
+          icon: 'dashboard',
+          route: this.buildDashboardRoute(m.formId),
+          module: m.formId as ModuleEnum,
+        };
+
         // Sort forms within each submodule by formId
         const subModules = Object.values(m.children).map((sub) => {
           sub.children.sort((a, b) => a.formId.localeCompare(b.formId));
@@ -118,7 +128,7 @@ export class MenuService {
 
         return {
           ...m,
-          children: subModules,
+          children: [dashboard, ...subModules],
         } as MenuItem;
       })
       .sort((a, b) => (a.module_serial ?? 999) - (b.module_serial ?? 999));
@@ -142,6 +152,10 @@ export class MenuService {
       .replace(/\s+/g, '-');
 
     return `/${code}/${type}/${slug}`;
+  }
+
+  private buildDashboardRoute(moduleKey: string): string {
+    return `/dashboard?module=${encodeURIComponent(moduleKey.toLowerCase())}`;
   }
 
   private toCamelCaseRoute(value: string): string {
