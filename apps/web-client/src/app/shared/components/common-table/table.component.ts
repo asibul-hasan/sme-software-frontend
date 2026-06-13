@@ -17,6 +17,7 @@ import { UiBadgeComponent } from '@app/shared/ui/badge/ui-badge.component';
 import { UiMenuComponent } from '@app/shared/ui/menu/ui-menu.component';
 import { UiMenuTriggerDirective } from '@app/shared/ui/menu/ui-menu-trigger.directive';
 import { UiTooltipDirective } from '@app/shared/ui/tooltip/ui-tooltip.directive';
+import { ShowDatepickerDirective } from '@app/shared/directives/show-datepicker.directive';
 
 import {
   BadgeConfig, CellButtonConfig, ColumnDef, DEFAULT_TABLE_CONFIG,
@@ -33,16 +34,62 @@ import { TableViewModalComponent } from './table-view-modal.component';
     ReactiveFormsModule, FormsModule, NgSelectModule,
     MatTableModule, MatSortModule, MatPaginatorModule, MatCheckboxModule, MatIconModule,
     NgTemplateOutlet, UiBadgeComponent, UiMenuComponent, UiMenuTriggerDirective, UiTooltipDirective,
+    ShowDatepickerDirective,
     TableViewModalComponent,
   ],
   templateUrl: './table.component.html',
   styles: `
-    :host { display: block; }
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 20vh;
+    }
+    .common-table-card {
+      --common-table-header-bg: var(--table-header-bg, var(--bg-secondary));
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      min-height: 20vh;
+      overflow: hidden;
+    }
+    .common-table-toolbar,
+    .common-table-pagination {
+      background: transparent !important;
+    }
+    .common-table-pagination {
+      background: var(--table-header-bg, var(--bg-secondary)) !important;
+    }
+    .common-table-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .common-table-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .common-table-search {
+      min-height: 30px !important;
+      height: 30px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      font-size: 12px !important;
+      line-height: 30px !important;
+      background: var(--input-bg) !important;
+    }
     :host ::ng-deep {
       /* Header band — taller, crisp uppercase ERP grid header */
+      .mat-mdc-table thead,
+      .mat-mdc-table thead tr,
+      .mat-mdc-table thead th,
+      th.mat-mdc-header-cell,
       .mat-mdc-header-row {
         min-height: 46px;
-        background: var(--bg-secondary);
+        background: var(--common-table-header-bg) !important;
+        background-color: var(--common-table-header-bg) !important;
       }
       .mat-mdc-header-cell {
         padding: 0 14px;
@@ -51,8 +98,9 @@ import { TableViewModalComponent } from './table-view-modal.component';
         letter-spacing: 0.5px;
         text-transform: uppercase;
         color: var(--text-secondary);
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-color);
+        background: var(--common-table-header-bg) !important;
+        background-color: var(--common-table-header-bg) !important;
+        border-bottom: 2px solid var(--table-header-border, var(--border-color));
         white-space: nowrap;
       }
       .mat-mdc-header-cell.mat-sort-header-sorted { color: var(--indigo); }
@@ -69,7 +117,7 @@ import { TableViewModalComponent } from './table-view-modal.component';
         font-size: 13px;
         font-weight: 500;
         color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--table-row-border, var(--border-color));
         vertical-align: middle;
         transition: background 0.12s ease, color 0.12s ease;
       }
@@ -171,6 +219,30 @@ import { TableViewModalComponent } from './table-view-modal.component';
       border-top: 1px solid var(--border-color);
     }
 
+    .erp-footer-grid {
+      flex: 0 0 auto;
+      display: grid;
+      overflow: hidden;
+      background: var(--table-header-bg, var(--bg-secondary)) !important;
+      border-top: 1px solid var(--table-header-border, var(--border-color));
+      min-height: 38px;
+    }
+    .erp-footer-grid .erp-footer-cell {
+      padding: 8px 14px !important;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: var(--table-header-bg, var(--bg-secondary)) !important;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      border-right: 1px solid var(--border-color);
+    }
+    .erp-footer-grid .erp-footer-cell:last-child { border-right: none; }
+    .erp-footer-grid .erp-footer-cell.text-right { justify-content: flex-end; }
+    .erp-footer-grid .erp-footer-cell.text-center { justify-content: center; }
+
     .sticky-bottom { position: sticky; bottom: 0; z-index: 2; }
 
     .erp-striped .mat-mdc-row:nth-child(even) .mat-mdc-cell {
@@ -238,7 +310,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     return fields;
   });
 
-  readonly hasFooterTotal = computed(() => this.visibleColumns().some((c) => c.bottomTotal));
+  readonly hasFooterTotal = computed(() => this.visibleColumns().some((c) => c.bottomTotal || c.footerValue || c.footerLabel));
 
   readonly footerTotals = computed<Record<string, number>>(() => {
     const totals: Record<string, number> = {};
@@ -382,7 +454,14 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   // ─── Row Actions ────────────────────────────────────────────────────────
   onViewRow(row: Record<string, unknown>): void { this.viewModalRow.set(row); this.viewModalOpen.set(true); }
   onAction(action: TableAction, row: Record<string, unknown>): void {
+    if (action.disabled && action.disabled(row)) return;
     if (action.type === 'view') { this.onViewRow(row); return; }
+    this.cancelRowEdit();
+    this.actionMenuRow.set(null);
+    if (this.selection.isSelected(row)) {
+      this.selection.deselect(row);
+      this.emitSelection();
+    }
     if (action.onClick) action.onClick(row);
     this.rowAction.emit({ action, row });
   }
@@ -408,7 +487,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   // ─── Inline Edit (ROW-LEVEL, index-stable) ────────────────────────────────
   /** Double-click a row → put EVERY editable cell in that row into edit mode at once. */
   startRowEdit(row: Record<string, unknown>, index: number): void {
-    const editable = this.visibleColumns().filter((c) => c.editable);
+    const editable = this.visibleColumns().filter((c) => this.isColumnEditable(c, row));
     if (!editable.length) return;
     if (this.editingRowIndex() !== null && this.editingRowIndex() !== index) this.commitRow();
     const seed: Record<string, unknown> = {};
@@ -418,9 +497,15 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   /** True for every editable cell of the row (by index) currently in edit mode. */
-  isEditing(index: number, field: string): boolean {
+  isEditing(index: number, field: string, row?: Record<string, unknown>): boolean {
     if (this.editingRowIndex() !== index) return false;
-    return !!this.columns().find((c) => c.field === field)?.editable;
+    const col = this.columns().find((c) => c.field === field);
+    return !!col && this.isColumnEditable(col, row);
+  }
+
+  isColumnEditable(col: ColumnDef, row?: Record<string, unknown>): boolean {
+    if (typeof col.editable === 'function') return row ? !!col.editable(row, col) : false;
+    return !!col.editable;
   }
 
   getEditValue(col: ColumnDef): unknown { return this.rowEdits()[col.field]; }
@@ -568,17 +653,39 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     const c: string[] = []; if (this.isSticky(col)) c.push('sticky'); if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]'); if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]'); if (col.headerClass) c.push(col.headerClass); return c.join(' ');
   }
 
-  getCellClass(col: ColumnDef): string {
-    const c: string[] = [this.getAlignClass(col)]; if (this.isSticky(col)) c.push('sticky'); if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]'); if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]'); if (col.editable) c.push('cursor-text'); if (col.cellClass) c.push(col.cellClass); return c.join(' ');
+  getCellClass(col: ColumnDef, row?: Record<string, unknown>): string {
+    const c: string[] = [this.getAlignClass(col)]; if (this.isSticky(col)) c.push('sticky'); if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]'); if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]'); if (this.isColumnEditable(col, row)) c.push('cursor-text'); if (col.cellClass) c.push(col.cellClass); return c.join(' ');
   }
 
   getColumnByField(field: string): ColumnDef | undefined { return this.visibleColumns().find((c) => c.field === field); }
   getFooterLabel(): string { const c = this.visibleColumns().find((x) => !!x.footerLabel); return c?.footerLabel || 'Total'; }
 
   getFooterValue(col: ColumnDef): string {
+    if (col.footerValue) {
+      const raw = col.footerValue(this.dataSource.filteredData);
+      const n = Number(raw);
+      if (!isNaN(n)) {
+        const f = this.decimalPipe.transform(n, `1.${col.precision ?? 2}-${col.precision ?? 2}`);
+        return col.cellType === 'currency' ? `${col.currencyCode || ''} ${f}`.trim() : (f || '');
+      }
+      return raw == null ? '' : String(raw);
+    }
     const t = this.footerTotals()[col.field]; if (t == null) return '';
     const f = this.decimalPipe.transform(t, `1.${col.precision ?? 2}-${col.precision ?? 2}`);
     return col.cellType === 'currency' ? `${col.currencyCode || ''} ${f}`.trim() : (f || '');
+  }
+
+  getFooterGridTemplate(): string {
+    const tracks: string[] = [];
+    if (this.mergedConfig().selectable) tracks.push('40px');
+    if (this.mergedConfig().showRowNumbers) tracks.push('40px');
+    for (const col of this.visibleColumns()) {
+      if (col.width) tracks.push(col.width);
+      else if (col.minWidth) tracks.push(`minmax(${col.minWidth}, 1fr)`);
+      else tracks.push('minmax(120px, 1fr)');
+    }
+    if (this.mergedConfig().showActions) tracks.push('64px');
+    return tracks.join(' ');
   }
 
   trackByField(_i: number, f: string): string { return f; }

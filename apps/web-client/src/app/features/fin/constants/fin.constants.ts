@@ -1,7 +1,9 @@
 /**
  * FIN module static enum / select-option lists — single source of truth (CLAUDE.md rule).
- * Every `value` is the DB-first numeric SMALLINT code the column stores.
+ * Most values are DB-first numeric SMALLINT codes; debit/credit side uses dr/cr strings.
  */
+import { debitCreditOptions } from '../../../core/constants/common-options.constants';
+
 export interface SelectOption { label: string; value: unknown; }
 
 export const finConstants = {
@@ -12,10 +14,7 @@ export const finConstants = {
     { value: 4, label: 'Income' },
     { value: 5, label: 'Expense' },
   ],
-  drCr: [
-    { value: 1, label: 'Debit' },
-    { value: 2, label: 'Credit' },
-  ],
+  drCr: debitCreditOptions,
   controlTypes: [
     { value: 1, label: 'Accounts Receivable' },
     { value: 2, label: 'Accounts Payable' },

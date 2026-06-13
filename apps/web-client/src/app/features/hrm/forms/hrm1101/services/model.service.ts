@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1101DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
@@ -47,7 +47,7 @@ export class Hrm1101ModelService {
   isSaving        = signal(false);
   searchTerm      = signal('');
   selectedNo      = signal<number | null>(null);
-  sortDirection   = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   /** Employee display name resolved locally from the lookup list. */
   employeeName(employeeNo?: number | null): string {
@@ -58,9 +58,10 @@ export class Hrm1101ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.attendances()
-      .filter((a) => (a.att_date || '').includes(term) || this.employeeName(a.employee_no).toLowerCase().includes(term))
-      .sort((a, b) => (b.att_date || '').localeCompare(a.att_date || '') || b.attendance_no - a.attendance_no);
+    const filtered = this.attendances()
+      .filter((a) => (a.att_date || '').includes(term) || this.employeeName(a.employee_no).toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (b.att_date || '').localeCompare(a.att_date || '') || b.attendance_no - a.attendance_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

@@ -7,7 +7,7 @@ import { Sys1002DataService, Sys1002BranchDto } from './data.service';
 import { CommonLookupService, EmployeeLookupDto } from '../../../../../core/services/common-lookup.service';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 /** @deprecated Use Sys1002BranchDto instead. Kept for backward compatibility with sys1003/1004/1005. */
@@ -29,7 +29,7 @@ export class Sys1002ModelService {
   searchTerm = signal('');
   selectedBranchNo = signal<number | null>(null);
   employees = signal<EmployeeLookupDto[]>([]);
-  sortDirection = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   form!: FormGroup;
 
@@ -79,8 +79,9 @@ export class Sys1002ModelService {
         );
     // Default: descending by PK — newest branch on top. The sidebar sort
     // toggle reverses this order for ascending (oldest first).
+    if (this.sortDirection() === '') return filtered;
     const sorted = [...filtered].sort((a, b) => (b.branch_no ?? 0) - (a.branch_no ?? 0));
-    return this.sortDirection() === 'asc' ? sorted : sorted.reverse();
+    return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 
   pager = makePaginator<Sys1002BranchDto>(this.filteredBranches);

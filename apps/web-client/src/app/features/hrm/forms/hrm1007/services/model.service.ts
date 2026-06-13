@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1007DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 export interface SalaryComponent extends BaseEntity {
@@ -45,13 +45,14 @@ export class Hrm1007ModelService {
   searchTerm        = signal('');
   selectedNo        = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.components()
-      .filter((c) => c.component_name.toLowerCase().includes(term) || c.component_id.toLowerCase().includes(term))
-      .sort((a, b) => (a.component_id || '').localeCompare(b.component_id || ''));
+    const filtered = this.components()
+      .filter((c) => c.component_name.toLowerCase().includes(term) || c.component_id.toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.component_id || '').localeCompare(b.component_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

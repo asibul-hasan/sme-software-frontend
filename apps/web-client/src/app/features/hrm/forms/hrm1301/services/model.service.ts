@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1301DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
@@ -60,7 +60,7 @@ export class Hrm1301ModelService {
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
   status        = signal<number>(1);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   employeeName(employeeNo?: number | null): string {
     if (employeeNo == null) return '';
@@ -76,9 +76,10 @@ export class Hrm1301ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.leaves()
-      .filter((l) => this.employeeName(l.employee_no).toLowerCase().includes(term) || (l.from_date || '').includes(term))
-      .sort((a, b) => b.leave_application_no - a.leave_application_no);
+    const filtered = this.leaves()
+      .filter((l) => this.employeeName(l.employee_no).toLowerCase().includes(term) || (l.from_date || '').includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.leave_application_no - a.leave_application_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

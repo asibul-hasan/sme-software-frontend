@@ -97,6 +97,7 @@ export class Sys1003ModelService {
   financialYears    = signal<FinancialYear[]>([]);
   branches          = signal<IBranch[]>([]);
   isSaving          = signal(false);
+  isClosed          = signal(false);
   searchTerm        = signal('');
   selectedYearNo    = signal<number | null>(null);
   lastSelectedIndex = 0;
@@ -135,6 +136,15 @@ export class Sys1003ModelService {
     }, {
       validators: [CustomValidators.minMax('start_date', 'end_date')]
     });
+  }
+
+  private setClosedState(closed: boolean): void {
+    this.isClosed.set(closed);
+    if (closed) {
+      this.form.disable({ emitEvent: false });
+    } else {
+      this.form.enable({ emitEvent: false });
+    }
   }
 
   addPeriodRow(period?: FinancialYearPeriod): void {
@@ -258,6 +268,7 @@ export class Sys1003ModelService {
   selectYear(year: FinancialYear, index?: number): void {
     if (index !== undefined) this.lastSelectedIndex = index;
     this.selectedYearNo.set(year.fin_year_no);
+    this.setClosedState(false);
 
     this.data.loadFinancialYearDetail(year.fin_year_no).subscribe({
         next: (res) => {
@@ -291,6 +302,7 @@ export class Sys1003ModelService {
                 }),
               );
             }
+            this.setClosedState(Number(d.is_closed ?? 0) === 1);
           }
         },
         error: () => this.toastr.error('Failed to get financial year details'),
@@ -305,7 +317,7 @@ export class Sys1003ModelService {
     }
 
     this.isSaving.set(true);
-    const val      = this.form.value;
+    const val      = this.form.getRawValue();
     const yearNo   = this.selectedYearNo();
     const isUpdate = !!yearNo;
     const payload  = {
@@ -367,6 +379,7 @@ export class Sys1003ModelService {
 
   onNew(): void {
     this.selectedYearNo.set(null);
+    this.setClosedState(false);
     this.periodsFormArray?.clear();
     this.form?.reset({
       is_closed:  0,

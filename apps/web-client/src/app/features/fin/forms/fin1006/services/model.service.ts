@@ -5,9 +5,9 @@ import { finalize } from 'rxjs';
 import { Fin1006DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 
-export interface AccountLite { account_no: number; account_code: string; account_name: string; }
+export interface AccountLite { account_no: number; account_code: string; account_name: string; is_active?: number | null; is_postable?: number | null; }
 
 export interface GlMap extends BaseEntity {
   gl_map_no: number;
@@ -34,16 +34,18 @@ export class Fin1006ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.maps()
-      .filter((m) => (m.event_type || '').toLowerCase().includes(term) || (m.leg_key || '').toLowerCase().includes(term))
-      .sort((a, b) => b.gl_map_no - a.gl_map_no);
+    const filtered = this.maps()
+      .filter((m) => (m.event_type || '').toLowerCase().includes(term) || (m.leg_key || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.gl_map_no - a.gl_map_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
   pager = makePaginator(this.filtered);
+  postableAccounts = computed(() => this.accounts().filter((a) => (a.is_active ?? 1) === 1 && (a.is_postable ?? 1) !== 0));
 
   form!: FormGroup;
 

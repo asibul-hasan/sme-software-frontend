@@ -53,7 +53,7 @@
                 </div></div>
                 <div class="col-md-9"><div class="field-group">
                   <label class="field-label required" for="account_no">GL Account</label>
-                  <ng-select id="account_no" formControlName="account_no" bindLabel="account_name" bindValue="account_no" [items]="model.accounts()" placeholder="Select account">
+                  <ng-select id="account_no" formControlName="account_no" bindLabel="account_name" bindValue="account_no" [items]="model.postableAccounts()" placeholder="Select account">
                     <ng-template ng-option-tmp let-item="item">{{ item.account_name }} ({{ item.account_code }})</ng-template>
                   </ng-select>
                 </div></div>

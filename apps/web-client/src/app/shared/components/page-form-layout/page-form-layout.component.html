@@ -107,9 +107,9 @@
             type="button"
             class="sidebar-sort-btn"
             (click)="toggleSort()"
-            [title]="currentSort === 'asc' ? 'Sort ascending (oldest first)' : 'Sort descending (newest first)'"
+            [title]="sortTitle"
           >
-            <mat-icon>{{ currentSort === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+            <mat-icon>{{ sortIcon }}</mat-icon>
           </button>
         </div>
 

@@ -1,94 +1,100 @@
 <app-page-form-layout
   [title]="'Opening Balance'"
-  [subtitle]="'Seed GL account opening balances — posted as one balanced Opening voucher'"
+  [subtitle]="'Seed GL account opening balances'"
   [icon]="'flag'"
   [hasSidebar]="false"
+  (reset)="onReset()"
   [showSave]="false" [showNew]="false" [showDelete]="false"
   [isLoading]="isLoading()"
 >
+  <button extraHeaderActions type="button" class="btn-action btn-save" [disabled]="!canPost()" (click)="post()">
+    <mat-icon>post_add</mat-icon>
+    <span class="btn-action-label">Post</span>
+  </button>
+
   <div formContent class="h-100 d-flex flex-column">
-    <!-- Header settings -->
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="row row-group align-items-end">
-          <div class="col-md-3">
+          <div class="col-md-2">
             <div class="field-group">
-              <label class="field-label" for="vdate">Voucher Date</label>
+              <label class="field-label" for="vdate">Voucher Date <span class="text-danger">*</span></label>
               <input type="date" id="vdate" class="form-control" [(ngModel)]="voucherDate" />
             </div>
           </div>
-          <div class="col-md-4">
+
+          <div class="col-md-3">
             <div class="field-group">
-              <label class="field-label" for="equity">Opening-Balance Equity Account</label>
-              <ng-select id="equity" [(ngModel)]="openingEquityAccountNo" [clearable]="true" placeholder="Absorbs the imbalance">
-                @for (a of accounts(); track a.account_no) {
-                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
+              <label class="field-label" for="currency">Currency <span class="text-danger">*</span></label>
+              <ng-select
+                id="currency"
+                [(ngModel)]="currencyNo"
+                [clearable]="false"
+                (change)="onCurrencyChange($event)"
+                placeholder="Currency"
+              >
+                @for (c of currencies(); track c.currency_no) {
+                  <ng-option [value]="c.currency_no">{{ currencyLabel(c) }}</ng-option>
                 }
               </ng-select>
             </div>
           </div>
+
+          <div class="col-md-2">
+            <div class="field-group">
+              <label class="field-label" for="rate">Exchange Rate <span class="text-danger">*</span></label>
+              <input
+                type="number"
+                id="rate"
+                class="form-control text-end"
+                min="0"
+                step="0.000001"
+                [(ngModel)]="exchangeRate"
+                (ngModelChange)="recalculateLines()"
+              />
+            </div>
+          </div>
+
           <div class="col-md-5">
             <div class="field-group">
               <label class="field-label" for="narr">Narration</label>
-              <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Opening balances as of…" />
+              <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Opening balances" />
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Add line -->
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-md-5">
-            <div class="field-group">
-              <label class="field-label" for="acc">Account</label>
-              <ng-select id="acc" [(ngModel)]="newAccount" [clearable]="true" placeholder="Select account">
-                @for (a of accounts(); track a.account_no) {
-                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
-                }
-              </ng-select>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="field-group"><label class="field-label">Debit</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newDebit" placeholder="0.00" /></div>
-          </div>
-          <div class="col-md-3">
-            <div class="field-group"><label class="field-label">Credit</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newCredit" placeholder="0.00" /></div>
-          </div>
-          <div class="col-md-1">
-            <button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()">
-              <mat-icon>add</mat-icon>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lines -->
     <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Opening Lines</h4>
-        <div class="ms-auto d-flex align-items-center gap-4">
-          <div class="text-end"><span class="field-label mb-0">Total Debit</span><div class="fw-bold">{{ totalDebit() | number: '1.2-2' }}</div></div>
-          <div class="text-end"><span class="field-label mb-0">Total Credit</span><div class="fw-bold">{{ totalCredit() | number: '1.2-2' }}</div></div>
-          <div class="text-end">
-            <span class="field-label mb-0">To Equity</span>
-            <div class="fw-bold" [class.text-warning]="difference() !== 0">{{ (difference() < 0 ? -difference() : difference()) | number: '1.2-2' }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
-        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
-      </div>
-      <div class="card-body d-flex justify-content-end gap-2 flex-shrink-0">
-        <button type="button" class="btn-action btn-save" [disabled]="isSaving() || lines().length === 0" (click)="post()">
-          <mat-icon>post_add</mat-icon> Post Opening Balances
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">list_alt</mat-icon>
+          Opening Lines
+        </h4>
+        <button type="button" class="btn-action btn-new btn-row-add ms-2" uiTooltip="Add Row" (click)="addLine()">
+          <mat-icon>add</mat-icon>
         </button>
       </div>
+
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+        <app-common-table [columns]="lineColumns()" [data]="lineData()" [config]="lineConfig" />
+      </div>
+
+      <div class="px-3 py-2 d-flex align-items-center gap-3 flex-shrink-0 opening-balance-difference-bar" style="border-top:1px solid var(--border-color);background:var(--table-header-bg, var(--bg-secondary));min-height:42px">
+        @if (!isBalanced() && validLines().length > 0) {
+          <div class="d-flex align-items-center gap-2" style="color:var(--danger)">
+            <mat-icon style="font-size:18px;width:18px;height:18px">error</mat-icon>
+            <span class="fw-semibold">Total debit and total credit must be equal before posting.</span>
+          </div>
+        }
+        <div class="ms-auto d-flex align-items-center gap-3">
+          <span class="fw-bold" style="font-size:12px;color:var(--text-secondary)">Difference</span>
+          <strong [class.text-success]="isBalanced()" [class.text-danger]="!isBalanced()" style="min-width:130px;text-align:right">
+            {{ absoluteBaseDifference() | number: '1.2-2' }} {{ baseCurrencyCode() }}
+          </strong>
+        </div>
+      </div>
+
     </div>
   </div>
 </app-page-form-layout>

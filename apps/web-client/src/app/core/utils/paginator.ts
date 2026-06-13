@@ -1,5 +1,7 @@
 import { Signal, computed, signal } from '@angular/core';
 
+export type SortDirection = '' | 'asc' | 'desc';
+
 /**
  * Read-only view of paginator state used by the `<app-sidebar-pagination>` component.
  */
@@ -12,10 +14,10 @@ export interface PaginatorState<T> {
   readonly pageSizeOptions: readonly number[];
 
   /** Current sort direction. Only meaningful when a `sortKey` was provided. */
-  readonly sortDirection: Signal<'asc' | 'desc'>;
+  readonly sortDirection: Signal<SortDirection>;
   /** Flip asc ⇄ desc and snap to page 1. Drives the layout's sort toggle. */
   toggleSortDirection(): void;
-  setSortDirection(dir: 'asc' | 'desc'): void;
+  setSortDirection(dir: SortDirection): void;
 
   firstPage(): void;
   prevPage(): void;
@@ -56,18 +58,18 @@ export function makePaginator<T>(
      */
     sortKey?: (item: T) => number | string;
     /** Starting direction — defaults to `desc` (newest-first, matches the List Ordering Rule). */
-    initialSort?: 'asc' | 'desc';
+    initialSort?: SortDirection;
   } = {},
 ): PaginatorState<T> {
   const pageSize      = signal(options.pageSize ?? 10);
   const currentPage   = signal(1);
-  const sortDirection = signal<'asc' | 'desc'>(options.initialSort ?? 'desc');
+  const sortDirection = signal<SortDirection>(options.initialSort ?? '');
 
   // Sorted view of the source. No sortKey → source order is preserved (toggle inert).
   const ordered = computed<T[]>(() => {
     const list = source();
     const key = options.sortKey;
-    if (!key) return list;
+    if (!key || sortDirection() === '') return list;
     const dir = sortDirection() === 'asc' ? 1 : -1;
     return [...list].sort((a, b) => {
       const ka = key(a);
@@ -113,7 +115,7 @@ export function makePaginator<T>(
       currentPage.set(1);
     },
     toggleSortDirection: () => {
-      sortDirection.set(sortDirection() === 'asc' ? 'desc' : 'asc');
+      sortDirection.set(sortDirection() === '' ? 'asc' : sortDirection() === 'asc' ? 'desc' : '');
       currentPage.set(1);
     },
 

@@ -32,14 +32,19 @@ export class CollapsibleCardDirective implements AfterViewInit {
 
   private readonly collapsed = signal(false);
 
-  @HostBinding('class.is-collapsible') readonly enabled = true;
+  @HostBinding('class.is-collapsible')
+  get enabled(): boolean {
+    return !this.host.nativeElement.hasAttribute('data-no-collapse');
+  }
 
   @HostBinding('class.is-collapsed')
   get isCollapsedClass(): boolean {
-    return this.collapsed();
+    return this.enabled && this.collapsed();
   }
 
   ngAfterViewInit(): void {
+    if (this.host.nativeElement.hasAttribute('data-no-collapse')) return;
+
     const header = this.host.nativeElement.querySelector(
       ':scope > .card-header',
     ) as HTMLElement | null;
@@ -59,6 +64,8 @@ export class CollapsibleCardDirective implements AfterViewInit {
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
+    if (!this.enabled) return;
+
     const target = event.target as HTMLElement | null;
     if (!target) return;
     const toggle = target.closest('.card-collapse-toggle');

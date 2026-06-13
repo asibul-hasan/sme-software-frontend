@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1104DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
@@ -55,7 +55,7 @@ export class Hrm1104ModelService {
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
   status        = signal<number>(1);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   readonly isDraft = computed(() => this.status() === 1);
 
@@ -75,9 +75,10 @@ export class Hrm1104ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.rosters()
-      .filter((s) => (s.roster_id || '').toLowerCase().includes(term) || (s.roster_name || '').toLowerCase().includes(term))
-      .sort((a, b) => b.roster_no - a.roster_no);
+    const filtered = this.rosters()
+      .filter((s) => (s.roster_id || '').toLowerCase().includes(term) || (s.roster_name || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.roster_no - a.roster_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

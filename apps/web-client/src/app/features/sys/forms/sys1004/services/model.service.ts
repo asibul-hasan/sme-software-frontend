@@ -7,7 +7,7 @@ import { Sys1004DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { IBranch } from '../../sys1002/services/model.service';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { CurrencySettingsService } from '../../../../../core/services/currency-settings.service';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
@@ -73,19 +73,20 @@ export class Sys1004ModelService {
   isSaving            = signal(false);
   searchTerm          = signal('');
   selectedCurrencyNo  = signal<number | null>(null);
-  sortDirection       = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   // ─── Derived State ──────────────────────────────────────────────────────────
   filteredCurrencies = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.currencies()
+    const filtered = this.currencies()
       .filter(
         (c) =>
           c.currency_name.toLowerCase().includes(term) ||
           c.currency_code.toLowerCase().includes(term),
-      )
-      .sort((a, b) => b.currency_no - a.currency_no); // default: newest first (PK desc)
-    return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
+      );
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.currency_no - a.currency_no);
+    return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 
   pager = makePaginator(this.filteredCurrencies);

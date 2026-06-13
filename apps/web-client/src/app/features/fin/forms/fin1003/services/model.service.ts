@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Fin1003DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 
 export interface VoucherType extends BaseEntity {
   voucher_type_no: number;
@@ -33,13 +33,14 @@ export class Fin1003ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.types()
-      .filter((t) => (t.voucher_type_id || '').toLowerCase().includes(term) || (t.type_name || '').toLowerCase().includes(term))
-      .sort((a, b) => b.voucher_type_no - a.voucher_type_no);
+    const filtered = this.types()
+      .filter((t) => (t.voucher_type_id || '').toLowerCase().includes(term) || (t.type_name || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.voucher_type_no - a.voucher_type_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
   pager = makePaginator(this.filtered);

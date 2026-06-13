@@ -8,7 +8,7 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { IBranch } from '../../sys1002/services/model.service';
 import { CustomValidators } from '../../../../../core/validators/custom-validators';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 // ─── Domain Interfaces ───────────────────────────────────────────────────────
@@ -63,18 +63,19 @@ export class Sys1005ModelService {
   searchTerm        = signal('');
   selectedTaxNo     = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection     = signal<SortDirection>('');
 
   // ─── Derived State ──────────────────────────────────────────────────────────
   filteredTaxRules = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.taxRules()
+    const filtered = this.taxRules()
       .filter(
         (t) =>
           t.tax_name.toLowerCase().includes(term) ||
           t.tax_code.toLowerCase().includes(term),
-      )
-      .sort((a, b) => (a.tax_code || '').localeCompare(b.tax_code || ''));
+      );
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.tax_code || '').localeCompare(b.tax_code || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

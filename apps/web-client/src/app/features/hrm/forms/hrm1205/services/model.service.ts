@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1205DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
@@ -55,7 +55,7 @@ export class Hrm1205ModelService {
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
   status        = signal<number>(1);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   /** Status: 1=Draft 2=Calculated 3=Approved 4=Paid 5=Cancelled. Editable while Draft/Calculated. */
   readonly isEditable = computed(() => this.status() === 1 || this.status() === 2);
@@ -68,9 +68,10 @@ export class Hrm1205ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.runs()
-      .filter((r) => (r.bonus_id || '').toLowerCase().includes(term) || (r.bonus_name || '').toLowerCase().includes(term))
-      .sort((a, b) => b.bonus_run_no - a.bonus_run_no);
+    const filtered = this.runs()
+      .filter((r) => (r.bonus_id || '').toLowerCase().includes(term) || (r.bonus_name || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.bonus_run_no - a.bonus_run_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

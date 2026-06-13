@@ -149,6 +149,13 @@ have `[hasSidebar]="false"` (e.g. a top filter `ng-select` instead of a sidebar)
 
 Reference forms: **SYS1003** (Financial Year — periods table), **SYS1104** (the
 mapping grid uses `<app-common-table>` with `custom-template` cells).
+**SYS1003 Accounting Periods is the canonical table structure and visual style.**
+Any form that shows an editable/supporting grid — including **SYS1006 Exchange
+Rate** — must copy the Accounting Periods pattern: an outer `.form-section-card`
+section, a normal card header/title/action row, a zero-padding `.card-body p-0`,
+and one `<app-common-table>` filling that body. Do not invent a different table
+wrapper, split-table layout, Bootstrap table, or custom `mat-table` for exchange
+rates or similar grids.
 
 **Why two styles exist:** master-detail (browse many records, edit one) and
 data-grid (operate on rows in place) are genuinely different jobs. The mistake is
@@ -460,6 +467,30 @@ with `<app-common-table>`; do not hand-roll `<table>`, `mat-table`, or Bootstrap
 markup. The backing form API must return DTO fields whose snake_case names match the
 `ColumnDef.field` values exactly, so search, sort, export, and custom-template `value`
 accessors all work from the same data contract.
+
+**Required table design rule (CRITICAL):** whenever any form needs a table, use the
+same common-table structure and visual behavior as **SYS1003 Financial Year Setup â†’
+Accounting Periods**. This is the reference table for the whole ERP. The common table
+owns the search/export/column controls, header styling, row dividers, pagination/footer
+colors, and sticky bottom total row. Do not create a form-specific table design.
+
+**Visual structure rule (CRITICAL):** the common table must look and sit like
+**SYS1003 Accounting Periods**. That means:
+- table section = outer `.form-section-card.card` with its own `.card-header`;
+- table body = `.card-body.p-0`;
+- only child inside the body = `<app-common-table ...>`;
+- header row and footer/paginator colors come from the shared table tokens, not
+  per-form CSS;
+- search/export toolbar stays inside `<app-common-table>`, not in the parent card.
+- column totals use the built-in pinned footer row by setting `bottomTotal: true`
+  on the numeric `ColumnDef`; do not build a separate totals bar under the table.
+- the pinned footer row is generic: use `footerLabel: 'Total'` to show text under
+  any column, `bottomTotal: true` to sum a numeric column, and `footerValue:
+  (rows) => ...` when the footer value is computed from the visible rows. Never
+  place grid totals in a card header or form-specific footer outside the table.
+
+Exchange-rate grids (**SYS1006**) and all future rate/period/line-item grids must
+use this same Accounting Periods structure exactly.
 
 **Quick usage:**
 

@@ -5,9 +5,9 @@ import { finalize } from 'rxjs';
 import { Fin1005DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 
-export interface AccountLite { account_no: number; account_code: string; account_name: string; control_type?: number | null; }
+export interface AccountLite { account_no: number; account_code: string; account_name: string; control_type?: number | null; is_active?: number | null; }
 
 export interface BankAccount extends BaseEntity {
   bank_account_no: number;
@@ -39,16 +39,17 @@ export class Fin1005ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   /** Only Bank(3)/Cash(4) control accounts can back a bank account. */
-  bankCashAccounts = computed(() => this.accounts().filter((a) => a.control_type === 3 || a.control_type === 4));
+  bankCashAccounts = computed(() => this.accounts().filter((a) => (a.is_active ?? 1) === 1 && (a.control_type === 3 || a.control_type === 4)));
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.banks()
-      .filter((b) => (b.bank_account_id || '').toLowerCase().includes(term) || (b.bank_name || '').toLowerCase().includes(term) || (b.account_title || '').toLowerCase().includes(term))
-      .sort((a, b) => b.bank_account_no - a.bank_account_no);
+    const filtered = this.banks()
+      .filter((b) => (b.bank_account_id || '').toLowerCase().includes(term) || (b.bank_name || '').toLowerCase().includes(term) || (b.account_title || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.bank_account_no - a.bank_account_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
   pager = makePaginator(this.filtered);

@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1004DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 // ─── Domain Interface ────────────────────────────────────────────────────────
@@ -49,18 +49,19 @@ export class Hrm1004ModelService {
   searchTerm        = signal('');
   selectedGradeNo   = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   // ─── Derived State ──────────────────────────────────────────────────────────
   filteredGrades = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.grades()
+    const filtered = this.grades()
       .filter(
         (g) =>
           g.grade_name.toLowerCase().includes(term) ||
           g.grade_id.toLowerCase().includes(term),
-      )
-      .sort((a, b) => (a.grade_id || '').localeCompare(b.grade_id || ''));
+      );
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.grade_id || '').localeCompare(b.grade_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

@@ -11,6 +11,9 @@
   // ── Backgrounds ──────────────────────────────────────────────
   --bg-primary: #eef1f8; // cool blue-grey page bg
   --bg-secondary: #f7f8fc; // slightly lighter — used for card headers, inputs
+  --table-header-bg: var(--bg-secondary);
+  --table-header-border: rgba(99, 120, 255, 0.24);
+  --table-row-border: rgba(99, 120, 255, 0.08);
   --bg-gradient: linear-gradient(
     135deg,
     rgba(99, 120, 255, 0.06) 0%,
@@ -101,6 +104,9 @@
   // ── Backgrounds ──────────────────────────────────────────────
   --bg-primary: #080d1e; // very deep navy
   --bg-secondary: #0f1530; // slightly lighter navy for panels
+  --table-header-bg: var(--bg-secondary);
+  --table-header-border: rgba(255, 255, 255, 0.16);
+  --table-row-border: rgba(255, 255, 255, 0.06);
   --bg-gradient:
     radial-gradient(
       ellipse 70% 50% at 10% 0%,

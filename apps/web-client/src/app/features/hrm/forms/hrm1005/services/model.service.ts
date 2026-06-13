@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1005DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 export interface LeaveType extends BaseEntity {
@@ -42,13 +42,14 @@ export class Hrm1005ModelService {
   searchTerm        = signal('');
   selectedNo        = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.leaveTypes()
-      .filter((t) => t.leave_type_name.toLowerCase().includes(term) || t.leave_type_id.toLowerCase().includes(term))
-      .sort((a, b) => (a.leave_type_id || '').localeCompare(b.leave_type_id || ''));
+    const filtered = this.leaveTypes()
+      .filter((t) => t.leave_type_name.toLowerCase().includes(term) || t.leave_type_id.toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.leave_type_id || '').localeCompare(b.leave_type_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

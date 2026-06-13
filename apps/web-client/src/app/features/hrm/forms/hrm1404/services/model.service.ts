@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1404DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, DesignationLookup } from '../../../../../shared/services/common-data.service';
 
@@ -52,7 +52,7 @@ export class Hrm1404ModelService {
   searchTerm   = signal('');
   selectedNo   = signal<number | null>(null);
   status       = signal<number>(1);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   /** Status: 1=Draft 2=Sent 3=Accepted 4=Declined 5=Expired 6=Revoked. */
   readonly isDraft = computed(() => this.status() === 1);
@@ -64,9 +64,10 @@ export class Hrm1404ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.offers()
-      .filter((o) => (o.offer_id || '').toLowerCase().includes(term) || this.candidateName(o.candidate_no).toLowerCase().includes(term))
-      .sort((a, b) => b.offer_no - a.offer_no);
+    const filtered = this.offers()
+      .filter((o) => (o.offer_id || '').toLowerCase().includes(term) || this.candidateName(o.candidate_no).toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.offer_no - a.offer_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

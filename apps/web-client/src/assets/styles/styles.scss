@@ -508,6 +508,85 @@ body {
   --mat-table-footer-container-height:        36px;
 }
 
+app-common-table .mat-mdc-table thead,
+app-common-table .mat-mdc-table thead tr,
+app-common-table .mat-mdc-table thead th,
+app-common-table .mat-mdc-header-row,
+app-common-table .mat-mdc-header-cell,
+app-common-table th.mat-mdc-header-cell {
+  background: var(--table-header-bg) !important;
+  background-color: var(--table-header-bg) !important;
+}
+
+app-common-table .mat-mdc-header-cell,
+app-common-table th.mat-mdc-header-cell {
+  border-bottom: 2px solid var(--table-header-border) !important;
+}
+
+app-common-table .mat-mdc-header-row {
+  border-bottom: 2px solid var(--table-header-border) !important;
+}
+
+app-common-table .mat-mdc-table tbody tr:first-child .mat-mdc-cell,
+app-common-table .mat-mdc-table tbody tr:first-child td.mat-mdc-cell {
+  border-top: 0 !important;
+}
+
+app-common-table .mat-mdc-row .mat-mdc-cell,
+app-common-table td.mat-mdc-cell {
+  border-bottom: 1px solid var(--table-row-border) !important;
+}
+
+app-common-table .common-table-pagination {
+  background: var(--table-header-bg) !important;
+  background-color: var(--table-header-bg) !important;
+  border-top-color: var(--table-header-border) !important;
+}
+
+app-common-table .common-table-pagination .mat-mdc-paginator {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.form-section-card table.table > thead,
+.form-section-card table.table > thead.table-light,
+.form-section-card table.table > thead > tr,
+.form-section-card table.table > thead > tr > th,
+.form-section-card table.table > thead > tr > td,
+.form-section-card table.perm-matrix > thead,
+.form-section-card table.perm-matrix > thead > tr,
+.form-section-card table.perm-matrix > thead > tr > th,
+.form-section-card table.perm-matrix > thead > tr > td {
+  background: var(--table-header-bg) !important;
+  background-color: var(--table-header-bg) !important;
+}
+
+.form-section-card table.table > thead > tr > th,
+.form-section-card table.table > thead > tr > td,
+.form-section-card table.perm-matrix > thead > tr > th,
+.form-section-card table.perm-matrix > thead > tr > td {
+  border-bottom: 2px solid var(--table-header-border) !important;
+}
+
+.form-section-card table.table > thead > tr,
+.form-section-card table.perm-matrix > thead > tr {
+  border-bottom: 2px solid var(--table-header-border) !important;
+}
+
+.form-section-card table.table > tbody > tr:first-child > td,
+.form-section-card table.table > tbody > tr:first-child > th,
+.form-section-card table.perm-matrix > tbody > tr:first-child > td,
+.form-section-card table.perm-matrix > tbody > tr:first-child > th {
+  border-top: 0 !important;
+}
+
+.form-section-card table.table > tbody > tr > td,
+.form-section-card table.table > tbody > tr > th,
+.form-section-card table.perm-matrix > tbody > tr > td,
+.form-section-card table.perm-matrix > tbody > tr > th {
+  border-bottom: 1px solid var(--table-row-border) !important;
+}
+
 /* Paginator page-size select.
    The global _form-page.scss rule `.mat-mdc-form-field-flex { border: 1px solid;
    min-height: 42px !important }` matches the paginator's internal mat-form-field

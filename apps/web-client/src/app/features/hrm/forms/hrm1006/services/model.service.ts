@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1006DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 export interface Holiday extends BaseEntity {
@@ -39,13 +39,14 @@ export class Hrm1006ModelService {
   searchTerm        = signal('');
   selectedNo        = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.holidays()
-      .filter((h) => h.holiday_name.toLowerCase().includes(term) || (h.holiday_date || '').includes(term))
-      .sort((a, b) => (a.holiday_date || '').localeCompare(b.holiday_date || ''));
+    const filtered = this.holidays()
+      .filter((h) => h.holiday_name.toLowerCase().includes(term) || (h.holiday_date || '').includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.holiday_date || '').localeCompare(b.holiday_date || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

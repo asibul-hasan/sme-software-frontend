@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1201DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
@@ -56,7 +56,7 @@ export class Hrm1201ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   employeeName(employeeNo?: number | null): string {
     if (employeeNo == null) return '';
@@ -71,9 +71,10 @@ export class Hrm1201ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.structures()
-      .filter((s) => this.employeeName(s.employee_no).toLowerCase().includes(term) || (s.effective_from || '').includes(term))
-      .sort((a, b) => b.salary_structure_no - a.salary_structure_no);
+    const filtered = this.structures()
+      .filter((s) => this.employeeName(s.employee_no).toLowerCase().includes(term) || (s.effective_from || '').includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.salary_structure_no - a.salary_structure_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

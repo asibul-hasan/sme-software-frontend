@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1106DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup, DesignationLookup, DepartmentLookup, BranchLookup } from '../../../../../shared/services/common-data.service';
 
@@ -52,7 +52,7 @@ export class Hrm1106ModelService {
   searchTerm   = signal('');
   selectedNo   = signal<number | null>(null);
   status       = signal<number>(1);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   readonly isDraft = computed(() => this.status() === 1);
 
@@ -63,9 +63,10 @@ export class Hrm1106ModelService {
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.movements()
-      .filter((m) => (m.movement_id || '').toLowerCase().includes(term) || this.employeeName(m.employee_no).toLowerCase().includes(term))
-      .sort((a, b) => b.movement_no - a.movement_no);
+    const filtered = this.movements()
+      .filter((m) => (m.movement_id || '').toLowerCase().includes(term) || this.employeeName(m.employee_no).toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.movement_no - a.movement_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

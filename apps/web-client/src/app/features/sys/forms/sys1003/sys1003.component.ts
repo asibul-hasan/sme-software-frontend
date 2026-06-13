@@ -29,9 +29,54 @@ import { ColumnDef, TableConfig } from '../../../../shared/components/common-tab
         display: block;
         height: 100%;
       }
-      .periods-table-container {
-        max-height: 400px;
-        overflow-y: auto;
+      .sys1003-form,
+      .sys1003-content {
+        height: 100%;
+        min-height: 0;
+      }
+      .sys1003-content {
+        display: grid;
+        grid-template-rows: auto auto minmax(20vh, 1fr);
+        grid-template-areas:
+          "filter"
+          "info"
+          "periods";
+        align-content: stretch;
+      }
+      .sys1003-filter-col {
+        grid-area: filter;
+      }
+      .sys1003-info-col {
+        grid-area: info;
+      }
+      .sys1003-periods-col {
+        grid-area: periods;
+        min-height: 20vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .sys1003-periods-col:has(.sys1003-periods-card.is-collapsed) {
+        min-height: 0;
+      }
+      .sys1003-periods-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sys1003-periods-card.is-collapsed {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+      .sys1003-periods-card > .card-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+      }
+      .sys1003-periods-card > .card-body > app-common-table {
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
       }
     `,
   ],
@@ -49,9 +94,7 @@ export class Sys1003Component implements OnInit {
 
   periodsSignal = signal<Record<string, unknown>[]>([]);
 
-  // Common Table configuration for Accounting Periods list
-  // Field names MUST match the FormArray control names from model.service.ts
-  periodsTableColumns: ColumnDef[] = [
+  private readonly basePeriodsTableColumns: ColumnDef[] = [
     {
       title: 'Period Code',
       field: 'fin_period_id',
@@ -100,6 +143,16 @@ export class Sys1003Component implements OnInit {
     },
   ];
 
+  // Common Table configuration for Accounting Periods list.
+  // Field names MUST match the FormArray control names from model.service.ts.
+  periodsTableColumns = computed<ColumnDef[]>(() => {
+    const locked = this.model.isClosed();
+    return this.basePeriodsTableColumns.map((col) => ({
+      ...col,
+      editable: locked ? false : col.editable,
+    }));
+  });
+
   periodsTableConfig: Partial<TableConfig> = {
     title: 'Accounting Periods',
     showTitle: false,
@@ -117,7 +170,9 @@ export class Sys1003Component implements OnInit {
     compact: true,
     striped: true,
     hoverEffect: true,
-    maxHeight: '400px',
+    height: '100%',
+    minHeight: '20vh',
+    maxHeight: 'none',
   };
 
   periodsTableData = computed(() => this.periodsSignal());
@@ -126,9 +181,12 @@ export class Sys1003Component implements OnInit {
     this.model.initForm();
 
     // Bind periodsSignal to periodsFormArray's valueChanges reactively
-    this.periodsSignal.set(this.periodsFormArray.value || []);
+    this.periodsSignal.set(this.periodsFormArray.getRawValue() || []);
     this.periodsFormArray.valueChanges.subscribe((val) => {
-      this.periodsSignal.set(val || []);
+      this.periodsSignal.set(this.periodsFormArray.getRawValue() || val || []);
+    });
+    this.formdata.get('is_closed')?.valueChanges.subscribe(() => {
+      this.periodsSignal.set(this.periodsFormArray.getRawValue() || []);
     });
 
     setTimeout(() => {
@@ -152,10 +210,14 @@ export class Sys1003Component implements OnInit {
     return this.model.periodsFormArray;
   }
 
-  onSave(): void        { this.model.onSave(); }
-  onNew(): void         { this.model.onNew(); }
-  autoGeneratePeriods() { this.model.autoGeneratePeriods(); }
-  addPeriodRow()        { this.model.addPeriodRow(); }
+  isClosed(): boolean {
+    return this.model.isClosed();
+  }
+
+  onSave(): void        { if (!this.isClosed()) this.model.onSave(); }
+  onNew(): void         { this.model.onNew(); this.periodsSignal.set(this.periodsFormArray.getRawValue() || []); }
+  autoGeneratePeriods() { if (!this.isClosed()) this.model.autoGeneratePeriods(); }
+  addPeriodRow()        { if (!this.isClosed()) this.model.addPeriodRow(); }
 
   onReset(): void {
     if (this.model.selectedYearNo()) {
@@ -169,14 +231,14 @@ export class Sys1003Component implements OnInit {
   }
 
   onDelete(): void {
-    if (!this.model.selectedYearNo()) return;
+    if (!this.model.selectedYearNo() || this.isClosed()) return;
     this.alertService.deleteConfirm().subscribe((confirmed) => {
       if (confirmed) this.model.onDelete();
     });
   }
 
   onCloseFY(): void {
-    if (!this.model.selectedYearNo()) return;
+    if (!this.model.selectedYearNo() || this.isClosed()) return;
     this.alertService
       .confirm(
         'WARNING: Closing the Financial Year will lock all transactions. Proceed?',
@@ -207,6 +269,8 @@ export class Sys1003Component implements OnInit {
   }
 
   onCellEdit(event: { value: unknown; row: Record<string, unknown>; column: ColumnDef }): void {
+    if (this.isClosed()) return;
+
     const field = event.column.field;
     const value = event.value;
 

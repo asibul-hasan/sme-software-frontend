@@ -58,8 +58,9 @@ export interface CurrencyLookup {
   currency_name: string;
   currency_symbol: string;
   fraction_name: string;
-  decimal_places: number;
-  number_system: number;
+  decimal_places?: number;
+  number_system?: number;
+  exchange_rate?: number;
   is_base_currency: number;
 }
 

@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1402DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 export interface Candidate extends BaseEntity {
@@ -41,15 +41,16 @@ export class Hrm1402ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   reqLabel(no?: number | null): string { return this.requisitions().find((r) => r.requisition_no === no)?.requisition_id ?? ''; }
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.candidates()
-      .filter((c) => c.full_name.toLowerCase().includes(term) || c.candidate_id.toLowerCase().includes(term))
-      .sort((a, b) => b.candidate_no - a.candidate_no);
+    const filtered = this.candidates()
+      .filter((c) => c.full_name.toLowerCase().includes(term) || c.candidate_id.toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.candidate_no - a.candidate_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
 

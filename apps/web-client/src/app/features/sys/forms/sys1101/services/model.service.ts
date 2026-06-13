@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import {
   CommonDataService,
   DepartmentLookup,
@@ -76,7 +76,7 @@ export class Sys1101ModelService {
   filterDeptNo = signal<number | null>(null);
   filterDesigNo = signal<number | null>(null);
   filterUserStatus = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   // ─── Computed: filtered designations by department ────────────────────────
   filteredDesignations = computed(() => {
@@ -107,6 +107,7 @@ export class Sys1101ModelService {
     if (status !== null && status !== undefined)
       list = list.filter((e) => e.is_active === status);
 
+    if (this.sortDirection() === '') return list;
     const sorted = [...list].sort((a, b) =>
       (a.full_name || '').localeCompare(b.full_name || ''),
     );

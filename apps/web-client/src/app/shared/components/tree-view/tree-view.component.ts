@@ -274,7 +274,16 @@ export class TreeViewComponent {
     this.expanded.set(set);
   }
 
-  onClick(row: Record<string, unknown>): void { this.nodeClick.emit(row); }
+  onClick(row: Record<string, unknown>): void {
+    const cfg = this.config();
+    const id = row[cfg.idField] as TreeId;
+    if (this.parentIds().has(id)) {
+      const set = new Set(this.expanded());
+      set.has(id) ? set.delete(id) : set.add(id);
+      this.expanded.set(set);
+    }
+    this.nodeClick.emit(row);
+  }
 
   expandAll(): void {
     const cfg = this.config();

@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Fin1001DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 
 export interface AccountGroupLite { account_group_no: number; group_name: string; root_type: number; }
 
@@ -15,14 +15,14 @@ export interface Account extends BaseEntity {
   account_name: string;
   account_group_no: number | null;
   root_type?: number | null;
-  normal_balance?: number | null;
+  normal_balance?: 'dr' | 'cr' | null;
   is_postable?: number | null;
   control_type?: number | null;
   requires_cost_center?: number | null;
   requires_party?: number | null;
   currency_no?: number | null;
   opening_balance?: number | null;
-  opening_dr_cr?: number | null;
+  opening_dr_cr?: 'dr' | 'cr' | null;
   account_group_name?: string | null;
   is_active: number;
   row_version: number;
@@ -41,13 +41,14 @@ export class Fin1001ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.accounts()
-      .filter((a) => (a.account_code || '').toLowerCase().includes(term) || (a.account_name || '').toLowerCase().includes(term))
-      .sort((a, b) => b.account_no - a.account_no);
+    const filtered = this.accounts()
+      .filter((a) => (a.account_code || '').toLowerCase().includes(term) || (a.account_name || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.account_no - a.account_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
   pager = makePaginator(this.filtered);
@@ -66,7 +67,7 @@ export class Fin1001ModelService {
       requires_cost_center: [0],
       requires_party:       [0],
       opening_balance:      [0],
-      opening_dr_cr:        [1],
+      opening_dr_cr:        ['dr'],
       is_active:            [1],
     });
   }
@@ -104,7 +105,7 @@ export class Fin1001ModelService {
       requires_cost_center: item.requires_cost_center ?? 0,
       requires_party:       item.requires_party ?? 0,
       opening_balance:      item.opening_balance ?? 0,
-      opening_dr_cr:        item.opening_dr_cr ?? 1,
+      opening_dr_cr:        item.opening_dr_cr ?? 'dr',
       is_active:            item.is_active,
     });
   }
@@ -138,6 +139,6 @@ export class Fin1001ModelService {
 
   onNew(): void {
     this.selectedNo.set(null);
-    this.form?.reset({ is_postable: 1, requires_cost_center: 0, requires_party: 0, opening_balance: 0, opening_dr_cr: 1, is_active: 1 });
+    this.form?.reset({ is_postable: 1, requires_cost_center: 0, requires_party: 0, opening_balance: 0, opening_dr_cr: 'dr', is_active: 1 });
   }
 }

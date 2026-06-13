@@ -24,6 +24,6 @@ export class Fin1001DataService {
     return this.fin.delete<void>('forms/fin1001/accounts', no);
   }
   loadGroups(): Observable<ApiResponse<AccountGroupLite[]>> {
-    return this.fin.getList<AccountGroupLite[]>('forms/fin1002/groups');
+    return this.fin.getList<AccountGroupLite[]>('forms/fin1001/account-groups');
   }
 }

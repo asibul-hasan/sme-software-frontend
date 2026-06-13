@@ -5,6 +5,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 
+export type SidebarSortDirection = '' | 'asc' | 'desc';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-page-form-layout',
@@ -35,19 +37,31 @@ export class PageFormLayoutComponent {
   /** Show the ascending/descending sort toggle beside the search box. */
   @Input() showSort: boolean = true;
   /** Current list sort direction — two-way bindable: [(sortDirection)]. */
-  @Input() sortDirection: 'asc' | 'desc' = 'asc';
-  @Output() sortDirectionChange = new EventEmitter<'asc' | 'desc'>();
+  @Input() sortDirection: SidebarSortDirection = '';
+  @Output() sortDirectionChange = new EventEmitter<SidebarSortDirection>();
 
   /**
    * Optional paginator to drive sorting directly. Pass `[pager]="model.pager"` and the
    * sort toggle flips the pager's own `sortDirection` — no per-form `[sortDirection]`
    * wiring or model signal needed. (Provide `sortKey` to `makePaginator` so it sorts.)
    */
-  @Input() pager: { sortDirection: () => 'asc' | 'desc'; toggleSortDirection: () => void } | null = null;
+  @Input() pager: { sortDirection: () => SidebarSortDirection; toggleSortDirection: () => void } | null = null;
 
   /** The direction the toggle should reflect — pager wins when present. */
-  get currentSort(): 'asc' | 'desc' {
+  get currentSort(): SidebarSortDirection {
     return this.pager ? this.pager.sortDirection() : this.sortDirection;
+  }
+
+  get sortTitle(): string {
+    if (this.currentSort === 'asc') return 'Sort ascending';
+    if (this.currentSort === 'desc') return 'Sort descending';
+    return 'Default order';
+  }
+
+  get sortIcon(): string {
+    if (this.currentSort === 'asc') return 'arrow_upward';
+    if (this.currentSort === 'desc') return 'arrow_downward';
+    return 'sort';
   }
 
   /** True when the host form has one or more dropdown filters applied. Drives "Clear all". */
@@ -70,8 +84,14 @@ export class PageFormLayoutComponent {
       this.pager.toggleSortDirection();
       return;
     }
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.sortDirection = this.nextSortDirection(this.sortDirection);
     this.sortDirectionChange.emit(this.sortDirection);
+  }
+
+  private nextSortDirection(current: SidebarSortDirection): SidebarSortDirection {
+    if (current === '') return 'asc';
+    if (current === 'asc') return 'desc';
+    return '';
   }
 
   /** Clear just the search text. */

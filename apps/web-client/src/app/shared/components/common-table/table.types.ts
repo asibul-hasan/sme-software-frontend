@@ -56,7 +56,8 @@ export interface ColumnDef {
   value?: (row: Record<string, unknown>) => unknown;
   pin?: PinDirection;
   bottomTotal?: boolean;
-  editable?: boolean;
+  footerValue?: (rows: Record<string, unknown>[]) => unknown;
+  editable?: boolean | ((row: Record<string, unknown>, column: ColumnDef) => boolean);
   onChange?: (value: unknown, row: Record<string, unknown>, column: ColumnDef) => void;
   align?: 'left' | 'center' | 'right';
   dateFormat?: string;
@@ -113,6 +114,8 @@ export interface TableConfig {
   hoverEffect?: boolean;
   dense?: boolean;
   compact?: boolean;
+  height?: string;
+  minHeight?: string;
   maxHeight?: string;
   serverSide?: boolean;
   striped?: boolean;
@@ -155,6 +158,8 @@ export const DEFAULT_TABLE_CONFIG: TableConfig = {
   hoverEffect: true,
   dense: false,
   compact: false,
+  height: '',
+  minHeight: '20vh',
   maxHeight: 'calc(100vh - 320px)',
   serverSide: false,
   striped: true,

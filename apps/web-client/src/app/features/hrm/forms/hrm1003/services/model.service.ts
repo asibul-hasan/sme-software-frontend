@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Hrm1003DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 
 export interface Shift extends BaseEntity {
@@ -43,13 +43,14 @@ export class Hrm1003ModelService {
   searchTerm        = signal('');
   selectedShiftNo   = signal<number | null>(null);
   lastSelectedIndex = 0;
-  sortDirection     = signal<'asc' | 'desc'>('asc');
+  sortDirection = signal<SortDirection>('');
 
   filteredShifts = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.shifts()
-      .filter((s) => s.shift_name.toLowerCase().includes(term) || s.shift_id.toLowerCase().includes(term))
-      .sort((a, b) => (a.shift_id || '').localeCompare(b.shift_id || ''));
+    const filtered = this.shifts()
+      .filter((s) => s.shift_name.toLowerCase().includes(term) || s.shift_id.toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => (a.shift_id || '').localeCompare(b.shift_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
   });
 

@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 import { Fin1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { makePaginator } from '../../../../../core/utils/paginator';
+import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 
 export interface AccountGroup extends BaseEntity {
   account_group_no: number;
@@ -13,7 +13,7 @@ export interface AccountGroup extends BaseEntity {
   group_name: string;
   parent_group_no?: number | null;
   root_type: number;
-  normal_balance?: number | null;
+  normal_balance?: 'dr' | 'cr' | null;
   is_control?: number | null;
   order_sl?: number | null;
   parent_group_name?: string | null;
@@ -33,13 +33,14 @@ export class Fin1002ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortDirection = signal<SortDirection>('');
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const sorted = this.groups()
-      .filter((g) => (g.account_group_id || '').toLowerCase().includes(term) || (g.group_name || '').toLowerCase().includes(term))
-      .sort((a, b) => b.account_group_no - a.account_group_no);
+    const filtered = this.groups()
+      .filter((g) => (g.account_group_id || '').toLowerCase().includes(term) || (g.group_name || '').toLowerCase().includes(term));
+    if (this.sortDirection() === '') return filtered;
+    const sorted = [...filtered].sort((a, b) => b.account_group_no - a.account_group_no);
     return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
   });
   pager = makePaginator(this.filtered);
@@ -81,6 +82,13 @@ export class Fin1002ModelService {
 
   select(item: AccountGroup): void {
     this.selectedNo.set(item.account_group_no);
+    this.data.loadDetail(item.account_group_no).subscribe({
+      next: (res) => this.patchForm(isSuccess(res) && res.data ? res.data : item),
+      error: () => this.patchForm(item),
+    });
+  }
+
+  private patchForm(item: AccountGroup): void {
     this.form.patchValue({
       account_group_no: item.account_group_no,
       account_group_id: item.account_group_id,

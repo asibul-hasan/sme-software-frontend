@@ -20,7 +20,7 @@ import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthInterceptorFn } from './core/interceptors/auth.interceptor';
-import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
+// import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
@@ -66,7 +66,11 @@ export const appConfig: ApplicationConfig = {
       preventDuplicates: true,
     }), // Toastr providers
     provideHttpClient(
-      withInterceptors([AuthInterceptorFn, apiErrorInterceptor, loaderInterceptor]),
+      withInterceptors([
+        AuthInterceptorFn,
+        // apiErrorInterceptor,
+        loaderInterceptor,
+      ]),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
     ),
     {
