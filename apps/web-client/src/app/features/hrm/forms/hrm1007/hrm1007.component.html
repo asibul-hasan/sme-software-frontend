@@ -97,7 +97,9 @@
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="calc_value">Amount / Percent</label>
+                    <label class="field-label" for="calc_value">
+                      {{ formdata.get('calc_type')?.value === 1 ? 'Amount' : 'Percent / Value' }}
+                    </label>
                     <input type="number" id="calc_value" formControlName="calc_value" class="form-control" step="0.01" />
                   </div>
                 </div>
@@ -113,6 +115,40 @@
                     <input type="number" id="display_order" formControlName="display_order" class="form-control" step="1" />
                   </div>
                 </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label class="field-label" for="base_component_no">Base Component</label>
+                    <ng-select id="base_component_no" labelForId="base_component_no" formControlName="base_component_no" [clearable]="true" placeholder="Optional dependency">
+                      @for (opt of model.components(); track opt.component_no) {
+                        <ng-option [value]="opt.component_no">{{ opt.component_name }} ({{ opt.component_id }})</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="rounding_mode">Rounding Mode</label>
+                    <ng-select id="rounding_mode" labelForId="rounding_mode" formControlName="rounding_mode" [clearable]="false" placeholder="Rounding">
+                      @for (opt of roundingModes; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="rounding_scale">Decimal Places</label>
+                    <input type="number" id="rounding_scale" formControlName="rounding_scale" class="form-control" step="1" />
+                  </div>
+                </div>
+                @if (formdata.get('calc_type')?.value === 4) {
+                  <div class="col-12">
+                    <div class="field-group">
+                      <label class="field-label" for="formula_expression">Formula Expression</label>
+                      <textarea id="formula_expression" formControlName="formula_expression" class="form-control" rows="2" placeholder="e.g. BASIC_SALARY * 0.10"></textarea>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
           </div>
@@ -154,6 +190,24 @@
               <div class="field-group mb-3">
                 <label class="field-label" for="country_code">Country Code</label>
                 <input type="text" id="country_code" formControlName="country_code" class="form-control" maxlength="2" placeholder="e.g. BD" />
+              </div>
+              <div class="field-group mb-3">
+                <label class="field-label">Calculation Rules</label>
+                <div class="custom--checkbox mb-1">
+                  <mat-checkbox [checked]="formdata.get('is_proratable')?.value === 1" (change)="toggleFlag('is_proratable', $event)" color="primary">
+                    <span class="field-label mb-0" style="cursor: pointer">Proratable</span>
+                  </mat-checkbox>
+                </div>
+                <div class="custom--checkbox mb-1">
+                  <mat-checkbox [checked]="formdata.get('is_attendance_dependent')?.value === 1" (change)="toggleFlag('is_attendance_dependent', $event)" color="primary">
+                    <span class="field-label mb-0" style="cursor: pointer">Attendance dependent</span>
+                  </mat-checkbox>
+                </div>
+                <div class="custom--checkbox">
+                  <mat-checkbox [checked]="formdata.get('is_regular')?.value === 1" (change)="toggleFlag('is_regular', $event)" color="primary">
+                    <span class="field-label mb-0" style="cursor: pointer">Regular component</span>
+                  </mat-checkbox>
+                </div>
               </div>
               <div class="field-group">
                 <label class="field-label">Status</label>

@@ -4,6 +4,7 @@
   <!-- Sidebar: inline flex child on desktop, fixed overlay on mobile -->
   <app-sidebar
     class="app-sidebar flex-shrink-0 h-full block z-50"
+    [class.sidebar-collapsed]="sidebarCollapsed()"
     [collapsed]="sidebarCollapsed()"
     (toggleCollapse)="toggleSidebar()"
   ></app-sidebar>

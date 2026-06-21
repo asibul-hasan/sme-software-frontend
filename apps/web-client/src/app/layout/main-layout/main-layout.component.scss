@@ -13,6 +13,9 @@
     height: 100%;
     z-index: 200;
   }
+  .app-sidebar.sidebar-collapsed {
+    pointer-events: none;
+  }
   .app-right {
     margin-left: 0 !important;
   }

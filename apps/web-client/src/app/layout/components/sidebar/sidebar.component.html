@@ -1,30 +1,26 @@
 <aside
   class="sidebar h-full overflow-hidden"
-  [style.width.px]="isCollapsed() ? 68 : 292"
+  [style.width.px]="isCollapsed() ? 74 : 270"
   [class.collapsed]="isCollapsed()"
+  [class.flyout-open]="isCollapsed() && isFlyoutOpen()"
+  (mouseleave)="closeFlyout()"
+  (focusout)="onSidebarFocusOut($event)"
 >
-  <header class="sb-topbar flex items-center gap-2 flex-shrink-0">
-    <a
-      class="sb-rail-brand flex items-center justify-center flex-shrink-0"
-      [routerLink]="['/']"
-      [uiTooltip]="companyName()"
-      uiTooltipPosition="right"
-    >
-      <ng-container *ngIf="logoUrl(); else initialTpl">
-        <img [src]="logoUrl()" alt="Company logo" class="sb-rail-logo" />
-      </ng-container>
-      <ng-template #initialTpl>
-        <span class="sb-rail-initial">{{ companyInitial() }}</span>
-      </ng-template>
-    </a>
-
-    <div *ngIf="!isCollapsed()" class="min-w-0 flex-1">
-      <h2 class="sb-company mb-0 truncate">{{ companyName() }}</h2>
-    </div>
-  </header>
-
   <div class="sb-body flex flex-1 min-h-0">
     <div class="sb-rail flex flex-col h-full flex-shrink-0">
+      <a
+        class="sb-rail-brand flex items-center justify-center flex-shrink-0"
+        [routerLink]="['/']"
+        [uiTooltip]="companyName()"
+        uiTooltipPosition="right"
+      >
+        <ng-container *ngIf="logoUrl(); else initialTpl">
+          <img [src]="logoUrl()" alt="Company logo" class="sb-rail-logo" />
+        </ng-container>
+        <ng-template #initialTpl>
+          <span class="sb-rail-initial">{{ companyInitial() }}</span>
+        </ng-template>
+      </a>
 
       <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
       <button
@@ -33,6 +29,8 @@
         class="sb-module-btn"
         [class.active]="isModuleSelected(module)"
         [class.route-active]="hasActiveChild(module)"
+        (mouseenter)="openFlyout(module)"
+        (focus)="openFlyout(module)"
         (click)="selectModule(module)"
         [uiTooltip]="module.formName | translate"
         uiTooltipPosition="right"
@@ -56,7 +54,16 @@
       </div>
     </div>
 
-    <section *ngIf="!isCollapsed()" class="sb-panel flex flex-col h-full min-w-0">
+    <section
+      *ngIf="shouldShowPanel()"
+      class="sb-panel flex flex-col h-full min-w-0"
+      [class.flyout]="isCollapsed() && isFlyoutOpen()"
+      (mouseenter)="openFlyout()"
+    >
+    <header class="sb-panel-head flex-shrink-0">
+      <h2 class="sb-module-heading truncate">{{ selectedModuleLabel() | translate }}</h2>
+      <p class="sb-company mb-0 truncate">{{ companyName() }}</p>
+    </header>
 
     <div class="sb-search-row flex items-center gap-2 flex-shrink-0">
       <div class="sb-search-wrap flex-1 min-w-0">
@@ -98,6 +105,7 @@
             [routerLink]="sub.route"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
+            (click)="onMenuItemSelected()"
           >
             <ui-icon class="sb-sub-icon" [size]="18">{{ sub.icon }}</ui-icon>
             <span class="sb-sub-label truncate">{{ sub.formName | translate }}</span>
@@ -124,6 +132,7 @@
                   [routerLink]="form.route"
                   routerLinkActive="active"
                   [routerLinkActiveOptions]="{ exact: false }"
+                  (click)="onMenuItemSelected()"
                 >
                   <ui-icon class="sb-form-icon" [size]="17">{{ form.icon }}</ui-icon>
                   <span class="sb-form-label truncate">{{ form.formName | translate }}</span>

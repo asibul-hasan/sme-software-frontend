@@ -78,8 +78,32 @@
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
+                    <label class="field-label" for="tax_regime">Tax Regime</label>
+                    <input type="text" id="tax_regime" formControlName="tax_regime" class="form-control text-uppercase" placeholder="e.g. BD_NBR" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
                     <label class="field-label" for="maternity_weeks">Maternity Weeks</label>
                     <input type="number" id="maternity_weeks" formControlName="maternity_weeks" class="form-control" step="1" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="overtime_formula">Overtime Formula</label>
+                    <textarea id="overtime_formula" formControlName="overtime_formula" class="form-control" rows="2" placeholder="e.g. BASIC_SALARY / 104"></textarea>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="daily_rate_formula">Daily Rate Formula</label>
+                    <textarea id="daily_rate_formula" formControlName="daily_rate_formula" class="form-control" rows="2" placeholder="e.g. GROSS_SALARY / CALENDAR_DAYS"></textarea>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label class="field-label" for="lwp_formula">LWP Formula</label>
+                    <textarea id="lwp_formula" formControlName="lwp_formula" class="form-control" rows="2" placeholder="e.g. DAILY_RATE * LWP_DAYS"></textarea>
                   </div>
                 </div>
                 <div class="col-md-12">

@@ -8,27 +8,79 @@
   (searchTermChange)="onSearchTermChange($event)"
   [sortDirection]="model.sortDirection()"
   (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
   [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
-  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
 >
+  <button
+    extraHeaderActions
+    type="button"
+    class="btn-action"
+    (click)="printCoa()"
+    [disabled]="model.filtered().length === 0"
+  >
+    <mat-icon>picture_as_pdf</mat-icon>
+    <span class="btn-action-label">Print</span>
+  </button>
+
   <div sidebarList>
     @for (item of model.pager.paged(); track item.account_no) {
-      <button type="button" class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.account_no" (click)="select(item)">
-        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.account_name }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.account_code }} · {{ item.account_group_name }}</p>
-        <div class="list-item-meta">
-          @if (item.control_type) { <span class="list-item-tag list-item-tag--warning">{{ controlLabel(item.control_type) }}</span> }
-          @if (item.is_postable !== 1) { <span class="list-item-tag">Header</span> }
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.account_no"
+        (click)="select(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.is_active === 1"
+          [class.status-dot--inactive]="item.is_active !== 1"
+          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <div
+          class="d-flex align-items-center gap-2 w-100"
+          style="padding-right: 16px"
+        >
+          <h6
+            class="list-item-title mb-0 text-truncate"
+            style="flex: 1; min-width: 0"
+          >
+            {{ item.account_name }}
+            <span
+              class="list-item-subtitle"
+              style="font-weight: normal; margin-left: 4px; opacity: 0.85"
+              >({{ item.account_code }} &middot; {{ item.account_group_name }})</span
+            >
+          </h6>
+          @if (item.control_type || item.is_postable !== 1) {
+            <div class="d-flex align-items-center gap-1 flex-shrink-0">
+              @if (item.control_type) {
+                <span
+                  class="list-item-tag list-item-tag--warning"
+                  style="margin: 0"
+                  >{{ controlLabel(item.control_type) }}</span
+                >
+              }
+              @if (item.is_postable !== 1) {
+                <span class="list-item-tag" style="margin: 0">Header</span>
+              }
+            </div>
+          }
         </div>
       </button>
     }
-    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>menu_book</mat-icon><p>No records found</p></div> }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>menu_book</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
   </div>
 
   <div formContent>
@@ -36,51 +88,169 @@
       <div class="row row-group">
         <div class="col-12">
           <div class="form-section-card card">
-            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">menu_book</mat-icon> Account</h4></div>
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">menu_book</mat-icon> Account
+              </h4>
+            </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label required" for="account_code">Account Code</label>
-                  <input type="text" id="account_code" formControlName="account_code" class="form-control text-uppercase" placeholder="e.g. 1010-001" (input)="toUpper('account_code')" />
-                </div></div>
-                <div class="col-md-5"><div class="field-group">
-                  <label class="field-label required" for="account_name">Account Name</label>
-                  <input type="text" id="account_name" formControlName="account_name" class="form-control" placeholder="e.g. Cash in Hand" />
-                </div></div>
-                <div class="col-md-4"><div class="field-group">
-                  <label class="field-label required" for="account_group_no">Account Group</label>
-                  <ng-select id="account_group_no" formControlName="account_group_no" bindLabel="group_name" bindValue="account_group_no" [items]="model.groups()" placeholder="Select group"></ng-select>
-                </div></div>
-                <div class="col-md-4"><div class="field-group">
-                  <label class="field-label" for="control_type">Control Type</label>
-                  <ng-select id="control_type" formControlName="control_type" placeholder="None (plain)">
-                    @for (o of controlTypes; track o.value) { <ng-option [value]="o.value">{{ o.label }}</ng-option> }
-                  </ng-select>
-                </div></div>
-                <div class="col-md-2"><div class="field-group">
-                  <label class="field-label" for="opening_balance">Opening Balance</label>
-                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" step="0.01" />
-                </div></div>
-                <div class="col-md-2"><div class="field-group">
-                  <label class="field-label" for="opening_dr_cr">Opening Dr/Cr</label>
-                  <ng-select id="opening_dr_cr" formControlName="opening_dr_cr" [clearable]="false">
-                    @for (o of drCr; track o.value) { <ng-option [value]="o.value">{{ o.label }}</ng-option> }
-                  </ng-select>
-                </div></div>
-                <div class="col-md-4 d-flex gap-2">
-                  <div class="field-group flex-fill"><label class="field-label">Postable</label>
-                    <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_postable')?.value === 1" (change)="formdata.get('is_postable')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Postable</span></mat-checkbox></div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="account_code"
+                      >Account Code</label
+                    >
+                    <input
+                      type="text"
+                      id="account_code"
+                      formControlName="account_code"
+                      class="form-control text-uppercase"
+                      placeholder="e.g. 1010-001"
+                      (input)="toUpper('account_code')"
+                    />
                   </div>
-                  <div class="field-group flex-fill"><label class="field-label">Status</label>
-                    <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label required" for="account_name"
+                      >Account Name</label
+                    >
+                    <input
+                      type="text"
+                      id="account_name"
+                      formControlName="account_name"
+                      class="form-control"
+                      placeholder="e.g. Cash in Hand"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="account_group_no"
+                      >Account Group</label
+                    >
+                    <ng-select
+                      id="account_group_no"
+                      formControlName="account_group_no"
+                      bindLabel="group_name"
+                      bindValue="account_group_no"
+                      [items]="model.groups()"
+                      placeholder="Select group"
+                    >
+                      <ng-template ng-label-tmp let-item="item">
+                        {{ item.account_group_id }} {{ item.group_name }}
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item">
+                        {{ item.account_group_id }} {{ item.group_name }}
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label" for="control_type"
+                      >Control Type</label
+                    >
+                    <ng-select
+                      id="control_type"
+                      formControlName="control_type"
+                      placeholder="None (plain)"
+                    >
+                      @for (o of controlTypes; track o.value) {
+                        <ng-option [value]="o.value">{{ o.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="opening_dr_cr"
+                      >Opening Dr/Cr</label
+                    >
+                    <ng-select
+                      id="opening_dr_cr"
+                      formControlName="opening_dr_cr"
+                      [clearable]="false"
+                      [readonly]="true"
+                    >
+                      @for (o of drCr; track o.value) {
+                        <ng-option [value]="o.value">{{ o.label }}</ng-option>
+                      }
+                    </ng-select>
                   </div>
                 </div>
                 <div class="col-md-4 d-flex gap-2">
-                  <div class="field-group flex-fill"><label class="field-label">Cost Center</label>
-                    <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('requires_cost_center')?.value === 1" (change)="formdata.get('requires_cost_center')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Required</span></mat-checkbox></div>
+                  <div class="field-group flex-fill">
+                    <label class="field-label">Postable</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="formdata.get('is_postable')?.value === 1"
+                        (change)="
+                          formdata
+                            .get('is_postable')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                        ><span class="field-label mb-0" style="cursor: pointer"
+                          >Postable</span
+                        ></mat-checkbox
+                      >
+                    </div>
                   </div>
-                  <div class="field-group flex-fill"><label class="field-label">Party</label>
-                    <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('requires_party')?.value === 1" (change)="formdata.get('requires_party')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Required</span></mat-checkbox></div>
+                  <div class="field-group flex-fill">
+                    <label class="field-label">Status</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="formdata.get('is_active')?.value === 1"
+                        (change)="
+                          formdata
+                            .get('is_active')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                        ><span class="field-label mb-0" style="cursor: pointer"
+                          >Active</span
+                        ></mat-checkbox
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                  <div class="field-group flex-fill">
+                    <label class="field-label">Cost Center</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="
+                          formdata.get('requires_cost_center')?.value === 1
+                        "
+                        (change)="
+                          formdata
+                            .get('requires_cost_center')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                        ><span class="field-label mb-0" style="cursor: pointer"
+                          >Required</span
+                        ></mat-checkbox
+                      >
+                    </div>
+                  </div>
+                  <div class="field-group flex-fill">
+                    <label class="field-label">Party (Customer/Vendor)</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="formdata.get('requires_party')?.value === 1"
+                        (change)="
+                          formdata
+                            .get('requires_party')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                        ><span class="field-label mb-0" style="cursor: pointer"
+                          >Required</span
+                        ></mat-checkbox
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
@@ -91,5 +261,8 @@
     </form>
   </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 </app-page-form-layout>

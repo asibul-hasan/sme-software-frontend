@@ -8,8 +8,13 @@ import { Fin1101ModelService, Voucher, VoucherLine } from './services/model.serv
 import { Fin1101DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { AuthContextService } from '../../../../core/services/auth-context.service';
 import { finConstants } from '../../constants/fin.constants';
 import { debitCreditOptions } from '../../../../core/constants/common-options.constants';
+
+import { PdfTemplateService } from '../../../../shared/pdf-templates';
+import { buildVoucherReportContext, VoucherReportContext } from '../../report-templates';
+import { pdfReportTemplate } from '../../../../shared/pdf-templates';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +29,8 @@ export class Fin1101Component implements OnInit {
   public model             = inject(Fin1101ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
+  private pdfService       = inject(PdfTemplateService);
+  private authContext      = inject(AuthContextService);
   readonly lineTable = viewChild(CommonTableComponent);
 
   readonly statusOptions = finConstants.voucherStatuses;
@@ -165,4 +172,35 @@ export class Fin1101Component implements OnInit {
 
   statusLabel(v: number): string { return this.statusOptions.find((s) => s.value === v)?.label ?? String(v); }
   statusClass(v: number): string { return v === 2 ? 'list-item-tag--primary' : v === 3 ? 'list-item-tag--warning' : ''; }
+
+  // ── PDF Voucher Print ─────────────────────────────────────────────────────
+  readonly voucherPdfContext = computed<VoucherReportContext | null>(() => {
+    const cur = this.model.current();
+    if (!cur) return null;
+    const currency = this.model.selectedCurrency();
+    return {
+      voucher_no: cur.voucher_id ?? String(cur.voucher_no),
+      voucher_date: cur.voucher_date ?? '',
+      voucher_type_name: cur.voucher_type_name ?? 'Journal',
+      voucher_narration: cur.narration ?? '',
+      currency_name: currency?.currency_name ?? currency?.currency_code ?? 'BDT',
+      company_name: this.authContext.user()?.company_name ?? 'Company',
+      ref_no: cur.reference_no ?? '',
+      total_amount: cur.total_debit ?? cur.total_credit ?? 0,
+      rows: this.model.validLines(this.model.lines()).map((l) => ({
+        gl_code: l.account_code ?? '',
+        gl_name: l.account_name ?? '',
+        description: l.line_narration ?? '',
+        debit: Number(l.debit) || 0,
+        credit: Number(l.credit) || 0,
+      })),
+    };
+  });
+
+  async printVoucher(): Promise<void> {
+    const ctx = this.voucherPdfContext();
+    if (!ctx) return;
+    const reportCtx = buildVoucherReportContext(ctx);
+    await this.pdfService.render(pdfReportTemplate, reportCtx);
+  }
 }

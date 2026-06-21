@@ -12,24 +12,52 @@ import { CommonDataService, EmployeeLookup } from '../../../../../shared/service
 export interface Payslip {
   payslip_no: number;
   employee_no: number;
+  basic_salary?: number;
   present_days: number; absent_days: number; leave_days: number; lwp_days: number;
+  payable_days?: number;
+  ot_hours?: number;
+  ot_amount?: number;
   gross_earning: number; total_deduction: number; net_pay: number;
+  taxable_income?: number;
+  employer_contribution?: number;
   payment_status: number;
 }
 
 export interface PayrollRun extends BaseEntity {
   payroll_run_no: number;
   pay_period: string;
+  payroll_run_id?: string | null;
   run_type: number;
   period_start: string;
   period_end: string;
+  bonus_run_no?: number | null;
   status: number;
   total_gross: number; total_deduction: number; total_net: number;
+  calculation_policy_no?: number | null;
   employee_count: number;
+  calculation_started_at?: string | null;
+  calculation_completed_at?: string | null;
+  approved_at?: string | null;
+  posted_event_no?: number | null;
+  posting_status?: number | null;
+  posting_event_type?: string | null;
+  paid_at?: string | null;
   branch_no?: number | null;
+  remarks?: string | null;
+  bonus_run_name?: string | null;
+  bonus_period?: string | null;
   is_active: number;
   row_version: number;
   payslips?: Payslip[];
+}
+
+export interface BonusRunOption {
+  bonus_run_no: number;
+  bonus_id: string;
+  bonus_name: string;
+  bonus_period?: string | null;
+  status: number;
+  total_amount?: number | null;
 }
 
 type RunAction = 'calculate' | 'approve' | 'pay' | 'cancel';
@@ -49,7 +77,9 @@ export class Hrm1202ModelService {
 
   runs          = signal<PayrollRun[]>([]);
   employees     = signal<EmployeeLookup[]>([]);
+  bonusRuns     = signal<BonusRunOption[]>([]);
   payslips      = signal<Payslip[]>([]);
+  currentRunDetail = signal<PayrollRun | null>(null);
   isLoading     = signal(false);
   isSaving      = signal(false);
   searchTerm    = signal('');
@@ -65,6 +95,11 @@ export class Hrm1202ModelService {
 
   /** Status: 1=Draft 2=Calculated 3=Approved 4=Paid 5=Cancelled. */
   readonly isDraft = computed(() => this.status() === 1);
+  readonly isBonusRunType = computed(() => Number(this.form?.get('run_type')?.value) === 3);
+  readonly selectableBonusRuns = computed(() => {
+    const selected = this.form?.get('bonus_run_no')?.value as number | null;
+    return this.bonusRuns().filter((item) => item.status === 3 || item.bonus_run_no === selected);
+  });
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -86,12 +121,25 @@ export class Hrm1202ModelService {
       run_type:       [1, [Validators.required]],
       period_start:   ['', [Validators.required]],
       period_end:     ['', [Validators.required]],
+      bonus_run_no:   [null],
+    });
+
+    this.form.get('run_type')?.valueChanges.subscribe((runType) => {
+      if (Number(runType) !== 3) {
+        this.form.patchValue({ bonus_run_no: null }, { emitEvent: false });
+      }
     });
   }
 
   loadEmployees(): void {
     this.commApi.getEmployeeList({ is_active: 1 }).subscribe({
       next: (res) => { if (isSuccess(res) && res.data) this.employees.set(res.data); },
+    });
+  }
+
+  loadBonusRuns(): void {
+    this.data.loadBonusRuns().subscribe({
+      next: (res) => { if (isSuccess(res) && res.data) this.bonusRuns.set(res.data); },
     });
   }
 
@@ -121,6 +169,7 @@ export class Hrm1202ModelService {
       next: (res) => {
         if (isSuccess(res) && res.data) {
           const d = res.data;
+          this.currentRunDetail.set(d);
           this.status.set(d.status);
           this.payslips.set(d.payslips ?? []);
           this.form.patchValue({
@@ -129,6 +178,7 @@ export class Hrm1202ModelService {
             run_type:       d.run_type,
             period_start:   (d.period_start ?? '').slice(0, 10),
             period_end:     (d.period_end ?? '').slice(0, 10),
+            bonus_run_no:   d.bonus_run_no ?? null,
           });
         }
       },
@@ -151,6 +201,7 @@ export class Hrm1202ModelService {
       run_type:     val.run_type,
       period_start: val.period_start,
       period_end:   val.period_end,
+      bonus_run_no: Number(val.run_type) === 3 ? val.bonus_run_no : null,
       branch_no:    this.currentBranchNo,
     };
     this.data.createRun(payload).pipe(finalize(() => this.isSaving.set(false))).subscribe({
@@ -211,11 +262,20 @@ export class Hrm1202ModelService {
     this.selectedNo.set(null);
     this.status.set(1);
     this.payslips.set([]);
+    this.currentRunDetail.set(null);
     this.form?.reset({
       run_type: 1,
       pay_period: `${y}-${pad(m + 1)}`,
       period_start: first,
       period_end: `${y}-${pad(m + 1)}-${pad(lastDay)}`,
+      bonus_run_no: null,
     });
+  }
+
+  bonusRunLabel(bonusRunNo?: number | null): string {
+    if (bonusRunNo == null) return '';
+    const item = this.bonusRuns().find((run) => run.bonus_run_no === bonusRunNo);
+    if (!item) return `#${bonusRunNo}`;
+    return `${item.bonus_name} (${item.bonus_id})`;
   }
 }

@@ -36,9 +36,6 @@
         <p class="list-item-subtitle mb-0 text-truncate">{{ shift.shift_name }}</p>
         <div class="list-item-meta">
           <span class="list-item-tag">{{ (shift.start_time || '').slice(0, 5) }}–{{ (shift.end_time || '').slice(0, 5) }}</span>
-          @if (shift.is_night_shift === 1) {
-            <span class="list-item-tag list-item-tag--primary">Night</span>
-          }
         </div>
       </button>
     }
@@ -65,7 +62,7 @@
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="shift_id">Shift Code</label>
+                    <label class="field-label" for="shift_id">Shift Code</label>
                     <input type="text" id="shift_id" formControlName="shift_id" class="form-control text-uppercase" placeholder="e.g. DAY" (input)="toUpper('shift_id')" />
                   </div>
                 </div>
@@ -73,6 +70,12 @@
                   <div class="field-group">
                     <label class="field-label required" for="shift_name">Shift Name</label>
                     <input type="text" id="shift_name" formControlName="shift_name" class="form-control" placeholder="e.g. General Day Shift" />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="effective_date">Effective Date</label>
+                    <input type="date" id="effective_date" formControlName="effective_date" class="form-control" />
                   </div>
                 </div>
                 <div class="col-md-3">
@@ -129,14 +132,6 @@
               </h4>
             </div>
             <div class="card-body">
-              <div class="field-group mb-3">
-                <label class="field-label">Night Shift</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_night_shift')?.value === 1" (change)="toggleNight($event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Spans midnight</span>
-                  </mat-checkbox>
-                </div>
-              </div>
               <div class="field-group mb-3">
                 <label class="field-label" for="remarks">Remarks</label>
                 <textarea id="remarks" formControlName="remarks" class="form-control" rows="2"></textarea>

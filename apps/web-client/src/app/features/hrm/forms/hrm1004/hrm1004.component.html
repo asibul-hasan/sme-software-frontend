@@ -1,191 +1,692 @@
 <app-page-form-layout
-  [title]="'Grade / Pay-Scale Setup'"
-  [subtitle]="'Define pay grades, salary bands and overtime eligibility'"
-  [icon]="'workspace_premium'"
-  [recordsCount]="model.filteredGrades().length"
-  [sidebarTitle]="'Grades'"
-  [searchTerm]="model.searchTerm()"
+  [title]="pageTitle()"
+  [subtitle]="pageSubtitle()"
+  [icon]="'payments'"
+  [recordsCount]="recordsCount()"
+  [sidebarTitle]="sidebarTitle()"
+  [searchTerm]="currentSearchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
-  [sortDirection]="model.sortDirection()"
-  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  [sortDirection]="activeTab() === 'grades' ? model.sortDirection() : ''"
+  (sortDirectionChange)="onSortDirectionChange($event)"
   (save)="onSave()"
   (new)="onNew()"
   (reset)="onReset()"
   (delete)="onDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedGradeNo()"
+  [showNew]="permissionService.canInsert() || activeTab() === 'elements'"
+  [showDelete]="activeTab() === 'elements' ? !!selectedElementId() : permissionService.canDelete() && !!model.selectedGradeNo()"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <!-- Sidebar List -->
   <div sidebarList>
-    @for (grade of model.pager.paged(); track grade.grade_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedGradeNo() === grade.grade_no"
-        (click)="selectGrade(grade)"
-      >
-        <span
-          class="status-dot status-dot--corner"
-          [class.status-dot--active]="grade.is_active === 1"
-          [class.status-dot--inactive]="grade.is_active !== 1"
-          [title]="grade.is_active === 1 ? 'Active' : 'Inactive'"
-        ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ grade.grade_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ grade.grade_name }}</p>
-        <div class="list-item-meta">
-          @if (grade.rank_order != null) {
-            <span class="list-item-tag">Rank {{ grade.rank_order }}</span>
-          }
-          @if (grade.is_overtime_eligible === 1) {
-            <span class="list-item-tag list-item-tag--primary">OT</span>
-          }
-        </div>
-      </button>
-    }
+    @if (activeTab() === 'elements') {
+      @for (item of filteredSalaryElements(); track item.id) {
+        <button
+          type="button"
+          class="list-group-item list-group-item-action"
+          [class.active]="selectedElementId() === item.id"
+          (click)="selectSalaryElement(item.id)"
+        >
+          <span
+            class="status-dot status-dot--corner"
+            [class.status-dot--active]="item.is_active"
+            [class.status-dot--inactive]="!item.is_active"
+            [title]="item.is_active ? 'Active' : 'Inactive'"
+          ></span>
+          <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.component_id }}</h6>
+          <p class="list-item-subtitle mb-0 text-truncate">{{ item.component_name }}</p>
+          <div class="list-item-meta">
+            <span class="list-item-tag" [class.list-item-tag--primary]="item.category === 'earning'">
+              {{ categoryLabel(item.category) }}
+            </span>
+            @if (item.calc_mode === 'percent') {
+              <span class="list-item-tag">{{ item.value || 0 }}%</span>
+            }
+          </div>
+        </button>
+      }
 
-    @if (model.filteredGrades().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>workspace_premium</mat-icon>
-        <p>No records found</p>
+      @if (filteredSalaryElements().length === 0) {
+        <div class="list-empty-state">
+          <mat-icon>payments</mat-icon>
+          <p>No salary elements found</p>
+        </div>
+      }
+    } @else {
+      <div class="sidebar-tree">
+        @for (grade of model.pager.paged(); track grade.grade_no; let gradeIndex = $index) {
+          <div class="tree-grade">
+            <button
+              type="button"
+              class="tree-grade__button"
+              [class.active]="model.selectedGradeNo() === grade.grade_no"
+              (click)="selectGrade(grade, gradeIndex)"
+            >
+              <div class="tree-grade__main">
+                <mat-icon>workspace_premium</mat-icon>
+                <div class="tree-grade__meta">
+                  <span class="tree-grade__title text-truncate">{{ grade.grade_name }}</span>
+                  <span class="tree-grade__subtitle text-truncate">
+                    {{ grade.grade_id || 'Auto code' }} - {{ gradeStepCount(grade) }} step{{ gradeStepCount(grade) === 1 ? '' : 's' }}
+                  </span>
+                </div>
+              </div>
+              <mat-icon>{{ model.selectedGradeNo() === grade.grade_no ? 'expand_less' : 'chevron_right' }}</mat-icon>
+            </button>
+
+            @if (model.selectedGradeNo() === grade.grade_no && stepsForGrade(grade).length) {
+              <div class="tree-step-list">
+                @for (step of stepsForGrade(grade); track step.grade_step_no ?? step.step; let stepIndex = $index) {
+                  <div class="tree-step">
+                    <button
+                      type="button"
+                      class="tree-step__button"
+                      [class.active]="selectedStepIndex() === stepIndex"
+                      (click)="selectStep(stepIndex)"
+                    >
+                      <div class="tree-step__main">
+                        <mat-icon>subdirectory_arrow_right</mat-icon>
+                        <div class="tree-grade__meta">
+                          <span class="tree-step__title text-truncate">{{ step.step }}</span>
+                          <span class="tree-step__subtitle">BDT {{ stepAmountLabel(step.amount) }}</span>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (model.filteredGrades().length === 0) {
+          <div class="list-empty-state">
+            <mat-icon>workspace_premium</mat-icon>
+            <p>No grades found</p>
+          </div>
+        }
       </div>
     }
   </div>
 
-  <!-- Main Form Content -->
   <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <!-- Grade Info (8-col) -->
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">info</mat-icon>
-                Grade Information
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="grade_id">Grade Code</label>
-                    <input
-                      type="text"
-                      id="grade_id"
-                      formControlName="grade_id"
-                      class="form-control text-uppercase"
-                      placeholder="e.g. G-5"
-                      (input)="toUpper('grade_id')"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="grade_name">Grade Name</label>
-                    <input
-                      type="text"
-                      id="grade_name"
-                      formControlName="grade_name"
-                      class="form-control"
-                      placeholder="e.g. Senior Officer"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="rank_order">Rank Order</label>
-                    <input
-                      type="number"
-                      id="rank_order"
-                      formControlName="rank_order"
-                      class="form-control"
-                      placeholder="1 = highest"
-                      step="1"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="min_salary">Minimum Salary</label>
-                    <input
-                      type="number"
-                      id="min_salary"
-                      formControlName="min_salary"
-                      class="form-control"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="max_salary">Maximum Salary</label>
-                    <input
-                      type="number"
-                      id="max_salary"
-                      formControlName="max_salary"
-                      class="form-control"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div class="setup-shell">
+      <div class="setup-tabs">
+        <button type="button" class="setup-tab" [class.active]="activeTab() === 'elements'" (click)="selectTab('elements')">
+          <mat-icon>table_rows</mat-icon>
+          Salary Element
+        </button>
+        <button type="button" class="setup-tab" [class.active]="activeTab() === 'grades'" (click)="selectTab('grades')">
+          <mat-icon>account_tree</mat-icon>
+          Grade Setup
+        </button>
+      </div>
+
+      @if (activeTab() === 'elements') {
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-card__label">Active Elements</div>
+            <div class="summary-card__value">{{ activeElementCount() }}</div>
+            <div class="summary-card__meta">Payroll-ready elements in current design</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__label">Gross Elements</div>
+            <div class="summary-card__value">{{ grossElementCount() }}</div>
+            <div class="summary-card__meta">Elements contributing to monthly gross</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__label">Deductions</div>
+            <div class="summary-card__value">{{ deductionElementCount() }}</div>
+            <div class="summary-card__meta">Employee-side recoveries and statutory cuts</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__label">Employer Cost</div>
+            <div class="summary-card__value">{{ employerElementCount() }}</div>
+            <div class="summary-card__meta">Employer-only salary burden lines</div>
           </div>
         </div>
 
-        <!-- Right Column (4-col) -->
-        <div class="col-xl-4 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
+        <div class="form-section-card card">
+          <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <div>
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">settings</mat-icon>
-                Rules & Status
+                <mat-icon class="me-2 align-middle">playlist_add_check</mat-icon>
+                Salary Element Matrix
               </h4>
+              <div class="section-note mt-1">Table-first element design for Bangladesh payroll structure</div>
             </div>
-            <div class="card-body">
-              <div class="field-group mb-3">
-                <label class="field-label">Overtime Eligible</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox
-                    [checked]="formdata.get('is_overtime_eligible')?.value === 1"
-                    (change)="toggleOvertime($event)"
-                    color="primary"
-                  >
-                    <span class="field-label mb-0" style="cursor: pointer">Eligible for overtime</span>
-                  </mat-checkbox>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="addSalaryElement()">
+              <mat-icon class="me-1 align-middle">add</mat-icon>
+              Add Element
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0 elements-table">
+                <thead>
+                  <tr>
+                    <th style="width: 64px">Order</th>
+                    <th style="width: 130px">Code</th>
+                    <th style="min-width: 180px">Element</th>
+                    <th style="width: 130px">Category</th>
+                    <th style="width: 120px">Basis</th>
+                    <th style="width: 130px">Calc Mode</th>
+                    <th style="width: 120px">Value</th>
+                    <th style="min-width: 180px">Formula / Note</th>
+                    <th style="width: 90px">Gross</th>
+                    <th style="width: 90px">Tax</th>
+                    <th style="width: 90px">Active</th>
+                    <th class="text-end" style="width: 70px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of filteredSalaryElements(); track item.id) {
+                    <tr
+                      [class.is-selected]="selectedElementId() === item.id"
+                      (click)="selectSalaryElement(item.id)"
+                    >
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control"
+                          [value]="item.order_no"
+                          (input)="updateSalaryElement(item.id, 'order_no', +$any($event.target).value || 0)"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="form-control text-uppercase"
+                          [value]="item.component_id"
+                          (input)="updateSalaryElement(item.id, 'component_id', $any($event.target).value)"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [value]="item.component_name"
+                          (input)="updateSalaryElement(item.id, 'component_name', $any($event.target).value)"
+                        />
+                      </td>
+                      <td>
+                        <select
+                          class="form-select"
+                          [value]="item.category"
+                          (change)="updateSalaryElement(item.id, 'category', $any($event.target).value)"
+                        >
+                          @for (opt of categoryOptions; track opt.value) {
+                            <option [value]="opt.value">{{ opt.label }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          class="form-select"
+                          [value]="item.basis"
+                          (change)="updateSalaryElement(item.id, 'basis', $any($event.target).value)"
+                        >
+                          @for (opt of basisOptions; track opt.value) {
+                            <option [value]="opt.value">{{ opt.label }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          class="form-select"
+                          [value]="item.calc_mode"
+                          (change)="updateSalaryElement(item.id, 'calc_mode', $any($event.target).value)"
+                        >
+                          @for (opt of calcModeOptions; track opt.value) {
+                            <option [value]="opt.value">{{ opt.label }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          class="form-control"
+                          [value]="item.value"
+                          (input)="updateSalaryElement(item.id, 'value', $any($event.target).value === '' ? null : +$any($event.target).value)"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [value]="item.formula_note"
+                          (input)="updateSalaryElement(item.id, 'formula_note', $any($event.target).value)"
+                        />
+                      </td>
+                      <td class="text-center">
+                        <mat-checkbox
+                          [checked]="item.affects_gross"
+                          (change)="updateSalaryElement(item.id, 'affects_gross', $event.checked)"
+                          color="primary"
+                        ></mat-checkbox>
+                      </td>
+                      <td class="text-center">
+                        <mat-checkbox
+                          [checked]="item.is_taxable"
+                          (change)="updateSalaryElement(item.id, 'is_taxable', $event.checked)"
+                          color="primary"
+                        ></mat-checkbox>
+                      </td>
+                      <td class="text-center">
+                        <mat-checkbox
+                          [checked]="item.is_active"
+                          (change)="updateSalaryElement(item.id, 'is_active', $event.checked)"
+                          color="primary"
+                        ></mat-checkbox>
+                      </td>
+                      <td class="text-end">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="removeSalaryElement(item.id); $event.stopPropagation()"
+                        >
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <form [formGroup]="formdata" autocomplete="off">
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-card__label">Selected Grade</div>
+              <div class="summary-card__value">{{ formdata.get('grade_name')?.value || 'New Grade' }}</div>
+              <div class="summary-card__meta">Rank {{ formdata.get('rank_order')?.value || 'Not set' }}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card__label">Selected Step</div>
+              <div class="summary-card__value">{{ selectedStepName() }}</div>
+              <div class="summary-card__meta">Amount BDT {{ selectedStepAmountText() }}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card__label">Estimated Gross</div>
+              <div class="summary-card__value">{{ payrollPreview().gross | number: '1.2-2' }}</div>
+              <div class="summary-card__meta">Auto-built from active earning elements</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card__label">Net Pay View</div>
+              <div class="summary-card__value">{{ payrollPreview().netPay | number: '1.2-2' }}</div>
+              <div class="summary-card__meta">Deductions separated from gross</div>
+            </div>
+          </div>
+
+          <div class="row row-group">
+            <div class="col-xl-7 col-lg-12">
+              <div class="form-section-card card">
+                <div class="card-header">
+                  <h4 class="card-header__title mb-0 fw-bold">
+                    <mat-icon class="me-2 align-middle">workspace_premium</mat-icon>
+                    Grade Definition
+                  </h4>
+                </div>
+                <div class="card-body">
+                  <div class="row row-group">
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label required" for="grade_name">Grade Name</label>
+                        <input
+                          type="text"
+                          id="grade_name"
+                          formControlName="grade_name"
+                          class="form-control"
+                          placeholder="e.g. Senior Officer"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="field-group">
+                        <label class="field-label" for="rank_order">Rank Order</label>
+                        <input
+                          type="number"
+                          id="rank_order"
+                          formControlName="rank_order"
+                          class="form-control"
+                          placeholder="1"
+                          step="1"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="field-group">
+                        <label class="field-label" for="grade_id">Grade Code</label>
+                        <input
+                          type="text"
+                          id="grade_id"
+                          formControlName="grade_id"
+                          class="form-control text-uppercase"
+                          placeholder="Auto / optional"
+                          (input)="toUpper('grade_id')"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="field-group">
+                        <label class="field-label" for="min_salary">Minimum Salary</label>
+                        <input
+                          type="number"
+                          id="min_salary"
+                          formControlName="min_salary"
+                          class="form-control"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="field-group">
+                        <label class="field-label" for="max_salary">Maximum Salary</label>
+                        <input
+                          type="number"
+                          id="max_salary"
+                          formControlName="max_salary"
+                          class="form-control"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="field-group">
+                        <label class="field-label">Status</label>
+                        <div class="custom--checkbox">
+                          <mat-checkbox
+                            [checked]="formdata.get('is_active')?.value === 1"
+                            (change)="toggleActive($event)"
+                            color="primary"
+                          >
+                            <span class="field-label mb-0" style="cursor: pointer">Active Grade</span>
+                          </mat-checkbox>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="field-group">
+                        <label class="field-label" for="remarks">Remarks</label>
+                        <textarea
+                          id="remarks"
+                          formControlName="remarks"
+                          class="form-control"
+                          rows="2"
+                          placeholder="Optional internal note"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="field-group mb-3">
-                <label class="field-label" for="remarks">Remarks</label>
-                <textarea
-                  id="remarks"
-                  formControlName="remarks"
-                  class="form-control"
-                  rows="2"
-                ></textarea>
+
+              <div class="form-section-card card mt-3">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                  <div>
+                    <h4 class="card-header__title mb-0 fw-bold">
+                      <mat-icon class="me-2 align-middle">stairs</mat-icon>
+                      Grade Step Matrix
+                    </h4>
+                    <div class="section-note mt-1">Step amounts feed the salary rule master on the right</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addStep()">
+                    <mat-icon class="me-1 align-middle">add</mat-icon>
+                    Add Step
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0 steps-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 48%">Step</th>
+                          <th style="width: 26%">Reference Amount</th>
+                          <th style="width: 18%">Mode</th>
+                          <th class="text-end" style="width: 70px"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (step of model.steps(); track $index) {
+                          <tr [class.is-selected]="selectedStepIndex() === $index" (click)="selectStep($index)">
+                            <td>
+                              <input
+                                type="text"
+                                class="form-control"
+                                [value]="step.step"
+                                (input)="model.updateStep($index, 'step', $any($event.target).value)"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                class="form-control"
+                                [value]="step.amount"
+                                (input)="model.updateStep($index, 'amount', $any($event.target).value)"
+                                step="0.01"
+                              />
+                            </td>
+                            <td>
+                              <span class="badge-soft">
+                                {{ selectedStepIndex() === $index ? (selectedStepConfig().entry_mode === 'gross' ? 'Gross Input' : 'Basic Input') : 'Step Master' }}
+                              </span>
+                            </td>
+                            <td class="text-end">
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                (click)="model.removeStep($index); $event.stopPropagation()"
+                                [disabled]="model.steps().length === 1"
+                              >
+                                <mat-icon>delete</mat-icon>
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
-              <div class="field-group">
-                <label class="field-label">Status</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox
-                    [checked]="formdata.get('is_active')?.value === 1"
-                    (change)="toggleActive($event)"
-                    color="primary"
-                  >
-                    <span class="field-label mb-0" style="cursor: pointer">Active</span>
-                  </mat-checkbox>
+            </div>
+
+            <div class="col-xl-5 col-lg-12">
+              <div class="form-section-card card step-rule-card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                  <div>
+                    <h4 class="card-header__title mb-0 fw-bold">
+                      <mat-icon class="me-2 align-middle">rule</mat-icon>
+                      Step Salary Master
+                    </h4>
+                    <div class="section-note mt-1">
+                      {{ selectedStepName() }} salary logic and derived payroll view
+                    </div>
+                  </div>
+                  <div class="step-selector">
+                    <button
+                      type="button"
+                      [class.active]="selectedStepConfig().entry_mode === 'gross'"
+                      (click)="setStepEntryMode('gross')"
+                    >
+                      Gross Input
+                    </button>
+                    <button
+                      type="button"
+                      [class.active]="selectedStepConfig().entry_mode === 'basic'"
+                      (click)="setStepEntryMode('basic')"
+                    >
+                      Basic Input
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="rule-grid">
+                    <div class="field-group">
+                      <label class="field-label">Basic % of Gross</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [value]="selectedStepConfig().basic_percent_of_gross"
+                        (input)="updateSelectedStepConfig('basic_percent_of_gross', +$any($event.target).value || 0)"
+                        step="0.01"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Working Days</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [value]="selectedStepConfig().working_days"
+                        (input)="updateSelectedStepConfig('working_days', +$any($event.target).value || 0)"
+                        step="1"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Gross Input</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [class.input-readonly]="selectedStepConfig().entry_mode !== 'gross'"
+                        [readOnly]="selectedStepConfig().entry_mode !== 'gross'"
+                        [value]="selectedStepConfig().reference_gross"
+                        (input)="updateSelectedStepConfig('reference_gross', $any($event.target).value === '' ? null : +$any($event.target).value)"
+                        step="0.01"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Basic Input</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [class.input-readonly]="selectedStepConfig().entry_mode !== 'basic'"
+                        [readOnly]="selectedStepConfig().entry_mode !== 'basic'"
+                        [value]="selectedStepConfig().reference_basic"
+                        (input)="updateSelectedStepConfig('reference_basic', $any($event.target).value === '' ? null : +$any($event.target).value)"
+                        step="0.01"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Derived Basic</label>
+                      <input
+                        type="number"
+                        class="form-control input-readonly"
+                        [value]="payrollPreview().basic"
+                        readonly
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Derived Gross</label>
+                      <input
+                        type="number"
+                        class="form-control input-readonly"
+                        [value]="payrollPreview().gross"
+                        readonly
+                      />
+                    </div>
+                    <div class="field-group" style="grid-column: 1 / -1">
+                      <label class="field-label">Step Note</label>
+                      <textarea
+                        class="form-control"
+                        rows="2"
+                        [value]="selectedStepConfig().remarks"
+                        (input)="updateSelectedStepConfig('remarks', $any($event.target).value)"
+                        placeholder="Optional note for this grade step"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <div class="metric-strip">
+                    <div class="metric-pill">
+                      <span class="metric-pill__label">Basic</span>
+                      <span class="metric-pill__value">{{ payrollPreview().basic | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="metric-pill">
+                      <span class="metric-pill__label">Gross</span>
+                      <span class="metric-pill__value">{{ payrollPreview().gross | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="metric-pill">
+                      <span class="metric-pill__label">Deductions</span>
+                      <span class="metric-pill__value">{{ payrollPreview().deductions | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="metric-pill">
+                      <span class="metric-pill__label">Net Pay</span>
+                      <span class="metric-pill__value">{{ payrollPreview().netPay | number: '1.2-2' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-section-card card mt-3">
+                <div class="card-header">
+                  <h4 class="card-header__title mb-0 fw-bold">
+                    <mat-icon class="me-2 align-middle">receipt_long</mat-icon>
+                    Auto-Populated Element Preview
+                  </h4>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0 preview-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 130px">Code</th>
+                          <th style="min-width: 200px">Element</th>
+                          <th style="width: 120px">Category</th>
+                          <th style="width: 110px">Basis</th>
+                          <th style="width: 130px">Calc</th>
+                          <th style="min-width: 180px">Rule</th>
+                          <th class="text-end" style="width: 140px">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of payrollPreview().rows; track row.id) {
+                          <tr>
+                            <td>{{ row.component_id }}</td>
+                            <td>{{ row.component_name }}</td>
+                            <td>
+                              <span [class]="badgeClass(row.category)">{{ categoryLabel(row.category) }}</span>
+                            </td>
+                            <td>{{ basisLabel(row.basis) }}</td>
+                            <td>{{ calcModeLabel(row.calc_mode) }}</td>
+                            <td>{{ row.formula_note || 'Rule-driven amount' }}</td>
+                            <td class="text-end fw-semibold">{{ row.amount | number: '1.2-2' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="preview-footer">
+                    <div class="preview-footer__item">
+                      <span class="preview-footer__label">Gross</span>
+                      <span class="preview-footer__value">{{ payrollPreview().gross | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="preview-footer__item">
+                      <span class="preview-footer__label">Deductions</span>
+                      <span class="preview-footer__value is-danger">{{ payrollPreview().deductions | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="preview-footer__item">
+                      <span class="preview-footer__label">Employer Cost</span>
+                      <span class="preview-footer__value">{{ payrollPreview().employerCost | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="preview-footer__item">
+                      <span class="preview-footer__label">Net Pay</span>
+                      <span class="preview-footer__value is-success">{{ payrollPreview().netPay | number: '1.2-2' }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </form>
+        </form>
+      }
+    </div>
   </div>
 
-  <!-- Pagination footer -->
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  @if (activeTab() === 'grades') {
+    <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  }
 </app-page-form-layout>

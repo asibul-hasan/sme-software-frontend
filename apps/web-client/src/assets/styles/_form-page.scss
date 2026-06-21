@@ -118,7 +118,7 @@
 // Use this wrapper div around mat-checkbox for a consistent bordered
 // checkbox that matches the input field height and hover border color.
 .custom--checkbox {
-  height: 42px;
+  height: 36px;
   border: 1px solid var(--input-border) !important;
   border-radius: 6px;
   padding: 0 12px;
@@ -213,13 +213,16 @@
   // (they collapse into the same grid row and overlap).
   > .card-body {
     overflow: hidden;
-    max-height: 2000px;  // generous upper bound for any realistic card
-    transition: max-height 0.3s ease, padding 0.25s ease, opacity 0.2s ease;
+    max-height: 2000px; // generous upper bound for any realistic card
+    transition:
+      max-height 0.3s ease,
+      padding 0.25s ease,
+      opacity 0.2s ease;
   }
 
   &.is-collapsed {
     > .card-header {
-      border-bottom: 0;       // header looks attached when nothing is below
+      border-bottom: 0; // header looks attached when nothing is below
     }
 
     > .card-header .card-collapse-toggle__chevron {
@@ -259,7 +262,7 @@
   transition: background-color 0.15s ease;
 
   &:hover {
-    background: rgba(var(--indigo-rgb), 0.10);
+    background: rgba(var(--indigo-rgb), 0.1);
   }
 
   &:focus-visible {
@@ -523,7 +526,9 @@
   color: var(--text-secondary);
   opacity: 0.55;
   cursor: help;
-  transition: color 0.15s ease, opacity 0.15s ease;
+  transition:
+    color 0.15s ease,
+    opacity 0.15s ease;
 
   &:hover {
     color: var(--indigo);
@@ -629,7 +634,7 @@
 }
 
 .list-group-item {
-  position: relative;          // anchor for the top-right status dot
+  position: relative; // anchor for the top-right status dot
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -637,11 +642,11 @@
   text-align: left;
   color: var(--text-primary);
   background: var(--card-bg);
-  border: 1px solid var(--border-color) !important;   // permanent border → each row reads as a card
+  border: 1px solid var(--border-color) !important; // permanent border → each row reads as a card
   border-radius: 10px !important;
   padding: 9px 11px !important;
   margin: 0 !important;
-  outline: none !important;          // no boxy focus ring on click
+  outline: none !important; // no boxy focus ring on click
   box-shadow: none;
   transition:
     background 0.16s ease,
@@ -932,40 +937,92 @@
 // All values come from theme tokens → auto-adapt in light/dark mode.
 // ─────────────────────────────────────────────────────────────────
 
-.text-success { color: var(--success) !important; }
-.text-warning { color: var(--warning) !important; }
-.text-danger  { color: var(--danger)  !important; }
-.text-info    { color: var(--info)    !important; }
-.text-purple  { color: var(--purple)  !important; }
-.text-orange  { color: var(--orange)  !important; }
-.text-teal    { color: var(--teal)    !important; }
+.text-success {
+  color: var(--success) !important;
+}
+.text-warning {
+  color: var(--warning) !important;
+}
+.text-danger {
+  color: var(--danger) !important;
+}
+.text-info {
+  color: var(--info) !important;
+}
+.text-purple {
+  color: var(--purple) !important;
+}
+.text-orange {
+  color: var(--orange) !important;
+}
+.text-teal {
+  color: var(--teal) !important;
+}
 
 // `.text-primary` intentionally NOT redeclared here because Bootstrap
 // already ships it. We override it once below to follow the theme token.
-.text-primary { color: var(--primary) !important; }
+.text-primary {
+  color: var(--primary) !important;
+}
 
-.text-muted { color: var(--text-secondary) !important; }
-.text-dark  { color: var(--text-primary)   !important; }
+.text-muted {
+  color: var(--text-secondary) !important;
+}
+.text-dark {
+  color: var(--text-primary) !important;
+}
 
 // Soft tinted backgrounds — adapt automatically via RGB tokens
-.bg-success-soft  { background-color: rgba(var(--success-rgb), 0.10); }
-.bg-warning-soft  { background-color: rgba(var(--warning-rgb), 0.10); }
-.bg-danger-soft   { background-color: rgba(var(--danger-rgb),  0.10); }
-.bg-info-soft     { background-color: rgba(var(--info-rgb),    0.10); }
-.bg-primary-soft  { background-color: rgba(var(--primary-rgb), 0.10); }
-.bg-purple-soft   { background-color: rgba(var(--purple-rgb),  0.10); }
-.bg-orange-soft   { background-color: rgba(var(--orange-rgb),  0.10); }
-.bg-teal-soft     { background-color: rgba(var(--teal-rgb),    0.10); }
+.bg-success-soft {
+  background-color: rgba(var(--success-rgb), 0.1);
+}
+.bg-warning-soft {
+  background-color: rgba(var(--warning-rgb), 0.1);
+}
+.bg-danger-soft {
+  background-color: rgba(var(--danger-rgb), 0.1);
+}
+.bg-info-soft {
+  background-color: rgba(var(--info-rgb), 0.1);
+}
+.bg-primary-soft {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+.bg-purple-soft {
+  background-color: rgba(var(--purple-rgb), 0.1);
+}
+.bg-orange-soft {
+  background-color: rgba(var(--orange-rgb), 0.1);
+}
+.bg-teal-soft {
+  background-color: rgba(var(--teal-rgb), 0.1);
+}
 
 // Backwards-compatible aliases (the dashboard widgets currently use these)
-.bg-success-light { background-color: rgba(var(--success-rgb), 0.10); }
-.bg-warning-light { background-color: rgba(var(--warning-rgb), 0.10); }
-.bg-danger-light  { background-color: rgba(var(--danger-rgb),  0.10); }
-.bg-info-light    { background-color: rgba(var(--info-rgb),    0.10); }
-.bg-primary-light { background-color: rgba(var(--primary-rgb), 0.10); }
-.bg-purple-light  { background-color: rgba(var(--purple-rgb),  0.10); }
-.bg-orange-light  { background-color: rgba(var(--orange-rgb),  0.10); }
-.bg-teal-light    { background-color: rgba(var(--teal-rgb),    0.10); }
+.bg-success-light {
+  background-color: rgba(var(--success-rgb), 0.1);
+}
+.bg-warning-light {
+  background-color: rgba(var(--warning-rgb), 0.1);
+}
+.bg-danger-light {
+  background-color: rgba(var(--danger-rgb), 0.1);
+}
+.bg-info-light {
+  background-color: rgba(var(--info-rgb), 0.1);
+}
+.bg-primary-light {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+.bg-purple-light {
+  background-color: rgba(var(--purple-rgb), 0.1);
+}
+.bg-orange-light {
+  background-color: rgba(var(--orange-rgb), 0.1);
+}
+.bg-teal-light {
+  background-color: rgba(var(--teal-rgb), 0.1);
+}
 
 // ─────────────────────────────────────────────────────────────────
 // UPLOAD / DROPZONE ZONES
@@ -1191,7 +1248,7 @@
   background-color: var(--input-bg) !important;
   border: 1px solid var(--input-border) !important;
   border-radius: 6px !important;
-  min-height: 46px;
+  min-height: 30px;
   color: var(--text-primary) !important;
   font-size: 14.5px !important;
   font-weight: 500 !important;
@@ -1467,7 +1524,7 @@ select option,
 /* ── Multi-select chips: each selected value as a removable grey tag ── */
 .ng-select.ng-select-multiple {
   .ng-value-container {
-    flex-wrap: wrap !important;       // chips wrap onto new rows instead of collapsing
+    flex-wrap: wrap !important; // chips wrap onto new rows instead of collapsing
     align-items: center !important;
     align-content: center !important;
     gap: 5px;
@@ -1496,7 +1553,7 @@ select option,
     line-height: 1.5;
 
     .ng-value-label {
-      order: 1;                       // label first
+      order: 1; // label first
       padding: 1px 7px !important;
       color: var(--text-primary) !important;
       white-space: nowrap;
@@ -1513,7 +1570,9 @@ select option,
       color: var(--text-secondary);
       font-size: 15px;
       line-height: 1;
-      transition: background 0.15s ease, color 0.15s ease;
+      transition:
+        background 0.15s ease,
+        color 0.15s ease;
 
       &:hover {
         background: var(--danger) !important;
@@ -1575,6 +1634,3 @@ select option,
   background: rgba(var(--primary-rgb), 0.1);
   color: var(--primary);
 }
-
-
-

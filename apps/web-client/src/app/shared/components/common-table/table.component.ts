@@ -70,6 +70,17 @@ import { TableViewModalComponent } from './table-view-modal.component';
     .common-table-scroll {
       flex: 1 1 auto;
       min-height: 0;
+      overflow: auto;
+    }
+    .common-table-scroll-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 100%;
+      min-height: 100%;
+    }
+    .common-table-mat {
+      flex: 0 0 auto;
+      min-width: 100%;
     }
     .common-table-search {
       min-height: 30px !important;
@@ -107,11 +118,12 @@ import { TableViewModalComponent } from './table-view-modal.component';
       .mat-mdc-header-cell .mat-sort-header-arrow { color: var(--indigo); }
       /* Column separators in the HEADER only (AG-Grid look) — body stays clean */
       .mat-mdc-header-cell:not(:last-child) {
-        border-right: 1px solid var(--border-color);
+        border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
       }
 
       /* Body rows — comfortable height */
       .mat-mdc-row { min-height: 46px; transition: background 0.12s ease; }
+      .mat-mdc-cell:not(:last-child) { border-right: 1px solid var(--table-header-border, var(--border-color)) !important; }
       .mat-mdc-cell {
         padding: 8px 14px;
         font-size: 13px;
@@ -222,10 +234,15 @@ import { TableViewModalComponent } from './table-view-modal.component';
     .erp-footer-grid {
       flex: 0 0 auto;
       display: grid;
-      overflow: hidden;
+      margin-top: auto;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      overflow: visible;
       background: var(--table-header-bg, var(--bg-secondary)) !important;
       border-top: 1px solid var(--table-header-border, var(--border-color));
       min-height: 38px;
+      min-width: 100%;
     }
     .erp-footer-grid .erp-footer-cell {
       padding: 8px 14px !important;
@@ -237,7 +254,7 @@ import { TableViewModalComponent } from './table-view-modal.component';
       display: flex;
       align-items: center;
       white-space: nowrap;
-      border-right: 1px solid var(--border-color);
+      border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
     }
     .erp-footer-grid .erp-footer-cell:last-child { border-right: none; }
     .erp-footer-grid .erp-footer-cell.text-right { justify-content: flex-end; }

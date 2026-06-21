@@ -30,6 +30,7 @@ export class Hrm1002Component implements OnInit {
     this.model.loadDepartments();
     this.model.loadDesignations();
     this.model.loadEmployees();
+    this.model.loadGrades();
   }
 
   switchTab(tab: 'department' | 'designation'): void {

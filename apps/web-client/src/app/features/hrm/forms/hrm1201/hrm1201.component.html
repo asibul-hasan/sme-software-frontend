@@ -55,12 +55,58 @@
         <div class="col-12">
           <div class="form-section-card card">
             <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">badge</mat-icon>
-                Structure Header
-              </h4>
+              <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">badge</mat-icon>
+                  Structure Header
+                </h4>
+                <button type="button" class="btn-action btn-save" style="height: 32px; padding: 0 12px" (click)="onStartRevision()" [disabled]="model.isRevisionLoading()">
+                  <mat-icon style="font-size:16px;width:16px;height:16px">content_copy</mat-icon>
+                  {{ model.isRevisionLoading() ? 'Loading...' : 'Start Revision' }}
+                </button>
+              </div>
             </div>
             <div class="card-body">
+              @if (model.revisionSource()) {
+                <div class="row row-group mb-2">
+                  <div class="col-12">
+                    <div class="rounded border px-3 py-2" style="background: rgba(99, 102, 241, 0.06); border-color: rgba(99, 102, 241, 0.18) !important;">
+                      <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div>
+                          <div class="small text-muted">Revision Source</div>
+                          <div class="fw-semibold">
+                            Effective from {{ model.revisionSource()?.source_effective_from || model.revisionSource()?.effective_from }}
+                            @if (model.revisionSource()?.source_status != null) {
+                              <span class="ms-2 badge text-bg-light">{{ statusLabel(model.revisionSource()?.source_status || 0) }}</span>
+                            }
+                          </div>
+                        </div>
+                        <div class="d-flex gap-3 flex-wrap">
+                          <div>
+                            <div class="small text-muted">Previous Basic</div>
+                            <div class="fw-semibold">{{ (model.revisionSource()?.source_basic_salary ?? model.revisionSource()?.basic_salary ?? 0) | number: '1.2-2' }}</div>
+                          </div>
+                          <div>
+                            <div class="small text-muted">Previous Gross</div>
+                            <div class="fw-semibold">{{ (model.revisionSource()?.source_gross_salary ?? model.revisionSource()?.gross_salary ?? 0) | number: '1.2-2' }}</div>
+                          </div>
+                          <div>
+                            <div class="small text-muted">Delta</div>
+                            <div class="fw-semibold">
+                              B {{ model.revisionDeltaBasic() | number: '1.2-2' }} | G {{ model.revisionDeltaGross() | number: '1.2-2' }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      @if (model.revisionSource()?.source_revision_reason) {
+                        <div class="small text-muted mt-2">
+                          Previous reason: {{ model.revisionSource()?.source_revision_reason }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
               <div class="row row-group">
                 <div class="col-md-4">
                   <div class="field-group">
@@ -70,6 +116,42 @@
                         <ng-option [value]="emp.employee_no">{{ emp.full_name || emp.first_name }} ({{ emp.employee_id }})</ng-option>
                       }
                     </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="designation_no">Designation</label>
+                    <ng-select id="designation_no" labelForId="designation_no" formControlName="designation_no" [clearable]="false" placeholder="Select designation">
+                      @for (designation of model.designations(); track designation.designation_no) {
+                        <ng-option [value]="designation.designation_no">{{ designation.designation_name }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="grade_no">Grade</label>
+                    <ng-select id="grade_no" labelForId="grade_no" formControlName="grade_no" [clearable]="true" placeholder="Select grade">
+                      @for (grade of model.grades(); track grade.grade_no) {
+                        <ng-option [value]="grade.grade_no">{{ grade.grade_name }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="grade_step_no">Step</label>
+                    <ng-select id="grade_step_no" labelForId="grade_step_no" formControlName="grade_step_no" [clearable]="true" placeholder="Select step">
+                      @for (step of model.gradeSteps(); track step.grade_step_no) {
+                        <ng-option [value]="step.grade_step_no">{{ step.step }} ({{ step.amount | number: '1.2-2' }})</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="basic_salary">Basic Salary</label>
+                    <input type="number" id="basic_salary" formControlName="basic_salary" class="form-control" readonly />
                   </div>
                 </div>
                 <div class="col-md-3">
@@ -92,6 +174,12 @@
                         <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
                       }
                     </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="revision_reason">Revision Reason</label>
+                    <input type="text" id="revision_reason" formControlName="revision_reason" class="form-control" placeholder="Promotion, increment, correction" />
                   </div>
                 </div>
               </div>
@@ -174,6 +262,51 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">history</mat-icon>
+                Employee Structure History
+              </h4>
+            </div>
+            <div class="card-body">
+              @if (model.currentEmployeeHistory().length) {
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>Effective From</th>
+                        <th>Designation</th>
+                        <th>Grade</th>
+                        <th class="text-end">Basic</th>
+                        <th class="text-end">Gross</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of model.currentEmployeeHistory().slice(0, 6); track item.salary_structure_no) {
+                        <tr>
+                          <td>{{ item.effective_from }}</td>
+                          <td>{{ model.designationName(item.designation_no) }}</td>
+                          <td>{{ model.gradeLabel(item.grade_no) }}</td>
+                          <td class="text-end">{{ item.basic_salary || 0 | number: '1.2-2' }}</td>
+                          <td class="text-end">{{ item.gross_salary | number: '1.2-2' }}</td>
+                          <td><span class="list-item-tag" [class.list-item-tag--primary]="item.status === 1">{{ statusLabel(item.status) }}</span></td>
+                          <td>{{ item.revision_reason || '—' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="text-muted small">No structure history for the selected employee yet.</div>
+              }
             </div>
           </div>
         </div>

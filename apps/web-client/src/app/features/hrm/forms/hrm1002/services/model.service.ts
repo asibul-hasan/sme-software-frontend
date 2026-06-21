@@ -7,12 +7,12 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { makePaginator } from '../../../../../core/utils/paginator';
-import { CustomValidators } from '../../../../../core/validators/custom-validators';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
+import { hrmConstants } from '../../../constants/hrm.constants';
 
 /**
- * Department entity — mirrors the `hr_department` table from db-updated.md.
+ * Department entity — mirrors the `HRM_department` table from db-updated.md.
  */
 export interface IDepartment extends BaseEntity {
   department_no: number;
@@ -28,7 +28,7 @@ export interface IDepartment extends BaseEntity {
 }
 
 /**
- * Designation entity — mirrors the `hr_designation` table from db-updated.md.
+ * Designation entity — mirrors the `HRM_designation` table from db-updated.md.
  */
 export interface IDesignation extends BaseEntity {
   designation_no: number;
@@ -36,6 +36,7 @@ export interface IDesignation extends BaseEntity {
   designation_name: string;
   department_no: number;
   job_category?: number | null;
+  grade_no?: number | null;
   grade_level?: string | null;
   hierarchy_rank?: number | null;
   min_salary?: number | null;
@@ -44,6 +45,16 @@ export interface IDesignation extends BaseEntity {
   branch_no?: number | null;
   is_active: number;
   remarks?: string | null;
+}
+
+export interface GradeOption {
+  grade_no: number;
+  grade_id?: string | null;
+  grade_name: string;
+  rank_order?: number | null;
+  min_salary?: number | null;
+  max_salary?: number | null;
+  is_active?: number | null;
 }
 
 @Injectable()
@@ -61,6 +72,9 @@ export class Hrm1002ModelService {
   departments = signal<IDepartment[]>([]);
   designations = signal<IDesignation[]>([]);
   employees   = signal<EmployeeLookup[]>([]);
+  grades      = signal<GradeOption[]>([]);
+
+  readonly jobTypeOptions = hrmConstants.jobTypeOptions;
 
   selectedDeptNo  = signal<number | null>(null);
   selectedDesigNo = signal<number | null>(null);
@@ -74,7 +88,7 @@ export class Hrm1002ModelService {
     return list.filter(
       (d) =>
         d.department_name.toLowerCase().includes(term) ||
-        d.department_id.toLowerCase().includes(term),
+        (d.department_id || '').toLowerCase().includes(term),
     );
   });
 
@@ -85,7 +99,7 @@ export class Hrm1002ModelService {
     return list.filter(
       (d) =>
         d.designation_name.toLowerCase().includes(term) ||
-        d.designation_id.toLowerCase().includes(term),
+        (d.designation_id || '').toLowerCase().includes(term),
     );
   });
 
@@ -100,7 +114,7 @@ export class Hrm1002ModelService {
   initDeptForm(): void {
     this.deptForm = this.fb.group({
       department_no:        [null],
-      department_id:        ['', [Validators.required, Validators.maxLength(20)]],
+      department_id:        ['', [Validators.maxLength(20)]],
       department_name:      ['', [Validators.required, Validators.maxLength(150)]],
       parent_department_no: [null],
       department_head_no:   [null],
@@ -116,20 +130,16 @@ export class Hrm1002ModelService {
     this.desigForm = this.fb.group(
       {
         designation_no:    [null],
-        designation_id:    ['', [Validators.required, Validators.maxLength(20)]],
+        designation_id:    ['', [Validators.maxLength(20)]],
         designation_name:  ['', [Validators.required, Validators.maxLength(150)]],
         department_no:     [null, [Validators.required]],
         job_category:      [null],
-        grade_level:       [''],
+        grade_no:          [null],
         hierarchy_rank:    [null],
-        min_salary:        [null],
-        max_salary:        [null],
-        overtime_eligible: [0],
         branch_no:         [this.authCtx.user()?.branch_no  ?? null],
         is_active:         [1, [Validators.required]],
         remarks:           [''],
       },
-      { validators: [CustomValidators.minMax('min_salary', 'max_salary')] },
     );
   }
 
@@ -180,6 +190,12 @@ export class Hrm1002ModelService {
     });
   }
 
+  loadGrades(): void {
+    this.commApi.getGradeList().subscribe((res) => {
+      if (isSuccess(res) && res.data) this.grades.set(res.data);
+    });
+  }
+
   // ─── Select ────────────────────────────────────────────────────────────────
   selectDept(dept: IDepartment): void {
     this.selectedDeptNo.set(dept.department_no);
@@ -224,11 +240,9 @@ export class Hrm1002ModelService {
               designation_name:  d['designation_name'] ?? d['designationName'],
               department_no:     d['department_no']     ?? d['departmentNo'],
               job_category:      d['job_category']      ?? d['jobCategory'],
+              grade_no:          d['grade_no']          ?? d['gradeNo'],
               grade_level:       d['grade_level']       ?? d['gradeLevel'],
               hierarchy_rank:    d['hierarchy_rank']    ?? d['hierarchyRank'],
-              min_salary:        d['min_salary']        ?? d['minSalary'],
-              max_salary:        d['max_salary']        ?? d['maxSalary'],
-              overtime_eligible: d['overtime_eligible'] ?? d['overtimeEligible'] ?? 0,
               branch_no:         d['branch_no']         ?? d['branchNo'],
               is_active:         d['is_active']         ?? d['isActive'] ?? 1,
               remarks:           d['remarks'],
@@ -271,9 +285,24 @@ export class Hrm1002ModelService {
     this.isSaving.set(true);
     const val = this.desigForm.getRawValue();
     const isUpdate = !!this.selectedDesigNo();
+    const payload = {
+      designation_id: val.designation_id,
+      designation_name: val.designation_name,
+      department_no: val.department_no,
+      job_category: val.job_category,
+      grade_no: val.grade_no,
+      grade_level: this.grades().find((grade) => grade.grade_no === val.grade_no)?.grade_name ?? null,
+      order_sl: val.hierarchy_rank,
+      branch_no: val.branch_no,
+      is_active: val.is_active,
+      remarks: val.remarks,
+      min_salary: null,
+      max_salary: null,
+      is_overtime_eligible: 0,
+    };
     const obs = isUpdate
-      ? this.data.updateDesignation({ ...val, designation_no: this.selectedDesigNo() })
-      : this.data.saveDesignation(val);
+      ? this.data.updateDesignation({ ...payload, designation_no: this.selectedDesigNo()! })
+      : this.data.saveDesignation(payload);
 
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
@@ -333,8 +362,8 @@ export class Hrm1002ModelService {
     this.selectedDesigNo.set(null);
     this.desigForm.reset({
       is_active:         1,
-      overtime_eligible: 0,
       branch_no:         this.authCtx.user()?.branch_no ?? null,
+      grade_no:          null,
     });
   }
 }

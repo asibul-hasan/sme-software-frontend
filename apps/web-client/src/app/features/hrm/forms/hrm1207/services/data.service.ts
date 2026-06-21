@@ -17,6 +17,11 @@ export class Hrm1207DataService {
   loadSettlementDetail(no: number): Observable<ApiResponse<Settlement>> {
     return this.hrService.getDtl<Settlement>('forms/hrm1207/settlements', no);
   }
+  previewSettlement(employeeNo: number, lastWorkingDay: string, branchNo?: number | null): Observable<ApiResponse<Settlement>> {
+    const params: Record<string, string | number> = { employeeNo, lastWorkingDay };
+    if (branchNo != null) params['branchNo'] = branchNo;
+    return this.hrService.getList<Settlement>('forms/hrm1207/settlements/preview', params);
+  }
   saveSettlement(payload: Partial<Settlement>): Observable<ApiResponse<Settlement>> {
     return this.hrService.insert<Settlement>('forms/hrm1207/settlements', payload);
   }

@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
 import { Fin1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
@@ -25,8 +26,9 @@ export interface AccountGroup extends BaseEntity {
 @Injectable()
 export class Fin1002ModelService {
   private fb     = inject(FormBuilder);
-  private data   = inject(Fin1002DataService);
-  private toastr = inject(ToastrService);
+  private data      = inject(Fin1002DataService);
+  private toastr    = inject(ToastrService);
+  private translate = inject(TranslateService);
 
   groups        = signal<AccountGroup[]>([]);
   isLoading     = signal(false);
@@ -103,7 +105,13 @@ export class Fin1002ModelService {
   }
 
   onSave(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); this.toastr.warning('Please correct the errors before saving.'); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      if (this.form.get('account_group_id')?.invalid) { this.toastr.warning(this.translate.instant('accountCodeMissing')); }
+      else if (this.form.get('group_name')?.invalid) { this.toastr.warning(this.translate.instant('groupNameMissing')); }
+      else { this.toastr.warning(this.translate.instant('validationErrors')); }
+      return;
+    }
     this.isSaving.set(true);
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
@@ -111,11 +119,11 @@ export class Fin1002ModelService {
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) {
-          this.toastr.success(isUpdate ? 'Account group updated' : 'Account group created');
+          this.toastr.success(this.translate.instant(isUpdate ? 'common.updateSuccess' : 'common.saveSuccess'));
           this.load(isUpdate ? this.selectedNo() : (res.data?.account_group_no ?? null));
-        } else { this.toastr.error(res.message || 'Save failed'); }
+        } else { this.toastr.error(res.message || this.translate.instant('common.saveFail')); }
       },
-      error: (err) => this.toastr.error(err?.error?.message || 'Server error during save'),
+      error: (err) => this.toastr.error(err?.error?.message || this.translate.instant('common.saveFail')),
     });
   }
 
@@ -125,10 +133,10 @@ export class Fin1002ModelService {
     this.isLoading.set(true);
     this.data.remove(no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: (res) => {
-        if (isSuccess(res)) { this.toastr.success('Account group deleted'); this.load(null); }
-        else { this.toastr.error(res.message || 'Delete failed'); }
+        if (isSuccess(res)) { this.toastr.success(this.translate.instant('common.deleteSuccess')); this.load(null); }
+        else { this.toastr.error(res.message || this.translate.instant('common.deleteFail')); }
       },
-      error: (err) => this.toastr.error(err?.error?.message || 'Server error during delete'),
+      error: (err) => this.toastr.error(err?.error?.message || this.translate.instant('common.deleteFail')),
     });
   }
 

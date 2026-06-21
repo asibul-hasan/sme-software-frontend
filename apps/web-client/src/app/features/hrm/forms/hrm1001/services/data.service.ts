@@ -2,10 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HrmDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IEmployee } from './model.service';
+import { GradeOption, IEmployee } from './model.service';
 
 /**
- * Form-level HTTP service for HR1001 – Employee Management.
+ * Form-level HTTP service for Hrm1001 – Employee Management.
  */
 @Injectable()
 export class Hrm1001DataService {
@@ -19,8 +19,16 @@ export class Hrm1001DataService {
     return this.hrService.getEmployeeDtl(employeeNo) as Observable<ApiResponse<IEmployee>>;
   }
 
+  loadGrades(): Observable<ApiResponse<GradeOption[]>> {
+    return this.hrService.getList<GradeOption[]>('forms/hrm1004/grades');
+  }
+
   saveEmployee(payload: Partial<IEmployee>): Observable<ApiResponse<IEmployee>> {
     return this.hrService.insertEmployee(payload) as Observable<ApiResponse<IEmployee>>;
+  }
+
+  bulkImportEmployees(payload: Partial<IEmployee>[]): Observable<ApiResponse<IEmployee[]>> {
+    return this.hrService.insert<IEmployee[]>('employees/bulk', payload);
   }
 
   updateEmployee(payload: Partial<IEmployee>): Observable<ApiResponse<IEmployee>> {

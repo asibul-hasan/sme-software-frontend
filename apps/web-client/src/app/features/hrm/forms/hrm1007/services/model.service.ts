@@ -15,12 +15,19 @@ export interface SalaryComponent extends BaseEntity {
   component_type: number;
   calc_type: number;
   calc_value?: number | null;
+  formula_expression?: string | null;
+  base_component_no?: number | null;
+  is_proratable?: number | null;
+  is_attendance_dependent?: number | null;
+  is_regular?: number | null;
   is_taxable: number;
   affects_net: number;
   is_statutory: number;
   country_code?: string | null;
   gl_account_code?: string | null;
   display_order?: number | null;
+  rounding_mode?: number | null;
+  rounding_scale?: number | null;
   branch_no?: number | null;
   remarks?: string | null;
   is_active: number;
@@ -68,12 +75,19 @@ export class Hrm1007ModelService {
       component_type:  [1, [Validators.required]],
       calc_type:       [1, [Validators.required]],
       calc_value:      [null, [Validators.min(0)]],
+      formula_expression: [null],
+      base_component_no: [null],
+      is_proratable:   [1],
+      is_attendance_dependent: [0],
+      is_regular:      [1],
       is_taxable:      [1],
       affects_net:     [1],
       is_statutory:    [0],
       country_code:    [null],
       gl_account_code: [''],
       display_order:   [null],
+      rounding_mode:   [2],
+      rounding_scale:  [2, [Validators.min(0)]],
       remarks:         [''],
       is_active:       [1],
     });
@@ -112,12 +126,19 @@ export class Hrm1007ModelService {
             component_type:  d['component_type'] ?? 1,
             calc_type:       d['calc_type'] ?? 1,
             calc_value:      d['calc_value'],
+            formula_expression: d['formula_expression'],
+            base_component_no: d['base_component_no'],
+            is_proratable:   d['is_proratable'] ?? 1,
+            is_attendance_dependent: d['is_attendance_dependent'] ?? 0,
+            is_regular:      d['is_regular'] ?? 1,
             is_taxable:      d['is_taxable'] ?? 1,
             affects_net:     d['affects_net'] ?? 1,
             is_statutory:    d['is_statutory'] ?? 0,
             country_code:    d['country_code'],
             gl_account_code: d['gl_account_code'],
             display_order:   d['display_order'],
+            rounding_mode:   d['rounding_mode'] ?? 2,
+            rounding_scale:  d['rounding_scale'] ?? 2,
             remarks:         d['remarks'],
             is_active:       d['is_active'],
           });
@@ -144,12 +165,19 @@ export class Hrm1007ModelService {
       component_type:  val.component_type,
       calc_type:       val.calc_type,
       calc_value:      val.calc_value,
+      formula_expression: val.formula_expression,
+      base_component_no: val.base_component_no,
+      is_proratable:   val.is_proratable ? 1 : 0,
+      is_attendance_dependent: val.is_attendance_dependent ? 1 : 0,
+      is_regular:      val.is_regular ? 1 : 0,
       is_taxable:      val.is_taxable ? 1 : 0,
       affects_net:     val.affects_net ? 1 : 0,
       is_statutory:    val.is_statutory ? 1 : 0,
       country_code:    val.country_code,
       gl_account_code: val.gl_account_code,
       display_order:   val.display_order,
+      rounding_mode:   val.rounding_mode,
+      rounding_scale:  val.rounding_scale,
       branch_no:       this.currentBranchNo,
       remarks:         val.remarks,
       is_active:       val.is_active,
@@ -195,9 +223,16 @@ export class Hrm1007ModelService {
     this.form?.reset({
       component_type: 1,
       calc_type: 1,
+      formula_expression: null,
+      base_component_no: null,
+      is_proratable: 1,
+      is_attendance_dependent: 0,
+      is_regular: 1,
       is_taxable: 1,
       affects_net: 1,
       is_statutory: 0,
+      rounding_mode: 2,
+      rounding_scale: 2,
       is_active: 1,
     });
   }

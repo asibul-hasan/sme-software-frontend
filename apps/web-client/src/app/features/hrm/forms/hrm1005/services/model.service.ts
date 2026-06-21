@@ -47,7 +47,7 @@ export class Hrm1005ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const filtered = this.leaveTypes()
-      .filter((t) => t.leave_type_name.toLowerCase().includes(term) || t.leave_type_id.toLowerCase().includes(term));
+      .filter((t) => t.leave_type_name.toLowerCase().includes(term) || (t.leave_type_id || '').toLowerCase().includes(term));
     if (this.sortDirection() === '') return filtered;
     const sorted = [...filtered].sort((a, b) => (a.leave_type_id || '').localeCompare(b.leave_type_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
@@ -60,7 +60,7 @@ export class Hrm1005ModelService {
   initForm(): void {
     this.form = this.fb.group({
       leave_type_no:          [null],
-      leave_type_id:          ['', [Validators.required, Validators.maxLength(20)]],
+      leave_type_id:          ['', [Validators.maxLength(20)]],
       leave_type_name:        ['', [Validators.required, Validators.maxLength(100)]],
       is_paid:                [1],
       accrual_method:         [1, [Validators.required]],

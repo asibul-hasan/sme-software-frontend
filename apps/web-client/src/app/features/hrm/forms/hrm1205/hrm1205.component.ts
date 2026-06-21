@@ -25,12 +25,14 @@ export class Hrm1205Component implements OnInit {
   private alertService     = inject(AlertService);
 
   readonly bonusTypes = hrmConstants.bonusTypes;
+  readonly bonusCalculationTypes = hrmConstants.bonusCalculationTypes;
+  readonly bonusApplicabilityOptions = hrmConstants.bonusApplicabilityOptions;
   readonly statusOptions = hrmConstants.payrollStatuses;
 
   // ── Bonus lines grid (shared common-table per the fixed-table rule) ──────────
   readonly lineColumns: ColumnDef[] = [
     { title: 'Employee',     field: 'employee_name', sort: true, cellType: 'text' },
-    { title: 'Base Salary',  field: 'base_salary',   cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
+    { title: 'Basis Amount', field: 'base_salary',   cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
     { title: 'Bonus Amount', field: 'bonus_amount',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
   ];
   readonly lineConfig: Partial<TableConfig> = {
@@ -47,6 +49,7 @@ export class Hrm1205Component implements OnInit {
     setTimeout(() => {
       this.permissionService.useLocalPermissions('HRM_1205');
       this.model.loadEmployees();
+      this.model.loadDesignations();
       this.model.loadRuns();
     });
   }
@@ -81,6 +84,8 @@ export class Hrm1205Component implements OnInit {
   toUpper(c: string): void { const ctrl = this.formdata.get(c); if (ctrl?.value) ctrl.setValue(ctrl.value.toUpperCase(), { emitEvent: false }); }
 
   bonusTypeLabel(v?: number | null): string { return this.bonusTypes.find((t) => t.value === v)?.label ?? ''; }
+  calculationTypeLabel(v?: number | null): string { return this.bonusCalculationTypes.find((t) => t.value === v)?.label ?? ''; }
+  applicabilityLabel(v?: number | null): string { return this.bonusApplicabilityOptions.find((t) => t.value === v)?.label ?? ''; }
   statusLabel(v: number): string { return this.statusOptions.find((s) => s.value === v)?.label ?? String(v); }
   statusClass(v: number): string {
     return (v === 3 || v === 4) ? 'list-item-tag--primary' : v === 5 ? 'list-item-tag--warning' : '';

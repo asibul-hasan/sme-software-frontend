@@ -28,6 +28,8 @@ export class Hrm1007Component implements OnInit {
 
   readonly calcTypes = hrmConstants.salaryCalcTypes;
 
+  readonly roundingModes = hrmConstants.roundingModes;
+
   ngOnInit(): void {
     this.model.initForm();
     setTimeout(() => {

@@ -201,7 +201,11 @@ export class TreeViewComponent {
     );
     const keep = new Set<TreeId>();
     for (const r of rows) {
-      const hay = `${r[cfg.labelField] ?? ''} ${cfg.sublabelField ? r[cfg.sublabelField] ?? '' : ''}`.toLowerCase();
+      const lbl = typeof cfg.labelField === 'function' ? cfg.labelField(r) : String(r[cfg.labelField] ?? '');
+      const sub = cfg.sublabelField
+        ? (typeof cfg.sublabelField === 'function' ? cfg.sublabelField(r) : String(r[cfg.sublabelField] ?? ''))
+        : '';
+      const hay = `${lbl} ${sub}`.toLowerCase();
       if (!hay.includes(term)) continue;
       // include the match and walk up to every ancestor
       let cur: Record<string, unknown> | undefined = r;
@@ -323,11 +327,16 @@ export class TreeViewComponent {
 
   // ── Cell helpers ────────────────────────────────────────────────────────────
   label(row: Record<string, unknown>): string {
-    return String(row[this.config().labelField] ?? '');
+    const f = this.config().labelField;
+    return typeof f === 'function' ? f(row) : String(row[f] ?? '');
   }
   sublabel(row: Record<string, unknown>): string {
     const f = this.config().sublabelField;
-    return f ? String(row[f] ?? '') : '';
+    if (!f) return '';
+    return typeof f === 'function' ? f(row) : String(row[f] ?? '');
+  }
+  statusDot(row: Record<string, unknown>): boolean | null {
+    return this.config().statusDot?.(row) ?? null;
   }
   badge(row: Record<string, unknown>): TreeBadge | null {
     return this.config().badge?.(row) ?? null;

@@ -7,7 +7,7 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
-import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
+import { CommonDataService, DesignationLookup, EmployeeLookup } from '../../../../../shared/services/common-data.service';
 
 export interface BonusLine {
   bonus_line_no: number;
@@ -22,7 +22,10 @@ export interface BonusRun extends BaseEntity {
   bonus_id: string;
   bonus_name: string;
   bonus_type?: number | null;
+  bonus_date?: string | null;
   bonus_period?: string | null;
+  calculation_type?: number | null;
+  applicability_type?: number | null;
   percentage_of_basic?: number | null;
   fixed_amount?: number | null;
   total_amount?: number | null;
@@ -31,6 +34,8 @@ export interface BonusRun extends BaseEntity {
   branch_no?: number | null;
   is_active: number;
   row_version: number;
+  selected_designation_nos?: number[] | null;
+  selected_employee_nos?: number[] | null;
   lines?: BonusLine[];
 }
 
@@ -49,6 +54,7 @@ export class Hrm1205ModelService {
 
   runs          = signal<BonusRun[]>([]);
   employees     = signal<EmployeeLookup[]>([]);
+  designations  = signal<DesignationLookup[]>([]);
   lines         = signal<BonusLine[]>([]);
   isLoading     = signal(false);
   isSaving      = signal(false);
@@ -59,6 +65,9 @@ export class Hrm1205ModelService {
 
   /** Status: 1=Draft 2=Calculated 3=Approved 4=Paid 5=Cancelled. Editable while Draft/Calculated. */
   readonly isEditable = computed(() => this.status() === 1 || this.status() === 2);
+  readonly applicabilityType = computed(() => Number(this.form?.get('applicability_type')?.value ?? 1));
+  readonly isDesignationWise = computed(() => this.applicabilityType() === 2);
+  readonly isEmployeeWise = computed(() => this.applicabilityType() === 3);
 
   employeeName(no?: number | null): string {
     if (no == null) return '';
@@ -85,15 +94,34 @@ export class Hrm1205ModelService {
       bonus_id:            ['', [Validators.required, Validators.maxLength(30)]],
       bonus_name:          ['', [Validators.required, Validators.maxLength(120)]],
       bonus_type:          [1],
+      bonus_date:          ['', [Validators.required]],
       bonus_period:        [''],
+      calculation_type:    [1, [Validators.required]],
+      applicability_type:  [1, [Validators.required]],
       percentage_of_basic: [0, [Validators.min(0)]],
       fixed_amount:        [0, [Validators.min(0)]],
+      selected_designation_nos: [[]],
+      selected_employee_nos: [[]],
       is_active:           [1],
+    });
+
+    this.form.get('applicability_type')?.valueChanges.subscribe((value) => {
+      const applicability = Number(value ?? 1);
+      if (applicability !== 2) {
+        this.form.patchValue({ selected_designation_nos: [] }, { emitEvent: false });
+      }
+      if (applicability !== 3) {
+        this.form.patchValue({ selected_employee_nos: [] }, { emitEvent: false });
+      }
     });
   }
 
   loadEmployees(): void {
     this.commApi.getEmployeeList().subscribe({ next: (r) => { if (isSuccess(r) && r.data) this.employees.set(r.data); } });
+  }
+
+  loadDesignations(): void {
+    this.commApi.getDesignationList().subscribe({ next: (r) => { if (isSuccess(r) && r.data) this.designations.set(r.data); } });
   }
 
   loadRuns(reselectNo?: number | null): void {
@@ -128,9 +156,14 @@ export class Hrm1205ModelService {
             bonus_id:            d.bonus_id,
             bonus_name:          d.bonus_name,
             bonus_type:          d.bonus_type ?? 1,
+            bonus_date:          d.bonus_date ?? '',
             bonus_period:        d.bonus_period,
+            calculation_type:    d.calculation_type ?? 1,
+            applicability_type:  d.applicability_type ?? 1,
             percentage_of_basic: d.percentage_of_basic ?? 0,
             fixed_amount:        d.fixed_amount ?? 0,
+            selected_designation_nos: d.selected_designation_nos ?? [],
+            selected_employee_nos: d.selected_employee_nos ?? [],
             is_active:           d.is_active,
           });
         }
@@ -193,6 +226,17 @@ export class Hrm1205ModelService {
     this.selectedNo.set(null);
     this.status.set(1);
     this.lines.set([]);
-    this.form?.reset({ bonus_type: 1, percentage_of_basic: 0, fixed_amount: 0, is_active: 1 });
+    const today = new Date().toISOString().slice(0, 10);
+    this.form?.reset({
+      bonus_type: 1,
+      bonus_date: today,
+      calculation_type: 1,
+      applicability_type: 1,
+      percentage_of_basic: 0,
+      fixed_amount: 0,
+      selected_designation_nos: [],
+      selected_employee_nos: [],
+      is_active: 1,
+    });
   }
 }

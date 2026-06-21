@@ -30,14 +30,10 @@ export class Fin1002Component implements OnInit {
   readonly treeConfig: TreeViewConfig = {
     idField: 'account_group_no',
     parentField: 'parent_group_no',
-    labelField: 'group_name',
-    sublabelField: 'account_group_id',
+    labelField: (row) => `${row['account_group_id']} ${row['group_name']}`,
+    statusDot: (row) => row['is_active'] === 1,
     emptyText: 'No account groups found',
     emptyIcon: 'account_tree',
-    badge: (row) => ({
-      label: this.rootLabel(row['root_type'] as number | null),
-      variant: row['is_active'] === 1 ? 'primary' : 'neutral',
-    }),
     icon: ({ hasChildren, expanded }) => hasChildren ? (expanded ? 'folder_open' : 'folder') : 'account_tree',
   };
 

@@ -14,6 +14,7 @@ export interface Shift extends BaseEntity {
   shift_name: string;
   start_time: string;
   end_time: string;
+  effective_date?: string | null;
   grace_minutes?: number | null;
   half_day_minutes?: number | null;
   break_minutes?: number | null;
@@ -48,7 +49,7 @@ export class Hrm1003ModelService {
   filteredShifts = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const filtered = this.shifts()
-      .filter((s) => s.shift_name.toLowerCase().includes(term) || s.shift_id.toLowerCase().includes(term));
+      .filter((s) => s.shift_name.toLowerCase().includes(term) || (s.shift_id || '').toLowerCase().includes(term));
     if (this.sortDirection() === '') return filtered;
     const sorted = [...filtered].sort((a, b) => (a.shift_id || '').localeCompare(b.shift_id || ''));
     return this.sortDirection() === 'asc' ? sorted : [...sorted].reverse();
@@ -61,8 +62,9 @@ export class Hrm1003ModelService {
   initForm(): void {
     this.form = this.fb.group({
       shift_no:         [null],
-      shift_id:         ['', [Validators.required, Validators.maxLength(20)]],
+      shift_id:         ['', [Validators.maxLength(20)]],
       shift_name:       ['', [Validators.required, Validators.maxLength(100)]],
+      effective_date:   [null],
       start_time:       ['09:00', [Validators.required]],
       end_time:         ['18:00', [Validators.required]],
       grace_minutes:    [0, [Validators.min(0)]],
@@ -105,6 +107,7 @@ export class Hrm1003ModelService {
             shift_no:         d['shift_no'],
             shift_id:         d['shift_id'],
             shift_name:       d['shift_name'],
+            effective_date:   d['effective_date'],
             start_time:       (d['start_time'] as string ?? '').slice(0, 5),
             end_time:         (d['end_time'] as string ?? '').slice(0, 5),
             grace_minutes:    d['grace_minutes'],
@@ -135,13 +138,14 @@ export class Hrm1003ModelService {
       shift_no:         val.shift_no,
       shift_id:         val.shift_id,
       shift_name:       val.shift_name,
+      effective_date:   val.effective_date,
       start_time:       val.start_time,
       end_time:         val.end_time,
       grace_minutes:    val.grace_minutes,
       half_day_minutes: val.half_day_minutes,
       break_minutes:    val.break_minutes,
       weekly_off_mask:  val.weekly_off_mask,
-      is_night_shift:   val.is_night_shift ? 1 : 0,
+      is_night_shift:   0,
       branch_no:        this.currentBranchNo,
       remarks:          val.remarks,
       is_active:        val.is_active,

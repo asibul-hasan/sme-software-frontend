@@ -49,7 +49,7 @@
             [class.status-dot--inactive]="dept.is_active !== 1"
             [title]="dept.is_active === 1 ? 'Active' : 'Inactive'"
           ></span>
-          <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ dept.department_id }}</h6>
+          <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ dept.department_id || 'Auto code' }}</h6>
           <p class="list-item-subtitle mb-0 text-truncate">{{ dept.department_name }}</p>
         </button>
       }
@@ -81,7 +81,7 @@
                 <div class="row row-group">
                   <div class="col-md-4">
                     <div class="field-group">
-                      <label class="field-label required" for="dept_id">Department Code</label>
+                      <label class="field-label" for="dept_id">Department Code</label>
                       <input type="text" id="dept_id" formControlName="department_id"
                         class="form-control text-uppercase" placeholder="e.g. HR-001" />
                     </div>
@@ -217,7 +217,7 @@
             [class.status-dot--inactive]="desig.is_active !== 1"
             [title]="desig.is_active === 1 ? 'Active' : 'Inactive'"
           ></span>
-          <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ desig.designation_id }}</h6>
+          <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ desig.designation_id || 'Auto code' }}</h6>
           <p class="list-item-subtitle mb-0 text-truncate">{{ desig.designation_name }}</p>
           @if (desig.grade_level) {
             <div class="list-item-meta">
@@ -254,7 +254,7 @@
                 <div class="row row-group">
                   <div class="col-md-4">
                     <div class="field-group">
-                      <label class="field-label required" for="desig_id">Designation Code</label>
+                      <label class="field-label" for="desig_id">Designation Code</label>
                       <input type="text" id="desig_id" formControlName="designation_id"
                         class="form-control text-uppercase" placeholder="e.g. MGR-001" />
                     </div>
@@ -280,8 +280,12 @@
                   <div class="col-md-6">
                     <div class="field-group">
                       <label class="field-label" for="desig_grade">Grade Level</label>
-                      <input type="text" id="desig_grade" formControlName="grade_level"
-                        class="form-control" placeholder="e.g. L5" />
+                      <ng-select id="desig_grade" labelForId="desig_grade"
+                        formControlName="grade_no"
+                        [items]="model.grades()"
+                        bindLabel="grade_name" bindValue="grade_no"
+                        placeholder="Select grade level" [clearable]="true">
+                      </ng-select>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -293,15 +297,20 @@
                   </div>
                   <div class="col-md-6">
                     <div class="field-group">
-                      <label class="field-label" for="job_category">Job Category</label>
-                      <input type="number" id="job_category" formControlName="job_category"
-                        class="form-control" placeholder="Category code" />
+                      <label class="field-label" for="job_category">Job Type</label>
+                      <ng-select id="job_category" labelForId="job_category"
+                        formControlName="job_category"
+                        [items]="model.jobTypeOptions"
+                        bindLabel="label" bindValue="value"
+                        placeholder="Select job type" [clearable]="true">
+                      </ng-select>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
+            @if (false) {
             <!-- Salary Band -->
             <div class="form-section-card card mt-3">
               <div class="card-header">
@@ -342,6 +351,7 @@
                 </div>
               </div>
             </div>
+            }
           </div>
 
           <!-- Settings Panel -->

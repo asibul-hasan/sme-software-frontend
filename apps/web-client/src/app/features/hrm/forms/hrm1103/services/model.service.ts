@@ -1,10 +1,10 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { finalize } from 'rxjs';
-import { Hrm1103DataService } from './data.service';
+import { finalize, forkJoin, Observable } from 'rxjs';
+import { Hrm1103DataService, ShiftLookup } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
-import { isSuccess } from '../../../../../core/models/response.model';
+import { ApiResponse, isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
 import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
@@ -42,6 +42,7 @@ export class Hrm1103ModelService {
 
   adjustments   = signal<Adjustment[]>([]);
   employees     = signal<EmployeeLookup[]>([]);
+  shifts        = signal<ShiftLookup[]>([]);
   isLoading     = signal(false);
   isSaving      = signal(false);
   searchTerm    = signal('');
@@ -73,9 +74,11 @@ export class Hrm1103ModelService {
   initForm(): void {
     this.form = this.fb.group({
       adjustment_no:    [null],
-      employee_no:      [null, [Validators.required]],
+      employee_nos:     [[], [Validators.required]],
       att_date:         [new Date().toISOString().split('T')[0], [Validators.required]],
       requested_status: [1, [Validators.required]],
+      use_shift_in:     [false],
+      use_shift_out:    [false],
       requested_in:     [null],
       requested_out:    [null],
       reason:           ['', [Validators.required]],
@@ -86,6 +89,9 @@ export class Hrm1103ModelService {
   loadEmployees(): void {
     this.commApi.getEmployeeList({ is_active: 1 }).subscribe({
       next: (res) => { if (isSuccess(res) && res.data) this.employees.set(res.data); },
+    });
+    this.data.loadShifts().subscribe({
+      next: (res) => { if (isSuccess(res) && res.data) this.shifts.set(res.data.filter((s) => s.is_active === 1)); },
     });
   }
 
@@ -118,9 +124,11 @@ export class Hrm1103ModelService {
           this.status.set(d.status);
           this.form.patchValue({
             adjustment_no:    d.adjustment_no,
-            employee_no:      d.employee_no,
+            employee_nos:     [d.employee_no],
             att_date:         (d.att_date ?? '').slice(0, 10),
             requested_status: d.requested_status ?? 1,
+            use_shift_in:     false,
+            use_shift_out:    false,
             requested_in:     (d.requested_in as string ?? '')?.slice(0, 5) || null,
             requested_out:    (d.requested_out as string ?? '')?.slice(0, 5) || null,
             reason:           d.reason,
@@ -141,9 +149,9 @@ export class Hrm1103ModelService {
     this.isSaving.set(true);
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
-    const payload = {
+    const employeeNos: number[] = Array.isArray(val.employee_nos) ? val.employee_nos : [val.employee_nos].filter(Boolean);
+    const basePayload = {
       adjustment_no:    val.adjustment_no,
-      employee_no:      val.employee_no,
       att_date:         val.att_date,
       requested_status: val.requested_status,
       requested_in:     val.requested_in || null,
@@ -152,15 +160,18 @@ export class Hrm1103ModelService {
       branch_no:        this.currentBranchNo,
       is_active:        val.is_active,
     };
-    const obs = isUpdate ? this.data.updateAdjustment(this.selectedNo()!, payload) : this.data.saveAdjustment(payload);
+    const obs: Observable<ApiResponse<Adjustment> | ApiResponse<Adjustment>[]> = isUpdate
+      ? this.data.updateAdjustment(this.selectedNo()!, { ...basePayload, employee_no: employeeNos[0] })
+      : forkJoin(employeeNos.map((employee_no) => this.data.saveAdjustment({ ...basePayload, employee_no })));
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
-        if (isSuccess(res)) {
+        const ok = Array.isArray(res) ? res.every(isSuccess) : isSuccess(res);
+        if (ok) {
           this.toastr.success(isUpdate ? 'Adjustment updated' : 'Adjustment requested');
-          const savedNo = isUpdate ? this.selectedNo() : (res.data?.adjustment_no ?? null);
+          const savedNo = isUpdate || Array.isArray(res) ? this.selectedNo() : (res.data?.adjustment_no ?? null);
           this.loadAdjustments(savedNo);
         } else {
-          this.toastr.error(res.message || 'Save failed');
+          this.toastr.error('Save failed');
         }
       },
       error: () => this.toastr.error('Server error during save'),
@@ -207,8 +218,24 @@ export class Hrm1103ModelService {
     this.status.set(1);
     this.form?.reset({
       att_date: new Date().toISOString().split('T')[0],
+      employee_nos: [],
       requested_status: 1,
+      use_shift_in: false,
+      use_shift_out: false,
       is_active: 1,
     });
+  }
+
+  toggleShiftTime(kind: 'in' | 'out', checked: boolean): void {
+    const shift = this.shifts()[0];
+    if (kind === 'in') {
+      this.form.get('use_shift_in')?.setValue(checked, { emitEvent: false });
+      if (checked) this.form.get('requested_in')?.setValue((shift?.start_time || '09:00').slice(0, 5));
+      checked ? this.form.get('requested_in')?.disable({ emitEvent: false }) : this.form.get('requested_in')?.enable({ emitEvent: false });
+    } else {
+      this.form.get('use_shift_out')?.setValue(checked, { emitEvent: false });
+      if (checked) this.form.get('requested_out')?.setValue((shift?.end_time || '18:00').slice(0, 5));
+      checked ? this.form.get('requested_out')?.disable({ emitEvent: false }) : this.form.get('requested_out')?.enable({ emitEvent: false });
+    }
   }
 }

@@ -1,8 +1,8 @@
 <app-page-form-layout
-  title="Employee Setup"
+  title="{{ 'employeeSetup' | translate }}"
   icon="people"
   [recordsCount]="model.filteredEmployees().length"
-  sidebarTitle="Employees"
+  sidebarTitle="{{ 'employees' | translate }}"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="model.searchTerm.set($event)"
   (save)="onSave()"
@@ -23,8 +23,12 @@
         bindLabel="department_name"
         bindValue="department_no"
         [ngModel]="model.filterDeptNo()"
-        (ngModelChange)="model.filterDeptNo.set($event); model.filterDesigNo.set(null); model.pager.reset()"
-        placeholder="All Departments"
+        (ngModelChange)="
+          model.filterDeptNo.set($event);
+          model.filterDesigNo.set(null);
+          model.pager.reset()
+        "
+        placeholder="{{ 'allDepartments' | translate }}"
         [clearable]="true"
       ></ng-select>
     </div>
@@ -35,7 +39,7 @@
         bindValue="designation_no"
         [ngModel]="model.filterDesigNo()"
         (ngModelChange)="model.filterDesigNo.set($event); model.pager.reset()"
-        placeholder="All Designations"
+        placeholder="{{ 'allDesignations' | translate }}"
         [clearable]="true"
       ></ng-select>
     </div>
@@ -43,11 +47,11 @@
       <ng-select
         [ngModel]="model.filterStatus()"
         (ngModelChange)="model.filterStatus.set($event); model.pager.reset()"
-        placeholder="All Status"
+        placeholder="{{ 'allStatus' | translate }}"
         [clearable]="true"
       >
-        <ng-option [value]="1">Active</ng-option>
-        <ng-option [value]="0">Inactive</ng-option>
+        <ng-option [value]="1">{{ 'active' | translate }}</ng-option>
+        <ng-option [value]="0">{{ 'inactive' | translate }}</ng-option>
       </ng-select>
     </div>
   </div>
@@ -68,11 +72,21 @@
           [class.status-dot--inactive]="emp.is_active !== 1"
           [title]="emp.is_active === 1 ? 'Active' : 'Inactive'"
         ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ emp.employee_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ emp.first_name }} {{ emp.last_name }}</p>
+        <h6
+          class="list-item-title mb-0 text-truncate"
+          style="padding-right: 16px"
+        >
+          {{ emp.employee_id }}
+        </h6>
+        <p class="list-item-subtitle mb-0 text-truncate">
+          {{ emp.first_name }} {{ emp.last_name }}
+        </p>
         @if (emp.mobile_number) {
           <div class="list-item-meta">
-            <span class="list-item-chip"><mat-icon>call</mat-icon><span>{{ emp.mobile_number }}</span></span>
+            <span class="list-item-chip"
+              ><mat-icon>call</mat-icon
+              ><span>{{ emp.mobile_number }}</span></span
+            >
           </div>
         }
       </button>
@@ -80,97 +94,191 @@
     @if (model.filteredEmployees().length === 0) {
       <div class="list-empty-state">
         <mat-icon>people</mat-icon>
-        <p>No employees found</p>
+        <p>{{ 'noEmployeesFound' | translate }}</p>
       </div>
     }
   </div>
 
   <!-- Sidebar Footer: pagination (fixed at the bottom of the sidebar) -->
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 
   <!-- Main Form -->
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
+      @if (model.importErrors().length) {
+        <div class="alert alert-danger py-2 mb-2">
+          <div class="fw-bold mb-1">Import validation failed</div>
+          @for (error of model.importErrors(); track error) {
+            <div class="small">{{ error }}</div>
+          }
+        </div>
+      }
       <div class="row row-group">
-
         <!-- ── LEFT COLUMN ─────────────────────────────────────────── -->
         <div class="col-xl-8 col-lg-12">
-
           <!-- Basic Information -->
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">person</mat-icon>
-                Basic Information
+                {{ 'basicInfo' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label required" for="employee_id">Employee ID</label>
-                    <input type="text" id="employee_id" formControlName="employee_id"
-                      class="form-control text-uppercase" placeholder="e.g. EMP-001" />
+                    <label class="field-label required" for="employee_id">{{
+                      'employeeId' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="employee_id"
+                      formControlName="employee_id"
+                      class="form-control text-uppercase"
+                      [placeholder]="'egEmp001' | translate"
+                    />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label required" for="first_name">First Name</label>
-                    <input type="text" id="first_name" formControlName="first_name"
-                      class="form-control" placeholder="First name" />
+                    <label class="field-label required" for="first_name">{{
+                      'firstName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="first_name"
+                      formControlName="first_name"
+                      class="form-control"
+                      [placeholder]="'firstName' | translate"
+                    />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="middle_name">Middle Name</label>
-                    <input type="text" id="middle_name" formControlName="middle_name"
-                      class="form-control" placeholder="Middle name" />
+                    <label class="field-label" for="middle_name">{{
+                      'middleName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="middle_name"
+                      formControlName="middle_name"
+                      class="form-control"
+                      [placeholder]="'middleName' | translate"
+                    />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="last_name">Last Name</label>
-                    <input type="text" id="last_name" formControlName="last_name"
-                      class="form-control" placeholder="Last name" />
+                    <label class="field-label" for="last_name">{{
+                      'lastName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="last_name"
+                      formControlName="last_name"
+                      class="form-control"
+                      [placeholder]="'lastName' | translate"
+                    />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label required" for="date_of_birth">Date of Birth</label>
-                    <input type="date" id="date_of_birth" formControlName="date_of_birth"
-                      class="form-control" />
+                    <label class="field-label required" for="date_of_birth">{{
+                      'dateOfBirth' | translate
+                    }}</label>
+                    <input
+                      type="date"
+                      id="date_of_birth"
+                      formControlName="date_of_birth"
+                      class="form-control"
+                    />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="gender">Gender</label>
-                    <ng-select id="gender" labelForId="gender"
+                    <label class="field-label" for="gender">{{
+                      'gender' | translate
+                    }}</label>
+                    <ng-select
+                      id="gender"
+                      labelForId="gender"
                       formControlName="gender"
                       [items]="genderOptions"
-                      bindLabel="label" bindValue="value"
-                      placeholder="Select gender" [clearable]="true">
+                      bindLabel="label"
+                      bindValue="value"
+                      [placeholder]="'gender' | translate"
+                      [clearable]="true"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="marital_status">Marital Status</label>
-                    <ng-select id="marital_status" labelForId="marital_status"
+                    <label class="field-label" for="marital_status">{{
+                      'maritalStatus' | translate
+                    }}</label>
+                    <ng-select
+                      id="marital_status"
+                      labelForId="marital_status"
                       formControlName="marital_status"
                       [items]="maritalStatusOptions"
-                      bindLabel="label" bindValue="value"
-                      placeholder="Select" [clearable]="true">
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="Select"
+                      [clearable]="true"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label" for="blood_group">Blood Group</label>
-                    <ng-select id="blood_group" labelForId="blood_group"
+                    <label class="field-label" for="blood_group">{{
+                      'bloodGroup' | translate
+                    }}</label>
+                    <ng-select
+                      id="blood_group"
+                      labelForId="blood_group"
                       formControlName="blood_group"
                       [items]="bloodGroups"
-                      placeholder="Select" [clearable]="true">
+                      placeholder="Select"
+                      [clearable]="true"
+                    >
                     </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="highest_education">{{
+                      'highestEducation' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="highest_education"
+                      formControlName="highest_education"
+                      class="form-control"
+                      [placeholder]="'egEducation' | translate"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label" for="report"
+                      >{{ 'profileReport' | translate }}
+                    </label>
+                    <button
+                      type="button"
+                      class="employee-ops-btn"
+                      [disabled]="!model.selectedEmployeeNo()"
+                      (click)="exportProfilePdf()"
+                      [title]="'exportEmployeeProfilePdf' | translate"
+                    >
+                      <mat-icon>picture_as_pdf</mat-icon>
+                      <span>{{ 'exportPdf' | translate }}</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -178,11 +286,11 @@
           </div>
 
           <!-- Identity Documents -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">badge</mat-icon>
-                Identity Documents
+                {{ 'identityDocuments' | translate }}
               </h4>
             </div>
             <div class="card-body">
@@ -194,30 +302,58 @@
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="nid_number">NID Number</label>
-                    <input type="text" id="nid_number" formControlName="nid_number"
-                      class="form-control" placeholder="National ID Number" />
+                    <label class="field-label" for="nid_number">{{
+                      'nidNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="nid_number"
+                      formControlName="nid_number"
+                      class="form-control"
+                      [placeholder]="'nidNumberPlaceholder' | translate"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="passport_number">Passport Number</label>
-                    <input type="text" id="passport_number" formControlName="passport_number"
-                      class="form-control" placeholder="Passport Number" />
+                    <label class="field-label" for="passport_number">{{
+                      'passportNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="passport_number"
+                      formControlName="passport_number"
+                      class="form-control"
+                      [placeholder]="'passportNumberPlaceholder' | translate"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="birth_certificate_no">Birth Certificate No.</label>
-                    <input type="text" id="birth_certificate_no" formControlName="birth_certificate_no"
-                      class="form-control" placeholder="Birth Certificate No." />
+                    <label class="field-label" for="birth_certificate_no">{{
+                      'birthCertificateNo' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="birth_certificate_no"
+                      formControlName="birth_certificate_no"
+                      class="form-control"
+                      placeholder="Birth Certificate No."
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="tin_number">TIN Number</label>
-                    <input type="text" id="tin_number" formControlName="tin_number"
-                      class="form-control" placeholder="Tax Identification Number" />
+                    <label class="field-label" for="tin_number">{{
+                      'tinNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="tin_number"
+                      formControlName="tin_number"
+                      class="form-control"
+                      placeholder="Tax Identification Number"
+                    />
                   </div>
                 </div>
               </div>
@@ -225,81 +361,207 @@
           </div>
 
           <!-- Employment Details -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">work</mat-icon>
-                Employment Details
+                {{ 'employmentDetails' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="department_no">Department</label>
-                    <ng-select id="department_no" labelForId="department_no"
+                    <label class="field-label required" for="department_no">{{
+                      'department' | translate
+                    }}</label>
+                    <ng-select
+                      id="department_no"
+                      labelForId="department_no"
                       formControlName="department_no"
                       [items]="model.departments()"
-                      bindLabel="department_name" bindValue="department_no"
-                      placeholder="Select department" [clearable]="false">
+                      bindLabel="department_name"
+                      bindValue="department_no"
+                      placeholder="{{ 'selectDepartment' | translate }}"
+                      [clearable]="false"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="designation_no">Designation</label>
-                    <ng-select id="designation_no" labelForId="designation_no"
+                    <label class="field-label required" for="designation_no">{{
+                      'designation' | translate
+                    }}</label>
+                    <ng-select
+                      id="designation_no"
+                      labelForId="designation_no"
                       formControlName="designation_no"
                       [items]="model.formDesignations()"
-                      bindLabel="designation_name" bindValue="designation_no"
-                      placeholder="Select designation" [clearable]="false">
+                      bindLabel="designation_name"
+                      bindValue="designation_no"
+                      placeholder="{{ 'selectDesignation' | translate }}"
+                      [clearable]="false"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                @if (model.requiresGrade()) {
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label required" for="grade_no">{{
+                        'grade' | translate
+                      }}</label>
+                      <ng-select
+                        id="grade_no"
+                        labelForId="grade_no"
+                        formControlName="grade_no"
+                        [items]="model.availableGrades()"
+                        bindLabel="grade_name"
+                        bindValue="grade_no"
+                        placeholder="{{ 'selectGrade' | translate }}"
+                        [clearable]="false"
+                      >
+                      </ng-select>
+                    </div>
+                  </div>
+                }
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="reporting_to">Reporting To</label>
-                    <ng-select id="reporting_to" labelForId="reporting_to"
+                    <label class="field-label required" for="salary"
+                      >Salary</label
+                    >
+                    <input
+                      type="number"
+                      id="salary"
+                      formControlName="salary"
+                      class="form-control"
+                      placeholder="0.00"
+                      min="0"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="reporting_to">{{
+                      'reportingTo' | translate
+                    }}</label>
+                    <ng-select
+                      id="reporting_to"
+                      labelForId="reporting_to"
                       formControlName="reporting_to"
                       [items]="model.employees()"
-                      bindLabel="full_name" bindValue="employee_no"
-                      placeholder="Select supervisor" [clearable]="true">
+                      bindLabel="full_name"
+                      bindValue="employee_no"
+                      placeholder="{{ 'selectManager' | translate }}"
+                      [clearable]="true"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                @if (model.shouldShowContractType()) {
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label class="field-label required" for="contract_type">{{
+                        'contractType' | translate
+                      }}</label>
+                      <ng-select
+                        id="contract_type"
+                        labelForId="contract_type"
+                        formControlName="contract_type"
+                        [items]="contractTypeOptions"
+                        bindLabel="label"
+                        bindValue="value"
+                        placeholder="Select contract type"
+                        [clearable]="false"
+                      >
+                      </ng-select>
+                    </div>
+                  </div>
+                }
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="joining_date">Joining Date</label>
-                    <input type="date" id="joining_date" formControlName="joining_date"
-                      class="form-control" />
+                    <label class="field-label required" for="joining_date">{{
+                      'joiningDate' | translate
+                    }}</label>
+                    <input
+                      type="date"
+                      id="joining_date"
+                      formControlName="joining_date"
+                      class="form-control"
+                    />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="confirmation_date">Confirmation Date</label>
-                    <input type="date" id="confirmation_date" formControlName="confirmation_date"
-                      class="form-control" />
+                    <label class="field-label" for="confirmation_date">{{
+                      'confirmationDate' | translate
+                    }}</label>
+                    <input
+                      type="date"
+                      id="confirmation_date"
+                      formControlName="confirmation_date"
+                      class="form-control"
+                    />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="employment_type">Employment Type</label>
-                    <ng-select id="employment_type" labelForId="employment_type"
+                    <label class="field-label" for="employment_type">{{
+                      'employmentType' | translate
+                    }}</label>
+                    <ng-select
+                      id="employment_type"
+                      labelForId="employment_type"
                       formControlName="employment_type"
                       [items]="employmentTypeOptions"
-                      bindLabel="label" bindValue="value"
-                      placeholder="Select type" [clearable]="true">
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="Select type"
+                      [clearable]="true"
+                    >
                     </ng-select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label">System Access</label>
+                    <label class="field-label" for="taxpayer_class">{{
+                      'taxpayerClass' | translate
+                    }}</label>
+                    <ng-select
+                      id="taxpayer_class"
+                      labelForId="taxpayer_class"
+                      formControlName="taxpayer_class"
+                      [items]="taxpayerClassOptions"
+                      bindLabel="label"
+                      bindValue="value"
+                      placeholder="Select taxpayer class"
+                      [clearable]="false"
+                    >
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="field-group">
+                    <label class="field-label" for="is_create_user">{{
+                      'createUserAccount' | translate
+                    }}</label>
                     <div class="custom--checkbox">
-                      <mat-checkbox color="primary"
-                        [checked]="model.form.get('is_create_user')?.value === 1"
-                        (change)="model.form.get('is_create_user')?.setValue($event.checked ? 1 : 0)">
-                        <span class="field-label mb-0" style="cursor: pointer">Create login user — username &amp; initial password = Employee ID</span>
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="
+                          model.form.get('is_create_user')?.value === 1
+                        "
+                        (change)="
+                          model.form
+                            .get('is_create_user')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                      >
+                        <span class="field-label mb-0" style="cursor: pointer"
+                          >Create login user — username &amp; initial password =
+                          Employee ID</span
+                        >
                       </mat-checkbox>
                     </div>
                   </div>
@@ -308,8 +570,78 @@
             </div>
           </div>
 
+          @if (model.shouldShowContractSection()) {
+            <div class="form-section-card card mt-2">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">assignment</mat-icon>
+                  {{ 'contractInformation' | translate }}
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="contract_start_date">{{
+                        'contractStart' | translate
+                      }}</label>
+                      <input
+                        type="date"
+                        id="contract_start_date"
+                        formControlName="contract_start_date"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="contract_end_date">{{
+                        'contractEnd' | translate
+                      }}</label>
+                      <input
+                        type="date"
+                        id="contract_end_date"
+                        formControlName="contract_end_date"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="contract_amount">{{
+                        'contractAmount' | translate
+                      }}</label>
+                      <input
+                        type="number"
+                        id="contract_amount"
+                        formControlName="contract_amount"
+                        class="form-control"
+                        placeholder="0.00"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label class="field-label" for="contract_notes">{{
+                        'contractNotes' | translate
+                      }}</label>
+                      <input
+                        type="text"
+                        id="contract_notes"
+                        formControlName="contract_notes"
+                        class="form-control"
+                        placeholder="Optional notes"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
           <!-- Address -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">home</mat-icon>
@@ -317,82 +649,243 @@
               </h4>
             </div>
             <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-10">
-                  <div class="field-group">
-                    <label class="field-label required" for="present_address">Present Address</label>
-                    <textarea id="present_address" formControlName="present_address"
-                      class="form-control" rows="2" placeholder="Current living address"></textarea>
+              <div class="address-grid">
+                <div class="address-panel">
+                  <h5 class="address-panel__title">
+                    {{ 'presentAddress' | translate }}
+                  </h5>
+                  <div class="row row-group">
+                    <div class="col-md-12">
+                      <div class="field-group">
+                        <label
+                          class="field-label required"
+                          for="present_road_village"
+                          >{{ 'roadVillage' | translate }}</label
+                        >
+                        <input
+                          type="text"
+                          id="present_road_village"
+                          formControlName="present_road_village"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="present_post_office">{{
+                          'postOffice' | translate
+                        }}</label>
+                        <input
+                          type="text"
+                          id="present_post_office"
+                          formControlName="present_post_office"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="present_thana">{{
+                          'thana' | translate
+                        }}</label>
+                        <input
+                          type="text"
+                          id="present_thana"
+                          formControlName="present_thana"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="present_zilla">{{
+                          'zilla' | translate
+                        }}</label>
+                        <input
+                          type="text"
+                          id="present_zilla"
+                          formControlName="present_zilla"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="present_division">{{
+                          'division' | translate
+                        }}</label>
+                        <input
+                          type="text"
+                          id="present_division"
+                          formControlName="present_division"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group mb-0">
+                        <label class="field-label" for="present_post_code">{{
+                          'postCode' | translate
+                        }}</label>
+                        <input
+                          type="text"
+                          id="present_post_code"
+                          formControlName="present_post_code"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label" for="present_post_code">Post Code</label>
-                    <input type="text" id="present_post_code" formControlName="present_post_code"
-                      class="form-control" placeholder="1207" />
-                  </div>
-                </div>
-                <div class="col-md-10">
-                  <div class="field-group">
-                    <label class="field-label" for="permanent_address">Permanent Address</label>
-                    <textarea id="permanent_address" formControlName="permanent_address"
-                      class="form-control" rows="2" placeholder="Permanent / hometown address"></textarea>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label" for="permanent_post_code">Post Code</label>
-                    <input type="text" id="permanent_post_code" formControlName="permanent_post_code"
-                      class="form-control" placeholder="1000" />
+
+                <button
+                  type="button"
+                  class="address-copy-btn"
+                  (click)="model.copyPresentToPermanent()"
+                  title="Copy present address to permanent address"
+                >
+                  <mat-icon>arrow_forward</mat-icon>
+                </button>
+
+                <div class="address-panel">
+                  <h5 class="address-panel__title">
+                    {{ 'permanentAddress' | translate }}
+                  </h5>
+                  <div class="row row-group">
+                    <div class="col-md-12">
+                      <div class="field-group">
+                        <label
+                          class="field-label"
+                          for="permanent_road_village"
+                          >{{ 'roadVillage' | translate }}</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_road_village"
+                          formControlName="permanent_road_village"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="permanent_post_office"
+                          >Post Office</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_post_office"
+                          formControlName="permanent_post_office"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="permanent_thana"
+                          >Thana / Police Station</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_thana"
+                          formControlName="permanent_thana"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="permanent_zilla"
+                          >Zilla / District</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_zilla"
+                          formControlName="permanent_zilla"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group">
+                        <label class="field-label" for="permanent_division"
+                          >Division / State</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_division"
+                          formControlName="permanent_division"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="field-group mb-0">
+                        <label class="field-label" for="permanent_post_code"
+                          >Post Code</label
+                        >
+                        <input
+                          type="text"
+                          id="permanent_post_code"
+                          formControlName="permanent_post_code"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Salary & Contract -->
-          <div class="form-section-card card mt-3">
+          <!-- Previous Work History -->
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">payments</mat-icon>
-                Salary &amp; Contract
+                <mat-icon class="me-2 align-middle">history</mat-icon>
+                {{ 'previousWorkHistory' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label required" for="salary">Salary</label>
-                    <input type="number" id="salary" formControlName="salary"
-                      class="form-control" placeholder="0.00" min="0" />
+                    <label class="field-label" for="is_experienced">{{
+                      'hasPreviousExperience' | translate
+                    }}</label>
+                    <div class="custom--checkbox">
+                      <mat-checkbox
+                        color="primary"
+                        [checked]="
+                          model.form.get('is_experienced')?.value === 1
+                        "
+                        (change)="
+                          model.form
+                            .get('is_experienced')
+                            ?.setValue($event.checked ? 1 : 0)
+                        "
+                      >
+                        <span
+                          class="field-label mb-0"
+                          style="cursor: pointer"
+                          >{{ 'experiencedEmployee' | translate }}</span
+                        >
+                      </mat-checkbox>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                   <div class="field-group">
-                    <label class="field-label" for="contract_start_date">Contract Start</label>
-                    <input type="date" id="contract_start_date" formControlName="contract_start_date"
-                      class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="contract_end_date">Contract End</label>
-                    <input type="date" id="contract_end_date" formControlName="contract_end_date"
-                      class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="contract_amount">Contract Amount</label>
-                    <input type="number" id="contract_amount" formControlName="contract_amount"
-                      class="form-control" placeholder="0.00" min="0" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="contract_notes">Contract Notes</label>
-                    <input type="text" id="contract_notes" formControlName="contract_notes"
-                      class="form-control" placeholder="Optional notes" />
+                    <label class="field-label" for="experience_duration">{{
+                      'employmentPeriodSummary' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="experience_duration"
+                      formControlName="experience_duration"
+                      class="form-control"
+                      placeholder="e.g. 3 years as Accounts Officer"
+                    />
                   </div>
                 </div>
               </div>
@@ -400,58 +893,99 @@
           </div>
 
           <!-- Banking Details -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">account_balance</mat-icon>
-                Banking Details
+                {{ 'bankingDetails' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="bank_name">Bank Name</label>
-                    <input type="text" id="bank_name" formControlName="bank_name"
-                      class="form-control" placeholder="e.g. BRAC Bank" />
+                    <label class="field-label" for="bank_name">{{
+                      'bankName' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="bank_name"
+                      formControlName="bank_name"
+                      class="form-control"
+                      placeholder="e.g. BRAC Bank"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="bank_branch">Bank Branch</label>
-                    <input type="text" id="bank_branch" formControlName="bank_branch"
-                      class="form-control" placeholder="Branch name" />
+                    <label class="field-label" for="bank_branch">{{
+                      'bankBranch' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="bank_branch"
+                      formControlName="bank_branch"
+                      class="form-control"
+                      placeholder="Branch name"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="bank_account_no">Account Number</label>
-                    <input type="text" id="bank_account_no" formControlName="bank_account_no"
-                      class="form-control" placeholder="Account number" />
+                    <label class="field-label" for="bank_account_no">{{
+                      'accountNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="bank_account_no"
+                      formControlName="bank_account_no"
+                      class="form-control"
+                      placeholder="Account number"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="routing_number">Routing Number</label>
-                    <input type="text" id="routing_number" formControlName="routing_number"
-                      class="form-control" placeholder="Routing / SWIFT" />
+                    <label class="field-label" for="routing_number">{{
+                      'routingNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="routing_number"
+                      formControlName="routing_number"
+                      class="form-control"
+                      placeholder="Routing / SWIFT"
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="mfs_provider">MFS Provider</label>
-                    <ng-select id="mfs_provider" labelForId="mfs_provider"
+                    <label class="field-label" for="mfs_provider">{{
+                      'mfsProvider' | translate
+                    }}</label>
+                    <ng-select
+                      id="mfs_provider"
+                      labelForId="mfs_provider"
                       formControlName="mfs_provider"
                       [items]="mfsProviders"
-                      placeholder="bKash, Nagad…" [clearable]="true">
+                      placeholder="bKash, Nagad…"
+                      [clearable]="true"
+                    >
                     </ng-select>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="mfs_number">MFS Number</label>
-                    <input type="text" id="mfs_number" formControlName="mfs_number"
-                      class="form-control" placeholder="Mobile wallet number" />
+                    <label class="field-label" for="mfs_number">{{
+                      'mfsNumber' | translate
+                    }}</label>
+                    <input
+                      type="text"
+                      id="mfs_number"
+                      formControlName="mfs_number"
+                      class="form-control"
+                      placeholder="Mobile wallet number"
+                    />
                   </div>
                 </div>
               </div>
@@ -461,9 +995,298 @@
 
         <!-- ── RIGHT COLUMN ────────────────────────────────────────── -->
         <div class="col-xl-4 col-lg-12">
+          <!-- Employee Photo -->
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">image</mat-icon>
+                {{ 'bulkEmployeeImport' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="col-md-12">
+                <div class="field-group">
+                  <!-- <label class="field-label" for="bulk_import">Bulk Employee Import</label> -->
+                  <div class="bulk-import-panel">
+                    <button
+                      type="button"
+                      class="employee-ops-btn bulk-import-template-btn"
+                      (click)="model.downloadImportTemplate()"
+                      [title]="'downloadImportTemplate' | translate"
+                    >
+                      <mat-icon>download</mat-icon>
+                      <!-- <span>Download Template</span> -->
+                    </button>
+
+                    <div class="bulk-import-upload-wrapper">
+                      @if (!model.selectedImportFile()) {
+                        <label
+                          class="bulk-import-upload-card"
+                          for="employeeImportInput"
+                          [class.disabled]="model.isImporting()"
+                          [title]="'uploadEmployeeImportFile' | translate"
+                        >
+                          <div
+                            class="bulk-import-upload-content"
+                            style="justify-content: center; width: 100%"
+                          >
+                            <div
+                              style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                              "
+                            >
+                              <span class="upload-heading">{{
+                                model.isImporting()
+                                  ? ('validatingFile' | translate)
+                                  : ('uploadExcelFile' | translate)
+                              }}</span>
+                              <!-- <small>.xlsx or .xls</small> -->
+                            </div>
+                          </div>
+                          <div class="bulk-import-upload-action">
+                            <mat-icon>add</mat-icon>
+                          </div>
+                        </label>
+                      } @else {
+                        <div class="bulk-import-upload-card has-file">
+                          <div class="bulk-import-upload-content">
+                            <span
+                              class="upload-heading text-truncate"
+                              [title]="model.selectedImportFile()?.name"
+                              >{{ model.selectedImportFile()?.name }}</span
+                            >
+                          </div>
+                          <button
+                            type="button"
+                            class="bulk-import-clear-btn"
+                            (click)="
+                              model.clearSelectedImportFile();
+                              employeeImportInput.value = ''
+                            "
+                            [title]="'clearSelectedFile' | translate"
+                          >
+                            <mat-icon>close</mat-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    <button
+                      type="button"
+                      class="employee-ops-btn bulk-import-action-btn"
+                      [disabled]="
+                        !model.selectedImportFile() ||
+                        model.isImporting() ||
+                        model.importErrors().length > 0
+                      "
+                      (click)="model.importEmployees()"
+                      [title]="'uploadAndImport' | translate"
+                    >
+                      <mat-icon style="margin: 0">upload</mat-icon>
+                    </button>
+                  </div>
+
+                  <input
+                    #employeeImportInput
+                    id="employeeImportInput"
+                    type="file"
+                    hidden
+                    accept=".xlsx,.xls"
+                    (change)="model.handleImportFile($event)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">image</mat-icon>
+                {{ 'employeePhoto' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              @if (model.form.get('photo_url')?.value) {
+                <!-- Photo preview -->
+                <div class="logo-preview-box mb-3">
+                  <img
+                    [src]="model.form.get('photo_url')?.value"
+                    alt="Employee photo"
+                  />
+                </div>
+                <!-- Actions -->
+                <div class="d-flex gap-2">
+                  <label
+                    class="btn btn-sm btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                    style="cursor: pointer"
+                  >
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px"
+                      >swap_horiz</mat-icon
+                    >
+                    {{ 'change' | translate }}
+                    <input
+                      type="file"
+                      class="d-none"
+                      accept="image/jpeg,image/png"
+                      (change)="model.handleImageUpload($event, 'photo_url')"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                    (click)="model.clearImage('photo_url')"
+                  >
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px"
+                      >delete_outline</mat-icon
+                    >
+                    {{ 'remove' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <!-- Photo upload zone -->
+                <div
+                  class="logo-drop-zone"
+                  [class.drag-over]="isPhotoDragActive()"
+                  (drop)="onPhotoDrop($event)"
+                  (dragover)="onPhotoDragOver($event)"
+                  (dragleave)="onPhotoDragLeave($event)"
+                >
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    [disabled]="model.isLoading()"
+                    (change)="model.handleImageUpload($event, 'photo_url')"
+                  />
+                  <mat-icon
+                    style="
+                      font-size: 36px;
+                      width: 36px;
+                      height: 36px;
+                      opacity: 0.35;
+                    "
+                    >{{
+                      isPhotoDragActive()
+                        ? 'file_download'
+                        : 'add_photo_alternate'
+                    }}</mat-icon
+                  >
+                  <div
+                    class="text-center text-secondary"
+                    style="font-size: 12px; line-height: 1.5"
+                  >
+                    @if (isPhotoDragActive()) {
+                      {{ 'dropToUpload' | translate }}
+                    } @else {
+                      <span class="text-primary fw-semibold">{{
+                        'clickToUpload' | translate
+                      }}</span>
+                      {{ 'dragAndDropJpgPng' | translate }}
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Employee Signature -->
+          <div class="form-section-card card mt-2">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">edit</mat-icon>
+                {{ 'employeeSignature' | translate }}
+              </h4>
+            </div>
+            <div class="card-body">
+              @if (model.form.get('signature_url')?.value) {
+                <!-- Signature preview -->
+                <div class="logo-preview-box mb-3">
+                  <img
+                    [src]="model.form.get('signature_url')?.value"
+                    alt="Employee signature"
+                  />
+                </div>
+                <!-- Actions -->
+                <div class="d-flex gap-2">
+                  <label
+                    class="btn btn-sm btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                    style="cursor: pointer"
+                  >
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px"
+                      >swap_horiz</mat-icon
+                    >
+                    {{ 'change' | translate }}
+                    <input
+                      type="file"
+                      class="d-none"
+                      accept="image/png"
+                      (change)="
+                        model.handleImageUpload($event, 'signature_url')
+                      "
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                    (click)="model.clearImage('signature_url')"
+                  >
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px"
+                      >delete_outline</mat-icon
+                    >
+                    {{ 'remove' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <!-- Signature upload zone -->
+                <div
+                  class="logo-drop-zone"
+                  [class.drag-over]="isSignatureDragActive()"
+                  (drop)="onSignatureDrop($event)"
+                  (dragover)="onSignatureDragOver($event)"
+                  (dragleave)="onSignatureDragLeave($event)"
+                >
+                  <input
+                    type="file"
+                    accept="image/png"
+                    [disabled]="model.isLoading()"
+                    (change)="model.handleImageUpload($event, 'signature_url')"
+                  />
+                  <mat-icon
+                    style="
+                      font-size: 36px;
+                      width: 36px;
+                      height: 36px;
+                      opacity: 0.35;
+                    "
+                    >{{
+                      isSignatureDragActive()
+                        ? 'file_download'
+                        : 'add_photo_alternate'
+                    }}</mat-icon
+                  >
+                  <div
+                    class="text-center text-secondary"
+                    style="font-size: 12px; line-height: 1.5"
+                  >
+                    @if (isSignatureDragActive()) {
+                      Drop to upload
+                    } @else {
+                      <span class="text-primary fw-semibold"
+                        >Click to upload</span
+                      >
+                      or drag &amp; drop<br />
+                      PNG · max 300 KB
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
 
           <!-- Contact & Communication -->
-          <div class="form-section-card card">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">contact_phone</mat-icon>
@@ -472,81 +1295,257 @@
             </div>
             <div class="card-body">
               <div class="field-group mb-3">
-                <label class="field-label required" for="mobile_number">Mobile Number</label>
-                <input type="text" id="mobile_number" formControlName="mobile_number"
-                  class="form-control" placeholder="+880 1XXX-XXXXXX" />
+                <label class="field-label required" for="mobile_number">{{
+                  'mobileNumber' | translate
+                }}</label>
+                <input
+                  type="text"
+                  id="mobile_number"
+                  formControlName="mobile_number"
+                  class="form-control"
+                  placeholder="+880 1XXX-XXXXXX"
+                />
               </div>
               <div class="field-group mb-3">
-                <label class="field-label" for="alternative_mobile_number">Alt. Mobile</label>
-                <input type="text" id="alternative_mobile_number" formControlName="alternative_mobile_number"
-                  class="form-control" placeholder="Alternative number" />
+                <label class="field-label" for="alternative_mobile_number">{{
+                  'alternativeMobile' | translate
+                }}</label>
+                <input
+                  type="text"
+                  id="alternative_mobile_number"
+                  formControlName="alternative_mobile_number"
+                  class="form-control"
+                  placeholder="Alternative number"
+                />
               </div>
               <div class="field-group mb-3">
-                <label class="field-label" for="official_email">Official Email</label>
-                <input type="email" id="official_email" formControlName="official_email"
-                  class="form-control" placeholder="name@company.com" />
+                <label class="field-label" for="official_email">{{
+                  'officialEmail' | translate
+                }}</label>
+                <input
+                  type="email"
+                  id="official_email"
+                  formControlName="official_email"
+                  class="form-control"
+                  placeholder="name@company.com"
+                />
               </div>
               <div class="field-group">
-                <label class="field-label" for="personal_email">Personal Email</label>
-                <input type="email" id="personal_email" formControlName="personal_email"
-                  class="form-control" placeholder="personal@email.com" />
+                <label class="field-label" for="personal_email">{{
+                  'personalEmail' | translate
+                }}</label>
+                <input
+                  type="email"
+                  id="personal_email"
+                  formControlName="personal_email"
+                  class="form-control"
+                  placeholder="personal@email.com"
+                />
               </div>
             </div>
           </div>
 
           <!-- Emergency Contact -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">emergency</mat-icon>
-                Emergency Contact
+                {{ 'emergencyContact' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="field-group mb-3">
-                <label class="field-label required" for="emergency_contact_name">Name</label>
-                <input type="text" id="emergency_contact_name" formControlName="emergency_contact_name"
-                  class="form-control" placeholder="Contact person name" />
+                <label
+                  class="field-label required"
+                  for="emergency_contact_name"
+                  >{{ 'emergencyContactName' | translate }}</label
+                >
+                <input
+                  type="text"
+                  id="emergency_contact_name"
+                  formControlName="emergency_contact_name"
+                  class="form-control"
+                  placeholder="Contact person name"
+                />
               </div>
               <div class="field-group mb-3">
-                <label class="field-label required" for="emergency_contact_number">Phone</label>
-                <input type="text" id="emergency_contact_number" formControlName="emergency_contact_number"
-                  class="form-control" placeholder="Emergency phone number" />
+                <label
+                  class="field-label required"
+                  for="emergency_contact_number"
+                  >{{ 'emergencyContactNumber' | translate }}</label
+                >
+                <input
+                  type="text"
+                  id="emergency_contact_number"
+                  formControlName="emergency_contact_number"
+                  class="form-control"
+                  placeholder="Emergency phone number"
+                />
               </div>
               <div class="field-group">
-                <label class="field-label" for="emergency_contact_relation">Relation</label>
-                <input type="text" id="emergency_contact_relation" formControlName="emergency_contact_relation"
-                  class="form-control" placeholder="e.g. Spouse, Parent" />
+                <label class="field-label" for="emergency_contact_relation">{{
+                  'relation' | translate
+                }}</label>
+                <input
+                  type="text"
+                  id="emergency_contact_relation"
+                  formControlName="emergency_contact_relation"
+                  class="form-control"
+                  placeholder="e.g. Spouse, Parent"
+                />
               </div>
             </div>
           </div>
 
           <!-- Settings -->
-          <div class="form-section-card card mt-3">
+          <div class="form-section-card card mt-2">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">settings</mat-icon>
-                Settings
+                {{ 'settings' | translate }}
               </h4>
             </div>
             <div class="card-body">
               <div class="field-group mb-3">
-                <label class="field-label required" for="is_active">Status</label>
-                <ng-select id="is_active" labelForId="is_active"
-                  formControlName="is_active" [clearable]="false">
-                  <ng-option [value]="1">Active</ng-option>
-                  <ng-option [value]="0">Inactive</ng-option>
+                <label class="field-label required" for="is_active">{{
+                  'status' | translate
+                }}</label>
+                <ng-select
+                  id="is_active"
+                  labelForId="is_active"
+                  formControlName="is_active"
+                  [clearable]="false"
+                >
+                  <ng-option [value]="1">{{ 'active' | translate }}</ng-option>
+                  <ng-option [value]="0">{{
+                    'inactive' | translate
+                  }}</ng-option>
                 </ng-select>
               </div>
               <div class="field-group">
-                <label class="field-label" for="remarks">Remarks</label>
-                <textarea id="remarks" formControlName="remarks"
-                  class="form-control" rows="3" placeholder="Optional remarks"></textarea>
+                <label class="field-label" for="remarks">{{
+                  'remarks' | translate
+                }}</label>
+                <textarea
+                  id="remarks"
+                  formControlName="remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Optional remarks"
+                ></textarea>
               </div>
             </div>
           </div>
-        </div>
 
+          <!-- Documents & Bulk Operations -->
+          <!-- <div class="form-section-card card mt-2 employee-ops-card">
+            <div class="employee-ops-card__header">
+              <div class="employee-ops-card__title">
+                <span class="employee-ops-card__icon"
+                  ><mat-icon>folder_managed</mat-icon></span
+                >
+                <div>
+                  <h4 class="mb-0 fw-bold">Employee Documents</h4>
+                  <p class="mb-0">
+                    Profile template, PDF output and controlled bulk import.
+                  </p>
+                </div>
+              </div>
+              <span class="employee-ops-card__badge">
+                {{
+                  model.selectedEmployeeNo()
+                    ? 'Employee selected'
+                    : 'No employee selected'
+                }}
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="employee-ops-grid">
+                <section class="employee-ops-section">
+                  <div class="employee-ops-section__head">
+                    <mat-icon>article</mat-icon>
+                    <div>
+                      <h5 class="mb-0">Profile Report</h5>
+                      <span>Uses the standard employee profile template.</span>
+                    </div>
+                  </div>
+                  <div class="employee-ops-actions">
+                    <button
+                      type="button"
+                      class="employee-ops-btn"
+                      [disabled]="!model.selectedEmployeeNo()"
+                      (click)="printProfile()"
+                      title="Print employee profile"
+                    >
+                      <mat-icon>print</mat-icon>
+                      <span>Print</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="employee-ops-btn"
+                      [disabled]="!model.selectedEmployeeNo()"
+                      (click)="exportProfilePdf()"
+                      title="Export employee profile PDF"
+                    >
+                      <mat-icon>picture_as_pdf</mat-icon>
+                      <span>Export PDF</span>
+                    </button>
+                  </div>
+                </section>
+
+                <section
+                  class="employee-ops-section employee-ops-section--import"
+                >
+                  <div class="employee-ops-section__head">
+                    <mat-icon>upload_file</mat-icon>
+                    <div>
+                      <h5 class="mb-0">Bulk Employee Import</h5>
+                      <span
+                        >Download the mapped Excel template before uploading
+                        data.</span
+                      >
+                    </div>
+                  </div>
+                  <div class="employee-ops-actions">
+                    <button
+                      type="button"
+                      class="employee-ops-btn"
+                      (click)="model.downloadImportTemplate()"
+                      title="Download employee import template"
+                    >
+                      <mat-icon>download</mat-icon>
+                      <span>Template</span>
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    class="employee-upload-zone"
+                    [disabled]="model.isImporting()"
+                    (click)="employeeImportInput.click()"
+                    title="Upload employee import file"
+                  >
+                    <mat-icon>{{
+                      model.isImporting() ? 'hourglass_empty' : 'cloud_upload'
+                    }}</mat-icon>
+                    <span>{{
+                      model.isImporting()
+                        ? 'Validating file...'
+                        : 'Upload Excel file'
+                    }}</span>
+                    <small>.xlsx or .xls</small>
+                  </button>
+                </section>
+              </div>
+              <input
+                #employeeImportInput
+                type="file"
+                hidden
+                accept=".xlsx,.xls"
+                (change)="model.handleImportFile($event)"
+              />
+            </div>
+          </div> -->
+        </div>
       </div>
     </form>
   </div>

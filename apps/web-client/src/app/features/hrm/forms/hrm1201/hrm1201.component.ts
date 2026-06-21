@@ -31,6 +31,8 @@ export class Hrm1201Component implements OnInit {
     setTimeout(() => {
       this.permissionService.useLocalPermissions('HRM_1201');
       this.model.loadEmployees();
+      this.model.loadDesignations();
+      this.model.loadGrades();
       this.model.loadComponents();
       this.model.loadStructures();
     });
@@ -46,6 +48,7 @@ export class Hrm1201Component implements OnInit {
 
   onSave(): void { this.model.onSave(); }
   onNew(): void  { this.model.onNew(); }
+  onStartRevision(): void { this.model.startRevision(); }
 
   onReset(): void {
     if (this.model.selectedNo()) {

@@ -26,14 +26,19 @@ export class Hrm1202Component implements OnInit {
 
   readonly runTypes = hrmConstants.payrollRunTypes;
   readonly statusOptions = hrmConstants.payrollStatuses;
+  readonly runDetail = computed(() => this.model.currentRunDetail());
 
   // ── Payslip grid (shared common-table per the fixed-table rule) ──────────────
   readonly payslipColumns: ColumnDef[] = [
     { title: 'Employee',   field: 'employee_name',   sort: true,  cellType: 'text' },
-    { title: 'Present',    field: 'present_days',     cellType: 'decimal', align: 'right', precision: 1 },
-    { title: 'LWP',        field: 'lwp_days',         cellType: 'decimal', align: 'right', precision: 1 },
+    { title: 'Basic',      field: 'basic_salary',     cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
+    { title: 'Payable',    field: 'payable_days',     cellType: 'decimal', align: 'right', precision: 1 },
+    { title: 'OT Hrs',     field: 'ot_hours',         cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
+    { title: 'OT Amt',     field: 'ot_amount',        cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
     { title: 'Gross',      field: 'gross_earning',    cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
+    { title: 'Taxable',    field: 'taxable_income',   cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
     { title: 'Deductions', field: 'total_deduction',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
+    { title: 'Employer',   field: 'employer_contribution', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
     { title: 'Net Pay',    field: 'net_pay',          cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
     { title: 'Payment',    field: 'payment_status',   cellType: 'badge', align: 'center', width: '110px',
       badgeConfig: (v) => v === 2 ? { label: 'Paid', variant: 'success' } : { label: 'Pending', variant: 'neutral' } },
@@ -52,6 +57,7 @@ export class Hrm1202Component implements OnInit {
     setTimeout(() => {
       this.permissionService.useLocalPermissions('HRM_1202');
       this.model.loadEmployees();
+      this.model.loadBonusRuns();
       this.model.loadRuns();
     });
   }
@@ -99,6 +105,17 @@ export class Hrm1202Component implements OnInit {
 
   runTypeLabel(v: number): string { return this.runTypes.find((t) => t.value === v)?.label ?? String(v); }
   statusLabel(v: number): string { return this.statusOptions.find((s) => s.value === v)?.label ?? String(v); }
+  postingStatusLabel(v?: number | null): string {
+    if (v === 1) return 'Pending';
+    if (v === 2) return 'Posted';
+    if (v === 3) return 'Failed';
+    return 'Not queued';
+  }
+  postingStatusClass(v?: number | null): string {
+    if (v === 2) return 'list-item-tag--primary';
+    if (v === 3) return 'list-item-tag--warning';
+    return '';
+  }
   statusClass(v: number): string {
     return v === 3 || v === 4 ? 'list-item-tag--primary' : v === 5 ? 'list-item-tag--warning' : '';
   }

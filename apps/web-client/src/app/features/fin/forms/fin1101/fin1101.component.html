@@ -20,6 +20,12 @@
       <span class="btn-action-label">Post</span>
     </button>
   }
+  @if (model.selectedNo()) {
+    <button extraHeaderActions type="button" class="btn-action" (click)="printVoucher()">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span class="btn-action-label">Print</span>
+    </button>
+  }
 
   <div sidebarList>
     @for (item of model.pager.paged(); track item.voucher_no) {

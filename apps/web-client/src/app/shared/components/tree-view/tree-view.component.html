@@ -29,6 +29,8 @@
         [class.is-active]="isSelected(node.id)"
         (click)="onClick(node.row)"
       >
+
+
         <!-- Indentation rails / connector guide lines -->
         @if (merged().showConnectors) {
           <div class="tv-rails">
@@ -55,7 +57,7 @@
         </span>
 
         <!-- Label + sublabel -->
-        <span class="tv-text">
+        <span class="tv-text" [title]="sublabel(node.row) ? label(node.row) + ' — ' + sublabel(node.row) : label(node.row)">
           <span class="tv-label">{{ label(node.row) }}</span>
           @if (sublabel(node.row)) {
             <span class="tv-sub">{{ sublabel(node.row) }}</span>
@@ -69,6 +71,12 @@
           }
           @if (badge(node.row); as b) {
             <span class="tv-pill" [ngClass]="b.variant">{{ b.label }}</span>
+          }
+          @if (statusDot(node.row) !== null) {
+            <span class="status-dot" 
+              [class.status-dot--active]="statusDot(node.row) === true" 
+              [class.status-dot--inactive]="statusDot(node.row) === false"
+              [title]="statusDot(node.row) ? 'Active' : 'Inactive'"></span>
           }
         </span>
       </button>

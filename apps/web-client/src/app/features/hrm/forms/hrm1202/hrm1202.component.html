@@ -77,6 +77,18 @@
                     </ng-select>
                   </div>
                 </div>
+                @if (model.isBonusRunType()) {
+                  <div class="col-md-3">
+                    <div class="field-group">
+                      <label class="field-label required" for="bonus_run_no">Bonus Source</label>
+                      <ng-select id="bonus_run_no" labelForId="bonus_run_no" formControlName="bonus_run_no" [clearable]="false" [readonly]="!isNew" placeholder="Select approved bonus run">
+                        @for (bonus of model.selectableBonusRuns(); track bonus.bonus_run_no) {
+                          <ng-option [value]="bonus.bonus_run_no">{{ bonus.bonus_name }} ({{ bonus.bonus_id }})</ng-option>
+                        }
+                      </ng-select>
+                    </div>
+                  </div>
+                }
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="period_start">Period Start</label>
@@ -119,6 +131,133 @@
             </div>
           </div>
         </div>
+
+        @if (!isNew && runDetail(); as detail) {
+          <div class="col-xl-7 col-lg-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">analytics</mat-icon>
+                  Processing Snapshot
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Run ID</label>
+                      <div class="form-control bg-light-subtle">{{ detail.payroll_run_id || ('RUN-' + detail.payroll_run_no) }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Calculation Policy</label>
+                      <div class="form-control bg-light-subtle">{{ detail.calculation_policy_no || 'Auto from HR settings' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Employees</label>
+                      <div class="form-control bg-light-subtle">{{ detail.employee_count || 0 }}</div>
+                    </div>
+                  </div>
+                  @if (detail.bonus_run_no) {
+                    <div class="col-md-4">
+                      <div class="field-group mb-0">
+                        <label class="field-label">Bonus Source</label>
+                        <div class="form-control bg-light-subtle">{{ detail.bonus_run_name || model.bonusRunLabel(detail.bonus_run_no) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="field-group mb-0">
+                        <label class="field-label">Bonus Period</label>
+                        <div class="form-control bg-light-subtle">{{ detail.bonus_period || '—' }}</div>
+                      </div>
+                    </div>
+                  }
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Calculation Started</label>
+                      <div class="form-control bg-light-subtle">{{ detail.calculation_started_at ? (detail.calculation_started_at | date:'medium') : 'Not started' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Calculation Completed</label>
+                      <div class="form-control bg-light-subtle">{{ detail.calculation_completed_at ? (detail.calculation_completed_at | date:'medium') : 'Pending' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Approved At</label>
+                      <div class="form-control bg-light-subtle">{{ detail.approved_at ? (detail.approved_at | date:'medium') : 'Pending' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Finance Posting</label>
+                      <div class="form-control bg-light-subtle d-flex align-items-center justify-content-between gap-2">
+                        <span>{{ postingStatusLabel(detail.posting_status) }}</span>
+                        <span class="list-item-tag" [class]="postingStatusClass(detail.posting_status)">{{ detail.posting_event_type || 'PayrollPosted' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Posting Event</label>
+                      <div class="form-control bg-light-subtle">{{ detail.posted_event_no || 'Not queued' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Paid At</label>
+                      <div class="form-control bg-light-subtle">{{ detail.paid_at ? (detail.paid_at | date:'medium') : 'Not paid yet' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group mb-0">
+                      <label class="field-label">Remarks</label>
+                      <div class="form-control bg-light-subtle text-truncate" [title]="detail.remarks || ''">{{ detail.remarks || '—' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-5 col-lg-12">
+            <div class="form-section-card card">
+              <div class="card-header">
+                <h4 class="card-header__title mb-0 fw-bold">
+                  <mat-icon class="me-2 align-middle">summarize</mat-icon>
+                  Run Totals
+                </h4>
+              </div>
+              <div class="card-body">
+                <div class="row row-group">
+                  <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2">
+                      <span class="field-label mb-0">Gross Earning</span>
+                      <strong>{{ detail.total_gross | number:'1.2-2' }}</strong>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2">
+                      <span class="field-label mb-0">Total Deduction</span>
+                      <strong>{{ detail.total_deduction | number:'1.2-2' }}</strong>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2 bg-light-subtle">
+                      <span class="field-label mb-0">Net Payable</span>
+                      <strong>{{ detail.total_net | number:'1.2-2' }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
 
         <!-- Payslips grid (shared common-table) -->
         @if (!isNew) {

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HrmDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IDepartment, IDesignation } from './model.service';
+import { GradeOption, IDepartment, IDesignation } from './model.service';
 
 @Injectable()
 export class Hrm1002DataService {
@@ -36,6 +36,10 @@ export class Hrm1002DataService {
 
   loadDesignations(): Observable<ApiResponse<IDesignation[]>> {
     return this.hrService.getDesignations() as Observable<ApiResponse<IDesignation[]>>;
+  }
+
+  loadGrades(): Observable<ApiResponse<GradeOption[]>> {
+    return this.hrService.getList<GradeOption[]>('forms/hrm1004/grades');
   }
 
   loadDesignationDetail(no: number): Observable<ApiResponse<IDesignation>> {

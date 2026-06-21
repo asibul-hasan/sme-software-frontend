@@ -21,10 +21,13 @@ export interface TreeViewConfig {
   idField: string;
   /** Field holding the parent id (null/0/undefined ⇒ root). e.g. 'parent_cost_center_no'. */
   parentField: string;
-  /** Primary bold label field. e.g. 'cost_center_id'. */
-  labelField: string;
-  /** Optional muted second line. e.g. 'cost_center_name'. */
-  sublabelField?: string;
+  /** Primary bold label field or a function to derive it. e.g. 'cost_center_id'. */
+  labelField: string | ((row: Record<string, unknown>) => string);
+  /** Optional muted second line or a function to derive it. e.g. 'cost_center_name'. */
+  sublabelField?: string | ((row: Record<string, unknown>) => string);
+
+  /** Optional status dot on the left corner of the node (true=active, false=inactive). Return null to hide. */
+  statusDot?: (row: Record<string, unknown>) => boolean | null;
 
   /** Optional status pill, derived per row. Return null to hide. */
   badge?: (row: Record<string, unknown>) => TreeBadge | null;

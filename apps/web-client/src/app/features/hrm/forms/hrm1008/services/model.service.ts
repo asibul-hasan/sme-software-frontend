@@ -11,6 +11,10 @@ export interface HrmSettings {
   weekend_days: string;
   fiscal_year_start: string;
   overtime_multiplier: number;
+  overtime_formula: string;
+  daily_rate_formula: string;
+  lwp_formula: string;
+  tax_regime: string;
   enable_provident_fund: number;
   enable_gratuity: number;
   enable_festival_bonus: number;
@@ -36,6 +40,10 @@ export class Hrm1008ModelService {
       weekend_days:          ['FRI,SAT'],
       fiscal_year_start:     ['07-01'],
       overtime_multiplier:   [2.0, [Validators.min(0)]],
+      overtime_formula:      ['BASIC_SALARY / 104', [Validators.maxLength(500)]],
+      daily_rate_formula:    ['GROSS_SALARY / CALENDAR_DAYS', [Validators.maxLength(500)]],
+      lwp_formula:           ['DAILY_RATE * LWP_DAYS', [Validators.maxLength(500)]],
+      tax_regime:            ['BD_NBR', [Validators.maxLength(30)]],
       enable_provident_fund: [1],
       enable_gratuity:       [1],
       enable_festival_bonus: [1],
@@ -55,6 +63,10 @@ export class Hrm1008ModelService {
             weekend_days:          d['weekend_days'] ?? 'FRI,SAT',
             fiscal_year_start:     d['fiscal_year_start'] ?? '07-01',
             overtime_multiplier:   d['overtime_multiplier'] ?? 2.0,
+            overtime_formula:      d['overtime_formula'] ?? 'BASIC_SALARY / 104',
+            daily_rate_formula:    d['daily_rate_formula'] ?? 'GROSS_SALARY / CALENDAR_DAYS',
+            lwp_formula:           d['lwp_formula'] ?? 'DAILY_RATE * LWP_DAYS',
+            tax_regime:            d['tax_regime'] ?? 'BD_NBR',
             enable_provident_fund: d['enable_provident_fund'] ?? 1,
             enable_gratuity:       d['enable_gratuity'] ?? 1,
             enable_festival_bonus: d['enable_festival_bonus'] ?? 1,
@@ -71,12 +83,16 @@ export class Hrm1008ModelService {
     if (country === 'BD') {
       this.form.patchValue({
         country_code: 'BD', currency_code: 'BDT', weekend_days: 'FRI,SAT', fiscal_year_start: '07-01',
-        overtime_multiplier: 2.0, enable_provident_fund: 1, enable_gratuity: 1, enable_festival_bonus: 1, maternity_weeks: 16,
+        overtime_multiplier: 2.0, overtime_formula: 'BASIC_SALARY / 104', daily_rate_formula: 'GROSS_SALARY / CALENDAR_DAYS',
+        lwp_formula: 'DAILY_RATE * LWP_DAYS', tax_regime: 'BD_NBR',
+        enable_provident_fund: 1, enable_gratuity: 1, enable_festival_bonus: 1, maternity_weeks: 16,
       });
     } else {
       this.form.patchValue({
         country_code: 'INTL', currency_code: 'USD', weekend_days: 'SAT,SUN', fiscal_year_start: '01-01',
-        overtime_multiplier: 1.5, enable_provident_fund: 0, enable_gratuity: 0, enable_festival_bonus: 0, maternity_weeks: 0,
+        overtime_multiplier: 1.5, overtime_formula: 'BASIC_SALARY / 208', daily_rate_formula: 'GROSS_SALARY / CALENDAR_DAYS',
+        lwp_formula: 'DAILY_RATE * LWP_DAYS', tax_regime: 'GENERIC',
+        enable_provident_fund: 0, enable_gratuity: 0, enable_festival_bonus: 0, maternity_weeks: 0,
       });
     }
   }

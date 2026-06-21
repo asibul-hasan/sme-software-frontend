@@ -7,12 +7,21 @@ import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
 import { AuthContextService } from '../../../../../core/services/auth-context.service';
-import { CommonDataService, EmployeeLookup } from '../../../../../shared/services/common-data.service';
+import {
+  CommonDataService,
+  DepartmentLookup,
+  DesignationLookup,
+  EmployeeLookup,
+} from '../../../../../shared/services/common-data.service';
 
 export interface Overtime extends BaseEntity {
   overtime_no: number;
   overtime_id: string;
   employee_no: number | null;
+  department_nos?: number[];
+  designation_nos?: number[];
+  employee_nos?: number[];
+  effective_date?: string | null;
   ot_date: string | null;
   hours?: number | null;
   rate_multiplier?: number | null;
@@ -40,6 +49,8 @@ export class Hrm1105ModelService {
 
   overtimes     = signal<Overtime[]>([]);
   employees     = signal<EmployeeLookup[]>([]);
+  departments   = signal<DepartmentLookup[]>([]);
+  designations  = signal<DesignationLookup[]>([]);
   isLoading     = signal(false);
   isSaving      = signal(false);
   searchTerm    = signal('');
@@ -48,6 +59,11 @@ export class Hrm1105ModelService {
   sortDirection = signal<SortDirection>('');
 
   readonly isDraft = computed(() => this.status() === 1);
+  readonly filteredDesignations = computed(() => {
+    const selected = this.form?.get('department_nos')?.value as number[] | null;
+    if (!selected?.length) return this.designations();
+    return this.designations().filter((d) => selected.includes(d.department_no));
+  });
 
   employeeName(no?: number | null): string {
     if (no == null) return '';

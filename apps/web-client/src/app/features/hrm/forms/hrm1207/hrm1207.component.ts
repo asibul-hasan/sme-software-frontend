@@ -66,4 +66,10 @@ export class Hrm1207Component implements OnInit {
 
   statusLabel(v: number): string { return this.statusOptions.find((s) => s.value === v)?.label ?? String(v); }
   statusClass(v: number): string { return (v === 2 || v === 3) ? 'list-item-tag--primary' : v === 4 ? 'list-item-tag--warning' : ''; }
+  postingStatusLabel(v?: number | null): string {
+    if (v === 1) return 'Pending';
+    if (v === 2) return 'Posted';
+    if (v === 3) return 'Failed';
+    return 'Not queued';
+  }
 }

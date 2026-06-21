@@ -1,0 +1,215 @@
+<app-page-form-layout
+  [title]="'Tax Slab Setup'"
+  [subtitle]="'Configure payroll tax bands by fiscal year and taxpayer class'"
+  [icon]="'request_quote'"
+  [recordsCount]="model.filteredProfiles().length"
+  [sidebarTitle]="'Tax Profiles'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  [sortDirection]="model.sortDirection()"
+  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedTaxSlabNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (profile of model.pager.paged(); track profile.tax_slab_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedTaxSlabNo() === profile.tax_slab_no"
+        (click)="selectProfile(profile)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="profile.is_active === 1"
+          [class.status-dot--inactive]="profile.is_active !== 1"
+          [title]="profile.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ profile.fiscal_year }}</h6>
+        <p class="list-item-subtitle mb-0 text-truncate">{{ profile.taxpayer_class }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag">{{ profile.country_code }}</span>
+          <span class="list-item-tag list-item-tag--primary">{{ profile.slab_count || 0 }} slabs</span>
+        </div>
+      </button>
+    }
+
+    @if (model.filteredProfiles().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>request_quote</mat-icon>
+        <p>No records found</p>
+      </div>
+    }
+  </div>
+
+  <div formContent>
+    <form [formGroup]="formdata" autocomplete="off">
+      <div class="row row-group">
+        <div class="col-12">
+          <div class="form-section-card card">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">tune</mat-icon>
+                Profile Information
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-md-3">
+                  <div class="field-group">
+                    <label class="field-label required" for="country_code">Country</label>
+                    <ng-select id="country_code" labelForId="country_code" formControlName="country_code" [clearable]="false">
+                      @for (opt of countries; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label required" for="fiscal_year">Fiscal Year</label>
+                    <input type="text" id="fiscal_year" formControlName="fiscal_year" class="form-control" placeholder="YYYY-YYYY" />
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="field-group">
+                    <label class="field-label required" for="taxpayer_class">Taxpayer Class</label>
+                    <ng-select id="taxpayer_class" labelForId="taxpayer_class" formControlName="taxpayer_class" [clearable]="false">
+                      @for (opt of taxpayerClasses; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">table_rows</mat-icon>
+                Slab Definition
+              </h4>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addSlab()">
+                <mat-icon class="me-1 align-middle">add</mat-icon>
+                Add Slab
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 90px">Order</th>
+                      <th>From Amount</th>
+                      <th>To Amount</th>
+                      <th>Rate %</th>
+                      <th>Fixed Amount</th>
+                      <th class="text-end" style="width: 56px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (slab of model.slabs(); track $index) {
+                      <tr>
+                        <td>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="slab.slab_order"
+                            (input)="model.updateSlab($index, 'slab_order', $any($event.target).value)"
+                            step="1"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="slab.from_amount"
+                            (input)="model.updateSlab($index, 'from_amount', $any($event.target).value)"
+                            step="0.01"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="slab.to_amount"
+                            (input)="model.updateSlab($index, 'to_amount', $any($event.target).value)"
+                            step="0.01"
+                            placeholder="Open ended"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="slab.rate_percent"
+                            (input)="model.updateSlab($index, 'rate_percent', $any($event.target).value)"
+                            step="0.01"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="slab.fixed_amount"
+                            (input)="model.updateSlab($index, 'fixed_amount', $any($event.target).value)"
+                            step="0.01"
+                          />
+                        </td>
+                        <td class="text-end">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="model.removeSlab($index)"
+                            [disabled]="model.slabs().length === 1"
+                            aria-label="Remove slab"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card card mt-3">
+            <div class="card-header">
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">settings</mat-icon>
+                Status
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="field-group">
+                <label class="field-label">Status</label>
+                <div class="custom--checkbox">
+                  <mat-checkbox
+                    [checked]="formdata.get('is_active')?.value === 1"
+                    (change)="toggleActive($event)"
+                    color="primary"
+                  >
+                    <span class="field-label mb-0" style="cursor: pointer">Active</span>
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

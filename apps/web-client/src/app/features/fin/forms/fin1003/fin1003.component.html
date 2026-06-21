@@ -1,77 +1,32 @@
 <app-page-form-layout
-  [title]="'Voucher Type'"
-  [subtitle]="'Document types that drive the Voucher Entry form'"
+  [title]="'Voucher Types'"
+  [subtitle]="'Define and manage voucher types and their configurations'"
   [icon]="'category'"
-  [recordsCount]="model.filtered().length"
-  [sidebarTitle]="'Voucher Types'"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  [sortDirection]="model.sortDirection()"
-  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [hasSidebar]="false"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
-  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+  (save)="onSave()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+  [isSaving]="model.isSaving()"
 >
-  <div sidebarList>
-    @for (item of model.pager.paged(); track item.voucher_type_no) {
-      <button type="button" class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.voucher_type_no" (click)="select(item)">
-        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.type_name }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.voucher_type_id }}</p>
-        <div class="list-item-meta">
-          <span class="list-item-tag list-item-tag--primary">{{ baseKindLabel(item.base_kind) }}</span>
-          @if (item.is_system === 1) { <span class="list-item-tag">System</span> }
-        </div>
-      </button>
-    }
-    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>category</mat-icon><p>No records found</p></div> }
-  </div>
-
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-12">
-          <div class="form-section-card card">
-            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">category</mat-icon> Voucher Type</h4></div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label required" for="voucher_type_id">Type ID</label>
-                  <input type="text" id="voucher_type_id" formControlName="voucher_type_id" class="form-control text-uppercase" placeholder="e.g. JV" (input)="toUpper('voucher_type_id')" />
-                </div></div>
-                <div class="col-md-5"><div class="field-group">
-                  <label class="field-label required" for="type_name">Type Name</label>
-                  <input type="text" id="type_name" formControlName="type_name" class="form-control" placeholder="e.g. Journal Voucher" />
-                </div></div>
-                <div class="col-md-4"><div class="field-group">
-                  <label class="field-label required" for="base_kind">Base Kind</label>
-                  <ng-select id="base_kind" formControlName="base_kind" [clearable]="false">
-                    @for (o of baseKinds; track o.value) { <ng-option [value]="o.value">{{ o.label }}</ng-option> }
-                  </ng-select>
-                </div></div>
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label" for="number_prefix">Number Prefix</label>
-                  <input type="text" id="number_prefix" formControlName="number_prefix" class="form-control text-uppercase" placeholder="e.g. JV" (input)="toUpper('number_prefix')" />
-                </div></div>
-                <div class="col-md-2"><div class="field-group">
-                  <label class="field-label" for="order_sl">Order</label>
-                  <input type="number" id="order_sl" formControlName="order_sl" class="form-control" />
-                </div></div>
-                <div class="col-md-2"><div class="field-group">
-                  <label class="field-label">Status</label>
-                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
-                </div></div>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">category</mat-icon> Voucher Types
+        </h4>
+        <button type="button" class="btn-action btn-new btn-row-add ms-2" uiTooltip="Add Row" (click)="model.addRow()">
+          <mat-icon>add</mat-icon>
+        </button>
       </div>
-    </form>
+      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
+        <app-common-table
+          [data]="tableData()"
+          [columns]="tableColumns()"
+          [config]="tableConfig"
+        ></app-common-table>
+      </div>
+    </div>
   </div>
-
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

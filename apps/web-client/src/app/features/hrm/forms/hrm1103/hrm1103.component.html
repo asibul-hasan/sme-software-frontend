@@ -64,8 +64,8 @@
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="employee_no">Employee</label>
-                    <ng-select id="employee_no" labelForId="employee_no" formControlName="employee_no" [readonly]="!pending" [clearable]="false" placeholder="Select employee">
+                    <label class="field-label required" for="employee_nos">Employee</label>
+                    <ng-select id="employee_nos" labelForId="employee_nos" formControlName="employee_nos" [readonly]="!pending" [multiple]="true" [clearable]="false" placeholder="Select employee">
                       @for (emp of model.employees(); track emp.employee_no) {
                         <ng-option [value]="emp.employee_no">{{ emp.full_name || emp.first_name }} ({{ emp.employee_id }})</ng-option>
                       }
@@ -90,12 +90,30 @@
                   <div class="field-group">
                     <label class="field-label" for="requested_in">In Time</label>
                     <input type="time" id="requested_in" formControlName="requested_in" class="form-control" [readonly]="!pending" />
+                    <mat-checkbox
+                      class="mt-1"
+                      [checked]="formdata.get('use_shift_in')?.value"
+                      (change)="model.toggleShiftTime('in', $event.checked)"
+                      [disabled]="!pending"
+                      color="primary"
+                    >
+                      <span class="field-label mb-0">Shift In Time</span>
+                    </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label" for="requested_out">Out Time</label>
                     <input type="time" id="requested_out" formControlName="requested_out" class="form-control" [readonly]="!pending" />
+                    <mat-checkbox
+                      class="mt-1"
+                      [checked]="formdata.get('use_shift_out')?.value"
+                      (change)="model.toggleShiftTime('out', $event.checked)"
+                      [disabled]="!pending"
+                      color="primary"
+                    >
+                      <span class="field-label mb-0">Shift Out Time</span>
+                    </mat-checkbox>
                   </div>
                 </div>
                 <div class="col-12">

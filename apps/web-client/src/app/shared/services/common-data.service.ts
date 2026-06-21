@@ -8,17 +8,19 @@ import { ApiResponse } from '../../core/models/response.model';
 export interface EmployeeLookup {
   employee_no: number;
   employee_id: string;
-  first_name: string;
+  first_name?: string | null;
   last_name?: string | null;
   full_name?: string | null;
+  full_name_with_id?: string | null;
   department_no?: number | null;
   department_name?: string | null;
   designation_no?: number | null;
   designation_name?: string | null;
   branch_no?: number | null;
+  user_no?: number | null;
   mobile_number?: string | null;
   official_email?: string | null;
-  is_active: number;
+  is_active?: number;
 }
 
 export interface DepartmentLookup {
@@ -34,7 +36,27 @@ export interface DesignationLookup {
   designation_id: string;
   designation_name: string;
   department_no: number;
+  grade_no?: number | null;
+  grade_level?: string | null;
+  min_salary?: number | null;
+  max_salary?: number | null;
   is_active: number;
+}
+
+export interface GradeLookup {
+  grade_no: number;
+  grade_id?: string | null;
+  grade_name: string;
+  rank_order?: number | null;
+  min_salary?: number | null;
+  max_salary?: number | null;
+}
+
+export interface GradeStepLookup {
+  grade_step_no: number;
+  grade_no: number;
+  step: string;
+  amount: number;
 }
 
 export interface BranchLookup {
@@ -101,6 +123,14 @@ export class CommonDataService extends BaseDataService {
 
   getDesignationList(): Observable<ApiResponse<DesignationLookup[]>> {
     return this.getList<DesignationLookup[]>('common/lookups/designations');
+  }
+
+  getGradeList(): Observable<ApiResponse<GradeLookup[]>> {
+    return this.getList<GradeLookup[]>('common/lookups/grades');
+  }
+
+  getGradeStepList(gradeNo: number): Observable<ApiResponse<GradeStepLookup[]>> {
+    return this.getList<GradeStepLookup[]>(`common/lookups/grades/${gradeNo}/steps`);
   }
 
   // ─── System Lookups ────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 /**
  * HR module routes.
- * Pattern: {type}/{form-name-slug}  →  full URL: /hr/{type}/{slug}
+ * Pattern: {type}/{form-name-slug}  →  full URL: /hrm/{type}/{slug}
  */
 export const HRM_ROUTES: Routes = [
   // ── Employee Setup ────────────────────────────────────────────────────────
@@ -45,6 +45,11 @@ export const HRM_ROUTES: Routes = [
     path: 'form/hr-settings',
     loadComponent: () =>
       import('./forms/hrm1008/hrm1008.component').then((m) => m.Hrm1008Component),
+  },
+  {
+    path: 'form/tax-slab-setup',
+    loadComponent: () =>
+      import('./forms/hrm1009/hrm1009.component').then((m) => m.Hrm1009Component),
   },
   {
     path: 'form/manual-attendance',

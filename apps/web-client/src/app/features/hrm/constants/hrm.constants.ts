@@ -28,6 +28,20 @@ export const hrmConstants = {
     { value: 3, label: 'Probationary' },
     { value: 4, label: 'Intern' },
   ],
+  contractTypeOptions: [
+    { value: 1, label: 'Fixed Term' },
+    { value: 2, label: 'Project Based' },
+    { value: 3, label: 'Retainer' },
+    { value: 4, label: 'Internship' },
+  ],
+  jobTypeOptions: [
+    { value: 1, label: 'Staff' },
+    { value: 2, label: 'Worker' },
+    { value: 3, label: 'Contractual' },
+    { value: 4, label: 'Intern' },
+    { value: 5, label: 'Management' },
+    { value: 6, label: 'Officer' },
+  ],
   employeeStatusOptions: [
     { value: 1, label: 'Active' },
     { value: 2, label: 'Resigned' },
@@ -61,9 +75,21 @@ export const hrmConstants = {
     { value: 3, label: '% of Gross' },
     { value: 4, label: 'Formula' },
   ],
+  roundingModes: [
+    { value: 1, label: 'Down' },
+    { value: 2, label: 'Half Up' },
+    { value: 3, label: 'Up' },
+  ],
   countryPacks: [
     { value: 'BD', label: 'Bangladesh (BD pack)' },
     { value: 'INTL', label: 'Global / Generic' },
+  ],
+  taxpayerClasses: [
+    { value: 'GENERAL', label: 'General' },
+    { value: 'WOMEN_SENIOR', label: 'Women / Senior Citizen' },
+    { value: 'DISABILITY', label: 'Person with Disability' },
+    { value: 'FREEDOM_FIGHTER', label: 'Freedom Fighter' },
+    { value: 'OTHER', label: 'Other' },
   ],
 
   // ── Attendance & time (HRM_1101 / 1102 / 1103 / 1104 / 1105) ────────────────
@@ -141,6 +167,15 @@ export const hrmConstants = {
     { value: 2, label: 'Performance' },
     { value: 3, label: 'Profit Share' },
     { value: 4, label: 'Other' },
+  ],
+  bonusCalculationTypes: [
+    { value: 1, label: 'Percentage on Basic Salary' },
+    { value: 2, label: 'Percentage on Gross Salary' },
+  ],
+  bonusApplicabilityOptions: [
+    { value: 1, label: 'All Employees' },
+    { value: 2, label: 'Designation-wise' },
+    { value: 3, label: 'Employee-wise' },
   ],
   loanTypes: [
     { value: 1, label: 'Loan' },

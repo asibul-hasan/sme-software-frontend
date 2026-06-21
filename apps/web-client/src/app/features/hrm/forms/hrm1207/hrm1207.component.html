@@ -46,8 +46,8 @@
             <div class="card-body">
               <div class="row row-group">
                 <div class="col-md-4"><div class="field-group">
-                  <label class="field-label required" for="settlement_id">Settlement ID</label>
-                  <input type="text" id="settlement_id" formControlName="settlement_id" class="form-control text-uppercase" placeholder="e.g. FS-001" [readonly]="!editable" (input)="toUpper('settlement_id')" />
+                  <label class="field-label" for="settlement_id">Settlement ID</label>
+                  <input type="text" id="settlement_id" formControlName="settlement_id" class="form-control text-uppercase" placeholder="Generated on save" readonly />
                 </div></div>
                 <div class="col-md-5"><div class="field-group">
                   <label class="field-label required" for="employee_no">Employee</label>
@@ -73,17 +73,15 @@
             <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">calculate</mat-icon> Computation</h4></div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="last_salary">Last Salary</label>
-                  <input type="number" id="last_salary" formControlName="last_salary" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="last_salary">Outstanding Salary</label>
+                  <input type="number" id="last_salary" formControlName="last_salary" class="form-control" step="0.01" readonly /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="leave_encashment">Leave Encashment</label>
                   <input type="number" id="leave_encashment" formControlName="leave_encashment" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="gratuity">Gratuity</label>
                   <input type="number" id="gratuity" formControlName="gratuity" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="bonus_payable">Bonus Payable</label>
-                  <input type="number" id="bonus_payable" formControlName="bonus_payable" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="loan_recovery">Loan Recovery (−)</label>
-                  <input type="number" id="loan_recovery" formControlName="loan_recovery" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="other_deduction">Other Deduction (−)</label>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="bonus_payable">Outstanding Bonus</label>
+                  <input type="number" id="bonus_payable" formControlName="bonus_payable" class="form-control" step="0.01" readonly /></div></div>
+                <div class="col-md-4"><div class="field-group"><label class="field-label" for="other_deduction">Other Deduction (-)</label>
                   <input type="number" id="other_deduction" formControlName="other_deduction" class="form-control" step="0.01" [readonly]="!editable" /></div></div>
               </div>
               <div class="d-flex justify-content-end align-items-center gap-2 mt-2 pt-2" style="border-top:1px solid var(--border-color)">
@@ -95,6 +93,50 @@
         </div>
 
         <div class="col-xl-4 col-lg-12">
+          <div class="form-section-card card mb-3">
+            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">receipt_long</mat-icon> Payroll Snapshot</h4></div>
+            <div class="card-body">
+              <div class="row row-group">
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Current Period</label>
+                  <div class="form-control bg-light-subtle">{{ model.preview()?.current_pay_period || '—' }}</div>
+                </div></div>
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Payroll Status</label>
+                  <div class="form-control bg-light-subtle">{{ model.preview()?.current_payroll_status || '—' }}</div>
+                </div></div>
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Pending Salary</label>
+                  <div class="form-control bg-light-subtle">{{ (model.preview()?.unpaid_salary_amount ?? 0) | number: '1.2-2' }}</div>
+                </div></div>
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Pending Bonus</label>
+                  <div class="form-control bg-light-subtle">{{ (model.preview()?.unpaid_bonus_amount ?? 0) | number: '1.2-2' }}</div>
+                </div></div>
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Pending Total</label>
+                  <div class="form-control bg-light-subtle">{{ (model.preview()?.pending_payment_amount ?? 0) | number: '1.2-2' }}</div>
+                </div></div>
+                <div class="col-6"><div class="field-group">
+                  <label class="field-label">Pending Items</label>
+                  <div class="form-control bg-light-subtle">{{ model.preview()?.pending_item_count ?? 0 }}</div>
+                </div></div>
+                <div class="col-12"><div class="field-group">
+                  <label class="field-label">Unpaid Months</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    @if ((model.preview()?.unpaid_pay_periods?.length ?? 0) > 0) {
+                      @for (period of model.preview()?.unpaid_pay_periods ?? []; track period) {
+                        <span class="list-item-tag list-item-tag--primary">{{ period }}</span>
+                      }
+                    } @else {
+                      <div class="form-control bg-light-subtle">No unpaid months</div>
+                    }
+                  </div>
+                </div></div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-section-card card">
             <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">approval</mat-icon> Workflow</h4></div>
             <div class="card-body">
@@ -118,6 +160,16 @@
                 <label class="field-label" for="remarks">Remarks</label>
                 <textarea id="remarks" formControlName="remarks" class="form-control" rows="2" [readonly]="!editable"></textarea>
               </div>
+              <div class="field-group mt-3">
+                <label class="field-label">Finance Posting</label>
+                <div class="form-control bg-light-subtle">{{ postingStatusLabel(model.preview()?.posting_status) }}</div>
+              </div>
+              @if (model.preview()?.posting_event_no) {
+                <div class="field-group mt-2 mb-0">
+                  <label class="field-label">Posting Event</label>
+                  <div class="form-control bg-light-subtle">#{{ model.preview()?.posting_event_no }} · {{ model.preview()?.posting_event_type }}</div>
+                </div>
+              }
               @if (status === 3) {
                 <div class="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-0" style="padding:8px 12px">
                   <mat-icon>logout</mat-icon> Paid — employee deactivated.

@@ -60,17 +60,65 @@
                   </ng-select>
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="bonus_date">Date</label>
+                  <input type="date" id="bonus_date" formControlName="bonus_date" class="form-control" [readonly]="!editable" />
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
                   <label class="field-label" for="bonus_period">Period Label</label>
                   <input type="text" id="bonus_period" formControlName="bonus_period" class="form-control" placeholder="e.g. Eid-ul-Fitr 2026" [readonly]="!editable" />
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
-                  <label class="field-label" for="percentage_of_basic">% of Salary</label>
+                  <label class="field-label required" for="calculation_type">Calculation Type</label>
+                  <ng-select id="calculation_type" formControlName="calculation_type" [readonly]="!editable" [clearable]="false">
+                    @for (opt of bonusCalculationTypes; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                  </ng-select>
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label required" for="applicability_type">Applicability</label>
+                  <ng-select id="applicability_type" formControlName="applicability_type" [readonly]="!editable" [clearable]="false">
+                    @for (opt of bonusApplicabilityOptions; track opt.value) { <ng-option [value]="opt.value">{{ opt.label }}</ng-option> }
+                  </ng-select>
+                </div></div>
+                <div class="col-md-4"><div class="field-group">
+                  <label class="field-label" for="percentage_of_basic">Percentage</label>
                   <input type="number" id="percentage_of_basic" formControlName="percentage_of_basic" class="form-control" step="0.01" [readonly]="!editable" />
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
                   <label class="field-label" for="fixed_amount">Fixed Amount (+)</label>
                   <input type="number" id="fixed_amount" formControlName="fixed_amount" class="form-control" step="0.01" [readonly]="!editable" />
                 </div></div>
+                @if (model.isDesignationWise()) {
+                  <div class="col-12"><div class="field-group">
+                    <label class="field-label" for="selected_designation_nos">Designations</label>
+                    <ng-select
+                      id="selected_designation_nos"
+                      formControlName="selected_designation_nos"
+                      [items]="model.designations()"
+                      bindLabel="designation_name"
+                      bindValue="designation_no"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [readonly]="!editable"
+                      placeholder="Select one or more designations"
+                    ></ng-select>
+                  </div></div>
+                }
+                @if (model.isEmployeeWise()) {
+                  <div class="col-12"><div class="field-group">
+                    <label class="field-label" for="selected_employee_nos">Employees</label>
+                    <ng-select
+                      id="selected_employee_nos"
+                      formControlName="selected_employee_nos"
+                      [items]="model.employees()"
+                      bindLabel="full_name_with_id"
+                      bindValue="employee_no"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [readonly]="!editable"
+                      placeholder="Select one or more employees"
+                    ></ng-select>
+                  </div></div>
+                }
               </div>
             </div>
           </div>
@@ -92,6 +140,9 @@
               <div class="d-flex align-items-center gap-2 mb-3"><mat-icon [class.text-success]="status === 3 || status === 4">flag</mat-icon><span class="fw-semibold">{{ statusLabel(status) }}</span></div>
 
               @if (model.current(); as cur) {
+                <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Bonus Date</span><span class="fw-semibold">{{ cur.bonus_date || '—' }}</span></div>
+                <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Calculation</span><span class="fw-semibold">{{ calculationTypeLabel(cur.calculation_type) || '—' }}</span></div>
+                <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Scope</span><span class="fw-semibold">{{ applicabilityLabel(cur.applicability_type) || '—' }}</span></div>
                 <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Employees</span><span class="fw-semibold">{{ cur.employee_count || 0 }}</span></div>
                 <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom:1px solid var(--border-color)"><span class="field-label mb-0">Total Amount</span><span class="fw-bold" style="color:var(--success)">{{ (cur.total_amount || 0) | number: '1.2-2' }}</span></div>
               }
@@ -114,7 +165,7 @@
 
               @if (status === 1 && model.selectedNo()) {
                 <div class="alert alert-info d-flex align-items-center gap-2 mt-3 mb-0" style="padding:8px 12px">
-                  <mat-icon>info</mat-icon> Calculate to generate bonus lines for active employees.
+                  <mat-icon>info</mat-icon> Calculate to generate scoped bonus lines from the current date, basis, and applicability setup.
                 </div>
               }
               @if (status === 4) {

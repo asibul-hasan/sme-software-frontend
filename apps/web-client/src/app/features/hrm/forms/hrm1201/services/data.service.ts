@@ -15,6 +15,10 @@ export class Hrm1201DataService {
   loadStructureDetail(no: number): Observable<ApiResponse<SalaryStructure>> {
     return this.hrService.getDtl<SalaryStructure>('forms/hrm1201/structures', no);
   }
+  loadRevisionTemplate(employeeNo: number, effectiveFrom?: string | null): Observable<ApiResponse<SalaryStructure>> {
+    const query = effectiveFrom ? `?effectiveFrom=${encodeURIComponent(effectiveFrom)}` : '';
+    return this.hrService.getList<SalaryStructure>(`forms/hrm1201/structures/employee/${employeeNo}/revision-template${query}`);
+  }
   saveStructure(payload: Partial<SalaryStructure>): Observable<ApiResponse<SalaryStructure>> {
     return this.hrService.insert<SalaryStructure>('forms/hrm1201/structures', payload);
   }

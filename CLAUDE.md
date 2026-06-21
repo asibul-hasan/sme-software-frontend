@@ -561,6 +561,41 @@ tableData = computed(() => this.model.items() as unknown as Record<string, unkno
   { title: 'Status', field: 'status', cellType: 'badge', badgeConfig: statusBadge }
   ```
   It maps active flags (`1`/`0`) and common statuses (pending/posted/confirmed/…) to colored pills.
-- **Row actions** render as a single kebab (`⋯`) menu (config `actions: [...]`), not inline
+- Row actions render as a single kebab (`⋯`) menu (config `actions: [...]`), not inline
   icon buttons. Editable cells use `ng-select` (not native `<select>`) on double-click.
 - See `shared/components/common-table/example-usage.ts` for full feature demos.
+
+### PDF Reports — `PdfTemplateService` (CRITICAL)
+
+**Never manually create a jsPDF document or draw headers/footers in your component.** Every PDF export MUST use the shared `PdfTemplateService` to ensure a consistent company header, page footer, and signature block across the entire ERP.
+
+**How to use:**
+1. Inject `PdfTemplateService` from `shared/pdf-templates/pdf-template.service`.
+2. Call `pdfTemplateService.render()` with a `PdfTemplate` configuration.
+
+Example:
+
+```ts
+import { PdfTemplateService } from '@app/shared/pdf-templates/pdf-template.service';
+
+private readonly pdfTemplateService = inject(PdfTemplateService);
+
+async exportToPdf() {
+  await this.pdfTemplateService.render({
+    id: 'my-custom-report',
+    module: 'SYS',
+    formId: 'SYS1001',
+    title: 'Report Title',
+    fileName: 'report-file-name',
+    showSignatures: true,
+    showPageFooter: true,
+    buildSections: () => [
+      { type: 'title', text: 'Data List' },
+      { type: 'table', columns: this.columns, rows: this.data }
+    ]
+  }, {});
+}
+```
+
+If your PDF requires a heavily custom-drawn layout, use a `custom` section type, which gives you access to the `jsPDF` instance and `helpers` (`{ drawHeader, drawPageFooter }`) for adding headers/footers on new pages.
+```

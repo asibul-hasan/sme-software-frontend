@@ -6,6 +6,7 @@ import {
   EventEmitter,
   computed,
   effect,
+  HostListener,
   inject,
   signal,
 } from '@angular/core';
@@ -49,9 +50,11 @@ export class SidebarComponent {
   @Output() toggleCollapse = new EventEmitter<void>();
 
   readonly isCollapsed   = signal(false);
+  readonly isFlyoutOpen  = signal(false);
   readonly searchTerm    = signal('');
   readonly isAllExpanded = signal(false);
   readonly selectedModuleId = signal<string | null>(null);
+  private readonly previewModuleId = signal<string | null>(null);
 
   /**
    * Source-of-truth menu signal. Reactively rebuilt whenever the auth
@@ -70,12 +73,17 @@ export class SidebarComponent {
     const modules = this.menuItems();
     if (!modules.length) return null;
 
-    const selectedId = this.selectedModuleId();
+    const previewId = this.isCollapsed() && this.isFlyoutOpen()
+      ? this.previewModuleId()
+      : null;
+    const selectedId = previewId ?? this.selectedModuleId();
     const selected = selectedId ? modules.find((item) => item.formId === selectedId) : null;
     if (selected) return selected;
 
     return modules.find((item) => this.containsActiveRoute(item)) ?? modules[0];
   });
+
+  readonly shouldShowPanel = computed(() => !this.isCollapsed() || this.isFlyoutOpen());
 
   /**
    * Filtered tree for the search input — pruned breadth-first; parents whose
@@ -122,6 +130,29 @@ export class SidebarComponent {
   }
 
   // ─── Public actions ────────────────────────────────────────────────────────
+  @HostListener('document:keydown.escape')
+  closeFlyoutOnEscape(): void {
+    this.closeFlyout();
+  }
+
+  openFlyout(module?: MenuItem): void {
+    if (!this.isCollapsed() || this.isSmallScreen()) return;
+    if (module) this.previewModuleId.set(module.formId);
+    this.isFlyoutOpen.set(true);
+  }
+
+  closeFlyout(): void {
+    if (!this.isCollapsed()) return;
+    this.isFlyoutOpen.set(false);
+    this.previewModuleId.set(null);
+  }
+
+  onSidebarFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    if (next && (event.currentTarget as HTMLElement).contains(next)) return;
+    this.closeFlyout();
+  }
+
   toggleNode(node: MenuItem, event: Event): void {
     event.stopPropagation();
     node.expanded = !node.expanded;
@@ -130,18 +161,24 @@ export class SidebarComponent {
 
   selectModule(module: MenuItem): void {
     this.selectedModuleId.set(module.formId);
+    this.previewModuleId.set(module.formId);
     this.searchTerm.set('');
+    this.openFlyout(module);
     const dashboard = module.children?.find((child) => !!child.route);
     if (dashboard?.route && !this.isActive(dashboard.route)) {
       this.router.navigateByUrl(dashboard.route);
     }
-    if (this.isCollapsed()) {
-      this.toggleCollapse.emit();
-    }
   }
 
   toggleSidebar(): void {
+    this.closeFlyout();
     this.toggleCollapse.emit();
+  }
+
+  onMenuItemSelected(): void {
+    if (this.isSmallScreen() && !this.isCollapsed()) {
+      this.toggleCollapse.emit();
+    }
   }
 
   toggleExpandAll(): void {
@@ -246,5 +283,10 @@ export class SidebarComponent {
     ]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(term));
+  }
+
+  private isSmallScreen(): boolean {
+    return typeof window !== 'undefined'
+      && window.matchMedia('(max-width: 991.98px)').matches;
   }
 }

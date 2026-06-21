@@ -32,7 +32,7 @@ app-sidebar a {
 html,
 body {
   height: 100%;
-  overflow: hidden;        // app-shell: only .content-scroll scrolls
+  overflow: hidden; // app-shell: only .content-scroll scrolls
 }
 
 app-root {
@@ -503,9 +503,9 @@ body {
    Override via the token (no !important needed) so compact/striped
    modifier classes can still narrow it further. */
 .mat-mdc-table {
-  --mat-table-header-container-height:        36px;
-  --mat-table-row-item-container-height:      38px;
-  --mat-table-footer-container-height:        36px;
+  --mat-table-header-container-height: 36px;
+  --mat-table-row-item-container-height: 38px;
+  --mat-table-footer-container-height: 36px;
 }
 
 app-common-table .mat-mdc-table thead,

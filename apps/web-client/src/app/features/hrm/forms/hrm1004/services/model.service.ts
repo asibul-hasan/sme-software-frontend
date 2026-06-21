@@ -18,10 +18,17 @@ export interface Grade extends BaseEntity {
   min_salary?: number | null;
   max_salary?: number | null;
   is_overtime_eligible: number;
+  steps?: GradeStep[];
   branch_no?: number | null;
   remarks?: string | null;
   is_active: number;
   row_version: number;
+}
+
+export interface GradeStep {
+  grade_step_no?: number;
+  step: string;
+  amount: number | null;
 }
 
 // ─── Service ─────────────────────────────────────────────────────────────────
@@ -48,6 +55,7 @@ export class Hrm1004ModelService {
   isSaving          = signal(false);
   searchTerm        = signal('');
   selectedGradeNo   = signal<number | null>(null);
+  steps             = signal<GradeStep[]>([]);
   lastSelectedIndex = 0;
   sortDirection = signal<SortDirection>('');
 
@@ -58,7 +66,8 @@ export class Hrm1004ModelService {
       .filter(
         (g) =>
           g.grade_name.toLowerCase().includes(term) ||
-          g.grade_id.toLowerCase().includes(term),
+          (g.grade_id || '').toLowerCase().includes(term) ||
+          String(g.rank_order ?? '').includes(term),
       );
     if (this.sortDirection() === '') return filtered;
     const sorted = [...filtered].sort((a, b) => (a.grade_id || '').localeCompare(b.grade_id || ''));
@@ -74,7 +83,7 @@ export class Hrm1004ModelService {
   initForm(): void {
     this.form = this.fb.group({
       grade_no:             [null],
-      grade_id:             ['', [Validators.required, Validators.maxLength(20)]],
+      grade_id:             ['', [Validators.maxLength(20)]],
       grade_name:           ['', [Validators.required, Validators.maxLength(100)]],
       rank_order:           [null],
       min_salary:           [null, [Validators.min(0)]],
@@ -133,6 +142,7 @@ export class Hrm1004ModelService {
               remarks:              d['remarks'],
               is_active:            d['is_active'],
             });
+            this.steps.set((d['steps'] as GradeStep[] | undefined) ?? []);
           }
         },
         error: () => this.toastr.error('Failed to load grade details'),
@@ -145,6 +155,7 @@ export class Hrm1004ModelService {
       this.toastr.warning('Please correct the errors before saving.');
       return;
     }
+    if (!this.validateSteps()) return;
 
     this.isSaving.set(true);
     const val      = this.form.getRawValue();
@@ -157,7 +168,8 @@ export class Hrm1004ModelService {
       rank_order:           val.rank_order,
       min_salary:           val.min_salary,
       max_salary:           val.max_salary,
-      is_overtime_eligible: val.is_overtime_eligible ? 1 : 0,
+      is_overtime_eligible: 0,
+      steps:                this.normalizedSteps(),
       branch_no:            this.currentBranchNo,   // branch-scoped, taken from the active branch
       remarks:              val.remarks,
       is_active:            val.is_active,
@@ -204,9 +216,70 @@ export class Hrm1004ModelService {
 
   onNew(): void {
     this.selectedGradeNo.set(null);
+    this.steps.set([{ step: 'Step 1', amount: null }]);
     this.form?.reset({
       is_overtime_eligible: 0,
       is_active: 1,
     });
+  }
+
+  addStep(): void {
+    this.steps.update((rows) => [
+      ...rows,
+      { step: `Step ${rows.length + 1}`, amount: null },
+    ]);
+  }
+
+  removeStep(index: number): void {
+    this.steps.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  updateStep(index: number, field: keyof GradeStep, value: string | number | null): void {
+    this.steps.update((rows) =>
+      rows.map((row, i) => {
+        if (i !== index) return row;
+        return {
+          ...row,
+          [field]: field === 'amount' ? this.toNumberOrNull(value) : String(value ?? ''),
+        };
+      }),
+    );
+  }
+
+  private normalizedSteps(): GradeStep[] {
+    return this.steps()
+      .map((row, index) => ({
+        grade_step_no: row.grade_step_no,
+        step: (row.step || `Step ${index + 1}`).trim(),
+        amount: this.toNumberOrNull(row.amount),
+      }))
+      .filter((row) => row.step || row.amount != null);
+  }
+
+  private validateSteps(): boolean {
+    const min = this.toNumberOrNull(this.form.get('min_salary')?.value);
+    const max = this.toNumberOrNull(this.form.get('max_salary')?.value);
+
+    for (const row of this.normalizedSteps()) {
+      if (row.amount == null) {
+        this.toastr.warning(`${row.step || 'Step'} amount is required.`);
+        return false;
+      }
+      if (min != null && row.amount < min) {
+        this.toastr.warning(`${row.step} amount cannot be lower than minimum salary.`);
+        return false;
+      }
+      if (max != null && row.amount > max) {
+        this.toastr.warning(`${row.step} amount cannot be higher than maximum salary.`);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private toNumberOrNull(value: string | number | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 }
