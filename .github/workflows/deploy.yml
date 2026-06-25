@@ -2,8 +2,8 @@ name: Build and Deploy Angular App
 on:
   push:
     branches:
-      - main # Triggers when you push to the main branch
-
+      - main
+    
 jobs:
   web-deploy:
     name: Deploy to cPanel
@@ -11,23 +11,24 @@ jobs:
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
-
+    
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Match this to your local Node version
-
+          node-version: '24' 
+    
       - name: Install dependencies
         run: npm ci
-
+    
       - name: Build project
         run: npm run build -- --configuration production
-
+    
       - name: Sync files to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/aidly/browser/ # Replace 'aidly' with your project name if different
+          # UPDATED PATH HERE:
+          local-dir: ./dist/apps/web-client/browser/
           server-dir: ./
