@@ -280,12 +280,13 @@
     >
       <div class="common-table-scroll-content">
         <table
+          #tableElement
           mat-table
           [dataSource]="dataSource"
           [trackBy]="trackByRow"
           matSort
           (matSortChange)="onSortChange($event)"
-          class="common-table-mat w-100 mb-0"
+          class="common-table-mat mb-0"
           [class.erp-striped]="mergedConfig().striped"
           [class.erp-compact]="mergedConfig().compact || mergedConfig().dense"
         >
@@ -328,6 +329,18 @@
                   color="primary"
                 />
               </td>
+              <td
+                mat-footer-cell
+                *matFooterCellDef
+                class="erp-footer-cell"
+                style="
+                  width: 40px;
+                  min-width: 40px;
+                  max-width: 40px;
+                  padding: 0 6px;
+                  text-align: center;
+                "
+              ></td>
             </ng-container>
           }
 
@@ -363,6 +376,19 @@
               >
                 {{ i + 1 }}
               </td>
+              <td
+                mat-footer-cell
+                *matFooterCellDef
+                class="erp-footer-cell"
+                style="
+                  width: 40px;
+                  min-width: 40px;
+                  max-width: 40px;
+                  padding: 0 6px;
+                  text-align: center;
+                  font-size: 11px;
+                "
+              ></td>
             </ng-container>
           }
 
@@ -375,8 +401,9 @@
                 mat-sort-header
                 [disabled]="!col.sort"
                 [class]="getHeaderClass(col)"
-                [style.width]="col.width"
-                [style.min-width]="col.minWidth"
+                [style.width]="getColumnWidth(col)"
+                [style.min-width]="getColumnWidth(col)"
+                [style.max-width]="getColumnWidth(col)"
                 [style]="getPinStyle(col)"
               >
                 {{ col.title }}
@@ -386,12 +413,13 @@
                 *matCellDef="let row; let i = index"
                 [class]="getCellClass(col, row)"
                 [class.is-editing]="isEditing(i, col.field, row)"
-                [style.width]="col.width"
-                [style.min-width]="col.minWidth"
+                [style.width]="getColumnWidth(col)"
+                [style.min-width]="getColumnWidth(col)"
+                [style.max-width]="getColumnWidth(col)"
                 [style]="getPinStyle(col)"
               >
                 @if (isEditing(i, col.field, row)) {
-                  @switch (col.cellType) {
+                  @switch (getEffectiveCellType(col)) {
                     @case ('select') {
                       <ng-select
                         class="table-edit-ngselect"
@@ -440,18 +468,11 @@
                     @default {
                       <input
                         [type]="
-                          col.cellType === 'number' ||
-                          col.cellType === 'decimal' ||
-                          col.cellType === 'currency'
-                            ? 'number'
-                            : 'text'
+                          isNumericCell(col) ? 'number' : 'text'
                         "
                         [value]="getEditValue(col) ?? ''"
                         [attr.step]="
-                          col.cellType === 'decimal' ||
-                          col.cellType === 'currency'
-                            ? '0.01'
-                            : null
+                          isDecimalInputCell(col) ? '0.01' : null
                         "
                         (input)="onEditInput($event, col)"
                         (blur)="commitField(row, col)"
@@ -467,7 +488,7 @@
                     }
                   }
                 } @else {
-                  @switch (col.cellType) {
+                  @switch (getEffectiveCellType(col)) {
                     @case ('badge') {
                       @if (getBadgeConfig(row, col); as badge) {
                         <ui-badge [variant]="badge.variant">{{
@@ -539,11 +560,30 @@
                       }
                     }
                     @default {
-                      <span [class]="getAlignClass(col)">{{
+                      <span
+                        class="erp-cell-content"
+                        [class]="getAlignClass(col)"
+                      >{{
                         formatCellValue(row, col)
                       }}</span>
                     }
                   }
+                }
+              </td>
+              <td
+                mat-footer-cell
+                *matFooterCellDef
+                class="erp-footer-cell"
+                [class]="getAlignClass(col)"
+                [style.width]="getColumnWidth(col)"
+                [style.min-width]="getColumnWidth(col)"
+                [style.max-width]="getColumnWidth(col)"
+                [style]="getPinStyle(col)"
+              >
+                @if (col.footerLabel) {
+                  <strong class="erp-footer-content">{{ col.footerLabel }}</strong>
+                } @else if (col.bottomTotal || col.footerValue) {
+                  <strong class="erp-footer-content">{{ getFooterValue(col) }}</strong>
                 }
               </td>
             </ng-container>
@@ -607,6 +647,12 @@
                   }
                 </div>
               </td>
+              <td
+                mat-footer-cell
+                *matFooterCellDef
+                class="erp-footer-cell"
+                style="width: 64px; min-width: 64px; text-align: center"
+              ></td>
             </ng-container>
           }
 
@@ -690,7 +736,6 @@
           }
         </table>
 
-        <!-- Pinned Footer Totals -->
         @if (
           hasFooterTotal() &&
           !showSkeleton() &&
@@ -710,13 +755,11 @@
               <div
                 class="erp-footer-cell"
                 [class]="getAlignClass(col)"
-                [style.width]="col.width"
-                [style.min-width]="col.minWidth"
               >
                 @if (col.footerLabel) {
-                  <strong>{{ col.footerLabel }}</strong>
+                  <strong class="erp-footer-content">{{ col.footerLabel }}</strong>
                 } @else if (col.bottomTotal || col.footerValue) {
-                  <strong>{{ getFooterValue(col) }}</strong>
+                  <strong class="erp-footer-content">{{ getFooterValue(col) }}</strong>
                 }
               </div>
             }
@@ -725,6 +768,7 @@
             }
           </div>
         }
+
       </div>
     </div>
   </div>

@@ -96,7 +96,7 @@
               type="button"
               class="sidebar-search__clear"
               (click)="clearSearch()"
-              title="Clear search"
+              matTooltip="Clear search"
             >
               <mat-icon>close</mat-icon>
             </button>
@@ -107,7 +107,7 @@
             type="button"
             class="sidebar-sort-btn"
             (click)="toggleSort()"
-            [title]="sortTitle"
+            [matTooltip]="sortTitle"
           >
             <mat-icon>{{ sortIcon }}</mat-icon>
           </button>
@@ -119,7 +119,7 @@
             type="button"
             class="sidebar-meta-bar__clear"
             (click)="clearAll()"
-            title="Clear search & filters"
+            matTooltip="Clear search & filters"
           >
             <mat-icon>filter_alt_off</mat-icon> Clear all
           </button>

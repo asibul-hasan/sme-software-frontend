@@ -106,7 +106,7 @@
                       bindLabel="label" bindValue="value"
                       placeholder="{{ 'selectType' | translate }}">
                       <ng-option [value]="null">{{ 'selectType' | translate }}</ng-option>
-                      @for (opt of sysConstants.branchTypes; track opt.value) {
+                      @for (opt of branchTypeOptions; track opt.value) {
                         <ng-option [value]="opt.value">{{ opt.label | translate }}</ng-option>
                       }
                     </ng-select>
@@ -225,8 +225,9 @@
                   formControlName="is_active"
                   bindLabel="label" bindValue="value"
                   placeholder="{{ 'selectStatus' | translate }}">
-                  <ng-option [value]="1">{{ 'active' | translate }}</ng-option>
-                  <ng-option [value]="0">{{ 'inactive' | translate }}</ng-option>
+                  @for (opt of activeStatusOptions; track opt.value) {
+                    <ng-option [value]="opt.value">{{ opt.label | lowercase | translate }}</ng-option>
+                  }
                 </ng-select>
               </div>
 

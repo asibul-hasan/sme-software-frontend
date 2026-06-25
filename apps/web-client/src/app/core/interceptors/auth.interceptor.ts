@@ -137,6 +137,7 @@ export class AuthInterceptor implements HttpInterceptor {
   private isAuthEndpoint(url: string): boolean {
     return (
       url.includes('/auth/login')   ||
+      url.includes('/auth/config')  ||
       url.includes('/auth/contexts') ||
       url.includes('/auth/refresh')
     );

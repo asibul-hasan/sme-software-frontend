@@ -76,15 +76,15 @@ export class Sys1201Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
 
-  moduleRows = computed(() => this.model.modules() as unknown as Record<string, unknown>[]);
-  submoduleRows = computed(() => this.model.submodules() as unknown as Record<string, unknown>[]);
-  menuRows = computed(() => this.model.menus() as unknown as Record<string, unknown>[]);
+  moduleRows = computed(() => this.model.filteredModules() as unknown as Record<string, unknown>[]);
+  submoduleRows = computed(() => this.model.filteredSubmodules() as unknown as Record<string, unknown>[]);
+  menuRows = computed(() => this.model.filteredMenus() as unknown as Record<string, unknown>[]);
 
   moduleTableColumns: ColumnDef[] = [
     { title: 'Code', field: 'module_code', sort: true, cellType: 'text', width: '120px', pin: 'left' },
     { title: 'Name', field: 'module_name', sort: true, cellType: 'text', minWidth: '220px' },
     { title: 'Route', field: 'module_route', sort: true, cellType: 'text', minWidth: '180px', visible: false },
-    { title: 'Order', field: 'order_sl', sort: true, cellType: 'number', width: '90px', align: 'right' },
+    { title: 'Order', field: 'order_sl', sort: true, cellType: 'text', width: '90px', align: 'right' },
     { title: 'Status', field: 'is_active', sort: true, cellType: 'badge', width: '110px', badgeConfig: statusBadge },
   ];
 
@@ -93,7 +93,7 @@ export class Sys1201Component implements OnInit {
     { title: 'Code', field: 'submodule_code', sort: true, cellType: 'text', width: '140px', pin: 'left' },
     { title: 'Name', field: 'submodule_name', sort: true, cellType: 'text', minWidth: '220px' },
     { title: 'Route', field: 'submodule_route', sort: true, cellType: 'text', minWidth: '180px', visible: false },
-    { title: 'Order', field: 'order_sl', sort: true, cellType: 'number', width: '90px', align: 'right' },
+    { title: 'Order', field: 'order_sl', sort: true, cellType: 'text', width: '90px', align: 'right' },
     { title: 'Status', field: 'is_active', sort: true, cellType: 'badge', width: '110px', badgeConfig: statusBadge },
   ];
 
@@ -104,7 +104,7 @@ export class Sys1201Component implements OnInit {
     { title: 'Submodule', field: 'submodule_name', sort: true, cellType: 'text', minWidth: '180px' },
     { title: 'Route', field: 'route_path', sort: true, cellType: 'text', minWidth: '220px' },
     { title: 'Type', field: 'menu_type', sort: true, cellType: 'text', width: '120px' },
-    { title: 'Order', field: 'order_sl', sort: true, cellType: 'number', width: '90px', align: 'right' },
+    { title: 'Order', field: 'order_sl', sort: true, cellType: 'text', width: '90px', align: 'right' },
     { title: 'Status', field: 'is_active', sort: true, cellType: 'badge', width: '110px', badgeConfig: statusBadge },
   ];
 

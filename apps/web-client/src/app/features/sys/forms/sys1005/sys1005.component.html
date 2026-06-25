@@ -107,7 +107,7 @@
                       bindValue="value"
                       placeholder="{{ 'selectType' | translate }}"
                     >
-                      @for (opt of SYS_CONSTS.taxTypes; track opt.value) {
+                      @for (opt of taxTypeOptions; track opt.value) {
                         <ng-option [value]="opt.value">
                           {{ opt.label | translate }}
                         </ng-option>

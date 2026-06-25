@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
+import { sysMenuTypeOptions } from '../../../../../core/constants/common-options.constants';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { Sys1201DataService } from './data.service';
 
@@ -70,6 +71,10 @@ export class Sys1201ModelService {
   isSaving = signal(false);
 
   modules = signal<ModuleRow[]>([]);
+
+  filteredModules = computed(() => {
+    return [...this.modules()].sort((a, b) => (b.module_no || 0) - (a.module_no || 0));
+  });
   submodules = signal<SubmoduleRow[]>([]);
   menus = signal<MenuRow[]>([]);
   moduleOptions = signal<Option[]>([]);
@@ -79,13 +84,46 @@ export class Sys1201ModelService {
   submoduleForm = signal<SubmoduleRow>(emptySubmodule());
   menuForm = signal<MenuRow>(emptyMenu());
 
-  readonly menuTypes = ['FORM', 'REPORT', 'DASHBOARD', 'WIZARD'];
+  // Filters
+  submoduleFilterModule = signal<number | null>(null);
+  menuFilterModule = signal<number | null>(null);
+  menuFilterSubmodule = signal<number | null>(null);
+
+  filteredSubmodules = computed(() => {
+    const filterMod = this.submoduleFilterModule();
+    let list = this.submodules();
+    if (filterMod) list = list.filter(s => s.module_no === filterMod);
+    return list.sort((a, b) => (b.submodule_no || 0) - (a.submodule_no || 0));
+  });
+
+  menuFilterSubmoduleOptions = computed(() => {
+    const filterMod = this.menuFilterModule();
+    let list = this.submodules();
+    if (filterMod) list = list.filter(s => s.module_no === filterMod);
+    return list.map(s => ({ value: s.submodule_no!, label: s.submodule_name }));
+  });
+
+  filteredMenus = computed(() => {
+    const filterMod = this.menuFilterModule();
+    const filterSub = this.menuFilterSubmodule();
+    const list = this.menus().filter(m => {
+      if (filterSub && m.submodule_no !== filterSub) return false;
+      if (filterMod) {
+        const sm = this.submodules().find(s => s.submodule_no === m.submodule_no);
+        if (!sm || sm.module_no !== filterMod) return false;
+      }
+      return true;
+    });
+    return list.sort((a, b) => (b.menu_no || 0) - (a.menu_no || 0));
+  });
+
+  readonly menuTypeOptions = sysMenuTypeOptions;
 
   recordCount = computed(() => {
     switch (this.activeTab()) {
       case 'modules': return this.modules().length;
-      case 'submodules': return this.submodules().length;
-      default: return this.menus().length;
+      case 'submodules': return this.filteredSubmodules().length;
+      default: return this.filteredMenus().length;
     }
   });
 
@@ -98,8 +136,20 @@ export class Sys1201ModelService {
   }
 
   refreshOptions(): void {
-    this.data.getModuleOptions().subscribe((r) => { if (isSuccess(r) && r.data) this.moduleOptions.set(r.data); });
-    this.data.getSubmoduleOptions().subscribe((r) => { if (isSuccess(r) && r.data) this.submoduleOptions.set(r.data); });
+    this.data.getModuleOptions().subscribe({
+      next: (r) => {
+        if (isSuccess(r) && r.data) this.moduleOptions.set(r.data);
+        else this.toastr.error(r.message || 'Could not load module options');
+      },
+      error: (e) => this.showLoadError(e, 'module options'),
+    });
+    this.data.getSubmoduleOptions().subscribe({
+      next: (r) => {
+        if (isSuccess(r) && r.data) this.submoduleOptions.set(r.data);
+        else this.toastr.error(r.message || 'Could not load submodule options');
+      },
+      error: (e) => this.showLoadError(e, 'submodule options'),
+    });
   }
 
   setTab(tab: Tab): void {
@@ -109,8 +159,12 @@ export class Sys1201ModelService {
   // ── Modules ──────────────────────────────────────────────────────────────────
   loadModules(): void {
     this.isLoading.set(true);
-    this.data.getModules().pipe(finalize(() => this.isLoading.set(false))).subscribe((r) => {
-      if (isSuccess(r) && r.data) this.modules.set(r.data);
+    this.data.getModules().pipe(finalize(() => this.isLoading.set(false))).subscribe({
+      next: (r) => {
+        if (isSuccess(r) && r.data) this.modules.set(r.data);
+        else this.toastr.error(r.message || 'Could not load modules');
+      },
+      error: (e) => this.showLoadError(e, 'modules'),
     });
   }
   newModule(): void { this.moduleForm.set(emptyModule()); }
@@ -136,7 +190,13 @@ export class Sys1201ModelService {
 
   // ── Submodules ────────────────────────────────────────────────────────────────
   loadSubmodules(): void {
-    this.data.getSubmodules().subscribe((r) => { if (isSuccess(r) && r.data) this.submodules.set(r.data); });
+    this.data.getSubmodules().subscribe({
+      next: (r) => {
+        if (isSuccess(r) && r.data) this.submodules.set(r.data);
+        else this.toastr.error(r.message || 'Could not load submodules');
+      },
+      error: (e) => this.showLoadError(e, 'submodules'),
+    });
   }
   newSubmodule(): void { this.submoduleForm.set(emptySubmodule()); }
   editSubmodule(s: SubmoduleRow): void { this.submoduleForm.set({ ...s }); }
@@ -162,7 +222,13 @@ export class Sys1201ModelService {
 
   // ── Menus ─────────────────────────────────────────────────────────────────────
   loadMenus(): void {
-    this.data.getMenus().subscribe((r) => { if (isSuccess(r) && r.data) this.menus.set(r.data); });
+    this.data.getMenus().subscribe({
+      next: (r) => {
+        if (isSuccess(r) && r.data) this.menus.set(r.data);
+        else this.toastr.error(r.message || 'Could not load menus');
+      },
+      error: (e) => this.showLoadError(e, 'menus'),
+    });
   }
   newMenu(): void { this.menuForm.set(emptyMenu()); }
   editMenu(m: MenuRow): void { this.menuForm.set({ ...m }); }
@@ -184,5 +250,13 @@ export class Sys1201ModelService {
       next: (r) => { if (isSuccess(r)) { this.toastr.success('Menu deleted'); this.newMenu(); this.loadMenus(); } else this.toastr.error(r.message || 'Delete failed'); },
       error: (e) => this.toastr.error(e?.error?.message || 'API error during delete'),
     });
+  }
+
+  private showLoadError(error: unknown, resource: string): void {
+    const e = error as { status?: number; error?: { message?: string } };
+    const fallback = e?.status === 403
+      ? `You do not have permission to load ${resource}.`
+      : `Could not load ${resource}.`;
+    this.toastr.error(e?.error?.message || fallback);
   }
 }

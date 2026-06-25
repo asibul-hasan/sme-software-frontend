@@ -1,6 +1,6 @@
 <aside
   class="sidebar h-full overflow-hidden"
-  [style.width.px]="isCollapsed() ? 74 : 270"
+  [style.width.px]="isCollapsed() ? 64 : 315"
   [class.collapsed]="isCollapsed()"
   [class.flyout-open]="isCollapsed() && isFlyoutOpen()"
   (mouseleave)="closeFlyout()"
@@ -42,16 +42,6 @@
       </button>
       </nav>
 
-      <div class="sb-rail-footer flex items-center justify-center flex-shrink-0">
-      <button
-        type="button"
-        class="sb-toggle-btn"
-        (click)="toggleSidebar()"
-        [title]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-      >
-        <ui-icon [size]="14">{{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}</ui-icon>
-      </button>
-      </div>
     </div>
 
     <section
@@ -60,9 +50,11 @@
       [class.flyout]="isCollapsed() && isFlyoutOpen()"
       (mouseenter)="openFlyout()"
     >
-    <header class="sb-panel-head flex-shrink-0">
-      <h2 class="sb-module-heading truncate">{{ selectedModuleLabel() | translate }}</h2>
-      <p class="sb-company mb-0 truncate">{{ companyName() }}</p>
+    <header class="sb-panel-head flex items-center flex-shrink-0">
+      <div class="sb-panel-title min-w-0">
+        <h2 class="sb-module-heading truncate">{{ selectedModuleLabel() | translate }}</h2>
+        <p class="sb-company mb-0 truncate">{{ companyName() }}</p>
+      </div>
     </header>
 
     <div class="sb-search-row flex items-center gap-2 flex-shrink-0">

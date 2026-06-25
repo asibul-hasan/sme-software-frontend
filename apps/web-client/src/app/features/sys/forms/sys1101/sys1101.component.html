@@ -62,8 +62,9 @@
         placeholder="All Status"
         [clearable]="true"
       >
-        <ng-option [value]="1">Active</ng-option>
-        <ng-option [value]="0">Inactive</ng-option>
+        @for (opt of activeStatusOptions; track opt.value) {
+          <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+        }
       </ng-select>
     </div>
   </div>
@@ -289,8 +290,9 @@
                       formControlName="is_active"
                       [clearable]="false"
                     >
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
+                      @for (opt of activeStatusOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>

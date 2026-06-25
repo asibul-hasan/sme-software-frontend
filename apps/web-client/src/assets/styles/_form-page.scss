@@ -1331,6 +1331,7 @@ select option,
 .custom-ng-select {
   display: block !important;
   width: 100% !important;
+  position: relative !important;
 
   .ng-select-container {
     padding: 0 10px !important;

@@ -1,6 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
+import {
+  sysRolePermissionFlagOptions,
+  type SysRolePermissionFlagValue,
+} from '../../../../../core/constants/common-options.constants';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { Sys1103DataService } from './data.service';
@@ -12,9 +16,7 @@ export interface RoleOption {
   is_system_role?: number;
 }
 
-export type FlagField =
-  | 'can_view' | 'can_insert' | 'can_update' | 'can_delete'
-  | 'can_approve' | 'can_post' | 'can_cancel' | 'can_export';
+export type FlagField = SysRolePermissionFlagValue;
 
 export interface MatrixRow {
   menu_no: number;
@@ -65,16 +67,10 @@ export class Sys1103ModelService {
   copySourceRoleNo = signal<number | null>(null);
   isCopying = signal(false);
 
-  readonly flagFields: { key: FlagField; label: string }[] = [
-    { key: 'can_view', label: 'View' },
-    { key: 'can_insert', label: 'Create' },
-    { key: 'can_update', label: 'Edit' },
-    { key: 'can_delete', label: 'Delete' },
-    { key: 'can_approve', label: 'Approve' },
-    { key: 'can_post', label: 'Post' },
-    { key: 'can_cancel', label: 'Cancel' },
-    { key: 'can_export', label: 'Export' },
-  ];
+  readonly flagFields: { key: FlagField; label: string }[] = sysRolePermissionFlagOptions.map((opt) => ({
+    key: opt.value,
+    label: opt.label,
+  }));
 
   filteredRoles = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();

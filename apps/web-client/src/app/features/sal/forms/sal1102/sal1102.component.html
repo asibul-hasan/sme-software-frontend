@@ -46,7 +46,7 @@
           <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
             <input type="date" class="form-control" [(ngModel)]="receiptDate" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="amount" [disabled]="!editable()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-3"><div class="field-group"><label class="field-label">Txn / Cheque Ref</label>
             <input type="text" class="form-control" [(ngModel)]="txnRef" [disabled]="!editable()" /></div></div>
         </div>

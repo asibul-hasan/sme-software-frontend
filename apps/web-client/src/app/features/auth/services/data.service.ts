@@ -19,21 +19,25 @@ export interface LoginRequest {
   branch_no?: number;
 }
 
-/**
- * @deprecated No longer needed — the refresh token travels as an HttpOnly cookie.
- * Kept here only to avoid breaking any callers that may still reference the type.
- */
 export interface RefreshTokenRequest {
   refresh_token: string;
 }
 
 /**
  * Wire shape of {@code POST /api/v1/auth/refresh}.
- * Both tokens are rotated on every call — store both in localStorage.
+ * Both tokens are rotated on every call.
  */
 export interface RefreshResponse {
   access_token:  string;
   refresh_token: string;
+  auth_config?: AuthConfigResponse;
+}
+
+export interface AuthConfigResponse {
+  access_token_expiration_ms: number;
+  refresh_token_expiration_ms: number;
+  access_token_refresh_before_ms: number;
+  inactivity_timeout_ms: number;
 }
 
 export interface Company {
@@ -86,6 +90,7 @@ export interface LoginResponse {
   access_scope?: number;
   /** 1 = the user must change their password before continuing. */
   must_change_password?: number;
+  auth_config?: AuthConfigResponse;
 }
 
 export interface RegisterRequest {
@@ -153,13 +158,18 @@ export class AuthDataService extends BaseDataService {
       .pipe(map(res => res.data));
   }
 
-  /**
-   * Validates the stored refresh token and rotates both tokens.
-   * The client replaces both the access token and refresh token in localStorage.
-   */
+  /** Validates the stored refresh token and rotates both tokens. */
   refresh(request: RefreshTokenRequest): Observable<RefreshResponse> {
     return this.http
       .post<ApiResponse<RefreshResponse>>(`${this.baseUrl}/refresh`, request, {
+        context: new HttpContext().set(SKIP_LOADER, true)
+      })
+      .pipe(map(res => res.data));
+  }
+
+  getConfig(): Observable<AuthConfigResponse> {
+    return this.http
+      .get<ApiResponse<AuthConfigResponse>>(`${this.baseUrl}/config`, {
         context: new HttpContext().set(SKIP_LOADER, true)
       })
       .pipe(map(res => res.data));

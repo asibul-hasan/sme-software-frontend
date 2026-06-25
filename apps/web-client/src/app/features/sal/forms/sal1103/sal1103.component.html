@@ -64,9 +64,9 @@
             <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
               <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
             <div class="col-md-2"><div class="field-group"><label class="field-label">Net Price</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" /></div></div>
+              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" step="0.01" inputmode="decimal" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Unit Cost</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newCost" /></div></div>
+              <input type="number" class="form-control text-end" [(ngModel)]="newCost" step="0.01" inputmode="decimal" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
               <input type="number" class="form-control text-end" [(ngModel)]="newTaxPct" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Batch</label>

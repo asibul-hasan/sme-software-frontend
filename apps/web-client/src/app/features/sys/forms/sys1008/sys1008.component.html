@@ -75,11 +75,9 @@
                   <div class="field-group">
                     <label class="field-label" for="value_type">Value Type</label>
                     <ng-select id="value_type" labelForId="value_type" formControlName="value_type" [clearable]="false">
-                      <ng-option [value]="1">String</ng-option>
-                      <ng-option [value]="2">Number</ng-option>
-                      <ng-option [value]="3">Boolean</ng-option>
-                      <ng-option [value]="4">JSON</ng-option>
-                      <ng-option [value]="5">Date</ng-option>
+                      @for (opt of valueTypeOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>
@@ -93,8 +91,9 @@
                   <div class="field-group">
                     <label class="field-label" for="is_active">Status</label>
                     <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
+                      @for (opt of activeStatusOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>

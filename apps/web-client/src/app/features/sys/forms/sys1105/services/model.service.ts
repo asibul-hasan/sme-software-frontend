@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
+import { sysAuditActionTypeOptions } from '../../../../../core/constants/common-options.constants';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { Sys1105DataService } from './data.service';
 
@@ -34,9 +35,7 @@ export class Sys1105ModelService {
 
   filter: AuditLogFilter = { limit: 200 };
 
-  readonly actionTypes = [
-    'INSERT', 'UPDATE', 'DELETE', 'SOFT_DELETE', 'APPROVE', 'POST', 'CANCEL', 'LOGIN', 'SWITCH',
-  ];
+  readonly actionTypeOptions = sysAuditActionTypeOptions;
 
   search(): void {
     this.isLoading.set(true);

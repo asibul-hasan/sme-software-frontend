@@ -68,7 +68,7 @@
             <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
               <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
             <div class="col-md-2"><div class="field-group"><label class="field-label">Unit Price</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" /></div></div>
+              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" step="0.01" inputmode="decimal" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Disc %</label>
               <input type="number" class="form-control text-end" [(ngModel)]="newDiscPct" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
@@ -98,13 +98,13 @@
       <div class="card-body">
         <div class="row row-group align-items-end">
           <div class="col-md-2"><div class="field-group"><label class="field-label">Shipping</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" [disabled]="!editable()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Other Charges</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" [disabled]="!editable()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Round Off</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="roundOff" [disabled]="!editable()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="roundOff" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Paid Now</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" [disabled]="!editable()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Due Date</label>
             <input type="date" class="form-control" [(ngModel)]="dueDate" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>

@@ -11,6 +11,7 @@ import { StorageService } from './storage.service';
 import { AuthContextService } from './auth-context.service';
 import { globalConstants } from '../constants/global.constants';
 import { AppBootstrapService } from './app-bootstrap.service';
+import { AuthSessionConfigService } from './auth-session-config.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -20,6 +21,8 @@ export class AuthService {
   private readonly authContext       = inject(AuthContextService);
   private readonly router            = inject(Router);
   private readonly appBootstrap      = inject(AppBootstrapService);
+  private readonly authConfig        = inject(AuthSessionConfigService);
+  private readonly authStorageScope  = globalConstants.authStorageScope;
 
   public readonly isAuthenticated    = this.authContext.isAuthenticated;
   public readonly user               = this.authContext.user;
@@ -30,11 +33,11 @@ export class AuthService {
   // ─── Token accessors ─────────────────────────────────────────────────────
 
   getToken(): string | null {
-    return this.storageService.getItem<string>(globalConstants.storageKeys.accessToken, 'session');
+    return this.storageService.getItem<string>(globalConstants.storageKeys.accessToken, this.authStorageScope);
   }
 
   getRefreshToken(): string | null {
-    return this.storageService.getItem<string>(globalConstants.storageKeys.refreshToken, 'session');
+    return this.storageService.getItem<string>(globalConstants.storageKeys.refreshToken, this.authStorageScope);
   }
 
   // ─── App bootstrap ────────────────────────────────────────────────────────
@@ -86,7 +89,7 @@ export class AuthService {
 
   /**
    * Sends the stored refresh token to the server, receives a rotated pair,
-   * and saves both the new access token and new refresh token to localStorage.
+   * and saves both the new access token and new refresh token to the configured auth storage.
    * Returns the new access token string for the interceptor to use immediately.
    */
   refreshToken(): Observable<string> {
@@ -97,9 +100,10 @@ export class AuthService {
 
     return this.authDataService.refresh({ refresh_token: refreshToken }).pipe(
       tap(response => {
-        this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token, 'session');
+        this.authConfig.hydrate(response.auth_config);
+        this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token, this.authStorageScope);
         if (response.refresh_token) {
-          this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, 'session');
+          this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, this.authStorageScope);
         }
       }),
       map(response => response.access_token),
@@ -111,8 +115,8 @@ export class AuthService {
     this.authDataService.logout().pipe(
       catchError(() => of(void 0)),
       finalize(() => {
-        this.storageService.removeItem(globalConstants.storageKeys.accessToken, 'session');
-        this.storageService.removeItem(globalConstants.storageKeys.refreshToken, 'session');
+        this.storageService.removeItem(globalConstants.storageKeys.accessToken, this.authStorageScope);
+        this.storageService.removeItem(globalConstants.storageKeys.refreshToken, this.authStorageScope);
         this.authContext.clear();
         this.permissionService.clearPermissions();
         this.appBootstrap.clear();          // wipe logo + currency cache
@@ -156,8 +160,9 @@ export class AuthService {
 
   private setSession(response: LoginResponse): void {
     // Per re-plan §4.5: token + active context are per-tab (sessionStorage).
-    this.storageService.setItem(globalConstants.storageKeys.accessToken,  response.access_token,  'session');
-    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, 'session');
+    this.authConfig.hydrate(response.auth_config);
+    this.storageService.setItem(globalConstants.storageKeys.accessToken,  response.access_token,  this.authStorageScope);
+    this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, this.authStorageScope);
 
     const user: User = {
       user_no:       response.user_no,
@@ -215,10 +220,10 @@ export class AuthService {
     }
   }
 
-  /** Persist the last successful login context (localStorage) to pre-fill the login picker next time. */
+  /** Persist the last successful login context using the configured auth storage scope. */
   private rememberLastUsed(userId: string, companyNo?: number, branchNo?: number): void {
-    if (userId)             this.storageService.setItem(globalConstants.storageKeys.lastUserId, userId, 'local');
-    if (companyNo != null)  this.storageService.setItem(globalConstants.storageKeys.lastCompanyNo, companyNo, 'local');
-    if (branchNo != null)   this.storageService.setItem(globalConstants.storageKeys.lastBranchNo, branchNo, 'local');
+    if (userId)             this.storageService.setItem(globalConstants.storageKeys.lastUserId, userId, this.authStorageScope);
+    if (companyNo != null)  this.storageService.setItem(globalConstants.storageKeys.lastCompanyNo, companyNo, this.authStorageScope);
+    if (branchNo != null)   this.storageService.setItem(globalConstants.storageKeys.lastBranchNo, branchNo, this.authStorageScope);
   }
 }

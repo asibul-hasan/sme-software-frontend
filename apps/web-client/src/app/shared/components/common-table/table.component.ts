@@ -1,10 +1,10 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, inject,
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, inject,
   input, model, OnChanges, OnDestroy, output, signal, SimpleChanges, viewChild,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgTemplateOutlet, CommonModule } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort as MatSortEvent } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -20,28 +20,39 @@ import { UiTooltipDirective } from '@app/shared/ui/tooltip/ui-tooltip.directive'
 import { ShowDatepickerDirective } from '@app/shared/directives/show-datepicker.directive';
 
 import {
-  BadgeConfig, CellButtonConfig, ColumnDef, DEFAULT_TABLE_CONFIG,
+  BadgeConfig, CellButtonConfig, CellType, ColumnDef, DEFAULT_TABLE_CONFIG,
   ExportFormat, PageEvent, SelectOption, SortState, TableAction, TableActionType, TableConfig,
 } from './table.types';
 import { TableExportService } from './table-export.service';
 import { TableViewModalComponent } from './table-view-modal.component';
+import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
 
 @Component({
   selector: 'app-common-table',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ReactiveFormsModule, FormsModule, NgSelectModule,
-    MatTableModule, MatSortModule, MatPaginatorModule, MatCheckboxModule, MatIconModule,
-    NgTemplateOutlet, UiBadgeComponent, UiMenuComponent, UiMenuTriggerDirective, UiTooltipDirective,
-    ShowDatepickerDirective,
-    TableViewModalComponent,
-  ],
   templateUrl: './table.component.html',
-  styles: `
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    NgTemplateOutlet,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTableModule,
+    MatCheckboxModule,
+    MatIconModule,
+    UiBadgeComponent,
+    UiMenuComponent,
+    UiMenuTriggerDirective,
+    UiTooltipDirective,
+    ShowDatepickerDirective,
+    TableViewModalComponent
+  ],
+  providers: [AppDecimalPipe],
+  styles: [`
     :host {
       display: block;
-      width: 100%;
       height: 100%;
       min-height: 20vh;
     }
@@ -80,7 +91,9 @@ import { TableViewModalComponent } from './table-view-modal.component';
     }
     .common-table-mat {
       flex: 0 0 auto;
+      width: max-content;
       min-width: 100%;
+      table-layout: fixed;
     }
     .common-table-search {
       min-height: 30px !important;
@@ -113,6 +126,14 @@ import { TableViewModalComponent } from './table-view-modal.component';
         background-color: var(--common-table-header-bg) !important;
         border-bottom: 2px solid var(--table-header-border, var(--border-color));
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+      }
+      .mat-mdc-header-cell .mat-sort-header-container { width: 100%; min-width: 0; }
+      .mat-mdc-header-cell .mat-sort-header-content {
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .mat-mdc-header-cell.mat-sort-header-sorted { color: var(--indigo); }
       .mat-mdc-header-cell .mat-sort-header-arrow { color: var(--indigo); }
@@ -132,7 +153,19 @@ import { TableViewModalComponent } from './table-view-modal.component';
         border-bottom: 1px solid var(--table-row-border, var(--border-color));
         vertical-align: middle;
         transition: background 0.12s ease, color 0.12s ease;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
       }
+      .mat-mdc-header-cell.erp-align-left,
+      .mat-mdc-cell.erp-align-left,
+      .mat-mdc-footer-cell.erp-align-left { text-align: left; }
+      .mat-mdc-header-cell.erp-align-center,
+      .mat-mdc-cell.erp-align-center,
+      .mat-mdc-footer-cell.erp-align-center { text-align: center; }
+      .mat-mdc-header-cell.erp-align-right,
+      .mat-mdc-cell.erp-align-right,
+      .mat-mdc-footer-cell.erp-align-right { text-align: right; }
 
       /* Row hover — subtle indigo wash */
       .mat-mdc-row:hover .mat-mdc-cell {
@@ -221,46 +254,81 @@ import { TableViewModalComponent } from './table-view-modal.component';
       padding-left: 11px !important;  /* 14px cell-padding − 3px border = same visual gap */
     }
 
-    /* Footer band — identical to the header band (same bg + 1px rule) */
+    /* Footer band — uses the same table layout engine as header/body */
+    .erp-footer-row .mat-mdc-footer-cell,
     .erp-footer-row .erp-footer-cell {
       padding: 8px 14px !important;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-primary);
-      background: var(--bg-secondary) !important;
-      border-top: 1px solid var(--border-color);
+      background: var(--table-header-bg, var(--bg-secondary)) !important;
+      border-top: 1px solid var(--table-header-border, var(--border-color)) !important;
+      border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .erp-footer-row .mat-mdc-footer-cell:last-child,
+    .erp-footer-row .erp-footer-cell:last-child {
+      border-right: none !important;
+    }
+    .erp-footer-row {
+      position: sticky;
+      bottom: 0;
+      background: var(--table-header-bg, var(--bg-secondary)) !important;
+      z-index: 4;
+      box-shadow: 0 -2px 6px -3px rgba(0, 0, 0, 0.16);
     }
 
     .erp-footer-grid {
-      flex: 0 0 auto;
-      display: grid;
-      margin-top: auto;
       position: sticky;
       bottom: 0;
-      z-index: 2;
-      overflow: visible;
+      z-index: 4;
+      display: grid;
+      flex: 0 0 auto;
+      margin-top: auto;
+      width: max-content;
+      min-width: 100%;
       background: var(--table-header-bg, var(--bg-secondary)) !important;
       border-top: 1px solid var(--table-header-border, var(--border-color));
-      min-height: 38px;
-      min-width: 100%;
+      box-shadow: 0 -2px 6px -3px rgba(0, 0, 0, 0.16);
     }
     .erp-footer-grid .erp-footer-cell {
+      min-height: 38px;
       padding: 8px 14px !important;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-primary);
       background: var(--table-header-bg, var(--bg-secondary)) !important;
-      min-height: 38px;
+      border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
-      white-space: nowrap;
-      border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
+      overflow: hidden;
     }
-    .erp-footer-grid .erp-footer-cell:last-child { border-right: none; }
-    .erp-footer-grid .erp-footer-cell.text-right { justify-content: flex-end; }
-    .erp-footer-grid .erp-footer-cell.text-center { justify-content: center; }
+    .erp-footer-grid .erp-footer-cell:last-child {
+      border-right: none !important;
+    }
+    .erp-footer-grid .erp-footer-cell.erp-align-left { justify-content: flex-start; text-align: left; }
+    .erp-footer-grid .erp-footer-cell.erp-align-center { justify-content: center; text-align: center; }
+    .erp-footer-grid .erp-footer-cell.erp-align-right { justify-content: flex-end; text-align: right; }
 
     .sticky-bottom { position: sticky; bottom: 0; z-index: 2; }
+
+    .erp-cell-content,
+    .erp-footer-content {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .erp-striped .mat-mdc-row:nth-child(even) .mat-mdc-cell {
+      background: var(--bg-secondary);
+    }
 
     .erp-striped .mat-mdc-row:nth-child(even) .mat-mdc-cell {
       background: var(--bg-secondary);
@@ -270,10 +338,10 @@ import { TableViewModalComponent } from './table-view-modal.component';
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
-  `,
+  `]
 })
 export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy {
-  readonly columns = input<ColumnDef[]>([]);
+  readonly columns = input.required<ColumnDef[]>();
   readonly data = input<Record<string, unknown>[]>([]);
   readonly config = input<Partial<TableConfig>>({});
   readonly loading = input(false);
@@ -292,12 +360,16 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
   readonly sort = viewChild.required(MatSort);
   readonly paginator = viewChild(MatPaginator);
+  readonly tableElement = viewChild<ElementRef<HTMLTableElement>>('tableElement');
 
   private readonly exportService = inject(TableExportService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly datePipe = new DatePipe('en-US');
-  private readonly decimalPipe = new DecimalPipe('en-US');
+  private readonly appDecimalPipe = inject(AppDecimalPipe);
   private readonly destroy$ = new Subject<void>();
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private resizeObserver?: ResizeObserver;
+  private footerSyncFrame: number | null = null;
 
   readonly dataSource = new MatTableDataSource<Record<string, unknown>>([]);
   readonly searchControl = new FormControl('', { nonNullable: true });
@@ -306,6 +378,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly viewModalRow = signal<Record<string, unknown> | null>(null);
   readonly visibleColumns = signal<ColumnDef[]>([]);
   readonly showSkeleton = signal(false);
+  readonly measuredFooterGridTemplate = signal('');
+  readonly measuredFooterWidth = signal('');
   /**
    * Index (within the current page) of the row in edit mode, or null.
    * Tracked by INDEX, not object reference, so the edit survives the consumer
@@ -316,6 +390,10 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly rowEdits = signal<Record<string, unknown>>({});
   /** Row whose kebab (⋯) menu is open — the shared action menu renders for this row. */
   readonly actionMenuRow = signal<Record<string, unknown> | null>(null);
+  private readonly defaultTextColumnWidth = '160px';
+  private readonly defaultNumericColumnWidth = '120px';
+  private readonly defaultDateColumnWidth = '130px';
+  private readonly defaultShortColumnWidth = '96px';
 
   readonly mergedConfig = computed<TableConfig>(() => ({ ...DEFAULT_TABLE_CONFIG, ...this.config() }));
 
@@ -330,6 +408,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly hasFooterTotal = computed(() => this.visibleColumns().some((c) => c.bottomTotal || c.footerValue || c.footerLabel));
 
   readonly footerTotals = computed<Record<string, number>>(() => {
+    this.data();
+    this.searchTerm();
     const totals: Record<string, number> = {};
     const filtered = this.dataSource.filteredData;
     this.visibleColumns().forEach((col) => {
@@ -351,6 +431,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     // mutation won't change the input reference and this effect won't re-run.
     effect(() => {
       this.dataSource.data = this.data() ?? [];
+      this.scheduleFooterSync();
       this.cdr.markForCheck();
     });
 
@@ -365,6 +446,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       } else {
         this.visibleColumns.set(cols.filter((c) => c.visible !== false));
       }
+      this.scheduleFooterSync();
     });
 
     effect(() => { if (this.loading()) this.showSkeleton.set(true); else setTimeout(() => this.showSkeleton.set(false), 200); });
@@ -381,6 +463,17 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
         this.dataSource.paginator = pg;
       }
     });
+
+    effect(() => {
+      this.displayFields();
+      if (this.mergedConfig().showFooterTotal) {
+        this.scheduleFooterSync();
+      }
+      this.mergedConfig().showActions;
+      this.mergedConfig().showRowNumbers;
+      this.mergedConfig().selectable;
+      this.scheduleFooterSync();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -394,12 +487,14 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       const raw = col?.value ? col.value(row) : row[field];
       return typeof raw === 'number' ? raw : String(raw ?? '').toLowerCase();
     };
+    this.setupFooterSyncObserver();
+    this.scheduleFooterSync();
   }
 
   /** Human-readable text of a cell, used for search. Mirrors what the user actually sees. */
   private cellSearchText(row: Record<string, unknown>, col: ColumnDef): string {
     if (col.value) return String(col.value(row) ?? '');
-    switch (col.cellType) {
+    switch (this.getEffectiveCellType(col)) {
       case 'select':
       case 'date':
       case 'datepipe':
@@ -422,9 +517,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['totalCount'] && this.mergedConfig().serverSide) { const pg = this.paginator(); if (pg) pg.length = this.totalCount(); }
+    this.scheduleFooterSync();
   }
-
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
   // ─── Column Toggle + Persistence ─────────────────────────────────────────
   isColumnVisible(col: ColumnDef): boolean { return this.visibleColumns().some((c) => c.field === col.field); }
@@ -531,7 +625,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   onEditInput(event: Event, col: ColumnDef): void {
     const t = event.target as HTMLInputElement | HTMLSelectElement;
     let v: unknown = t.value;
-    if (['number', 'decimal', 'currency'].includes(col.cellType || '')) v = v === '' ? null : Number(v);
+    const type = this.getEffectiveCellType(col);
+    if (type === 'number' || type === 'decimal' || type === 'currency') v = v === '' ? null : Number(v);
     this.setEditValue(col, v);
   }
   onEditCheckbox(event: Event, row: Record<string, unknown>, col: ColumnDef): void {
@@ -628,7 +723,6 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       setTimeout(() => { iframe.contentWindow?.print(); document.body.removeChild(iframe); }, 300);
     }
   }
-
   // ─── Cell Helpers ───────────────────────────────────────────────────────
   getCellValue(row: Record<string, unknown>, col: ColumnDef): unknown { return row[col.field]; }
 
@@ -639,11 +733,12 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       return v == null ? '' : String(v);
     }
     const value = row[col.field]; if (value == null || value === '') return '';
-    switch (col.cellType) {
+    switch (this.getEffectiveCellType(col)) {
       case 'select': { const opts = this.getSelectOptions(col, row); const f = opts.find((o) => String(o.value) === String(value)); return f ? f.label : String(value); }
       case 'date': case 'datepipe': return this.datePipe.transform(value as string | number | Date, col.dateFormat || 'mediumDate') || String(value);
-      case 'number': case 'decimal': { const n = Number(value); if (isNaN(n)) return String(value); return this.decimalPipe.transform(n, `1.${col.precision ?? 2}-${col.precision ?? 2}`) || String(value); }
-      case 'currency': { const n = Number(value); if (isNaN(n)) return String(value); const f = this.decimalPipe.transform(n, `1.${col.precision ?? 2}-${col.precision ?? 2}`); return `${col.currencyCode || ''} ${f}`.trim(); }
+      case 'number': { const n = Number(value); if (isNaN(n)) return String(value); return this.appDecimalPipe.transform(n, col.precision ?? 0) || String(value); }
+      case 'decimal': { const n = Number(value); if (isNaN(n)) return String(value); return this.appDecimalPipe.transform(n, col.precision) || String(value); }
+      case 'currency': { const n = Number(value); if (isNaN(n)) return String(value); const f = this.appDecimalPipe.transform(n, col.precision); return `${col.currencyCode || ''} ${f}`.trim(); }
       default: return String(value);
     }
   }
@@ -652,44 +747,91 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   getButtonConfig(row: Record<string, unknown>, col: ColumnDef): CellButtonConfig | null { if (!col.buttonConfig) return null; return typeof col.buttonConfig === 'function' ? col.buttonConfig(row) : col.buttonConfig; }
   onCellButtonClick(row: Record<string, unknown>, col: ColumnDef, cfg: CellButtonConfig): void { if (cfg.onClick) cfg.onClick(row, col); }
 
-  getAlignClass(col: ColumnDef): string { return col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'; }
+  getEffectiveCellType(col: ColumnDef): CellType | undefined {
+    const type = col.cellType;
+    if (this.isAmountField(col.field) && (!type || type === 'text' || type === 'number' || type === 'readonly')) {
+      return 'decimal';
+    }
+    return type;
+  }
+
+  isNumericCell(col: ColumnDef): boolean {
+    return ['number', 'decimal', 'currency'].includes(this.getEffectiveCellType(col) || '');
+  }
+
+  isDecimalInputCell(col: ColumnDef): boolean {
+    const type = this.getEffectiveCellType(col);
+    return type === 'decimal' || type === 'currency';
+  }
+
+  private isAmountField(field: string): boolean {
+    return /(^|_)amount($|_)/i.test(field);
+  }
+
+  getAlignClass(col: ColumnDef): string {
+    if (col.align === 'center') return 'erp-align-center';
+    if (col.align === 'right') return 'erp-align-right';
+    if (col.align === 'left') return 'erp-align-left';
+    const type = this.getEffectiveCellType(col);
+    if (type === 'currency' || type === 'decimal' || type === 'number') return 'erp-align-right';
+    return 'erp-align-left';
+  }
+
+  getColumnWidth(col: ColumnDef): string {
+    return col.width || col.minWidth || this.getDefaultColumnWidth(col);
+  }
+
+  private getDefaultColumnWidth(col: ColumnDef): string {
+    switch (this.getEffectiveCellType(col)) {
+      case 'currency':
+      case 'decimal':
+        return this.defaultNumericColumnWidth;
+      case 'number':
+      case 'checkbox':
+      case 'icon':
+      case 'button':
+        return this.defaultShortColumnWidth;
+      case 'date':
+      case 'datepipe':
+        return this.defaultDateColumnWidth;
+      default:
+        return this.defaultTextColumnWidth;
+    }
+  }
 
   getPinStyle(col: ColumnDef): Record<string, string> {
     if (!col.pin) return {};
     const cols = this.columns(); let offset = 0;
     if (this.mergedConfig().selectable) offset += 40;
     if (this.mergedConfig().showRowNumbers) offset += 40;
-    if (col.pin === 'left') { for (const c of cols) { if (c === col) break; if (c.pin === 'left') offset += parseInt(c.width || '150', 10); } return { left: `${offset}px`, 'z-index': '2' }; }
-    if (col.pin === 'right') { let r = 0; for (const c of [...cols].reverse()) { if (c === col) break; if (c.pin === 'right') r += parseInt(c.width || '150', 10); } if (this.mergedConfig().showActions) r += 80; return { right: `${r}px`, 'z-index': '2' }; }
+    if (col.pin === 'left') {
+      for (const c of cols) {
+        if (c === col) break;
+        if (c.pin === 'left') offset += parseInt(this.getColumnWidth(c), 10);
+      }
+      return { left: `${offset}px`, 'z-index': '2' };
+    }
+    if (col.pin === 'right') {
+      let r = 0;
+      for (const c of [...cols].reverse()) {
+        if (c === col) break;
+        if (c.pin === 'right') r += parseInt(this.getColumnWidth(c), 10);
+      }
+      if (this.mergedConfig().showActions) r += 80;
+      return { right: `${r}px`, 'z-index': '2' };
+    }
     return {};
   }
 
   isSticky(col: ColumnDef): boolean { return col.pin === 'left' || col.pin === 'right'; }
 
   getHeaderClass(col: ColumnDef): string {
-    const c: string[] = []; if (this.isSticky(col)) c.push('sticky'); if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]'); if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]'); if (col.headerClass) c.push(col.headerClass); return c.join(' ');
-  }
-
-  getCellClass(col: ColumnDef, row?: Record<string, unknown>): string {
-    const c: string[] = [this.getAlignClass(col)]; if (this.isSticky(col)) c.push('sticky'); if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]'); if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]'); if (this.isColumnEditable(col, row)) c.push('cursor-text'); if (col.cellClass) c.push(col.cellClass); return c.join(' ');
-  }
-
-  getColumnByField(field: string): ColumnDef | undefined { return this.visibleColumns().find((c) => c.field === field); }
-  getFooterLabel(): string { const c = this.visibleColumns().find((x) => !!x.footerLabel); return c?.footerLabel || 'Total'; }
-
-  getFooterValue(col: ColumnDef): string {
-    if (col.footerValue) {
-      const raw = col.footerValue(this.dataSource.filteredData);
-      const n = Number(raw);
-      if (!isNaN(n)) {
-        const f = this.decimalPipe.transform(n, `1.${col.precision ?? 2}-${col.precision ?? 2}`);
-        return col.cellType === 'currency' ? `${col.currencyCode || ''} ${f}`.trim() : (f || '');
-      }
-      return raw == null ? '' : String(raw);
-    }
-    const t = this.footerTotals()[col.field]; if (t == null) return '';
-    const f = this.decimalPipe.transform(t, `1.${col.precision ?? 2}-${col.precision ?? 2}`);
-    return col.cellType === 'currency' ? `${col.currencyCode || ''} ${f}`.trim() : (f || '');
+    const c: string[] = [this.getAlignClass(col)];
+    if (this.isSticky(col)) c.push('sticky');
+    if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
+    if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');
+    if (col.headerClass) c.push(col.headerClass);
+    return c.join(' ');
   }
 
   getFooterGridTemplate(): string {
@@ -697,12 +839,98 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     if (this.mergedConfig().selectable) tracks.push('40px');
     if (this.mergedConfig().showRowNumbers) tracks.push('40px');
     for (const col of this.visibleColumns()) {
-      if (col.width) tracks.push(col.width);
-      else if (col.minWidth) tracks.push(`minmax(${col.minWidth}, 1fr)`);
-      else tracks.push('minmax(120px, 1fr)');
+      tracks.push(this.getColumnWidth(col));
     }
     if (this.mergedConfig().showActions) tracks.push('64px');
     return tracks.join(' ');
+  }
+
+  private setupFooterSyncObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => this.scheduleFooterSync());
+    this.resizeObserver.observe(this.host.nativeElement);
+    const table = this.tableElement()?.nativeElement;
+    if (table) this.resizeObserver.observe(table);
+  }
+
+  private scheduleFooterSync(): void {
+    if (typeof window === 'undefined') return;
+    if (this.footerSyncFrame !== null) {
+      window.cancelAnimationFrame(this.footerSyncFrame);
+    }
+    this.footerSyncFrame = window.requestAnimationFrame(() => {
+      this.footerSyncFrame = null;
+      this.syncFooterToHeader();
+    });
+  }
+
+  private syncFooterToHeader(): void {
+    if (!this.hasFooterTotal() || this.showSkeleton()) {
+      this.measuredFooterGridTemplate.set('');
+      this.measuredFooterWidth.set('');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const table = this.tableElement()?.nativeElement;
+    const headerCells = Array.from(
+      this.host.nativeElement.querySelectorAll('tr.mat-mdc-header-row th.mat-mdc-header-cell'),
+    ) as HTMLTableCellElement[];
+
+    if (!table || !headerCells.length) {
+      this.measuredFooterGridTemplate.set('');
+      this.measuredFooterWidth.set('');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const tracks = headerCells
+      .map((cell) => {
+        const width = cell.getBoundingClientRect().width;
+        return width > 0 ? `${Math.round(width * 100) / 100}px` : '';
+      })
+      .filter(Boolean);
+
+    if (!tracks.length) {
+      this.measuredFooterGridTemplate.set('');
+      this.measuredFooterWidth.set('');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const tableWidth = Math.max(table.scrollWidth, Math.round(table.getBoundingClientRect().width));
+    this.measuredFooterGridTemplate.set(tracks.join(' '));
+    this.measuredFooterWidth.set(`${tableWidth}px`);
+    this.cdr.markForCheck();
+  }
+
+  getCellClass(col: ColumnDef, row?: any): string {
+    const c: string[] = ['erp-cell-content', this.getAlignClass(col)];
+    if (this.isSticky(col)) c.push('sticky');
+    if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
+    if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');
+    if (col.cellClass) c.push(col.cellClass);
+    return c.filter(Boolean).join(' ');
+  }
+
+  getFooterValue(col: ColumnDef): string {
+    if (col.footerLabel) return col.footerLabel;
+    let value: unknown = '';
+    if (col.footerValue) {
+      value = typeof col.footerValue === 'function' ? col.footerValue(this.dataSource.data) : col.footerValue;
+    } else if (col.bottomTotal) {
+      value = this.footerTotals()[col.field] ?? 0;
+    }
+    if (value == null || value === '') return '';
+    const n = Number(value);
+    const type = this.getEffectiveCellType(col);
+    if (['number', 'decimal', 'currency'].includes(type || '') && !isNaN(n)) {
+      const precision = type === 'number' ? (col.precision ?? 0) : col.precision;
+      const formatted = this.appDecimalPipe.transform(n, precision) || String(value);
+      return type === 'currency' ? `${col.currencyCode || ''} ${formatted}`.trim() : formatted;
+    }
+    return String(value);
   }
 
   trackByField(_i: number, f: string): string { return f; }
@@ -714,4 +942,13 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   trackByRow = (i: number, r: Record<string, unknown>): unknown => r['id'] ?? i;
   trackByColumn(_i: number, c: ColumnDef): string { return c.field; }
   get skeletonRows(): number[] { return Array.from({ length: this.paginator()?.pageSize || 10 }, (_, i) => i); }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.resizeObserver?.disconnect();
+    if (this.footerSyncFrame !== null && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(this.footerSyncFrame);
+    }
+  }
 }

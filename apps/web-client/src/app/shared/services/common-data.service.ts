@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseDataService } from '../../core/services/base-data.service';
-import { ApiResponse } from '../../core/models/response.model';
+import { ApiResponse, isSuccess } from '../../core/models/response.model';
 
 // ─── Lightweight lookup DTOs ────────────────────────────────────────────────
 
@@ -97,6 +97,67 @@ export interface CurrencyLookup {
 })
 export class CommonDataService extends BaseDataService {
   protected override readonly modulePath = ''; // Root level: /api/v1/...
+  private static readonly CURRENCIES_CACHE_KEY = 'sme_currencies';
+
+  // ─── Global Signals ────────────────────────────────────────────────────────
+  readonly currencies = signal<CurrencyLookup[]>([]);
+  readonly isCurrenciesLoaded = signal(false);
+
+  // ─── Global List Loaders ───────────────────────────────────────────────────
+
+  /**
+   * Load the full currency list and cache it in sessionStorage.
+   * Called by AppBootstrapService on login/refresh.
+   */
+  loadCurrencies(forceRefresh = false): void {
+    if (!forceRefresh && this.restoreCurrenciesFromCache()) {
+      return;
+    }
+
+    this.getCurrencyList().subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          this.applyCurrenciesFromBootstrap(res.data);
+        } else {
+          this.isCurrenciesLoaded.set(true);
+        }
+      },
+      error: () => this.isCurrenciesLoaded.set(true),
+    });
+  }
+
+  restoreCurrenciesFromCache(): boolean {
+    const cached = sessionStorage.getItem(CommonDataService.CURRENCIES_CACHE_KEY);
+    if (!cached) {
+      return false;
+    }
+
+    try {
+      const list = JSON.parse(cached) as CurrencyLookup[];
+      this.currencies.set(list);
+      this.isCurrenciesLoaded.set(true);
+      return true;
+    } catch {
+      sessionStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
+      return false;
+    }
+  }
+
+  applyCurrenciesFromBootstrap(list: CurrencyLookup[] | null | undefined): void {
+    if (list) {
+      this.currencies.set(list);
+      try {
+        sessionStorage.setItem(CommonDataService.CURRENCIES_CACHE_KEY, JSON.stringify(list));
+      } catch { /* ignore */ }
+    }
+    this.isCurrenciesLoaded.set(true);
+  }
+
+  clearCurrenciesCache(): void {
+    sessionStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
+    this.currencies.set([]);
+    this.isCurrenciesLoaded.set(false);
+  }
 
   // ─── HR Lookups ────────────────────────────────────────────────────────────
 

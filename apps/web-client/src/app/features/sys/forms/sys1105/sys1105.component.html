@@ -23,7 +23,7 @@
             <label class="field-label" for="f_action">Action</label>
             <select id="f_action" class="form-select" [(ngModel)]="model.filter.action_type">
               <option [ngValue]="undefined">All</option>
-              @for (a of model.actionTypes; track a) { <option [ngValue]="a">{{ a }}</option> }
+              @for (opt of model.actionTypeOptions; track opt.value) { <option [ngValue]="opt.value">{{ opt.label }}</option> }
             </select>
           </div>
         </div>

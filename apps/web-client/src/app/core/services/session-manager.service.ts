@@ -4,6 +4,7 @@ import { Subscription, fromEvent, merge, timer } from 'rxjs';
 import { switchMap, throttleTime, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AuthContextService } from './auth-context.service';
+import { AuthSessionConfigService } from './auth-session-config.service';
 import { SessionLockComponent } from '../../layout/components/session-lock/session-lock.component';
 
 /**
@@ -18,13 +19,13 @@ import { SessionLockComponent } from '../../layout/components/session-lock/sessi
 export class SessionManagerService {
   private readonly authService  = inject(AuthService);
   private readonly authContext  = inject(AuthContextService);
+  private readonly authConfig   = inject(AuthSessionConfigService);
   private readonly dialog       = inject(MatDialog);
   private readonly zone         = inject(NgZone);
 
-  private readonly INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
-
   private refreshSub?:    Subscription;
   private inactivitySub?: Subscription;
+  private configSub?:     Subscription;
   private lockDialogRef: MatDialogRef<SessionLockComponent> | null = null;
 
   readonly isLocked = signal(false);
@@ -48,14 +49,16 @@ export class SessionManagerService {
 
   private startTimers(): void {
     this.stopTimers();
-    this.scheduleNextRefresh();
-    this.startInactivityTimer();
+    this.configSub = this.authConfig.load().subscribe(() => {
+      this.scheduleNextRefresh();
+      this.startInactivityTimer();
+    });
   }
 
   /**
    * Calculates the delay until the access token expires and schedules
-   * a refresh request. We refresh 30 seconds before the actual 'exp'
-   * claim to account for network latency and clock skew.
+   * a refresh request. Refresh lead time is supplied by the backend
+   * from application.yaml so token timing is managed in one place.
    */
   private scheduleNextRefresh(): void {
     this.refreshSub?.unsubscribe();
@@ -69,8 +72,9 @@ export class SessionManagerService {
     const now = new Date().getTime();
     const expiry = expiryDate.getTime();
 
-    // Schedule refresh 30 seconds before expiry, or immediately if already near/past.
-    const buffer = 30 * 1000;
+    const configured = this.authConfig.config();
+    const maxBuffer = Math.max(0, configured.access_token_expiration_ms - 1000);
+    const buffer = Math.min(configured.access_token_refresh_before_ms, maxBuffer);
     const delay = Math.max(0, expiry - now - buffer);
 
     console.debug(`[SessionManager] Next token refresh scheduled in ${Math.round(delay / 1000)}s`);
@@ -98,14 +102,16 @@ export class SessionManagerService {
       ).pipe(throttleTime(2000));
 
       this.inactivitySub = activity$
-        .pipe(switchMap(() => timer(this.INACTIVITY_TIMEOUT)))
+        .pipe(switchMap(() => timer(this.authConfig.config().inactivity_timeout_ms)))
         .subscribe(() => this.zone.run(() => this.lockScreen()));
     });
   }
 
   private stopTimers(): void {
+    this.configSub?.unsubscribe();
     this.refreshSub?.unsubscribe();
     this.inactivitySub?.unsubscribe();
+    this.configSub     = undefined;
     this.refreshSub    = undefined;
     this.inactivitySub = undefined;
   }

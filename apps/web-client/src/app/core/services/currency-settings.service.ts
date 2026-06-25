@@ -55,18 +55,8 @@ export class CurrencySettingsService {
    *   if the cache is empty.
    */
   loadSettings(forceRefresh = false): void {
-    if (!forceRefresh) {
-      const cached = sessionStorage.getItem(CurrencySettingsService.CACHE_KEY);
-      if (cached) {
-        try {
-          const settings = JSON.parse(cached) as IBaseCurrencySettings;
-          this.applySettings(settings);
-          this.isLoaded.set(true);
-          return;                          // ← served from cache, no API call
-        } catch {
-          // Corrupt JSON in storage — fall through to API
-        }
-      }
+    if (!forceRefresh && this.restoreFromCache()) {
+      return;                              // served from cache, no API call
     }
 
     this.http
@@ -76,21 +66,46 @@ export class CurrencySettingsService {
       .subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
-            this.applySettings(res.data);
-            try {
-              sessionStorage.setItem(
-                CurrencySettingsService.CACHE_KEY,
-                JSON.stringify(res.data),
-              );
-            } catch { /* sessionStorage quota exceeded — non-fatal */ }
+            this.applySettingsFromBootstrap(res.data);
+          } else {
+            this.isLoaded.set(true);
           }
-          this.isLoaded.set(true);
         },
         error: () => {
           // Fall back to defaults — do not break the app if SYS isn't configured yet.
           this.isLoaded.set(true);
         },
       });
+  }
+
+  restoreFromCache(): boolean {
+    const cached = sessionStorage.getItem(CurrencySettingsService.CACHE_KEY);
+    if (!cached) {
+      return false;
+    }
+
+    try {
+      const settings = JSON.parse(cached) as IBaseCurrencySettings;
+      this.applySettings(settings);
+      this.isLoaded.set(true);
+      return true;
+    } catch {
+      sessionStorage.removeItem(CurrencySettingsService.CACHE_KEY);
+      return false;
+    }
+  }
+
+  applySettingsFromBootstrap(settings: IBaseCurrencySettings | null | undefined): void {
+    if (settings) {
+      this.applySettings(settings);
+      try {
+        sessionStorage.setItem(
+          CurrencySettingsService.CACHE_KEY,
+          JSON.stringify(settings),
+        );
+      } catch { /* sessionStorage quota exceeded - non-fatal */ }
+    }
+    this.isLoaded.set(true);
   }
 
   /**

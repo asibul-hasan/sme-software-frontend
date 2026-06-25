@@ -85,7 +85,7 @@
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
                   <label class="field-label" for="fixed_amount">Fixed Amount (+)</label>
-                  <input type="number" id="fixed_amount" formControlName="fixed_amount" class="form-control" step="0.01" [readonly]="!editable" />
+                  <input type="number" id="fixed_amount" formControlName="fixed_amount" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" />
                 </div></div>
                 @if (model.isDesignationWise()) {
                   <div class="col-12"><div class="field-group">

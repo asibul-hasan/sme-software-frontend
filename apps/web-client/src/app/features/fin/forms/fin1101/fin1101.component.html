@@ -1,6 +1,8 @@
 <app-page-form-layout
   [title]="'Voucher Entry'"
-  [subtitle]="'Journal / Payment / Receipt / Contra - one balanced double-entry document'"
+  [subtitle]="
+    'Journal / Payment / Receipt / Contra - one balanced double-entry document'
+  "
   [icon]="'receipt'"
   [recordsCount]="model.filtered().length"
   [sidebarTitle]="'Vouchers'"
@@ -8,69 +10,193 @@
   (searchTermChange)="onSearchTermChange($event)"
   [sortDirection]="model.sortDirection()"
   (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
-  [showSave]="(permissionService.canInsert() || permissionService.canUpdate()) && editable"
+  [hasActiveFilters]="
+    model.filterVoucherType() !== null ||
+    model.filterDateFrom() !== null ||
+    model.filterDateTo() !== null
+  "
+  (clearFilters)="
+    model.filterVoucherType.set(null);
+    model.filterDateFrom.set(null);
+    model.filterDateTo.set(null);
+    model.pager.reset()
+  "
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="
+    (permissionService.canInsert() || permissionService.canUpdate()) && editable
+  "
   [showNew]="permissionService.canInsert()"
   [showDelete]="permissionService.canDelete() && status === 1"
-  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
 >
   @if (status === 1 && model.selectedNo() && permissionService.canInsert()) {
-    <button extraHeaderActions type="button" class="btn-action btn-save" (click)="submit()" [disabled]="model.isSaving() || !model.balanced()">
+    <button
+      extraHeaderActions
+      type="button"
+      class="btn-action btn-save"
+      (click)="submit()"
+      [disabled]="model.isSaving() || !model.balanced()"
+    >
       <mat-icon>post_add</mat-icon>
       <span class="btn-action-label">Post</span>
     </button>
   }
   @if (model.selectedNo()) {
-    <button extraHeaderActions type="button" class="btn-action" (click)="printVoucher()">
+    <button
+      extraHeaderActions
+      type="button"
+      class="btn-action"
+      (click)="printVoucher()"
+    >
       <mat-icon>picture_as_pdf</mat-icon>
       <span class="btn-action-label">Print</span>
     </button>
   }
 
+  <div
+    sidebarFilters
+    class="px-2 pt-2 pb-2 flex-shrink-0 border-bottom d-flex flex-column gap-2"
+  >
+    <div class="w-100">
+      <ng-select
+        [ngModel]="model.filterVoucherType()"
+        (ngModelChange)="
+          model.filterVoucherType.set($event); model.pager.reset()
+        "
+        placeholder="All Voucher Types"
+        [clearable]="true"
+        bindLabel="type_name"
+        bindValue="voucher_type_no"
+        [items]="model.voucherTypes()"
+        class="w-100"
+      >
+      </ng-select>
+    </div>
+    <div class="row row-group gx-2 w-100 m-0">
+      <div class="col-6 p-0 pe-1">
+        <input
+          type="date"
+          class="form-control"
+          style="font-size: 12px; padding: 4px 8px; width: 100%"
+          [ngModel]="model.filterDateFrom()"
+          (ngModelChange)="
+            model.filterDateFrom.set($event); model.pager.reset()
+          "
+          [max]="model.filterDateTo() || null"
+          title="From Date"
+        />
+      </div>
+      <div class="col-6 p-0 ps-1">
+        <input
+          type="date"
+          class="form-control"
+          style="font-size: 12px; padding: 4px 8px; width: 100%"
+          [ngModel]="model.filterDateTo()"
+          (ngModelChange)="model.filterDateTo.set($event); model.pager.reset()"
+          [min]="model.filterDateFrom() || null"
+          title="To Date"
+        />
+      </div>
+    </div>
+  </div>
+
   <div sidebarList>
     @for (item of model.pager.paged(); track item.voucher_no) {
-      <button type="button" class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.voucher_no" (click)="select(item)">
-        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.status === 2" [class.status-dot--inactive]="item.status === 3"
-          [title]="statusLabel(item.status)"></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right:16px">{{ item.voucher_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.voucher_date }} · {{ item.voucher_type_name }}</p>
-        <div class="list-item-meta">
-          <span class="list-item-tag" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
-          <span class="list-item-value">{{ item.total_debit | number: '1.2-2' }}</span>
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.selectedNo() === item.voucher_no"
+        (click)="select(item)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="item.is_active === 1"
+          [class.status-dot--inactive]="item.is_active !== 1"
+          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <div
+          class="d-flex align-items-baseline gap-1"
+          style="min-width: 0; padding-right: 16px"
+        >
+          <h6 class="list-item-title mb-0 text-truncate">
+            {{ item.voucher_id }}
+          </h6>
+          <span class="text-secondary">&middot;</span>
+          <span class="list-item-id">{{ item.voucher_date }}</span>
         </div>
       </button>
     }
     @if (model.filtered().length === 0) {
-      <div class="list-empty-state"><mat-icon>receipt</mat-icon><p>No records found</p></div>
+      <div class="list-empty-state">
+        <mat-icon>receipt</mat-icon>
+        <p>No records found</p>
+      </div>
     }
   </div>
 
   <div formContent class="h-100 d-flex flex-column">
-    <form [formGroup]="formdata" autocomplete="off" class="h-100 d-flex flex-column">
+    <form
+      [formGroup]="formdata"
+      autocomplete="off"
+      class="h-100 d-flex flex-column"
+    >
       <div class="form-section-card card flex-shrink-0">
         <div class="card-body">
           <div class="row row-group align-items-end">
             <div class="col-md-2">
               <div class="field-group">
-                <label class="field-label required" for="voucher_type_no">Voucher Type</label>
-                <ng-select id="voucher_type_no" formControlName="voucher_type_no" [readonly]="!editable" [clearable]="false" bindLabel="type_name" bindValue="voucher_type_no" [items]="model.activeVoucherTypes()" placeholder="Select type"></ng-select>
+                <label class="field-label required" for="voucher_type_no"
+                  >Voucher Type</label
+                >
+                <ng-select
+                  id="voucher_type_no"
+                  formControlName="voucher_type_no"
+                  [readonly]="!editable"
+                  [clearable]="false"
+                  bindLabel="type_name"
+                  bindValue="voucher_type_no"
+                  [items]="model.activeVoucherTypes()"
+                  placeholder="Select type"
+                ></ng-select>
               </div>
             </div>
 
             <div class="col-md-2">
               <div class="field-group">
-                <label class="field-label required" for="voucher_date">Date</label>
-                <input type="date" id="voucher_date" formControlName="voucher_date" class="form-control" [readonly]="!editable" />
+                <label class="field-label required" for="voucher_date"
+                  >Date</label
+                >
+                <input
+                  type="date"
+                  id="voucher_date"
+                  formControlName="voucher_date"
+                  class="form-control"
+                  [readonly]="!editable"
+                />
               </div>
             </div>
 
             <div class="col-md-3">
               <div class="field-group">
-                <label class="field-label required" for="currency_no">Currency</label>
-                <ng-select id="currency_no" formControlName="currency_no" [readonly]="!editable" [clearable]="false" (change)="model.onCurrencyChange($event)" placeholder="Currency">
+                <label class="field-label required" for="currency_no"
+                  >Currency</label
+                >
+                <ng-select
+                  id="currency_no"
+                  formControlName="currency_no"
+                  [readonly]="!editable"
+                  [clearable]="false"
+                  (change)="model.onCurrencyChange($event)"
+                  placeholder="Currency"
+                >
                   @for (c of model.currencies(); track c.currency_no) {
-                    <ng-option [value]="c.currency_no">{{ model.currencyLabel(c) }}</ng-option>
+                    <ng-option [value]="c.currency_no">{{
+                      model.currencyLabel(c)
+                    }}</ng-option>
                   }
                 </ng-select>
               </div>
@@ -78,62 +204,145 @@
 
             <div class="col-md-2">
               <div class="field-group">
-                <label class="field-label required" for="fx_rate">Exchange Rate</label>
-                <input type="number" id="fx_rate" formControlName="fx_rate" class="form-control text-end" min="0" step="0.000001" [readonly]="!editable" (input)="model.recalculateLines()" />
+                <label class="field-label required" for="fx_rate"
+                  >Exchange Rate</label
+                >
+                <input
+                  type="number"
+                  id="fx_rate"
+                  formControlName="fx_rate"
+                  class="form-control text-end"
+                  min="0"
+                  step="0.000001"
+                  [readonly]="!editable"
+                  (input)="model.recalculateLines()"
+                />
               </div>
             </div>
 
             <div class="col-md-3">
               <div class="field-group">
                 <label class="field-label" for="reference_no">Reference</label>
-                <input type="text" id="reference_no" formControlName="reference_no" class="form-control" [readonly]="!editable" placeholder="cheque / external ref" />
+                <input
+                  type="text"
+                  id="reference_no"
+                  formControlName="reference_no"
+                  class="form-control"
+                  [readonly]="!editable"
+                  placeholder="cheque / external ref"
+                />
               </div>
             </div>
 
             <div class="col-12">
               <div class="field-group">
                 <label class="field-label" for="narration">Narration</label>
-                <input type="text" id="narration" formControlName="narration" class="form-control" [readonly]="!editable" placeholder="Voucher narration" />
+                <input
+                  type="text"
+                  id="narration"
+                  formControlName="narration"
+                  class="form-control"
+                  [readonly]="!editable"
+                  placeholder="Voucher narration"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column">
+      <div
+        class="form-section-card card fill-card mt-1"
+        style="
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        "
+      >
         <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">format_list_numbered</mat-icon> Voucher Lines</h4>
+          <h4 class="card-header__title mb-0 fw-bold">
+            <mat-icon class="me-2 align-middle">format_list_numbered</mat-icon>
+            Voucher Lines
+          </h4>
           @if (model.selectedNo()) {
-            <span class="list-item-tag" [class]="statusClass(status)">{{ statusLabel(status) }} · {{ model.current()?.voucher_id }}</span>
+            <span class="list-item-tag" [class]="statusClass(status)"
+              >{{ statusLabel(status) }} ·
+              {{ model.current()?.voucher_id }}</span
+            >
           }
           @if (editable) {
-            <button type="button" class="btn-action btn-new btn-row-add ms-2" uiTooltip="Add Row" (click)="addLine()">
+            <button
+              type="button"
+              class="btn-action btn-new btn-row-add ms-2"
+              uiTooltip="Add Row"
+              (click)="addLine()"
+            >
               <mat-icon>add</mat-icon>
             </button>
           }
         </div>
 
-        <div class="card-body p-0" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column">
-          <app-common-table [columns]="lineColumns()" [data]="lineData()" [config]="lineConfig" />
+        <div
+          class="card-body p-0"
+          style="
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+          "
+        >
+          <app-common-table
+            [columns]="lineColumns()"
+            [data]="lineData()"
+            [config]="lineConfig"
+          />
         </div>
 
-        <div class="px-3 py-2 d-flex align-items-center gap-3 flex-shrink-0" style="border-top:1px solid var(--border-color);background:var(--table-header-bg, var(--bg-secondary));min-height:42px">
-          @if (!model.balanced() && model.validLines(model.lines()).length > 0) {
-            <div class="d-flex align-items-center gap-2" style="color:var(--danger)">
-              <mat-icon style="font-size:18px;width:18px;height:18px">error</mat-icon>
-              <span class="fw-semibold">Total debit and total credit must be equal before posting.</span>
+        <div
+          class="px-3 py-2 d-flex align-items-center gap-3 flex-shrink-0"
+          style="
+            border-top: 1px solid var(--border-color);
+            background: var(--table-header-bg, var(--bg-secondary));
+            min-height: 42px;
+          "
+        >
+          @if (
+            !model.balanced() && model.validLines(model.lines()).length > 0
+          ) {
+            <div
+              class="d-flex align-items-center gap-2"
+              style="color: var(--danger)"
+            >
+              <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+                >error</mat-icon
+              >
+              <span class="fw-semibold"
+                >Total debit and total credit must be equal before
+                posting.</span
+              >
             </div>
           }
           @if (status === 2) {
             <div class="d-flex align-items-center gap-2 text-success">
-              <mat-icon style="font-size:18px;width:18px;height:18px">check_circle</mat-icon>
+              <mat-icon style="font-size: 18px; width: 18px; height: 18px"
+                >check_circle</mat-icon
+              >
               <span class="fw-semibold">Posted to the ledger.</span>
             </div>
           }
           <div class="ms-auto d-flex align-items-center gap-3">
-            <span class="fw-bold" style="font-size:12px;color:var(--text-secondary)">Difference</span>
-            <strong [class.text-success]="model.balanced()" [class.text-danger]="!model.balanced()" style="min-width:130px;text-align:right">
-              {{ (model.totalDebit() - model.totalCredit()) | number: '1.2-2' }}
+            <span
+              class="fw-bold"
+              style="font-size: 12px; color: var(--text-secondary)"
+              >Difference</span
+            >
+            <strong
+              [class.text-success]="model.balanced()"
+              [class.text-danger]="!model.balanced()"
+              style="min-width: 130px; text-align: right"
+            >
+              {{ model.totalDebit() - model.totalCredit() | number: '1.' + (model.baseCurrency().decimal_places ?? 2) + '-' + (model.baseCurrency().decimal_places ?? 2) }}
             </strong>
           </div>
         </div>
@@ -141,5 +350,8 @@
     </form>
   </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+  <app-sidebar-pagination
+    sidebarFooter
+    [pager]="model.pager"
+  ></app-sidebar-pagination>
 </app-page-form-layout>

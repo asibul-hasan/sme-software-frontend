@@ -48,6 +48,7 @@ export class LoginComponent implements OnInit {
   private readonly storage         = inject(StorageService);
   private readonly destroyRef      = inject(DestroyRef);
   private readonly cdr             = inject(ChangeDetectorRef);
+  private readonly authStorageScope = globalConstants.authStorageScope;
 
   contexts:  UserContextResponse[] = [];
   companies: Company[] = [];
@@ -71,8 +72,8 @@ export class LoginComponent implements OnInit {
     this.returnUrl =
       this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
-    // Re-plan §4.5: pre-fill the last user id used on this device, then load its contexts.
-    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    // Pre-fill the last user id for this auth session, then load its contexts.
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, this.authStorageScope);
     if (lastUserId) {
       this.loginForm.get('userName')?.setValue(lastUserId);
       this.onUserNameBlur();
@@ -139,13 +140,13 @@ export class LoginComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  /** Last-used company for this device (if the typed user matches), else the first company. */
+  /** Last-used company for this auth session (if the typed user matches), else the first company. */
   private preferredCompanyNo(): number {
     const first = this.companies[0].company_no;
     const typed = this.loginForm.get('userName')?.value;
-    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, this.authStorageScope);
     if (typed && typed === lastUserId) {
-      const lastCompany = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastCompanyNo, 'local'));
+      const lastCompany = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastCompanyNo, this.authStorageScope));
       if (lastCompany && this.companies.some((c) => c.company_no === lastCompany)) return lastCompany;
     }
     return first;
@@ -154,9 +155,9 @@ export class LoginComponent implements OnInit {
   /** Remembered branch (if the typed user matches) → else the single branch → else none. */
   private preferredBranchNo(): number | null {
     const typed = this.loginForm.get('userName')?.value;
-    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, 'local');
+    const lastUserId = this.storage.getItem<string>(globalConstants.storageKeys.lastUserId, this.authStorageScope);
     if (typed && typed === lastUserId) {
-      const lastBranch = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastBranchNo, 'local'));
+      const lastBranch = Number(this.storage.getItem<number>(globalConstants.storageKeys.lastBranchNo, this.authStorageScope));
       if (lastBranch && this.branches.some((b) => b.branch_no === lastBranch)) return lastBranch;
     }
     return this.branches.length === 1 ? this.branches[0].branch_no : null;

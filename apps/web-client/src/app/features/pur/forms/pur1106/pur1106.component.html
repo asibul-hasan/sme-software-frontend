@@ -47,7 +47,7 @@
           <div class="col-md-2"><div class="field-group"><label class="field-label">Cost Type</label>
             <ng-select [(ngModel)]="costType" [items]="costTypes" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="amount" [disabled]="!editable()" (blur)="preview()" /></div></div>
+            <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" (blur)="preview()" /></div></div>
           <div class="col-md-1"><div class="field-group"><label class="field-label">Basis</label>
             <ng-select [(ngModel)]="allocBasis" [items]="allocBases" bindValue="value" bindLabel="label" [disabled]="!editable()" (change)="preview()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>

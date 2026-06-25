@@ -10,6 +10,7 @@ import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { activeStatusOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1101ModelService } from './services/model.service';
 import { Sys1101DataService } from './services/data.service';
 
@@ -26,6 +27,7 @@ export class Sys1101Component implements OnInit {
   public model = inject(Sys1101ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
+  readonly activeStatusOptions = activeStatusOptions;
 
   /** Active tab in the Password Management card. */
   passwordTab = signal<'change' | 'reset'>('change');

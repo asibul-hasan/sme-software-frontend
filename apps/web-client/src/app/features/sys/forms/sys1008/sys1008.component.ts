@@ -4,6 +4,7 @@ import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { activeStatusOptions, sysSettingValueTypeOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1008ModelService } from './services/model.service';
 import { Sys1008DataService } from './services/data.service';
 
@@ -20,6 +21,8 @@ export class Sys1008Component implements OnInit {
   public model = inject(Sys1008ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
+  readonly valueTypeOptions = sysSettingValueTypeOptions;
+  readonly activeStatusOptions = activeStatusOptions;
 
   ngOnInit(): void {
     this.model.initForm();

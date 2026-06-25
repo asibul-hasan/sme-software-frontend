@@ -4,6 +4,7 @@ import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { activeStatusOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1102ModelService } from './services/model.service';
 import { Sys1102DataService } from './services/data.service';
 
@@ -26,6 +27,7 @@ export class Sys1102Component implements OnInit {
   public model = inject(Sys1102ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
+  readonly activeStatusOptions = activeStatusOptions;
 
   ngOnInit(): void {
     this.model.initForm();

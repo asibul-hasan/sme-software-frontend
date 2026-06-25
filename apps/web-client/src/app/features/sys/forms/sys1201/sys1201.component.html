@@ -175,6 +175,26 @@
     @if (model.activeTab() === 'submodules') {
       <div class="row row-group sys1201-tab-pane">
         <div class="col-xl-8 col-lg-7 sys1201-list-col d-flex flex-column">
+          <!-- Filter Card for Submodules -->
+          <div class="form-section-card card mb-2" style="flex: 0 0 auto;">
+            <div class="card-body py-2">
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <div class="field-group mb-0">
+                    <ng-select
+                      [items]="model.moduleOptions()"
+                      bindLabel="label"
+                      bindValue="value"
+                      [ngModel]="model.submoduleFilterModule()"
+                      (ngModelChange)="model.submoduleFilterModule.set($event)"
+                      placeholder="Filter by Module"
+                      [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <app-common-table
             class="sys1201-table"
             [columns]="submoduleTableColumns"
@@ -307,6 +327,39 @@
     @if (model.activeTab() === 'menus') {
       <div class="row row-group sys1201-tab-pane">
         <div class="col-xl-8 col-lg-7 sys1201-list-col d-flex flex-column">
+          <!-- Filter Card for Menus -->
+          <div class="form-section-card card mb-2" style="flex: 0 0 auto;">
+            <div class="card-body py-2">
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <div class="field-group mb-0">
+                    <ng-select
+                      [items]="model.moduleOptions()"
+                      bindLabel="label"
+                      bindValue="value"
+                      [ngModel]="model.menuFilterModule()"
+                      (ngModelChange)="model.menuFilterModule.set($event); model.menuFilterSubmodule.set(null)"
+                      placeholder="Filter by Module"
+                      [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="col-md-6 col-12">
+                  <div class="field-group mb-0">
+                    <ng-select
+                      [items]="model.menuFilterSubmoduleOptions()"
+                      bindLabel="label"
+                      bindValue="value"
+                      [ngModel]="model.menuFilterSubmodule()"
+                      (ngModelChange)="model.menuFilterSubmodule.set($event)"
+                      placeholder="Filter by Submodule"
+                      [clearable]="true">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <app-common-table
             class="sys1201-table"
             [columns]="menuTableColumns"
@@ -369,8 +422,8 @@
                       [clearable]="false"
                       placeholder="Select type"
                     >
-                      @for (type of model.menuTypes; track type) {
-                        <ng-option [value]="type">{{ type }}</ng-option>
+                      @for (opt of model.menuTypeOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
                       }
                     </ng-select>
                   </div>

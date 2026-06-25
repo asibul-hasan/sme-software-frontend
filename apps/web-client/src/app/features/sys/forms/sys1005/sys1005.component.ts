@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { sysConstants } from '../../constants/sys.constants';
+import { sysTaxTypeOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1005ModelService, TaxRule } from './services/model.service';
 import { Sys1005DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -32,7 +32,7 @@ export class Sys1005Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
 
-  readonly SYS_CONSTS = sysConstants;
+  readonly taxTypeOptions = sysTaxTypeOptions;
 
   ngOnInit(): void {
     this.model.initForm();
@@ -85,7 +85,7 @@ export class Sys1005Component implements OnInit {
   }
 
   getTaxTypeLabel(value: number): string {
-    const found = sysConstants.taxTypes.find((t) => t.value === value);
+    const found = sysTaxTypeOptions.find((t) => t.value === value);
     return found ? found.label : String(value);
   }
 }

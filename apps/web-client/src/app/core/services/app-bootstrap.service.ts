@@ -1,6 +1,19 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { CoreFileApiService } from './core-file-api.service';
-import { CurrencySettingsService } from './currency-settings.service';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { AppConfigService } from './app-config.service';
+import { CurrencySettingsService, IBaseCurrencySettings } from './currency-settings.service';
+import { CommonDataService, CurrencyLookup } from '../../shared/services/common-data.service';
+import { ApiResponse, isSuccess } from '../models/response.model';
+import { AuthConfigResponse } from '../../features/auth/services/data.service';
+import { AuthSessionConfigService } from './auth-session-config.service';
+import { SKIP_LOADER } from '../interceptors/loader.interceptor';
+
+interface AppBootstrapResponse {
+  company_logo_data_url?: string | null;
+  base_currency_settings?: IBaseCurrencySettings | null;
+  currencies?: CurrencyLookup[] | null;
+  auth_config?: AuthConfigResponse | null;
+}
 
 /**
  * # AppBootstrapService — single global session-data context
@@ -28,8 +41,11 @@ import { CurrencySettingsService } from './currency-settings.service';
  */
 @Injectable({ providedIn: 'root' })
 export class AppBootstrapService {
-  private readonly fileApi  = inject(CoreFileApiService);
+  private readonly http = inject(HttpClient);
+  private readonly config = inject(AppConfigService);
   private readonly currency = inject(CurrencySettingsService);
+  private readonly commonData = inject(CommonDataService);
+  private readonly authConfig = inject(AuthSessionConfigService);
 
   private static readonly LOGO_KEY = 'sme_company_logo';
 
@@ -66,8 +82,7 @@ export class AppBootstrapService {
    * previous session or company context).
    */
   bootstrap(): void {
-    this._fetchLogo();                          // always fresh — company may have changed
-    this.currency.loadSettings(true);           // forceRefresh = true
+    this.fetchBootstrap();
   }
 
   /**
@@ -76,8 +91,13 @@ export class AppBootstrapService {
    * is absent.
    */
   loadFromStorage(): void {
-    this._restoreLogo();
-    this.currency.loadSettings(false);          // forceRefresh = false → cache-first
+    const hasLogo = this.restoreLogo();
+    const hasCurrency = this.currency.restoreFromCache();
+    const hasCurrencies = this.commonData.restoreCurrenciesFromCache();
+
+    if (!hasLogo || !hasCurrency || !hasCurrencies) {
+      this.fetchBootstrap();
+    }
   }
 
   // ── Targeted refresh ────────────────────────────────────────────────────────
@@ -89,7 +109,7 @@ export class AppBootstrapService {
   reloadLogo(): void {
     sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
-    this._fetchLogo();
+    this.fetchBootstrap();
   }
 
   /**
@@ -97,7 +117,7 @@ export class AppBootstrapService {
    * Call from SYS1004 after a base-currency save succeeds.
    */
   reloadCurrency(): void {
-    this.currency.reloadSettings();
+    this.fetchBootstrap();
   }
 
   // ── Logout ──────────────────────────────────────────────────────────────────
@@ -110,53 +130,58 @@ export class AppBootstrapService {
     sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
     this.currency.clearCache();
+    this.commonData.clearCurrenciesCache();
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────────
 
-  private _restoreLogo(): void {
+  private restoreLogo(): boolean {
     const cached = sessionStorage.getItem(AppBootstrapService.LOGO_KEY);
     if (cached) {
       this.companyLogoDataUrl.set(cached);      // served from cache — no API call
-    } else {
-      this._fetchLogo();                        // cache miss — fetch from server
+      return true;
     }
+    return false;
   }
 
-  private _fetchLogo(): void {
-    // entity_type 1 = CompanyLogo (scoped to the JWT company automatically)
-    this.fileApi.list(1).subscribe({
-      next: res => {
-        const primary = res?.data?.find(f => f.is_primary) ?? res?.data?.[0];
-        if (!primary) {
-          this.companyLogoDataUrl.set(null);
+  private fetchBootstrap(): void {
+    this.http.get<ApiResponse<AppBootstrapResponse>>(`${this.config.apiUrl}/app/bootstrap`, {
+      context: new HttpContext().set(SKIP_LOADER, true),
+    }).subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          this.applyBootstrap(res.data);
           return;
         }
-
-        this.fileApi.fetchAsBlob(primary.serve_path).subscribe({
-          next: blob => this._persistLogoBlob(blob),
-          error: () => this.companyLogoDataUrl.set(null),
-        });
+        this.applyBootstrap({});
       },
-      error: () => this.companyLogoDataUrl.set(null),
+      error: () => this.applyBootstrap({}),
     });
   }
 
-  /**
-   * Convert a Blob to a base64 data-URL, update the signal, and persist to
-   * sessionStorage so page refreshes skip the API entirely.
-   */
-  private _persistLogoBlob(blob: Blob): void {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
+  private applyBootstrap(data: AppBootstrapResponse): void {
+    this.persistLogoDataUrl(data.company_logo_data_url);
+    this.currency.applySettingsFromBootstrap(data.base_currency_settings);
+    this.commonData.applyCurrenciesFromBootstrap(data.currencies);
+    this.authConfig.hydrate(data.auth_config);
+  }
+
+  private persistLogoDataUrl(dataUrl: string | null | undefined): void {
+    if (dataUrl === undefined) {
+      return;
+    }
+
+    if (dataUrl) {
       this.companyLogoDataUrl.set(dataUrl);
       try {
         sessionStorage.setItem(AppBootstrapService.LOGO_KEY, dataUrl);
       } catch {
         // sessionStorage quota exceeded (logo > 5 MB?) — signal still works in-memory
       }
-    };
-    reader.readAsDataURL(blob);
+      return;
+    }
+
+    sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
+    this.companyLogoDataUrl.set(null);
   }
 }

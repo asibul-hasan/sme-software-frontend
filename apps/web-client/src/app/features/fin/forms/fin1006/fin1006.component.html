@@ -2,72 +2,77 @@
   [title]="'GL Account Mapping'"
   [subtitle]="'Which GL account each auto-posting event leg hits'"
   [icon]="'rule'"
-  [recordsCount]="model.filtered().length"
-  [sidebarTitle]="'Mappings'"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  [sortDirection]="model.sortDirection()"
-  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()" (new)="onNew()" (reset)="onReset()" (delete)="onDelete()"
+  [hasSidebar]="false"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
-  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+  (save)="onSave()"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+  [isSaving]="model.isSaving()"
 >
-  <div sidebarList>
-    @for (item of model.pager.paged(); track item.gl_map_no) {
-      <button type="button" class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.gl_map_no" (click)="select(item)">
-        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.event_type }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.leg_key }}{{ item.sub_key ? ' / ' + item.sub_key : '' }} → {{ item.account_name }}</p>
-      </button>
-    }
-    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>rule</mat-icon><p>No records found</p></div> }
-  </div>
-
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-12">
-          <div class="form-section-card card">
-            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">rule</mat-icon> Mapping</h4></div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-6"><div class="field-group">
-                  <label class="field-label required" for="event_type">Event Type</label>
-                  <ng-select id="event_type" formControlName="event_type" [addTag]="true" placeholder="Select or type an event">
-                    @for (e of eventTypes; track e) { <ng-option [value]="e">{{ e }}</ng-option> }
-                  </ng-select>
-                </div></div>
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label required" for="leg_key">Leg Key</label>
-                  <ng-select id="leg_key" formControlName="leg_key" [addTag]="true" placeholder="Select or type">
-                    @for (l of legKeys; track l) { <ng-option [value]="l">{{ l }}</ng-option> }
-                  </ng-select>
-                </div></div>
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label" for="sub_key">Sub Key</label>
-                  <input type="text" id="sub_key" formControlName="sub_key" class="form-control" placeholder="optional" />
-                </div></div>
-                <div class="col-md-9"><div class="field-group">
-                  <label class="field-label required" for="account_no">GL Account</label>
-                  <ng-select id="account_no" formControlName="account_no" bindLabel="account_name" bindValue="account_no" [items]="model.postableAccounts()" placeholder="Select account">
-                    <ng-template ng-option-tmp let-item="item">{{ item.account_name }} ({{ item.account_code }})</ng-template>
-                  </ng-select>
-                </div></div>
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label">Status</label>
-                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
-                </div></div>
-              </div>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- Filter Card -->
+    <div class="form-section-card card">
+      <div class="card-body py-2">
+        <div class="row">
+          <div class="col-md-4 col-sm-6 col-12">
+            <div class="field-group mb-0">
+              <ng-select
+                id="event_type_filter"
+                class="bg-white"
+                [items]="eventTypeOptions"
+                bindLabel="label"
+                bindValue="value"
+                placeholder="Filter by Event Type"
+                [clearable]="true"
+                [ngModel]="model.eventTypeFilter()"
+                (ngModelChange)="onEventTypeFilterChange($event)"
+              >
+              </ng-select>
             </div>
           </div>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+    <!-- Mappings Table -->
+    <div
+      class="form-section-card card fill-card"
+      style="
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      "
+    >
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">rule</mat-icon> Mappings
+        </h4>
+        <button
+          type="button"
+          class="btn-action btn-new btn-row-add ms-2"
+          uiTooltip="Add Row"
+          (click)="model.addRow()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+      <div
+        class="card-body p-0"
+        style="
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <app-common-table
+          [data]="tableData()"
+          [columns]="tableColumns()"
+          [config]="tableConfig"
+        ></app-common-table>
+      </div>
+    </div>
+  </div>
 </app-page-form-layout>

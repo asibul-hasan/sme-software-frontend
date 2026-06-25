@@ -82,8 +82,9 @@
                     <label class="field-label" for="is_closed">{{ 'status' | translate }}</label>
                     <ng-select id="is_closed" labelForId="is_closed" formControlName="is_closed" bindLabel="label"
                       bindValue="value" placeholder="{{ 'selectStatus' | translate }}">
-                      <ng-option [value]="0">Open</ng-option>
-                      <ng-option [value]="1">Closed</ng-option>
+                      @for (opt of fiscalYearClosedOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>

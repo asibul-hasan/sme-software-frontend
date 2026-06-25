@@ -58,8 +58,8 @@
                   <div class="field-group">
                     <label class="field-label required" for="document_type">Document Type</label>
                     <ng-select id="document_type" labelForId="document_type" formControlName="document_type" [clearable]="false" placeholder="Select document type">
-                      @for (d of model.documentTypes; track d) {
-                        <ng-option [value]="d">{{ d }}</ng-option>
+                      @for (opt of model.documentTypeOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
                       }
                     </ng-select>
                   </div>
@@ -74,8 +74,9 @@
                   <div class="field-group">
                     <label class="field-label" for="is_final">Final Step</label>
                     <ng-select id="is_final" labelForId="is_final" formControlName="is_final" [clearable]="false">
-                      <ng-option [value]="0">No</ng-option>
-                      <ng-option [value]="1">Yes</ng-option>
+                      @for (opt of yesNoOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>
@@ -92,21 +93,22 @@
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label" for="amount_min">Amount From</label>
-                    <input type="number" id="amount_min" formControlName="amount_min" class="form-control" step="0.01" min="0" />
+                    <input type="number" id="amount_min" formControlName="amount_min" class="form-control" step="0.01" min="0" inputmode="decimal" />
                   </div>
                 </div>
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label" for="amount_max">Amount To</label>
-                    <input type="number" id="amount_max" formControlName="amount_max" class="form-control" step="0.01" min="0" placeholder="No limit" />
+                    <input type="number" id="amount_max" formControlName="amount_max" class="form-control" step="0.01" min="0" inputmode="decimal" placeholder="No limit" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="is_active">Status</label>
                     <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
+                      @for (opt of activeStatusOptions; track opt.value) {
+                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                      }
                     </ng-select>
                   </div>
                 </div>

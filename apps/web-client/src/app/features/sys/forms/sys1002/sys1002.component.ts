@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
-import { sysConstants } from '../../constants/sys.constants';
+import { activeStatusOptions, sysBranchTypeOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1002ModelService } from './services/model.service';
 import { Sys1002DataService } from './services/data.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -23,7 +23,8 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class Sys1002Component implements OnInit {
   public model = inject(Sys1002ModelService);
-  readonly sysConstants = sysConstants;
+  readonly branchTypeOptions = sysBranchTypeOptions;
+  readonly activeStatusOptions = activeStatusOptions;
 
   public permissionService  = inject(FormPermissionService);
   private alertService      = inject(AlertService);

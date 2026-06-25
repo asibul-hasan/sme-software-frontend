@@ -106,6 +106,19 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/sys1201/sys1201.component').then((m) => m.Sys1201Component),
   },
+  // Backward-compatible aliases used by older SYS menu seeds. The sidebar
+  // follows sys_menu.route_path, so these must continue to resolve while
+  // existing installations migrate to the friendly route above.
+  {
+    path: 'forms/sys1201',
+    redirectTo: 'form/dynamic-menu-builder',
+    pathMatch: 'full',
+  },
+  {
+    path: 'form/sys1201',
+    redirectTo: 'form/dynamic-menu-builder',
+    pathMatch: 'full',
+  },
   {
     path: 'form/menu-enrollment',
     loadComponent: () =>

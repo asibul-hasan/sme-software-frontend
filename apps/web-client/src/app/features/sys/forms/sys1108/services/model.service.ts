@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
+import { sysApprovalDocumentTypeOptions } from '../../../../../core/constants/common-options.constants';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
@@ -40,22 +41,7 @@ export class Sys1108ModelService {
   selectedNo = signal<number | null>(null);
   form!: FormGroup;
 
-  /** Curated document types that flow through approvals across INV/SAL/PUR. */
-  readonly documentTypes: string[] = [
-    'PURCHASE_REQUISITION',
-    'PURCHASE_ORDER',
-    'GRN',
-    'PURCHASE_RETURN',
-    'SALES_ORDER',
-    'SALES_INVOICE',
-    'SALES_RETURN',
-    'STOCK_ADJUSTMENT',
-    'STOCK_TRANSFER',
-    'PAYMENT',
-    'RECEIPT',
-    'JOURNAL_VOUCHER',
-    'EXPENSE',
-  ];
+  readonly documentTypeOptions = sysApprovalDocumentTypeOptions;
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();

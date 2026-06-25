@@ -56,7 +56,7 @@ export class Fin1004Component implements OnInit {
 
   readonly drCrOptions: SelectOption[] = debitCreditOptions.map((o) => ({ label: o.label, value: o.value }));
   readonly accountOptions = computed<SelectOption[]>(() =>
-    this.accounts().map((a) => ({ value: a.account_no, label: `${a.account_code} - ${a.account_name}` })),
+    this.accounts().map((a) => ({ value: a.account_no, label: `${a.account_code} ${a.account_name}` })),
   );
   readonly selectedCurrency = computed(() => {
     this.currencyRevision();
@@ -97,7 +97,12 @@ export class Fin1004Component implements OnInit {
       field: 'account_no',
       cellType: 'select',
       editable: true,
-      options: () => this.accountOptions(),
+      options: (row) => {
+        const side = row['dr_cr'] === 'cr' ? 'cr' : 'dr';
+        return this.accounts()
+          .filter((a) => a.normal_balance === side)
+          .map((a) => ({ value: a.account_no, label: `${a.account_code} ${a.account_name}` }));
+      },
       minWidth: '280px',
       footerLabel: 'Total',
       onChange: (_value, row) => this.normalizeRow(row),
@@ -261,9 +266,14 @@ export class Fin1004Component implements OnInit {
 
   normalizeRow(row: Record<string, unknown>): void {
     const uid = Number(row['__uid']);
-    const accountNo = row['account_no'] == null ? null : Number(row['account_no']);
-    const account = this.accounts().find((a) => a.account_no === accountNo);
+    let accountNo = row['account_no'] == null ? null : Number(row['account_no']);
     const drCr = uid === this.firstLineUid() ? 'dr' : row['dr_cr'] === 'cr' ? 'cr' : 'dr';
+
+    let account = this.accounts().find((a) => a.account_no === accountNo);
+    if (account && account.normal_balance !== drCr) {
+      accountNo = null;
+      account = undefined;
+    }
     const drAmount = drCr === 'dr' ? Math.max(0, Number(row['dr_amount']) || 0) : 0;
     const crAmount = drCr === 'cr' ? Math.max(0, Number(row['cr_amount']) || 0) : 0;
     const rate = Number(this.exchangeRate) > 0 ? Number(this.exchangeRate) : 0;
@@ -403,7 +413,7 @@ export class Fin1004Component implements OnInit {
 
   currencyLabel(currency: CurrencyLookup): string {
     const symbol = currency.currency_symbol ? ` (${currency.currency_symbol})` : '';
-    return `${currency.currency_code}${symbol} - ${currency.currency_name}`;
+    return `${currency.currency_code}${symbol}`;
   }
 
   private currencySymbol(): string {

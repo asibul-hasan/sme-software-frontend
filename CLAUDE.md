@@ -145,10 +145,10 @@ pagination is **wrong** — wire the paginator.
 **B. Data grid** — a tabular dataset (line items, periods, mappings) shown with
 **`<app-common-table>`**, which owns its own search / pagination / export / column
 toggle. Use it for the grid, NOT for the master record selector. A grid form may
-have `[hasSidebar]="false"` (e.g. a top filter `ng-select` instead of a sidebar).
+have `[hasSidebar]="false"`. If the grid requires a top-level global filter, place it in a separate "Filter Card" (`.form-section-card.card`) directly above the table card, exactly like `SYS1003` or `FIN_1006`.
 
 Reference forms: **SYS1003** (Financial Year — periods table), **SYS1104** (the
-mapping grid uses `<app-common-table>` with `custom-template` cells).
+mapping grid uses `<app-common-table>` with `custom-template` cells), and **FIN_1006** (GL Account Mapping, which demonstrates a standalone grid with a top-level filter card).
 **SYS1003 Accounting Periods is the canonical table structure and visual style.**
 Any form that shows an editable/supporting grid — including **SYS1006 Exchange
 Rate** — must copy the Accounting Periods pattern: an outer `.form-section-card`
@@ -316,6 +316,26 @@ Style: `assets/styles/_form-page.scss` (`.custom--checkbox`).
   plus `(change)` for a checkbox that fires an immediate action.
 - Reference forms: `SYS1002` (`is_main_branch`), `SYS1004` (`is_base_currency`),
   `SYS1005` / `SYS1007` (`is_active`), `SYS1101` (account lock).
+
+### GL Account Selection Format (CRITICAL)
+
+Whenever a form contains a dropdown, search box, or table column that displays a GL Account, the display format MUST be exactly `Code Name` (e.g. `1010 Cash in Hand`).
+
+- Do **NOT** use hyphens, dashes, or parentheses (e.g. ❌ `1010 - Cash`, ❌ `Cash (1010)`).
+- For `ng-select` components, use `<ng-template ng-label-tmp>` and `<ng-template ng-option-tmp>` to enforce this format consistently:
+  ```html
+  <ng-select id="account_no" formControlName="account_no" bindValue="account_no" [items]="accounts">
+    <ng-template ng-label-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
+    <ng-template ng-option-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
+  </ng-select>
+  ```
+- For `<app-common-table>` columns with `cellType: 'select'`, ensure the `label` property of your `SelectOption` matches this exact format:
+  ```ts
+  accountOptions = computed(() => this.accounts().map(a => ({ 
+    label: `${a.account_code} ${a.account_name}`, 
+    value: a.account_no 
+  })));
+  ```
 
 ### Select Options & Enums — centralize in `{module}.constants.ts` (NO inline option arrays) (CRITICAL)
 
@@ -548,7 +568,7 @@ tableData = computed(() => this.model.items() as unknown as Record<string, unkno
   accessor** — `value: (row) => <label>` — so **search, sort, and export use the text the
   user sees**, not the raw id. Without it, searching a `custom-template` column of ids is
   useless and exports dump numbers. Example (SYS1104):
-  ```ts
+  ```ts
   { title: 'Branch', field: 'branch_no', cellType: 'custom-template',
     customTemplate: this.branchTpl(), value: (r) => this.branchLabel(r['branch_no']) }
   ```
@@ -564,6 +584,14 @@ tableData = computed(() => this.model.items() as unknown as Record<string, unkno
 - Row actions render as a single kebab (`⋯`) menu (config `actions: [...]`), not inline
   icon buttons. Editable cells use `ng-select` (not native `<select>`) on double-click.
 - See `shared/components/common-table/example-usage.ts` for full feature demos.
+
+### Currency and Decimal Handling (CRITICAL)
+
+**Never hardcode currency symbols or precision.** Always use the global `AppDecimalPipe` (`appDecimal`) which automatically reads the active currency precision from the centralized setup loaded at bootstrap via `CommonDataService`.
+
+- **In templates:** Use `{{ amount | appDecimal }}` or `{{ amount | appDecimal:2 }}` if an override is explicitly needed. Do not use the standard Angular `number` pipe for monetary values.
+- **In common-table:** Use `cellType: 'currency'` or `cellType: 'decimal'`. The table automatically applies the correct pipe and precision using the global service.
+- **Alignment:** Decimal, Currency, and Number fields must ALWAYS be right-aligned (`align: 'right'`). The common table does this automatically based on `cellType`, but ensure any custom grid or form input follows this rule so that digits align cleanly.
 
 ### PDF Reports — `PdfTemplateService` (CRITICAL)
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-type StorageScope = 'local' | 'session';
+export type StorageScope = 'local' | 'session';
 
 /**
  * Thin, strictly-typed wrapper around browser storage with JSON

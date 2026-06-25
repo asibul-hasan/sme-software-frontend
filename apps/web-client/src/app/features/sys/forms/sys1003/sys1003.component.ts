@@ -3,8 +3,8 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { sysConstants } from '../../constants/sys.constants';
-import { Sys1003ModelService, FinancialYear, isClosedToLabel } from './services/model.service';
+import { sysFiscalYearClosedOptions, sysPeriodStatusOptions } from '../../../../core/constants/common-options.constants';
+import { Sys1003ModelService, FinancialYear } from './services/model.service';
 import { Sys1003DataService } from './services/data.service';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
@@ -86,11 +86,8 @@ export class Sys1003Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
 
-  readonly sysConstants = sysConstants;
-  readonly SYS_CONSTS   = sysConstants;
-
-  // ─── Status options for period dropdown (numeric values matching backend) ───
-  readonly periodStatusOptions = sysConstants.periodStatuses;
+  readonly fiscalYearClosedOptions = sysFiscalYearClosedOptions;
+  readonly periodStatusOptions = [...sysPeriodStatusOptions];
 
   periodsSignal = signal<Record<string, unknown>[]>([]);
 
@@ -134,11 +131,7 @@ export class Sys1003Component implements OnInit {
       width: '120px',
       sort: true,
       cellType: 'select',
-      options: [
-        { label: 'Open', value: 1 },
-        { label: 'Closed', value: 2 },
-        { label: 'Locked', value: 3 },
-      ],
+      options: this.periodStatusOptions,
       editable: true,
     },
   ];

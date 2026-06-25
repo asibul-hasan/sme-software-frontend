@@ -11,7 +11,7 @@ import { AppGlobals } from '../app-globals';
  * Application-wide reactive auth/tenant context.
  *
  * Owns: current user, permission map, flat menu list, and the list of
- * branches the user can switch into. Persisted to LocalStorage so a hard
+ * branches the user can switch into. Persisted to the configured auth storage so a hard
  * reload doesn't kick the user back to the login screen while the access
  * token is still valid.
  */
@@ -19,6 +19,7 @@ import { AppGlobals } from '../app-globals';
 export class AuthContextService {
   private readonly jwt     = new JwtHelperService();
   private readonly storage = inject(StorageService);
+  private readonly authStorageScope = globalConstants.authStorageScope;
 
   readonly user              = signal<User | null>(null);
   readonly permissions       = signal<IPermissionConfig | null>(null);
@@ -57,30 +58,30 @@ export class AuthContextService {
     if (user) {
       this.user.set(user);
       AppGlobals.user = user;
-      this.storage.setItem(globalConstants.storageKeys.userData, user, 'session');
+      this.storage.setItem(globalConstants.storageKeys.userData, user, this.authStorageScope);
     }
     this.permissions.set(permissions);
     if (permissions) {
-      this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions, 'session');
+      this.storage.setItem(globalConstants.storageKeys.userPermissions, permissions, this.authStorageScope);
     } else {
-      this.storage.removeItem(globalConstants.storageKeys.userPermissions, 'session');
+      this.storage.removeItem(globalConstants.storageKeys.userPermissions, this.authStorageScope);
     }
 
     this.menu.set(menu ?? []);
-    this.storage.setItem(globalConstants.storageKeys.userMenu, menu ?? [], 'session');
+    this.storage.setItem(globalConstants.storageKeys.userMenu, menu ?? [], this.authStorageScope);
   }
 
   setAvailableBranches(branches: Branch[]): void {
     this.availableBranches.set(branches);
-    this.storage.setItem(globalConstants.storageKeys.availableBranches, branches, 'session');
+    this.storage.setItem(globalConstants.storageKeys.availableBranches, branches, this.authStorageScope);
   }
 
   /** Rehydrate state from storage on app boot. Returns true if a user was found (per-tab session). */
   loadFromStorage(): boolean {
-    const cachedUser     = this.storage.getItem<User>(globalConstants.storageKeys.userData, 'session');
-    const cachedPerms    = this.storage.getItem<IPermissionConfig>(globalConstants.storageKeys.userPermissions, 'session');
-    const cachedMenu     = this.storage.getItem<unknown[]>(globalConstants.storageKeys.userMenu, 'session');
-    const cachedBranches = this.storage.getItem<Branch[]>(globalConstants.storageKeys.availableBranches, 'session');
+    const cachedUser     = this.storage.getItem<User>(globalConstants.storageKeys.userData, this.authStorageScope);
+    const cachedPerms    = this.storage.getItem<IPermissionConfig>(globalConstants.storageKeys.userPermissions, this.authStorageScope);
+    const cachedMenu     = this.storage.getItem<unknown[]>(globalConstants.storageKeys.userMenu, this.authStorageScope);
+    const cachedBranches = this.storage.getItem<Branch[]>(globalConstants.storageKeys.availableBranches, this.authStorageScope);
 
     if (!cachedUser) return false;
 
@@ -99,7 +100,7 @@ export class AuthContextService {
     const next = { ...current, ...partial };
     this.user.set(next);
     AppGlobals.user = next;
-    this.storage.setItem(globalConstants.storageKeys.userData, next, 'session');
+    this.storage.setItem(globalConstants.storageKeys.userData, next, this.authStorageScope);
   }
 
   clear(): void {
@@ -108,9 +109,9 @@ export class AuthContextService {
     this.permissions.set(null);
     this.menu.set([]);
     this.availableBranches.set([]);
-    this.storage.removeItem(globalConstants.storageKeys.userData, 'session');
-    this.storage.removeItem(globalConstants.storageKeys.userPermissions, 'session');
-    this.storage.removeItem(globalConstants.storageKeys.userMenu, 'session');
-    this.storage.removeItem(globalConstants.storageKeys.availableBranches, 'session');
+    this.storage.removeItem(globalConstants.storageKeys.userData, this.authStorageScope);
+    this.storage.removeItem(globalConstants.storageKeys.userPermissions, this.authStorageScope);
+    this.storage.removeItem(globalConstants.storageKeys.userMenu, this.authStorageScope);
+    this.storage.removeItem(globalConstants.storageKeys.availableBranches, this.authStorageScope);
   }
 }

@@ -38,26 +38,38 @@
 }
 
 .sb-rail {
-  width: 74px;
-  padding: 16px 7px 10px;
+  width: 64px;
+  padding: 6px 7px 10px;
   background: var(--sb-rail);
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.32);
 }
 
 .sb-rail-brand {
-  width: 34px;
-  height: 34px;
-  margin: 0 auto 14px;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 20px;
   color: white;
   text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 41px;
+    width: 36px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.055);
+    pointer-events: none;
+  }
 }
 
 .sb-rail-logo,
 .sb-rail-initial {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
 }
 
 .sb-rail-logo {
@@ -98,16 +110,16 @@
 .sb-module-btn {
   position: relative;
   width: 100%;
-  min-height: 50px;
+  min-height: 71px;
   border: 1px solid transparent;
   border-radius: 12px;
-  margin: 0 0 4px;
-  padding: 5px 2px 4px;
+  margin: 0 0 7px;
+  padding: 0 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
+  justify-content: flex-start;
+  gap: 8px;
   background: transparent;
   color: rgba(139, 157, 218, 0.88);
   cursor: pointer;
@@ -132,12 +144,12 @@
 }
 
 .sb-module-icon {
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 7px;
+  border-radius: 10px;
   background: transparent;
   color: rgba(139, 157, 218, 0.88);
   transition:
@@ -149,8 +161,8 @@
 .sb-module-label {
   width: 100%;
   color: inherit;
-  font-size: 8.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1.1;
   text-align: center;
   text-transform: uppercase;
@@ -180,20 +192,18 @@
 
 .sb-module-btn.active,
 .sb-module-btn.route-active {
-  background: var(--sb-selected);
-  border-color: var(--sb-selected-border);
-  box-shadow: inset 0 0 0 1px rgba(124, 109, 255, 0.12);
-
-  &::before {
-    background: #6d5cff;
-  }
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .sb-module-btn.active .sb-module-icon,
 .sb-module-btn.route-active .sb-module-icon {
-  background: rgba(124, 109, 255, 0.16);
-  color: #7c6dff;
-  box-shadow: none;
+  background: linear-gradient(135deg, #6257f5 0%, #4431df 100%);
+  color: #fff;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.11),
+    0 8px 18px rgba(73, 55, 222, 0.3);
 }
 
 .sb-rail-footer {
@@ -213,8 +223,8 @@
 }
 
 .sb-toggle-btn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -222,9 +232,9 @@
 }
 
 .sb-action-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 39px;
+  height: 38px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -238,17 +248,17 @@
 }
 
 .sb-panel {
-  width: 196px;
+  width: 251px;
   background: var(--sb-shell);
 }
 
 .sidebar.collapsed.flyout-open .sb-panel {
   position: absolute;
-  left: 74px;
+  left: 64px;
   top: 0;
   bottom: 0;
   z-index: 5;
-  width: 196px;
+  width: 251px;
   min-height: 100%;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow:
@@ -269,9 +279,14 @@
 }
 
 .sb-panel-head {
-  height: 58px;
-  padding: 17px 10px 8px 4px;
+  height: 48px;
+  padding: 0 15px 0 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.sb-panel-title {
+  flex: 1 1 auto;
+  padding-right: 10px;
 }
 
 .sb-company {
@@ -283,16 +298,16 @@
 
 .sb-module-heading {
   margin: 0;
-  color: #7c8cff;
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 13px;
   font-weight: 800;
   line-height: 1.05;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.35px;
   text-transform: uppercase;
 }
 
 .sb-search-row {
-  padding: 16px 10px 10px 4px;
+  padding: 9px 17px 15px;
 }
 
 .sb-search-wrap {
@@ -310,8 +325,8 @@
 
 .sb-search-input {
   width: 100%;
-  height: 34px;
-  border-radius: 8px;
+  height: 38px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   background: rgba(255, 255, 255, 0.075);
   color: rgba(236, 242, 255, 0.88);

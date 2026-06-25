@@ -250,8 +250,9 @@
                   <label class="field-label required" for="number_system">{{ 'numberFormat' | translate }}</label>
                   <ng-select id="number_system" labelForId="number_system" formControlName="number_system"
                     [clearable]="false">
-                    <ng-option [value]="1">International (1,234.56)</ng-option>
-                    <ng-option [value]="0">Indian (1,23,456.78)</ng-option>
+                    @for (opt of numberSystemOptions; track opt.value) {
+                      <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                    }
                   </ng-select>
                   @if (formdata.get('is_base_currency')?.value) {
                     <small class="text-info d-block mt-1">
@@ -358,8 +359,9 @@
                       <label class="field-label" for="er_is_active">Status</label>
                       <ng-select id="er_is_active" labelForId="er_is_active"
                         formControlName="is_active" [clearable]="false">
-                        <ng-option [value]="1">Active</ng-option>
-                        <ng-option [value]="0">Inactive</ng-option>
+                        @for (opt of activeStatusOptions; track opt.value) {
+                          <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
+                        }
                       </ng-select>
                     </div>
                   </div>

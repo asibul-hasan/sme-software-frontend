@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
 import { SharedModule } from '../../../../shared';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
-import { sysConstants } from '../../constants/sys.constants';
+import { sysCompanyTypeOptions, sysCountryOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1001ModelService } from './services/model.service';
 import { Sys1001DataService } from './services/data.service';
 import { AuthContextService } from '../../../../core/services/auth-context.service';
@@ -71,7 +71,8 @@ import { PageFormLayoutComponent } from '../../../../shared/components/page-form
 })
 export class Sys1001Component implements OnInit {
   public model          = inject(Sys1001ModelService);
-  readonly sysConstants = sysConstants;
+  readonly companyTypeOptions = sysCompanyTypeOptions;
+  readonly countryOptions = sysCountryOptions;
 
   private authContext      = inject(AuthContextService);
   public permissionService = inject(FormPermissionService);

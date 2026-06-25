@@ -42,8 +42,9 @@
                 </div></div>
                 <div class="col-md-5"><div class="field-group">
                   <label class="field-label required" for="account_no">GL Bank/Cash Account</label>
-                  <ng-select id="account_no" formControlName="account_no" bindLabel="account_name" bindValue="account_no" [items]="model.bankCashAccounts()" placeholder="Select Bank/Cash account">
-                    <ng-template ng-option-tmp let-item="item">{{ item.account_name }} ({{ item.account_code }})</ng-template>
+                  <ng-select id="account_no" formControlName="account_no" bindValue="account_no" [items]="model.bankCashAccounts()" placeholder="Select Bank/Cash account">
+                    <ng-template ng-label-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
+                    <ng-template ng-option-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
                   </ng-select>
                 </div></div>
                 <div class="col-md-4"><div class="field-group">

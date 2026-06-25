@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { sysConstants } from '../../constants/sys.constants';
+import { activeStatusOptions, sysNumberSystemOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1004ModelService, CurrencyLookup } from './services/model.service';
 import { Sys1004DataService } from './services/data.service';
 import { Sys1006ModelService, IExchangeRate } from '../sys1006/services/model.service';
@@ -65,8 +65,8 @@ export class Sys1004Component implements OnInit {
     });
   }
 
-  readonly sysConstants = sysConstants;
-  readonly SYS_CONSTS   = sysConstants;
+  readonly numberSystemOptions = sysNumberSystemOptions;
+  readonly activeStatusOptions = activeStatusOptions;
 
   // ── Tab state ─────────────────────────────────────────────────────────────
   activeTab = signal<'currency' | 'exchange-rates'>('currency');

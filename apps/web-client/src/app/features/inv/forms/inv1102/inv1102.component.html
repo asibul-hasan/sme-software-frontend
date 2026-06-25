@@ -118,7 +118,7 @@
                       @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
                     </ng-select></td>
                     <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty" step="0.0001" /></td>
-                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="unit_cost" step="0.000001" /></td>
+                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="unit_cost" step="0.000001" inputmode="decimal" /></td>
                     <td class="text-end small fw-semibold">{{ model.lineValue($index) | number: '1.2-2' }}</td>
                     <td><input class="form-control form-control-sm text-uppercase" formControlName="batch_code" placeholder="if batch" /></td>
                     <td class="text-center">

@@ -1,6 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
+import {
+  sysFileCategoryOptions,
+  type CommonSelectOption,
+} from '../../../../../core/constants/common-options.constants';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { Sys1203DataService } from './data.service';
 
@@ -22,10 +26,7 @@ export interface FileMeta {
   row_version?: number;
 }
 
-export interface Category {
-  value: number;
-  label: string;
-}
+export type Category = CommonSelectOption<number>;
 
 /** View-model for SYS1203 File/Image Manager — upload, gallery, preview, delete. */
 @Injectable()
@@ -33,16 +34,7 @@ export class Sys1203ModelService {
   private data = inject(Sys1203DataService);
   private toastr = inject(ToastrService);
 
-  readonly categories: Category[] = [
-    { value: 1, label: 'Company Logo' },
-    { value: 2, label: 'Employee Photo' },
-    { value: 3, label: 'Employee Signature' },
-    { value: 4, label: 'User Avatar' },
-    { value: 5, label: 'Product Image' },
-    { value: 6, label: 'Branch Logo' },
-    { value: 7, label: 'Document' },
-    { value: 8, label: 'Other' },
-  ];
+  readonly categories: readonly Category[] = sysFileCategoryOptions;
 
   files = signal<FileMeta[]>([]);
   thumbs = signal<Record<number, string>>({});
