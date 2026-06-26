@@ -2,17 +2,13 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { AppConfigService } from './app-config.service';
 import { CurrencySettingsService, IBaseCurrencySettings } from './currency-settings.service';
-import { CommonDataService, CurrencyLookup } from '../../shared/services/common-data.service';
+import { CommonDataService } from '../../shared/services/common-data.service';
 import { ApiResponse, isSuccess } from '../models/response.model';
-import { AuthConfigResponse } from '../../features/auth/services/data.service';
-import { AuthSessionConfigService } from './auth-session-config.service';
 import { SKIP_LOADER } from '../interceptors/loader.interceptor';
 
 interface AppBootstrapResponse {
   company_logo_data_url?: string | null;
   base_currency_settings?: IBaseCurrencySettings | null;
-  currencies?: CurrencyLookup[] | null;
-  auth_config?: AuthConfigResponse | null;
 }
 
 /**
@@ -45,7 +41,6 @@ export class AppBootstrapService {
   private readonly config = inject(AppConfigService);
   private readonly currency = inject(CurrencySettingsService);
   private readonly commonData = inject(CommonDataService);
-  private readonly authConfig = inject(AuthSessionConfigService);
 
   private static readonly LOGO_KEY = 'sme_company_logo';
 
@@ -83,6 +78,7 @@ export class AppBootstrapService {
    */
   bootstrap(): void {
     this.fetchBootstrap();
+    this.commonData.loadCurrencies(true);
   }
 
   /**
@@ -93,9 +89,9 @@ export class AppBootstrapService {
   loadFromStorage(): void {
     const hasLogo = this.restoreLogo();
     const hasCurrency = this.currency.restoreFromCache();
-    const hasCurrencies = this.commonData.restoreCurrenciesFromCache();
+    this.commonData.loadCurrencies();
 
-    if (!hasLogo || !hasCurrency || !hasCurrencies) {
+    if (!hasLogo || !hasCurrency) {
       this.fetchBootstrap();
     }
   }
@@ -162,8 +158,6 @@ export class AppBootstrapService {
   private applyBootstrap(data: AppBootstrapResponse): void {
     this.persistLogoDataUrl(data.company_logo_data_url);
     this.currency.applySettingsFromBootstrap(data.base_currency_settings);
-    this.commonData.applyCurrenciesFromBootstrap(data.currencies);
-    this.authConfig.hydrate(data.auth_config);
   }
 
   private persistLogoDataUrl(dataUrl: string | null | undefined): void {

@@ -1,6 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, of, shareReplay, tap } from 'rxjs';
 import { AuthConfigResponse, AuthDataService } from '../../features/auth/services/data.service';
+import { StorageService } from './storage.service';
+import { globalConstants } from '../constants/global.constants';
 
 const DEFAULT_AUTH_CONFIG: AuthConfigResponse = {
   access_token_expiration_ms: 300000,
@@ -9,24 +11,37 @@ const DEFAULT_AUTH_CONFIG: AuthConfigResponse = {
   inactivity_timeout_ms: 900000,
 };
 
+const CONFIG_CACHE_KEY = 'sme_auth_config';
+
 @Injectable({ providedIn: 'root' })
 export class AuthSessionConfigService {
   private readonly authData = inject(AuthDataService);
+  private readonly storageService = inject(StorageService);
   private readonly configState = signal<AuthConfigResponse>(DEFAULT_AUTH_CONFIG);
   private configRequest$?: Observable<AuthConfigResponse>;
   private loaded = false;
 
   readonly config = this.configState.asReadonly();
 
+  constructor() {
+    this.restoreFromCache();
+  }
+
   load(): Observable<AuthConfigResponse> {
     if (this.loaded) {
+      return of(this.configState());
+    }
+
+    if (this.restoreFromCache()) {
       return of(this.configState());
     }
 
     if (!this.configRequest$) {
       this.configRequest$ = this.authData.getConfig().pipe(
         tap((config) => {
-          this.configState.set(this.normalize(config));
+          const normalized = this.normalize(config);
+          this.configState.set(normalized);
+          this.storageService.setItem(CONFIG_CACHE_KEY, normalized, globalConstants.authStorageScope);
           this.loaded = true;
         }),
         catchError(() => {
@@ -46,8 +61,28 @@ export class AuthSessionConfigService {
     }
     const normalized = this.normalize(config);
     this.configState.set(normalized);
+    this.storageService.setItem(CONFIG_CACHE_KEY, normalized, globalConstants.authStorageScope);
     this.loaded = true;
     this.configRequest$ = of(normalized);
+  }
+
+  clear(): void {
+    this.storageService.removeItem(CONFIG_CACHE_KEY, globalConstants.authStorageScope);
+    this.configState.set(DEFAULT_AUTH_CONFIG);
+    this.loaded = false;
+    this.configRequest$ = undefined;
+  }
+
+  private restoreFromCache(): boolean {
+    const cached = this.storageService.getItem<AuthConfigResponse>(CONFIG_CACHE_KEY, globalConstants.authStorageScope);
+    if (!cached) {
+      return false;
+    }
+    const normalized = this.normalize(cached);
+    this.configState.set(normalized);
+    this.loaded = true;
+    this.configRequest$ = of(normalized);
+    return true;
   }
 
   private normalize(config: AuthConfigResponse): AuthConfigResponse {

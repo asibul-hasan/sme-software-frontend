@@ -30,7 +30,6 @@ export interface RefreshTokenRequest {
 export interface RefreshResponse {
   access_token:  string;
   refresh_token: string;
-  auth_config?: AuthConfigResponse;
 }
 
 export interface AuthConfigResponse {

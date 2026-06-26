@@ -100,7 +100,6 @@ export class AuthService {
 
     return this.authDataService.refresh({ refresh_token: refreshToken }).pipe(
       tap(response => {
-        this.authConfig.hydrate(response.auth_config);
         this.storageService.setItem(globalConstants.storageKeys.accessToken, response.access_token, this.authStorageScope);
         if (response.refresh_token) {
           this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, this.authStorageScope);
@@ -120,6 +119,7 @@ export class AuthService {
         this.authContext.clear();
         this.permissionService.clearPermissions();
         this.appBootstrap.clear();          // wipe logo + currency cache
+        this.authConfig.clear();            // wipe auth config cache
         this.router.navigate(['/auth/login']);
       })
     ).subscribe();
