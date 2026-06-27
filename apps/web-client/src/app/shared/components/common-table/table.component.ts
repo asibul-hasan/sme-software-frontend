@@ -286,6 +286,7 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       bottom: 0;
       z-index: 4;
       display: grid;
+      grid-auto-flow: column;
       flex: 0 0 auto;
       margin-top: auto;
       width: max-content;
@@ -305,6 +306,7 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       box-sizing: border-box;
       display: flex;
       align-items: center;
+      min-width: 0;
       overflow: hidden;
     }
     .erp-footer-grid .erp-footer-cell:last-child {
@@ -361,6 +363,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly sort = viewChild.required(MatSort);
   readonly paginator = viewChild(MatPaginator);
   readonly tableElement = viewChild<ElementRef<HTMLTableElement>>('tableElement');
+  readonly footerGrid = viewChild<ElementRef<HTMLElement>>('footerGrid');
 
   private readonly exportService = inject(TableExportService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -466,7 +469,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
     effect(() => {
       this.displayFields();
-      if (this.mergedConfig().showFooterTotal) {
+      if (this.hasFooterTotal()) {
         this.scheduleFooterSync();
       }
       this.mergedConfig().showActions;
@@ -835,6 +838,11 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   getFooterGridTemplate(): string {
+    const measured = this.measuredFooterGridTemplate();
+    return measured || this.getFallbackFooterGridTemplate();
+  }
+
+  private getFallbackFooterGridTemplate(): string {
     const tracks: string[] = [];
     if (this.mergedConfig().selectable) tracks.push('40px');
     if (this.mergedConfig().showRowNumbers) tracks.push('40px');
@@ -843,6 +851,10 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     }
     if (this.mergedConfig().showActions) tracks.push('64px');
     return tracks.join(' ');
+  }
+
+  getFooterGridWidth(): string | null {
+    return this.measuredFooterWidth() || null;
   }
 
   private setupFooterSyncObserver(): void {
@@ -860,8 +872,10 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       window.cancelAnimationFrame(this.footerSyncFrame);
     }
     this.footerSyncFrame = window.requestAnimationFrame(() => {
-      this.footerSyncFrame = null;
-      this.syncFooterToHeader();
+      this.footerSyncFrame = window.requestAnimationFrame(() => {
+        this.footerSyncFrame = null;
+        this.syncFooterToHeader();
+      });
     });
   }
 
@@ -869,6 +883,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     if (!this.hasFooterTotal() || this.showSkeleton()) {
       this.measuredFooterGridTemplate.set('');
       this.measuredFooterWidth.set('');
+      this.applyFooterGridStyle('', '');
       this.cdr.markForCheck();
       return;
     }
@@ -878,35 +893,44 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       this.host.nativeElement.querySelectorAll('tr.mat-mdc-header-row th.mat-mdc-header-cell'),
     ) as HTMLTableCellElement[];
 
-    if (!table || !headerCells.length) {
+    if (!table || headerCells.length !== this.displayFields().length) {
       this.measuredFooterGridTemplate.set('');
       this.measuredFooterWidth.set('');
+      this.applyFooterGridStyle('', '');
       this.cdr.markForCheck();
       return;
     }
 
-    const tracks = headerCells
-      .map((cell) => {
-        const width = cell.getBoundingClientRect().width;
-        return width > 0 ? `${Math.round(width * 100) / 100}px` : '';
-      })
-      .filter(Boolean);
-
-    if (!tracks.length) {
+    const widths = headerCells.map((cell) => Math.round(cell.getBoundingClientRect().width * 100) / 100);
+    if (widths.some((width) => width <= 0)) {
       this.measuredFooterGridTemplate.set('');
       this.measuredFooterWidth.set('');
+      this.applyFooterGridStyle('', '');
       this.cdr.markForCheck();
       return;
     }
 
-    const tableWidth = Math.max(table.scrollWidth, Math.round(table.getBoundingClientRect().width));
-    this.measuredFooterGridTemplate.set(tracks.join(' '));
-    this.measuredFooterWidth.set(`${tableWidth}px`);
+    const totalWidth = Math.round(widths.reduce((sum, width) => sum + width, 0) * 100) / 100;
+    const template = widths.map((width) => `${width}px`).join(' ');
+    const width = `${totalWidth}px`;
+    this.measuredFooterGridTemplate.set(template);
+    this.measuredFooterWidth.set(width);
+    this.applyFooterGridStyle(template, width);
     this.cdr.markForCheck();
   }
 
+  private applyFooterGridStyle(template: string, width: string): void {
+    const footer = this.footerGrid()?.nativeElement;
+    if (!footer) return;
+    footer.style.display = 'grid';
+    footer.style.gridAutoFlow = 'column';
+    footer.style.gridTemplateColumns = template || this.getFallbackFooterGridTemplate();
+    footer.style.width = width || '';
+    footer.style.minWidth = '100%';
+  }
+
   getCellClass(col: ColumnDef, row?: any): string {
-    const c: string[] = ['erp-cell-content', this.getAlignClass(col)];
+    const c: string[] = [this.getAlignClass(col)];
     if (this.isSticky(col)) c.push('sticky');
     if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
     if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');

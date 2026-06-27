@@ -14,10 +14,14 @@ export interface ReconLine {
   voucher_no: number;
   voucher_id: string;
   voucher_date: string;
+  bank_date: string;
+  reference_no?: string;
   narration: string;
   debit: number;
   credit: number;
   cleared: boolean;
+  reconciled: boolean;
+  bank_recon_id?: string;
 }
 
 export interface Worksheet {
@@ -53,9 +57,18 @@ export class Fin1102DataService {
   getBankAccounts(): Observable<ApiResponse<BankAccount[]>> {
     return this.fin.getList<BankAccount[]>('forms/fin1102/bank-accounts');
   }
-  getWorksheet(accountNo: number, statementDate?: string): Observable<ApiResponse<Worksheet>> {
+  getWorksheet(
+    accountNo: number,
+    statementDate?: string,
+    fromDate?: string,
+    toDate?: string,
+    status?: string,
+  ): Observable<ApiResponse<Worksheet>> {
     const params: Record<string, string | number> = { accountNo };
     if (statementDate) params['statementDate'] = statementDate;
+    if (fromDate) params['fromDate'] = fromDate;
+    if (toDate) params['toDate'] = toDate;
+    if (status) params['status'] = status;
     return this.fin.getList<Worksheet>('forms/fin1102/worksheet', params);
   }
   getList(): Observable<ApiResponse<Recon[]>> {
@@ -66,7 +79,7 @@ export class Fin1102DataService {
     statement_date: string;
     statement_balance: number;
     narration?: string;
-    cleared_ledger_nos: number[];
+    cleared_lines: { ledger_no: number; bank_date: string }[];
   }): Observable<ApiResponse<Recon>> {
     return this.fin.insert<Recon>('forms/fin1102/recons', payload);
   }

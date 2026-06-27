@@ -734,6 +734,7 @@
               </tr>
             }
           }
+
         </table>
 
         @if (
@@ -742,8 +743,11 @@
           dataSource.filteredData.length > 0
         ) {
           <div
+            #footerGrid
             class="erp-footer-grid"
+            style="display: grid; grid-auto-flow: column"
             [style.grid-template-columns]="getFooterGridTemplate()"
+            [style.width]="getFooterGridWidth()"
           >
             @if (mergedConfig().selectable) {
               <div class="erp-footer-cell"></div>
@@ -753,8 +757,7 @@
             }
             @for (col of visibleColumns(); track col.field) {
               <div
-                class="erp-footer-cell"
-                [class]="getAlignClass(col)"
+                class="erp-footer-cell {{ getAlignClass(col) }}"
               >
                 @if (col.footerLabel) {
                   <strong class="erp-footer-content">{{ col.footerLabel }}</strong>
