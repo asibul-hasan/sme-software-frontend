@@ -3,18 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { isSuccess } from '../../../../core/models/response.model';
 import { ToastrService } from 'ngx-toastr';
 import { BatchExpiryRow, Inv2004DataService } from './services/data.service';
+import { invConstants } from '../../constants/inv.constants';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv2004',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
   providers: [Inv2004DataService],
   templateUrl: './inv2004.component.html',
 })
@@ -34,13 +36,7 @@ export class Inv2004Component implements OnInit {
   status: string | null = null;
   nearDays = 30;
 
-  statusOptions = [
-    { value: null, label: 'All' },
-    { value: 'expired', label: 'Expired' },
-    { value: 'near_expiry', label: 'Near Expiry' },
-    { value: 'ok', label: 'OK' },
-    { value: 'no_expiry', label: 'No Expiry' },
-  ];
+  readonly statusOptions = invConstants.batchExpiryStatuses;
 
   expiredCount = computed(() => this.rows().filter((r) => r.expiry_status === 'expired').length);
   nearCount = computed(() => this.rows().filter((r) => r.expiry_status === 'near_expiry').length);
@@ -70,7 +66,7 @@ export class Inv2004Component implements OnInit {
     showColumnToggle: true,
     showExport: true,
     showTitle: false,
-    maxHeight: 'calc(100vh - 310px)',
+    maxHeight: '100%',
   };
 
   ngOnInit(): void {

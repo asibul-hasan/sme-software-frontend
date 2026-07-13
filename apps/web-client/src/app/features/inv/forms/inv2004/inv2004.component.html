@@ -1,43 +1,100 @@
-<div class="p-3 h-100 d-flex flex-column">
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0 fw-bold">
-      <mat-icon class="me-2 align-middle">event_busy</mat-icon>
-      Batch / Expiry Management
-    </h4>
-    <button type="button" class="btn btn-primary" (click)="load()" [disabled]="isLoading()">
-      <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">refresh</mat-icon> Refresh
-    </button>
-  </div>
-
-  <div class="form-section-card card flex-shrink-0 mb-2">
-    <div class="card-body">
-      <div class="row row-group align-items-end">
-        <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
-          <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" placeholder="All warehouses" (change)="load()" /></div></div>
-        <div class="col-md-3"><div class="field-group"><label class="field-label">Product</label>
-          <ng-select [(ngModel)]="productNo" [items]="products()" bindValue="no" bindLabel="name" placeholder="All products" (change)="load()" /></div></div>
-        <div class="col-md-2"><div class="field-group"><label class="field-label">Status</label>
-          <ng-select [(ngModel)]="status" [items]="statusOptions" bindValue="value" bindLabel="label" [clearable]="false" (change)="load()" /></div></div>
-        <div class="col-md-2"><div class="field-group"><label class="field-label">Near Days</label>
-          <input type="number" class="form-control text-end" [(ngModel)]="nearDays" (blur)="load()" /></div></div>
-        <div class="col-md-2 d-flex gap-3 justify-content-end">
-          <div class="text-end"><span class="field-label mb-0">Expired</span><div class="fw-bold text-danger">{{ expiredCount() }}</div></div>
-          <div class="text-end"><span class="field-label mb-0">Near</span><div class="fw-bold text-warning">{{ nearCount() }}</div></div>
+<app-page-form-layout
+  [title]="'Batch / Expiry Management'"
+  [subtitle]="'Batch-tracked stock, expiry risk, and inventory value by warehouse'"
+  [icon]="'event_busy'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <div class="form-section-card card flex-shrink-0">
+      <div class="card-body">
+        <div class="row row-group align-items-end">
+          <div class="col-md-3">
+            <div class="field-group">
+              <label class="field-label">Warehouse</label>
+              <ng-select
+                [(ngModel)]="warehouseNo"
+                [items]="warehouses()"
+                bindValue="no"
+                bindLabel="name"
+                placeholder="All warehouses"
+                (change)="load()"
+              />
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="field-group">
+              <label class="field-label">Product</label>
+              <ng-select
+                [(ngModel)]="productNo"
+                [items]="products()"
+                bindValue="no"
+                bindLabel="name"
+                placeholder="All products"
+                (change)="load()"
+              />
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="field-group">
+              <label class="field-label">Status</label>
+              <ng-select
+                [(ngModel)]="status"
+                [items]="statusOptions"
+                bindValue="value"
+                bindLabel="label"
+                [clearable]="false"
+                (change)="load()"
+              />
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="field-group">
+              <label class="field-label">Near Days</label>
+              <input type="number" class="form-control text-end" [(ngModel)]="nearDays" (blur)="load()" />
+            </div>
+          </div>
+          <div class="col-md-2 d-flex gap-3 justify-content-end">
+            <div class="text-end">
+              <span class="field-label mb-0">Expired</span>
+              <div class="fw-bold text-danger">{{ expiredCount() }}</div>
+            </div>
+            <div class="text-end">
+              <span class="field-label mb-0">Near</span>
+              <div class="fw-bold text-warning">{{ nearCount() }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="form-section-card card" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
-    <div class="card-header d-flex align-items-center">
-      <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">inventory_2</mat-icon> Batch Stock</h4>
-      <div class="ms-auto d-flex align-items-center gap-4">
-        <div class="text-end"><span class="field-label mb-0">On Hand</span><div class="fw-bold">{{ onHand() | number:'1.2-2' }}</div></div>
-        <div class="text-end"><span class="field-label mb-0">Value</span><div class="fw-bold text-primary">{{ value() | number:'1.2-2' }}</div></div>
+    <div class="form-section-card card fill-card mt-1">
+      <div class="card-header d-flex align-items-center">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">inventory_2</mat-icon>
+          Batch Stock
+        </h4>
+        <div class="ms-auto d-flex align-items-center gap-4">
+          <div class="text-end">
+            <span class="field-label mb-0">On Hand</span>
+            <div class="fw-bold">{{ onHand() | number: '1.2-2' }}</div>
+          </div>
+          <div class="text-end">
+            <span class="field-label mb-0">Value</span>
+            <div class="fw-bold text-primary">{{ value() | number: '1.2-2' }}</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" (click)="load()" [disabled]="isLoading()">
+            <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">refresh</mat-icon>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
       </div>
     </div>
-    <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
-      <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
-    </div>
   </div>
-</div>
+</app-page-form-layout>

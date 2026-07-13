@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { Inv1002DataService } from './data.service';
+import { invConstants } from '../../../constants/inv.constants';
 
 export interface Lookup { value: number; label: string; }
 export interface Lookups { products: Lookup[]; uoms: Lookup[]; }
@@ -38,13 +39,7 @@ export class Inv1002ModelService {
   isSaving = signal(false);
   form!: FormGroup;
 
-  readonly barcodeTypes = [
-    { value: 1, label: 'EAN-13' },
-    { value: 2, label: 'UPC' },
-    { value: 3, label: 'CODE-128' },
-    { value: 4, label: 'QR' },
-    { value: 5, label: 'Internal' },
-  ];
+  readonly barcodeTypes = invConstants.barcodeTypes;
 
   initForm(): void {
     this.form = this.fb.group({

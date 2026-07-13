@@ -24,32 +24,19 @@
     <div class="row row-group">
       <!-- Rack list -->
       <div class="col-lg-6">
-        <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">shelves</mat-icon>Racks</h4>
-            @if (permissionService.canInsert()) {
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.newRack()">New</button>
-            }
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-sm table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Location</th><th>Status</th></tr></thead>
-                <tbody>
-                  @for (r of model.racks(); track r.rack_no) {
-                    <tr style="cursor: pointer" [class.table-active]="model.selectedRackNo() === r.rack_no" (click)="model.selectRack(r)">
-                      <td class="fw-semibold small">{{ r.rack_id }}</td>
-                      <td class="small">{{ r.rack_name }}</td>
-                      <td class="small opacity-75">{{ r.aisle }}{{ r.rack ? '-' + r.rack : '' }}{{ r.shelf ? '-' + r.shelf : '' }}{{ r.bin ? '-' + r.bin : '' }}</td>
-                      <td><span class="badge" [ngClass]="r.is_active === 1 ? 'text-bg-success' : 'text-bg-secondary'">{{ r.is_active === 1 ? 'Active' : 'Inactive' }}</span></td>
-                    </tr>
-                  }
-                  @if (model.racks().length === 0) { <tr><td colspan="4" class="text-center opacity-75 p-4">No racks yet.</td></tr> }
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="d-flex justify-content-end mb-1">
+          @if (permissionService.canInsert()) {
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.newRack()">New</button>
+          }
         </div>
+        <app-common-table
+          [columns]="columns"
+          [data]="rows()"
+          [config]="tableConfig"
+          [loading]="model.isLoading()"
+          [tableId]="'inv2002-racks'"
+          (rowClick)="onRowClick($event)"
+        ></app-common-table>
       </div>
 
       <!-- Rack form -->

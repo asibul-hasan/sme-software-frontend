@@ -83,36 +83,37 @@
                 <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon> Add Value
               </button>
             </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 30%">Code</th>
-                      <th>Name</th>
-                      <th class="text-center" style="width: 90px">Order</th>
-                      <th class="text-center" style="width: 60px"></th>
-                    </tr>
-                  </thead>
-                  <tbody [formArrayName]="'values'">
-                    @for (row of model.values.controls; track $index) {
-                      <tr [formGroupName]="$index">
-                        <td><input type="text" class="form-control form-control-sm text-uppercase" formControlName="value_code" placeholder="M" /></td>
-                        <td><input type="text" class="form-control form-control-sm" formControlName="value_name" placeholder="Medium" /></td>
-                        <td><input type="number" class="form-control form-control-sm" formControlName="order_sl" /></td>
-                        <td class="text-center">
-                          <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeValue($index)" title="Remove">
-                            <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                    @if (model.values.length === 0) {
-                      <tr><td colspan="4" class="text-center opacity-75 p-4">No values yet. Click “Add Value”.</td></tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+            <div class="card-body p-0" [formArrayName]="'values'">
+              <ng-template #codeTpl let-row>
+                <div [formGroupName]="row.index">
+                  <input type="text" class="form-control form-control-sm text-uppercase" formControlName="value_code" placeholder="M" />
+                </div>
+              </ng-template>
+
+              <ng-template #nameTpl let-row>
+                <div [formGroupName]="row.index">
+                  <input type="text" class="form-control form-control-sm" formControlName="value_name" placeholder="Medium" />
+                </div>
+              </ng-template>
+
+              <ng-template #orderTpl let-row>
+                <div [formGroupName]="row.index">
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="order_sl" />
+                </div>
+              </ng-template>
+
+              <ng-template #removeTpl let-row>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeValue(row.index)" title="Remove">
+                  <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
+                </button>
+              </ng-template>
+
+              <app-common-table
+                [columns]="valueColumns()"
+                [data]="valueRows()"
+                [config]="valueTableConfig"
+                [tableId]="'inv1006-attribute-values'"
+              ></app-common-table>
             </div>
           </div>
         </div>

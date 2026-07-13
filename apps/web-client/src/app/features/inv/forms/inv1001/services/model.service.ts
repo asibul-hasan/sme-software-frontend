@@ -6,6 +6,7 @@ import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { Inv1001DataService } from './data.service';
+import { invConstants } from '../../../constants/inv.constants';
 
 export interface Lookup { value: number; label: string; }
 export interface AttributeOption { attribute_no: number; attribute_name: string; values: Lookup[]; }
@@ -60,19 +61,8 @@ export class Inv1001ModelService {
 
   form!: FormGroup;
 
-  readonly productTypes = [
-    { value: 1, label: 'Standard' },
-    { value: 2, label: 'Variant Parent' },
-    { value: 3, label: 'Service' },
-    { value: 4, label: 'Bundle / Kit' },
-  ];
-  readonly barcodeTypes = [
-    { value: 1, label: 'EAN-13' },
-    { value: 2, label: 'UPC' },
-    { value: 3, label: 'CODE-128' },
-    { value: 4, label: 'QR' },
-    { value: 5, label: 'Internal' },
-  ];
+  readonly productTypes = invConstants.productTypes;
+  readonly barcodeTypes = invConstants.barcodeTypes;
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
