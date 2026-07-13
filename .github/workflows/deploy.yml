@@ -23,6 +23,7 @@ jobs:
       - name: Build project
         run: npm run build -- --configuration production
 
+
       # - name: Build project
       #   # This tells Angular to build for the /admin/ subfolder
       #   run: npm run build -- --configuration production --base-href /admin/
