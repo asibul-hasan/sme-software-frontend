@@ -58,6 +58,7 @@ export class Sys1108Component implements OnInit {
     striped: true,
     selectable: false,
     showActions: true,
+    height: '100%',
     actions: [
       {
         type: 'delete',
@@ -78,6 +79,7 @@ export class Sys1108Component implements OnInit {
     striped: true,
     selectable: false,
     showActions: true,
+    height: '100%',
     actions: [
       {
         type: 'delete',
@@ -98,6 +100,7 @@ export class Sys1108Component implements OnInit {
     striped: true,
     selectable: false,
     showActions: true,
+    height: '100%',
     actions: [
       {
         type: 'delete',

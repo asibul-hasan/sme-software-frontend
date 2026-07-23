@@ -17,15 +17,16 @@
 >
 
 
-  <div formContent class="gap-2 overflow-y-auto">
+  <div formContent class="h-full flex flex-col gap-2 overflow-hidden">
     <!-- Level 1: Approval Scope (Master) -->
     <div
       class="form-section-card card fill-card"
       style="
-        flex: 1 1 33%;
-        min-height: 250px;
+        flex: 1 1 45%;
+        min-height: 180px;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
       "
     >
       <div class="card-header d-flex align-items-center gap-2 flex-wrap">
@@ -49,6 +50,7 @@
           min-height: 0;
           display: flex;
           flex-direction: column;
+          overflow: hidden;
         "
       >
         <app-common-table
@@ -63,12 +65,12 @@
     </div>
 
     <!-- Level 2 & 3: Split View -->
-    <div class="row row-group m-0" style="flex: 1 1 66%; min-height: 250px">
+    <div class="row row-group m-0" style="flex: 1 1 55%; min-height: 200px">
       <!-- Level 2: Approval Steps -->
       <div class="col-6 p-0 pe-1 d-flex flex-column h-100">
         <div
           class="form-section-card card fill-card h-100"
-          style="display: flex; flex-direction: column"
+          style="display: flex; flex-direction: column; overflow: hidden"
         >
           <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
@@ -94,6 +96,7 @@
               min-height: 0;
               display: flex;
               flex-direction: column;
+              overflow: hidden;
             "
           >
             <app-common-table
@@ -112,7 +115,7 @@
       <div class="col-6 p-0 ps-1 d-flex flex-column h-100">
         <div
           class="form-section-card card fill-card h-100"
-          style="display: flex; flex-direction: column"
+          style="display: flex; flex-direction: column; overflow: hidden"
         >
           <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
@@ -136,6 +139,7 @@
               min-height: 0;
               display: flex;
               flex-direction: column;
+              overflow: hidden;
             "
           >
             <app-common-table
