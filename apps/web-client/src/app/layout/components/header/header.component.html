@@ -1,16 +1,21 @@
-<header class="topbar d-flex align-items-center px-2 gap-2">
+<header
+  class="relative flex h-[48px] w-full items-center gap-2 border-b border-[var(--header-border)] bg-header px-2 text-header-foreground backdrop-blur-[20px]"
+>
   <!-- Left: Breadcrumb -->
-  <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0">
+  <div class="flex min-w-0 grow items-center gap-2">
     <!-- Hamburger toggle for mobile / sidebar collapse -->
     <button
-      class="top-btn me-1 d-flex justify-content-center align-items-center"
+      class="group relative mr-1 flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98]"
       (click)="onToggleSidebar()"
       title="Toggle Sidebar"
     >
-      <mat-icon>menu</mat-icon>
+      <mat-icon
+        class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
+        >menu</mat-icon
+      >
     </button>
 
-    <div class="d-flex align-items-center gap-1 text-nowrap overflow-hidden">
+    <div class="flex items-center gap-1 overflow-hidden whitespace-nowrap">
       @for (
         crumb of breadcrumbs();
         track crumb.label;
@@ -18,14 +23,22 @@
         let first = $first
       ) {
         @if (!last) {
-          <a class="crumb-link" [routerLink]="crumb.url">{{
-            crumb.label | translate
-          }}</a>
-          <span class="sep">›</span>
+          <a
+            class="cursor-pointer text-xs text-header-foreground no-underline opacity-70 hover:text-white hover:opacity-100"
+            [routerLink]="crumb.url"
+            >{{ crumb.label | translate }}</a
+          >
+          <span class="text-sm text-header-foreground opacity-40">›</span>
         } @else {
-          <span class="current">{{ crumb.label | translate }}</span>
+          <span class="text-lg font-bold tracking-[-0.01em] text-white">{{
+            crumb.label | translate
+          }}</span>
           @if (formCode()) {
-            <span class="form-chip">{{ formCode() }}</span>
+            <span
+              class="shrink-0 rounded-[20px] border border-[rgba(var(--indigo-rgb),0.3)] bg-[rgba(var(--indigo-rgb),0.15)] px-2 py-[2px] text-[10px] font-medium text-indigo [font-family:'Courier_New',monospace]"
+            >
+              {{ formCode() }}
+            </span>
           }
         }
       }
@@ -33,7 +46,7 @@
   </div>
 
   <!-- Right: Actions -->
-  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+  <div class="flex shrink-0 items-center gap-2">
     <!-- Branch switcher — only rendered when user has at least one branch -->
     @if (availableBranches().length > 0) {
       <ng-select
@@ -51,9 +64,14 @@
         placeholder="Select Branch"
       >
         <ng-template ng-label-tmp let-item="item">
-          <div class="d-flex align-items-center gap-2">
-            <mat-icon class="branch-icon">store</mat-icon>
-            <span class="branch-name">{{ item.branch_name }}</span>
+          <div class="flex items-center gap-2">
+            <mat-icon
+              class="!h-[18px] !w-[18px] shrink-0 !text-[18px] !text-indigo"
+              >store</mat-icon
+            >
+            <span class="text-base font-medium tracking-[-0.1px] text-white">{{
+              item.branch_name
+            }}</span>
           </div>
         </ng-template>
         <ng-template ng-option-tmp let-item="item">
@@ -64,55 +82,80 @@
 
     <!-- Quick Actions -->
     <button
-      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      class="group relative hidden h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98] lg:flex"
       title="Quick Actions"
     >
-      <mat-icon>bolt</mat-icon>
+      <mat-icon
+        class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
+        >bolt</mat-icon
+      >
     </button>
 
     <!-- Full Screen -->
     <button
-      class="top-btn d-none d-lg-flex align-items-center justify-content-center"
+      class="group relative hidden h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98] lg:flex"
       title="Toggle Fullscreen"
       (click)="onToggleFullScreen()"
     >
-      <mat-icon>{{
-        isFullScreen() ? 'fullscreen_exit' : 'fullscreen'
-      }}</mat-icon>
+      <mat-icon
+        class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
+        >{{ isFullScreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon
+      >
     </button>
 
     <!-- Notifications -->
     <button
-      class="top-btn"
+      class="group relative flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98] aria-expanded:-translate-y-px aria-expanded:border-indigo aria-expanded:bg-[rgba(var(--indigo-rgb),0.15)] aria-expanded:text-white aria-expanded:shadow-[0_4px_15px_rgba(0,0,0,0.15)]"
       title="Notifications"
       [matMenuTriggerFor]="notifMenu"
     >
-      <mat-icon>notifications</mat-icon>
+      <mat-icon
+        class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
+        >notifications</mat-icon
+      >
       @if (notificationCount() > 0) {
-        <span class="notif-badge"></span>
+        <span
+          class="pointer-events-none absolute right-[6px] top-[6px] h-2 w-2 animate-[statusPulse_2s_ease-in-out_infinite] rounded-full border-2 border-header bg-rose shadow-[0_0_8px_var(--rose)]"
+        ></span>
       }
     </button>
 
     <!-- Theme Toggle -->
     <button
-      class="top-btn d-none d-sm-flex align-items-center justify-content-center"
+      class="group relative hidden h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98] sm:flex"
       title="Toggle Theme"
       (click)="onToggleTheme()"
     >
-      <mat-icon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      <mat-icon
+        class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
+        >{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon
+      >
     </button>
 
     <!-- User Card -->
     <button
-      class="user-card d-flex align-items-center gap-2 border-0 bg-transparent"
+      class="group relative flex h-[34px] shrink-0 cursor-pointer items-center gap-2 rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] pl-1 pr-[10px] text-left text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98] aria-expanded:-translate-y-px aria-expanded:border-indigo aria-expanded:bg-[rgba(var(--indigo-rgb),0.15)] aria-expanded:text-white aria-expanded:shadow-[0_4px_15px_rgba(0,0,0,0.15)]"
       [matMenuTriggerFor]="userProfileMenu"
     >
-      <div class="user-ava d-grid px-1">{{ userInitials() }}</div>
-      <div class="user-info d-none d-md-block text-start">
-        <div class="user-name">{{ userName() }}</div>
-        <div class="user-role">{{ userRole() }}</div>
+      <div
+        class="grid h-[28px] w-[28px] shrink-0 place-items-center rounded-lg text-[11px] font-extrabold leading-none text-white [background:var(--indigo-g)]"
+      >
+        {{ userInitials() }}
       </div>
-      <mat-icon class="chevron-icon">expand_more</mat-icon>
+      <div class="hidden flex-col justify-center md:flex">
+        <div class="text-base font-bold leading-[1.1] text-white">
+          {{ userName() }}
+        </div>
+        <div
+          class="mt-[1px] text-[9.5px] uppercase leading-none tracking-[0.6px] text-header-foreground opacity-60"
+        >
+          {{ userRole() }}
+        </div>
+      </div>
+      <mat-icon
+        class="ml-auto !h-[18px] !w-[18px] shrink-0 !text-[18px] !text-header-foreground opacity-40 transition-transform duration-300 group-aria-expanded:rotate-180 group-aria-expanded:!text-white group-aria-expanded:opacity-100"
+        >expand_more</mat-icon
+      >
     </button>
   </div>
 
@@ -123,7 +166,7 @@
     xPosition="before"
   >
     <div
-      class="notif-header d-flex align-items-center justify-content-between"
+      class="notif-header flex items-center justify-between"
       (click)="$event.stopPropagation()"
       (keydown.enter)="$event.stopPropagation()"
       tabindex="0"
@@ -134,7 +177,7 @@
 
     <div class="notif-list">
       @for (item of notifications(); track item.id) {
-        <button mat-menu-item class="notif-item d-flex align-items-start">
+        <button mat-menu-item class="notif-item !flex !items-start">
           <div
             class="notif-icon-wrapper"
             [style.background]="item.bgColor"
@@ -142,25 +185,26 @@
           >
             <mat-icon>{{ item.icon }}</mat-icon>
           </div>
-          <div class="notif-content flex-grow-1 overflow-hidden">
-            <div
-              class="d-flex justify-content-between align-items-baseline mb-1"
-            >
-              <div class="notif-text text-truncate">
-                <span class="fw-bold">{{ item.title }}</span> {{ item.text }}
+          <div class="notif-content grow overflow-hidden">
+            <div class="mb-1 flex items-baseline justify-between">
+              <div class="notif-text truncate">
+                <span class="font-bold">{{ item.title }}</span> {{ item.text }}
               </div>
-              <span class="notif-time flex-shrink-0 ms-2">{{ item.time }}</span>
+              <span class="notif-time ml-2 shrink-0">{{ item.time }}</span>
             </div>
             @if (item.subtext) {
-              <div class="notif-subtext text-truncate">{{ item.subtext }}</div>
+              <div class="notif-subtext truncate">{{ item.subtext }}</div>
             }
           </div>
         </button>
       }
     </div>
 
-    <button class="notif-footer text-center border-0 bg-transparent w-100" mat-menu-item>
-      <span class="text-primary fw-medium">View all</span>
+    <button
+      class="notif-footer w-full border-0 bg-transparent text-center"
+      mat-menu-item
+    >
+      <span class="font-medium text-[#0d6efd]">View all</span>
     </button>
   </mat-menu>
 
@@ -171,15 +215,15 @@
     xPosition="before"
   >
     <div
-      class="profile-header d-flex align-items-center mb-2"
+      class="profile-header mb-2 flex items-center"
       (click)="$event.stopPropagation()"
       (keydown.enter)="$event.stopPropagation()"
       tabindex="0"
     >
-      <div class="profile-ava d-grid me-3">{{ userInitials() }}</div>
-      <div class="profile-info flex-grow-1">
-        <div class="profile-name fw-bold">{{ userName() }}</div>
-        <div class="profile-role text-secondary">{{ userRole() }}</div>
+      <div class="profile-ava mr-3">{{ userInitials() }}</div>
+      <div class="grow">
+        <div class="profile-name">{{ userName() }}</div>
+        <div class="profile-role">{{ userRole() }}</div>
       </div>
       <button mat-icon-button class="logout-icon-btn" (click)="onLogout()">
         <mat-icon>logout</mat-icon>
@@ -187,20 +231,20 @@
     </div>
 
     <div
-      class="profile-tabs d-flex mb-2"
+      class="profile-tabs mb-2 flex"
       (click)="$event.stopPropagation()"
       (keydown.enter)="$event.stopPropagation()"
       tabindex="0"
     >
       <button
-        class="profile-tab flex-fill text-center border-0 bg-transparent"
+        class="profile-tab flex-1 border-0 bg-transparent text-center"
         [class.active]="activeProfileTab() === 'profile'"
         (click)="activeProfileTab.set('profile')"
       >
         <mat-icon class="tab-icon">person_outline</mat-icon> Profile
       </button>
       <button
-        class="profile-tab flex-fill text-center border-0 bg-transparent"
+        class="profile-tab flex-1 border-0 bg-transparent text-center"
         [class.active]="activeProfileTab() === 'setting'"
         (click)="activeProfileTab.set('setting')"
       >
@@ -229,7 +273,7 @@
           <mat-icon>logout</mat-icon><span>Logout</span>
         </button>
       } @else {
-        <div class="px-3 py-2 text-center text-secondary small">
+        <div class="px-3 py-2 text-center text-xs text-subtle">
           Settings goes here.
         </div>
       }

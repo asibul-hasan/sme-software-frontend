@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Hrm1201ModelService, SalaryStructure } from './services/model.service';
 import { Hrm1201DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -14,7 +15,7 @@ import { hrmConstants } from '../../constants/hrm.constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1201',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Hrm1201ModelService, Hrm1201DataService],
   templateUrl: './hrm1201.component.html',
   styles: [`:host { display: block; height: 100%; }`],

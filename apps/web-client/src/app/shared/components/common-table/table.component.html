@@ -2,8 +2,9 @@
 <div
   class="form-section-card card common-table-card"
   data-no-collapse
-  [style.height]="mergedConfig().height || null"
-  [style.min-height]="mergedConfig().minHeight || null"
+  [class.is-col-resizing]="resizingField() !== null"
+  [style.height]="cardHeight()"
+  [style.min-height]="cardMinHeight()"
 >
   <!-- TOOLBAR -->
   @if (
@@ -13,15 +14,15 @@
     mergedConfig().showTitle
   ) {
     <div
-      class="card-header common-table-toolbar d-flex align-items-center justify-content-between flex-wrap gap-2"
+      class="card-header common-table-toolbar flex flex-wrap items-center justify-between gap-2"
       style="padding: 4px 12px"
     >
       <!-- Left: Title + Search -->
-      <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+      <div class="flex items-center gap-2 grow min-w-0">
         @if (mergedConfig().showTitle && mergedConfig().title) {
-          <h4 class="card-header__title mb-0 fw-bold" style="font-size: 14px">
+          <h4 class="card-header__title mb-0 font-bold" style="font-size: 14px">
             <mat-icon
-              class="me-1 align-middle"
+              class="mr-1 align-middle"
               style="font-size: 18px; width: 18px; height: 18px"
               >table_view</mat-icon
             >
@@ -30,11 +31,11 @@
         }
         @if (mergedConfig().showSearch) {
           <div
-            class="position-relative d-flex align-items-center"
+            class="relative flex items-center"
             style="max-width: 240px; flex: 1"
           >
             <mat-icon
-              class="position-absolute text-muted"
+              class="absolute text-muted"
               style="
                 left: 8px;
                 font-size: 17px;
@@ -58,7 +59,7 @@
             />
             @if (searchControl.value) {
               <button
-                class="position-absolute d-flex align-items-center justify-content-center border-0 bg-transparent text-muted"
+                class="absolute flex items-center justify-center border-0 bg-transparent text-muted"
                 style="
                   right: 4px;
                   width: 20px;
@@ -101,7 +102,7 @@
               "
             >
               <div
-                class="d-flex align-items-center justify-content-between"
+                class="flex items-center justify-between"
                 style="
                   padding: 8px 14px 6px;
                   border-bottom: 1px solid var(--border-color);
@@ -117,7 +118,7 @@
                   "
                   >Columns</span
                 >
-                <div class="d-flex gap-1">
+                <div class="flex gap-1">
                   <button
                     class="btn-action btn-save"
                     style="height: 24px; padding: 0 6px; font-size: 10px"
@@ -142,7 +143,7 @@
               @for (col of columns(); track col.field) {
                 @if (col.hideable !== false) {
                   <div
-                    class="d-flex align-items-center gap-2"
+                    class="flex items-center gap-2"
                     style="padding: 5px 14px; cursor: pointer"
                     (click)="toggleColumn(col); $event.stopPropagation()"
                   >
@@ -194,7 +195,7 @@
                 track format
               ) {
                 <button
-                  class="d-flex align-items-center gap-2 border-0 bg-transparent w-100"
+                  class="flex items-center gap-2 border-0 bg-transparent w-full"
                   style="
                     padding: 8px 14px;
                     cursor: pointer;
@@ -274,9 +275,7 @@
   <div class="card-body common-table-body p-0">
     <div
       class="overflow-auto common-table-scroll"
-      [style.height]="mergedConfig().height ? '100%' : null"
-      [style.min-height]="mergedConfig().minHeight || null"
-      [style.max-height]="mergedConfig().maxHeight"
+      [style.max-height]="mergedConfig().maxHeight || null"
     >
       <div class="common-table-scroll-content">
         <table
@@ -292,7 +291,7 @@
         >
           <!-- Selection Column -->
           @if (mergedConfig().selectable) {
-            <ng-container matColumnDef="__select">
+            <ng-container matColumnDef="__select" [sticky]="hasLeftPins()">
               <th
                 mat-header-cell
                 *matHeaderCellDef
@@ -346,7 +345,7 @@
 
           <!-- Row Number Column -->
           @if (mergedConfig().showRowNumbers) {
-            <ng-container matColumnDef="__rowNumber">
+            <ng-container matColumnDef="__rowNumber" [sticky]="hasLeftPins()">
               <th
                 mat-header-cell
                 *matHeaderCellDef
@@ -394,7 +393,11 @@
 
           <!-- Dynamic Data Columns -->
           @for (col of visibleColumns(); track col.field) {
-            <ng-container [matColumnDef]="col.field">
+            <ng-container
+              [matColumnDef]="col.field"
+              [sticky]="col.pin === 'left'"
+              [stickyEnd]="col.pin === 'right'"
+            >
               <th
                 mat-header-cell
                 *matHeaderCellDef
@@ -404,9 +407,16 @@
                 [style.width]="getColumnWidth(col)"
                 [style.min-width]="getColumnWidth(col)"
                 [style.max-width]="getColumnWidth(col)"
-                [style]="getPinStyle(col)"
               >
                 {{ col.title }}
+                @if (isResizable(col)) {
+                  <span
+                    class="erp-col-resizer"
+                    (pointerdown)="startResize($event, col)"
+                    (click)="$event.stopPropagation()"
+                    (dblclick)="$event.stopPropagation()"
+                  ></span>
+                }
               </th>
               <td
                 mat-cell
@@ -416,7 +426,6 @@
                 [style.width]="getColumnWidth(col)"
                 [style.min-width]="getColumnWidth(col)"
                 [style.max-width]="getColumnWidth(col)"
-                [style]="getPinStyle(col)"
               >
                 @if (isEditing(i, col.field, row)) {
                   @switch (getEffectiveCellType(col)) {
@@ -574,11 +583,10 @@
                 mat-footer-cell
                 *matFooterCellDef
                 class="erp-footer-cell"
-                [class]="getAlignClass(col)"
+                [class]="getFooterCellClass(col)"
                 [style.width]="getColumnWidth(col)"
                 [style.min-width]="getColumnWidth(col)"
                 [style.max-width]="getColumnWidth(col)"
-                [style]="getPinStyle(col)"
               >
                 @if (col.footerLabel) {
                   <strong class="erp-footer-content">{{ col.footerLabel }}</strong>
@@ -591,7 +599,7 @@
 
           <!-- Actions Column — kebab (⋯) menu -->
           @if (mergedConfig().showActions) {
-            <ng-container matColumnDef="__actions">
+            <ng-container matColumnDef="__actions" [stickyEnd]="hasRightPins()">
               <th
                 mat-header-cell
                 *matHeaderCellDef
@@ -603,7 +611,7 @@
                 style="width: 64px; min-width: 64px; text-align: center"
               >
                 <div
-                  class="d-flex align-items-center justify-content-center gap-1"
+                  class="flex items-center justify-center gap-1"
                 >
                   @for (
                     action of mergedConfig().actions || [];
@@ -663,24 +671,30 @@
           ></tr>
 
           <!-- Body Rows -->
-          @if (!showSkeleton()) {
-            <tr
-              mat-row
-              *matRowDef="let row; columns: displayFields(); let i = index"
-              [class]="selection.isSelected(row) ? 'erp-row-active' : ''"
-              (click)="onRowClick(row, i, $event)"
-              (dblclick)="startRowEdit(row, i)"
-            ></tr>
-          }
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayFields(); let i = index"
+            [class.erp-row-active]="isRowActive(row)"
+            (click)="onRowClick(row, i, $event)"
+            (dblclick)="onRowDblClick(row, i, $event)"
+          ></tr>
 
-          <!-- Empty State -->
-          @if (!showSkeleton() && dataSource.filteredData.length === 0) {
-            <tr class="mat-row">
-              <td
-                [attr.colspan]="displayFields().length"
-                style="text-align: center; vertical-align: middle; border: none"
-              >
-                <div class="d-flex flex-column align-items-center gap-2 py-4">
+          <!-- No-data / loading state — raw <tr>s are NOT projected by the MDC
+               mat-table; *matNoDataRow is the only row that renders when the
+               (filtered) dataSource is empty. -->
+          <tr *matNoDataRow class="erp-empty-row">
+            <td
+              class="erp-empty-cell"
+              [attr.colspan]="displayFields().length"
+            >
+              @if (showSkeleton()) {
+                <div class="erp-empty-inner">
+                  @for (i of skeletonRows; track i) {
+                    <div class="erp-skeleton-bar"></div>
+                  }
+                </div>
+              } @else {
+                <div class="erp-empty-inner">
                   <mat-icon
                     class="text-muted"
                     style="
@@ -692,85 +706,28 @@
                     >inventory_2</mat-icon
                   >
                   <p
-                    class="fw-semibold text-muted mb-0"
+                    class="font-semibold text-muted mb-0"
                     style="font-size: 13px"
                   >
                     No data available
                   </p>
                 </div>
-              </td>
-            </tr>
-          }
+              }
+            </td>
+          </tr>
 
-          <!-- Skeleton -->
-          @if (showSkeleton()) {
-            @for (i of skeletonRows; track i) {
-              <tr class="mat-row" style="height: 36px">
-                @for (field of displayFields(); track field) {
-                  <td
-                    class="mat-cell"
-                    style="
-                      padding: 8px 12px;
-                      border-bottom: 1px solid var(--border-color);
-                    "
-                  >
-                    <div
-                      style="
-                        height: 12px;
-                        border-radius: 4px;
-                        width: 80%;
-                        background: linear-gradient(
-                          90deg,
-                          var(--bg-secondary) 25%,
-                          var(--border-color) 50%,
-                          var(--bg-secondary) 75%
-                        );
-                        background-size: 200% 100%;
-                        animation: skeleton-pulse 1.5s ease-in-out infinite;
-                      "
-                    ></div>
-                  </td>
-                }
-              </tr>
-            }
+          <!-- Footer Row (inside table for perfect column alignment + sticky).
+               Shown even when the table is empty — totals read 0, like the
+               reference grid. -->
+          @if (hasFooterTotal() && !showSkeleton()) {
+            <tr
+              mat-footer-row
+              *matFooterRowDef="displayFields(); sticky: true"
+              class="erp-footer-row"
+            ></tr>
           }
 
         </table>
-
-        @if (
-          hasFooterTotal() &&
-          !showSkeleton() &&
-          dataSource.filteredData.length > 0
-        ) {
-          <div
-            #footerGrid
-            class="erp-footer-grid"
-            style="display: grid; grid-auto-flow: column"
-            [style.grid-template-columns]="getFooterGridTemplate()"
-            [style.width]="getFooterGridWidth()"
-          >
-            @if (mergedConfig().selectable) {
-              <div class="erp-footer-cell"></div>
-            }
-            @if (mergedConfig().showRowNumbers) {
-              <div class="erp-footer-cell"></div>
-            }
-            @for (col of visibleColumns(); track col.field) {
-              <div
-                class="erp-footer-cell {{ getAlignClass(col) }}"
-              >
-                @if (col.footerLabel) {
-                  <strong class="erp-footer-content">{{ col.footerLabel }}</strong>
-                } @else if (col.bottomTotal || col.footerValue) {
-                  <strong class="erp-footer-content">{{ getFooterValue(col) }}</strong>
-                }
-              </div>
-            }
-            @if (mergedConfig().showActions) {
-              <div class="erp-footer-cell"></div>
-            }
-          </div>
-        }
 
       </div>
     </div>
@@ -779,7 +736,7 @@
   <!-- PAGINATION + INFO -->
   @if (mergedConfig().pagination) {
     <div
-      class="common-table-pagination d-flex align-items-center justify-content-between"
+      class="common-table-pagination flex items-center justify-between"
       style="
         border-top: 1px solid var(--table-header-border, var(--border-color));
         padding: 0 6px 0 12px;
@@ -788,7 +745,7 @@
       "
     >
       <div
-        class="d-flex align-items-center gap-2"
+        class="flex items-center gap-2"
         style="font-size: 11px; color: var(--text-secondary)"
       >
         <span
@@ -800,7 +757,7 @@
           <span style="font-style: italic; opacity: 0.6">(filtered)</span>
         }
         @if (mergedConfig().selectable && selection.hasValue()) {
-          <span class="fw-semibold" style="color: var(--indigo)"
+          <span class="font-semibold" style="color: var(--indigo)"
             >{{ selection.selected.length }} selected</span
           >
         }

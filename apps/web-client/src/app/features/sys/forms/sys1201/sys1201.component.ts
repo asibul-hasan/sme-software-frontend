@@ -109,15 +109,15 @@ export class Sys1201Component implements OnInit {
   ];
 
   moduleTableConfig = computed<Partial<TableConfig>>(() =>
-    this.tableConfig('Modules', 'Search modules...', (row) => this.confirmDeleteModule(Number(row['module_no']))),
+    this.tableConfig('Modules', 'Search modules...', 'module_no', (row) => this.confirmDeleteModule(Number(row['module_no']))),
   );
 
   submoduleTableConfig = computed<Partial<TableConfig>>(() =>
-    this.tableConfig('Submodules', 'Search submodules...', (row) => this.confirmDeleteSubmodule(Number(row['submodule_no']))),
+    this.tableConfig('Submodules', 'Search submodules...', 'submodule_no', (row) => this.confirmDeleteSubmodule(Number(row['submodule_no']))),
   );
 
   menuTableConfig = computed<Partial<TableConfig>>(() =>
-    this.tableConfig('Menus', 'Search menus...', (row) => this.confirmDeleteMenu(Number(row['menu_no']))),
+    this.tableConfig('Menus', 'Search menus...', 'menu_no', (row) => this.confirmDeleteMenu(Number(row['menu_no']))),
   );
 
   ngOnInit(): void {
@@ -162,9 +162,12 @@ export class Sys1201Component implements OnInit {
   private tableConfig(
     title: string,
     searchPlaceholder: string,
+    pkField: string,
     onDelete: (row: Record<string, unknown>) => void,
   ): Partial<TableConfig> {
     return {
+      // Row-selection identity — an unsaved row (null PK) falls back to itself.
+      rowKey: (row) => row[pkField] ?? row,
       title,
       showTitle: true,
       showSearch: true,

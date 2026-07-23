@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>price_change</mat-icon><p>No landed costs found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">price_change</mat-icon> {{ selectedNo() ? statusLabel(status()) : 'New Landed Cost' }}</h4>
@@ -43,7 +43,7 @@
           <div class="col-md-3"><div class="field-group"><label class="field-label">Posted Invoice</label>
             <ng-select [(ngModel)]="invoiceNo" [items]="postedInvoices()" bindValue="invoice_no" bindLabel="invoice_id" [disabled]="!editable()" placeholder="Select invoice" (change)="preview()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Cost Date</label>
-            <input type="date" class="form-control" [(ngModel)]="costDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="costDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Cost Type</label>
             <ng-select [(ngModel)]="costType" [items]="costTypes" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>

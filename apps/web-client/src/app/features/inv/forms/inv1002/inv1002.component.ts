@@ -51,6 +51,7 @@ export class Inv1002Component implements OnInit {
   ];
 
   readonly tableConfig: Partial<TableConfig> = {
+    rowKey: (row) => row['barcode_no'] ?? row,
     showTitle: true,
     title: 'Barcodes',
     showSearch: true,

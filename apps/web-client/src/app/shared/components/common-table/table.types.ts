@@ -55,6 +55,8 @@ export interface ColumnDef {
    */
   value?: (row: Record<string, unknown>) => unknown;
   pin?: PinDirection;
+  /** Drag-to-resize on the header edge. Defaults to true (set false to lock). */
+  resizable?: boolean;
   bottomTotal?: boolean;
   footerValue?: (rows: Record<string, unknown>[]) => unknown;
   editable?: boolean | ((row: Record<string, unknown>, column: ColumnDef) => boolean);
@@ -120,6 +122,14 @@ export interface TableConfig {
   serverSide?: boolean;
   striped?: boolean;
   showRowNumbers?: boolean;
+  /**
+   * Stable identity of a row, used to decide whether the SELECTION actually
+   * changed (and therefore whether `rowClick` should fire). Give a field name
+   * or an accessor. Defaults to `__uid` → `id` → the row object reference.
+   */
+  rowKey?: string | ((row: Record<string, unknown>) => unknown);
+  /** Master switch for drag-to-resize column handles (default true). */
+  resizableColumns?: boolean;
 }
 
 export interface SortState {
@@ -158,9 +168,12 @@ export const DEFAULT_TABLE_CONFIG: TableConfig = {
   hoverEffect: true,
   dense: false,
   compact: false,
+  /* Sizing contract: forms that pass NOTHING get a fixed 20vh table (see
+     cardHeight() in the component). Passing height/minHeight/maxHeight takes
+     full control — e.g. maxHeight:'100%' for flex-fill layouts. */
   height: '',
-  minHeight: '20vh',
-  maxHeight: 'calc(100vh - 320px)',
+  minHeight: '',
+  maxHeight: '',
   serverSide: false,
   striped: true,
   showRowNumbers: false,

@@ -1,3 +1,29 @@
+<style>
+  .tw-select .ng-select-container {
+    height: 38px !important;
+    min-height: 38px !important;
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 0.5rem !important; /* 8px */
+    box-shadow: none !important;
+    font-size: 13px !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+  }
+  .tw-select.ng-select-focused .ng-select-container, .tw-select .ng-select-container:hover {
+    border-color: #3B82F6 !important;
+  }
+  .tw-select.ng-select-focused .ng-select-container {
+    box-shadow: 0 0 0 1px #3B82F6 !important;
+  }
+  .tw-select .ng-value-container {
+    padding-left: 12px !important;
+  }
+  .tw-select .ng-placeholder {
+    color: #94A3B8 !important;
+  }
+</style>
+
 <app-page-form-layout
   [title]="'Bank / Cash Account'"
   [subtitle]="'Banking detail linked to a GL Bank/Cash account'"
@@ -14,60 +40,126 @@
   [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
   [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
 >
-  <div sidebarList>
+  <div sidebarList class="flex flex-col h-full bg-white">
     @for (item of model.pager.paged(); track item.bank_account_no) {
-      <button type="button" class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.bank_account_no" (click)="select(item)">
-        <span class="status-dot status-dot--corner" [class.status-dot--active]="item.is_active === 1" [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.bank_name || item.account_title || item.bank_account_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.bank_account_id }} · {{ item.account_number }}</p>
-        <div class="list-item-meta"><span class="list-item-chip"><mat-icon>account_balance</mat-icon><span>{{ item.account_name }}</span></span></div>
+      <button type="button" 
+        class="w-full text-left p-3.5 border-b border-slate-100 hover:bg-slate-50 transition-colors relative flex flex-col gap-1.5 focus:outline-none"
+        [class.bg-[#F0F4FF]]]="model.selectedNo() === item.bank_account_no"
+        (click)="select(item)">
+        <div class="flex items-center justify-between w-full">
+          <h6 class="text-[13px] font-bold text-slate-800 m-0 truncate pr-4">{{ item.bank_name || item.account_title || item.bank_account_id }}</h6>
+          <span class="w-[8px] h-[8px] rounded-full shrink-0" [class.bg-emerald-500]="item.is_active === 1" [class.bg-slate-300]="item.is_active !== 1" [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
+        </div>
+        <p class="text-[11.5px] text-slate-500 m-0 truncate font-medium">{{ item.bank_account_id }} <span class="mx-1 text-slate-300">|</span> {{ item.account_number }}</p>
+        <div class="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200/60 text-slate-600 text-[10px] font-bold uppercase tracking-wider w-fit">
+          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-slate-500">account_balance</mat-icon>
+          <span>{{ item.account_name }}</span>
+        </div>
       </button>
     }
-    @if (model.filtered().length === 0) { <div class="list-empty-state"><mat-icon>account_balance</mat-icon><p>No records found</p></div> }
+    @if (model.filtered().length === 0) { 
+      <div class="flex flex-col items-center justify-center p-8 text-slate-400 gap-3 h-full">
+        <mat-icon class="!text-5xl !w-12 !h-12 opacity-40">account_balance</mat-icon>
+        <p class="text-[14px] font-semibold m-0 text-slate-400">No records found</p>
+      </div>
+    }
   </div>
 
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-12">
-          <div class="form-section-card card">
-            <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">account_balance</mat-icon> Bank / Cash Account</h4></div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-3"><div class="field-group">
-                  <label class="field-label required" for="bank_account_id">Account ID</label>
-                  <input type="text" id="bank_account_id" formControlName="bank_account_id" class="form-control text-uppercase" placeholder="e.g. BANK-01" (input)="toUpper('bank_account_id')" />
-                </div></div>
-                <div class="col-md-5"><div class="field-group">
-                  <label class="field-label required" for="account_no">GL Bank/Cash Account</label>
-                  <ng-select id="account_no" formControlName="account_no" bindValue="account_no" [items]="model.bankCashAccounts()" placeholder="Select Bank/Cash account">
-                    <ng-template ng-label-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
-                    <ng-template ng-option-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
-                  </ng-select>
-                </div></div>
-                <div class="col-md-4"><div class="field-group">
-                  <label class="field-label" for="opening_balance">Opening Balance</label>
-                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" step="0.01" />
-                </div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="bank_name">Bank Name</label>
-                  <input type="text" id="bank_name" formControlName="bank_name" class="form-control" /></div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="branch_name">Branch Name</label>
-                  <input type="text" id="branch_name" formControlName="branch_name" class="form-control" /></div></div>
-                <div class="col-md-4"><div class="field-group"><label class="field-label" for="account_title">Account Title</label>
-                  <input type="text" id="account_title" formControlName="account_title" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="account_number">Account Number</label>
-                  <input type="text" id="account_number" formControlName="account_number" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="routing_number">Routing No</label>
-                  <input type="text" id="routing_number" formControlName="routing_number" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="swift_code">SWIFT</label>
-                  <input type="text" id="swift_code" formControlName="swift_code" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label">Status</label>
-                  <div class="custom--checkbox"><mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)"><span class="field-label mb-0" style="cursor:pointer">Active</span></mat-checkbox></div>
-                </div></div>
+  <div formContent class="p-4 md:p-5">
+    <form [formGroup]="formdata" autocomplete="off" class="w-full">
+      <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden w-full">
+        <!-- Card Header -->
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center bg-white">
+          <mat-icon class="text-[#8576FF] mr-2.5 !w-5 !h-5 !text-[20px]">account_balance</mat-icon>
+          <h4 class="text-[15px] font-bold text-slate-800 m-0 leading-none">Bank / Cash Account</h4>
+        </div>
+        
+        <!-- Card Body -->
+        <div class="p-5 md:p-6 bg-white">
+          <div class="grid grid-cols-12 gap-x-5 gap-y-6">
+            
+            <!-- Row 1 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="bank_account_id">
+                Account ID <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="bank_account_id" formControlName="bank_account_id" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors uppercase placeholder:text-slate-400 placeholder:normal-case placeholder:font-normal" placeholder="e.g. BANK-01" (input)="toUpper('bank_account_id')" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-5">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="account_no">
+                GL Bank/Cash Account <span class="text-red-500">*</span>
+              </label>
+              <ng-select id="account_no" formControlName="account_no" bindValue="account_no" [items]="model.bankCashAccounts()" class="tw-select" placeholder="Select Bank/Cash account">
+                <ng-template ng-label-tmp let-item="item">
+                  <span class="font-medium text-slate-800">{{ item.account_code }} <span class="text-slate-400 font-normal mx-0.5">·</span> {{ item.account_name }}</span>
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  <span class="font-medium text-slate-800">{{ item.account_code }}</span> <span class="text-slate-500 text-[12px] ml-1">{{ item.account_name }}</span>
+                </ng-template>
+              </ng-select>
+            </div>
+            
+            <div class="col-span-12 md:col-span-4">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="opening_balance">
+                Opening Balance
+              </label>
+              <input type="number" id="opening_balance" formControlName="opening_balance" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" step="0.01" />
+            </div>
+
+            <!-- Row 2 -->
+            <div class="col-span-12 md:col-span-4">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="bank_name">
+                Bank Name
+              </label>
+              <input type="text" id="bank_name" formControlName="bank_name" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-4">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="branch_name">
+                Branch Name
+              </label>
+              <input type="text" id="branch_name" formControlName="branch_name" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-4">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="account_title">
+                Account Title
+              </label>
+              <input type="text" id="account_title" formControlName="account_title" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+
+            <!-- Row 3 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="account_number">
+                Account Number
+              </label>
+              <input type="text" id="account_number" formControlName="account_number" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="routing_number">
+                Routing No
+              </label>
+              <input type="text" id="routing_number" formControlName="routing_number" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" for="swift_code">
+                SWIFT
+              </label>
+              <input type="text" id="swift_code" formControlName="swift_code" class="w-full h-[38px] px-3.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-[13px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400 placeholder:font-normal" />
+            </div>
+            
+            <div class="col-span-12 md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
+              <div class="flex items-center h-[38px] px-1">
+                <mat-checkbox color="primary" [checked]="formdata.get('is_active')?.value === 1" (change)="formdata.get('is_active')?.setValue($event.checked ? 1 : 0)">
+                  <span class="text-[13.5px] font-bold text-slate-700 select-none">Active</span>
+                </mat-checkbox>
               </div>
             </div>
+
           </div>
         </div>
       </div>

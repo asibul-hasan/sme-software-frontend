@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>shopping_cart</mat-icon><p>No purchase orders found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">shopping_cart</mat-icon> {{ selectedNo() ? 'PO · ' + statusLabel(status()) : 'New PO' }}</h4>
@@ -44,9 +44,9 @@
           <div class="col-md-3"><div class="field-group"><label class="field-label">Receive Warehouse</label>
             <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Intended warehouse" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Order Date</label>
-            <input type="date" class="form-control" [(ngModel)]="orderDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="orderDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Expected</label>
-            <input type="date" class="form-control" [(ngModel)]="expectedDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="expectedDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Shipping Est.</label>
             <input type="number" class="form-control text-end" [(ngModel)]="shippingEstimate" [disabled]="!editable()" /></div></div>
         </div>

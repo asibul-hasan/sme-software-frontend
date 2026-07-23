@@ -278,6 +278,12 @@ export class TreeViewComponent {
     this.expanded.set(set);
   }
 
+  /**
+   * Clicking a node selects it (and toggles a parent's children). Mirrors the
+   * common-table contract: `nodeClick` fires ONLY when the selected node
+   * actually changes, so re-clicking the open node never repeats the
+   * consumer's API call. Expand/collapse still works on every click.
+   */
   onClick(row: Record<string, unknown>): void {
     const cfg = this.config();
     const id = row[cfg.idField] as TreeId;
@@ -286,6 +292,7 @@ export class TreeViewComponent {
       set.has(id) ? set.delete(id) : set.add(id);
       this.expanded.set(set);
     }
+    if (this.selectedId() !== null && this.selectedId() === id) return;
     this.nodeClick.emit(row);
   }
 

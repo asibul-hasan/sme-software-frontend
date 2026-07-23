@@ -13,9 +13,9 @@ import { PaginatorState } from '../../../core/utils/paginator';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="sidebar-pager d-flex align-items-center justify-content-between gap-1 px-2 py-2 border-top flex-shrink-0"
+      class="sidebar-pager flex shrink-0 items-center justify-between gap-1 border-t border-line px-2 py-2"
     >
-      <div class="d-flex align-items-center gap-1">
+      <div class="flex items-center gap-1">
         <button
           type="button"
           class="pager-btn"
@@ -55,7 +55,7 @@ import { PaginatorState } from '../../../core/utils/paginator';
         </button>
       </div>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="flex items-center gap-2">
         <span class="pager-total"
           >{{ pager.totalItems() }} <small>Records</small></span
         >

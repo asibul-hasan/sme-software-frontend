@@ -1,15 +1,15 @@
-<div class="card border-0 shadow-sm h-100">
-  <div class="card-header border-0 py-3">
-    <h6 class="mb-0 fw-bold">Quick Actions</h6>
+<div class="bg-surface rounded-2xl shadow-sm border border-line flex flex-col h-full">
+  <div class="p-4 border-b-0">
+    <h6 class="mb-0 font-bold text-lg text-content">Quick Actions</h6>
   </div>
-  <div class="card-body pt-0">
-    <div class="row g-2">
-      <div class="col-6" *ngFor="let action of actions">
-        <button class="action-btn-v2 w-100 d-flex align-items-center p-3 border-0 bg-light-2d rounded-3">
-          <div class="icon-box-sm-v2 me-3" [ngClass]="'bg-' + action.color + '-light text-' + action.color">
-            <i class="bi" [ngClass]="action.icon"></i>
+  <div class="p-4 pt-0 flex-1">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="col-span-1" *ngFor="let action of actions">
+        <button class="w-full flex items-center p-3 border-none bg-muted hover:bg-opacity-80 transition-colors rounded-2xl cursor-pointer">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center me-3" [ngClass]="'bg-' + action.color + '/10 text-' + action.color">
+            <i class="bi text-lg" [ngClass]="action.icon"></i>
           </div>
-          <span class="xx-small fw-bold text-start">{{action.label}}</span>
+          <span class="text-[10px] font-bold text-left text-content">{{action.label}}</span>
         </button>
       </div>
     </div>

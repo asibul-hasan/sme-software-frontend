@@ -8,7 +8,7 @@
   [showDelete]="false"
   [isLoading]="model.isLoading()"
 >
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="row row-group flex-shrink-0">
       <div class="col-12">
         <div class="form-section-card card">
@@ -23,7 +23,7 @@
               </div>
               <div class="field-group" style="min-width: 150px">
                 <label class="field-label">Date</label>
-                <input type="date" class="form-control" [(ngModel)]="newDate" />
+                <app-date-picker [(ngModel)]="newDate" placeholder="Select date" />
               </div>
               <div class="field-group" style="width: 120px">
                 <label class="field-label">In</label>

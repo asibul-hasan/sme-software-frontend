@@ -1,25 +1,34 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+
 import { Pur1101DataService, PurchaseOrder, OrderLine } from './services/data.service';
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
+
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+
 import { isSuccess } from '../../../../core/models/response.model';
 import { purConstants } from '../../constants/pur.constants';
+
 import { ToastrService } from 'ngx-toastr';
 
 interface WorkLine extends OrderLine { __uid: number; }
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1101',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Pur1101DataService],
   templateUrl: './pur1101.component.html',
   styles: [`:host { display: block; height: 100%; } /* trigger rebuild */`],

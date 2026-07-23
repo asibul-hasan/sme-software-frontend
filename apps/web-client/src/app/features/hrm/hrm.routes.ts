@@ -67,6 +67,11 @@ export const HRM_ROUTES: Routes = [
       import('./forms/hrm1301/hrm1301.component').then((m) => m.Hrm1301Component),
   },
   {
+    path: 'form/leave-approval',
+    loadComponent: () =>
+      import('./forms/hrm1321/hrm1321.component').then((m) => m.Hrm1321Component),
+  },
+  {
     path: 'form/salary-processing',
     loadComponent: () =>
       import('./forms/hrm1202/hrm1202.component').then((m) => m.Hrm1202Component),

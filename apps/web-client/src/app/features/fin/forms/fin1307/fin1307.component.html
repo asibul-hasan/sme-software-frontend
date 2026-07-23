@@ -6,7 +6,7 @@
   [showSave]="false" [showNew]="false" [showDelete]="false"
   [isLoading]="isLoading()"
 >
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="d-flex align-items-end gap-3 flex-wrap">
@@ -20,7 +20,7 @@
           </div>
           <div class="field-group" style="min-width: 180px">
             <label class="field-label" for="asOf">As of Date</label>
-            <input type="date" id="asOf" class="form-control" [(ngModel)]="asOf" (change)="load()" />
+            <app-date-picker [(ngModel)]="asOf" (ngModelChange)="load()" placeholder="Select date" />
           </div>
           <div class="ms-auto d-flex align-items-center gap-4 flex-wrap">
             <div class="text-end"><span class="field-label mb-0">0–30</span><div class="fw-bold">{{ totalCurrent() | number: '1.2-2' }}</div></div>

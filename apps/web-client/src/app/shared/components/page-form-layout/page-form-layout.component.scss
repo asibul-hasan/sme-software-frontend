@@ -186,18 +186,23 @@
   }
 }
 
-/* ── Sidebar Filters Grid ──────────────────── */
+/* ── Sidebar Filters Grid ──────────────────────────────────────────
+   Project filter controls as DIRECT children of [sidebarFilters]:
+   each control takes one of two columns; add `col-span-2` (Tailwind)
+   on a control that should span the full row. No wrapper divs. */
 .sidebar-filters-section {
   ::ng-deep [sidebarFilters] {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     padding: 8px 8px 4px;            /* filters sit at the top of the section now */
 
-    /* Reset consumer-provided spacing that conflicts with our grid */
-    &.px-2 { padding-left: 8px !important; padding-right: 8px !important; }
-    &.pb-2 { padding-bottom: 4px !important; }
-    &.border-bottom { border-bottom: none !important; }
+    /* Grid blowout guard: without this, an ng-select's intrinsic
+       (min-content) width expands the track and overflows the sidebar. */
+    > * {
+      min-width: 0;
+      max-width: 100%;
+    }
 
     .field-group {
       margin-bottom: 0 !important;
@@ -205,9 +210,22 @@
 
     /* Fallback to 1 column if only one filter is present */
     &:has(> :only-child) {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
+}
+
+/* ── Projected [formContent] wrapper ───────────────────────────────
+   The layout owns the content column's box so a form can never break it:
+   it fills `.page-card-body` as a flex column that may shrink (min-height:0),
+   letting the page card scroll once — no nested scrollbar, no dead space
+   under short content. Forms only decide what goes INSIDE it. */
+::ng-deep [formContent] {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 /* ── Sidebar list container (holds the projected [sidebarList]) ── */
@@ -225,7 +243,7 @@
 }
 
 .logo-dropzone {
-  border: 2px dashed rgba(var(--bs-primary-rgb), 0.2);
+  border: 2px dashed rgba(var(--indigo-rgb), 0.2);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.5);
   transition: all 0.3s ease;
@@ -238,8 +256,8 @@
   justify-content: center;
 
   &:hover, &.active {
-    border-color: var(--bs-primary);
-    background: rgba(var(--bs-primary-rgb), 0.05);
+    border-color: var(--indigo);
+    background: rgba(var(--indigo-rgb), 0.05);
     transform: translateY(-2px);
   }
 }
@@ -288,8 +306,8 @@
 .icon-circle {
   width: 50px;
   height: 50px;
-  background: rgba(var(--bs-primary-rgb), 0.1);
-  color: var(--bs-primary);
+  background: rgba(var(--indigo-rgb), 0.1);
+  color: var(--indigo);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;

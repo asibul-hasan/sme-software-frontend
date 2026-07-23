@@ -1,0 +1,389 @@
+<app-page-form-layout
+  [title]="'Leave Approval'"
+  [subtitle]="'Approve or reject leave applications'"
+  [icon]="'fact_check'"
+  [hasSidebar]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showReset]="false"
+  [showDelete]="false"
+  [isLoading]="model.isLoading()"
+>
+  <button
+    extraHeaderActions
+    type="button"
+    class="btn-action btn-reset"
+    (click)="onRefresh()"
+  >
+    <mat-icon>refresh</mat-icon>
+    <span class="btn-action-label">Refresh</span>
+  </button>
+
+  <div formContent class="gap-2">
+    <!-- ── Filter Card ──────────────────────────────────────────────── -->
+    <app-form-section title="Filter Requests" icon="filter_alt">
+      <div sectionActions>
+        <button
+          type="button"
+          class="btn-action btn-reset"
+          (click)="clearFilters()"
+        >
+          <mat-icon>filter_alt_off</mat-icon>
+          <span class="btn-action-label">Clear Filters</span>
+        </button>
+      </div>
+
+      <div class="col-span-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <!-- Department -->
+        <div class="field-group">
+          <label class="field-label" for="filter_dept">Department</label>
+          <ng-select
+            id="filter_dept"
+            labelForId="filter_dept"
+            [items]="departments()"
+            bindLabel="department_name"
+            bindValue="department_no"
+            [ngModel]="filterDept()"
+            (ngModelChange)="filterDept.set($event)"
+            [clearable]="true"
+            placeholder="All Departments"
+          >
+          </ng-select>
+        </div>
+
+        <!-- Designation -->
+        <div class="field-group">
+          <label class="field-label" for="filter_desig">Designation</label>
+          <ng-select
+            id="filter_desig"
+            labelForId="filter_desig"
+            [items]="designations()"
+            bindLabel="designation_name"
+            bindValue="designation_no"
+            [ngModel]="filterDesig()"
+            (ngModelChange)="filterDesig.set($event)"
+            [clearable]="true"
+            placeholder="All Designations"
+          >
+          </ng-select>
+        </div>
+
+        <!-- Employee -->
+        <div class="field-group">
+          <label class="field-label" for="filter_emp">Employee</label>
+          <ng-select
+            id="filter_emp"
+            labelForId="filter_emp"
+            [items]="employees()"
+            bindLabel="full_name_with_id"
+            bindValue="employee_no"
+            [ngModel]="filterEmp()"
+            (ngModelChange)="filterEmp.set($event)"
+            [clearable]="true"
+            placeholder="All Employees"
+          >
+          </ng-select>
+        </div>
+
+        <!-- Leave Type -->
+        <div class="field-group">
+          <label class="field-label" for="filter_lt">Leave Type</label>
+          <ng-select
+            id="filter_lt"
+            labelForId="filter_lt"
+            [items]="leaveTypes()"
+            bindLabel="leave_type_name"
+            bindValue="leave_type_no"
+            [ngModel]="filterLeaveType()"
+            (ngModelChange)="filterLeaveType.set($event)"
+            [clearable]="true"
+            placeholder="All Leave Types"
+          >
+          </ng-select>
+        </div>
+
+        <!-- Status -->
+        <div class="field-group">
+          <label class="field-label" for="filter_status">Status</label>
+          <ng-select
+            id="filter_status"
+            labelForId="filter_status"
+            [items]="statusFilterOptions"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="filterStatus()"
+            (ngModelChange)="onStatusChange($event)"
+            [clearable]="true"
+            placeholder="All Statuses"
+          >
+          </ng-select>
+        </div>
+      </div>
+    </app-form-section>
+
+    <!-- ── Pending requests ─────────────────────────────────────────── -->
+    <app-form-section title="Pending Leave Requests" icon="table_view" flush>
+      <div sectionActions class="flex items-center gap-2">
+        @if (selectedCount() > 0) {
+          <button
+            type="button"
+            class="btn-action btn-save"
+            [disabled]="model.isSaving()"
+            (click)="approveSelected()"
+          >
+            <mat-icon>done_all</mat-icon>
+            <span class="btn-action-label"
+              >Approve {{ selectedCount() }} selected</span
+            >
+          </button>
+        }
+        <span class="list-item-tag list-item-tag--primary">
+          {{ filteredRequests().length }} requests
+        </span>
+      </div>
+
+      <app-common-table
+        [columns]="tableColumns"
+        [data]="$any(filteredRequests())"
+        [config]="tableConfig"
+        [loading]="model.isLoading()"
+        (rowClick)="onRowClick($event)"
+      />
+
+      <div
+        class="flex items-center gap-2 border-t border-line px-3 py-2 text-[12px] text-subtle"
+      >
+        <mat-icon class="!h-[16px] !w-[16px] !text-[16px] !text-info"
+          >info</mat-icon
+        >
+        <span
+          >Tick the rows you want to clear together, then use
+          <strong>Approve selected</strong> for bulk multi-approval.</span
+        >
+      </div>
+    </app-form-section>
+
+    <!-- ── Balance + decision ───────────────────────────────────────── -->
+    <app-form-section title="Leave Balance & Approval Decision" icon="rule">
+      @if (selected(); as req) {
+        <span sectionActions class="list-item-tag">
+          {{ req.employee_id }} · {{ req.employee_name }}
+        </span>
+      }
+
+      <!-- Left: leave balance -->
+      <div class="col-span-12 flex flex-col gap-[5px] lg:col-span-6">
+        <span class="field-label">Leave Balance — {{ balanceType() }}</span>
+
+        <div
+          class="flex overflow-hidden rounded-lg border border-line bg-surface"
+        >
+          <!-- Available (primary tile) -->
+          <div
+            class="relative flex flex-1 flex-col items-center justify-center gap-1 border-r border-line p-3 text-center"
+          >
+            <span
+              class="absolute right-2 top-2 grid h-[22px] w-[22px] place-items-center rounded-full bg-emerald/15"
+            >
+              <mat-icon class="!h-[14px] !w-[14px] !text-[14px] !text-emerald"
+                >check</mat-icon
+              >
+            </span>
+            <span class="text-[26px] font-bold leading-tight text-emerald">
+              {{ balance().available_days | appDecimal: 1 }}
+            </span>
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider text-subtle"
+            >
+              Days available
+            </span>
+          </div>
+
+          <!-- Entitlement / consumed -->
+          <div class="flex flex-1 flex-col">
+            <div
+              class="flex flex-1 items-center gap-2 border-b border-line px-3 py-2"
+            >
+              <span
+                class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-muted"
+              >
+                <mat-icon class="!h-[18px] !w-[18px] !text-[18px] !text-subtle"
+                  >edit_calendar</mat-icon
+                >
+              </span>
+              <div class="min-w-0">
+                <div class="text-[11px] font-medium text-subtle">
+                  Entitled + carried forward
+                </div>
+                <div class="text-[14px] font-bold text-content">
+                  {{
+                    balance().entitled_days + balance().carried_forward
+                      | appDecimal: 1
+                  }}
+                  days
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-1 items-center gap-2 px-3 py-2">
+              <span
+                class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-amber/15"
+              >
+                <mat-icon class="!h-[18px] !w-[18px] !text-[18px] !text-amber"
+                  >event_busy</mat-icon
+                >
+              </span>
+              <div class="min-w-0">
+                <div class="text-[11px] font-medium text-subtle">
+                  Consumed
+                </div>
+                <div class="text-[14px] font-bold text-amber">
+                  {{ balance().consumed_days | appDecimal: 1 }} days
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (selected(); as req) {
+          <div
+            class="mt-1 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-[12px] text-subtle"
+          >
+            <mat-icon class="!h-[15px] !w-[15px] !text-[15px]">event</mat-icon>
+            <span>
+              Requesting <strong>{{ req.total_days | appDecimal: 1 }}</strong>
+              day(s) from {{ req.from_date }} to {{ req.to_date }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <!-- Right: approval decision -->
+      <div class="col-span-12 flex flex-col gap-[5px] lg:col-span-6">
+        <div class="field-group">
+          <label class="field-label" for="approval_status">Approval Status / Step</label>
+          <ng-select
+            id="approval_status"
+            labelForId="approval_status"
+            [items]="workflowSteps"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="selectedStep()"
+            (ngModelChange)="selectedStep.set($event)"
+            [clearable]="true"
+            [disabled]="!selected()"
+            placeholder="Select approval status or step"
+          >
+          </ng-select>
+        </div>
+
+        <span class="field-label mt-1">Approval Decision</span>
+
+        <textarea
+          class="form-control"
+          rows="2"
+          style="resize: vertical"
+          [ngModel]="remarks()"
+          (ngModelChange)="remarks.set($event)"
+          [disabled]="!selected()"
+          placeholder="Reason or context for your decision (required to reject)"
+        ></textarea>
+
+        @if (selected()?.reason; as reason) {
+          <div class="text-[12px] text-subtle">
+            <span class="font-semibold">Employee's reason:</span> {{ reason }}
+          </div>
+        }
+
+        <div class="mt-auto flex flex-wrap items-end justify-between gap-2 pt-2">
+          <button type="button" class="btn-action btn-reset" (click)="openHistoryModal()">
+            <mat-icon>history</mat-icon>
+            <span class="btn-action-label">Leave History</span>
+          </button>
+
+          <div class="flex items-start gap-2">
+            <div class="text-center">
+              <button
+                type="button"
+                class="btn-action btn-save"
+                [disabled]="!canApprove()"
+                (click)="decide('approve')"
+              >
+                <mat-icon>check</mat-icon>
+                <span class="btn-action-label">Approve</span>
+              </button>
+              <span class="mt-1 block text-[10px] text-subtle"
+                >Remarks optional</span
+              >
+            </div>
+
+            <div class="text-center">
+              <button
+                type="button"
+                class="btn-action btn-delete"
+                [disabled]="!canReject() || model.isSaving()"
+                (click)="decide('reject')"
+              >
+                <mat-icon>close</mat-icon>
+                <span class="btn-action-label">Reject</span>
+              </button>
+              <span class="mt-1 block text-[10px] text-subtle"
+                >Remarks required</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-form-section>
+  </div>
+</app-page-form-layout>
+
+<!-- ── Cell templates (context is { $implicit: row } → declare `let-row`) ── -->
+<ng-template #datesTpl let-row>
+  <span class="flex items-center gap-1 whitespace-nowrap">
+    <mat-icon class="!h-[14px] !w-[14px] !text-[14px] !text-subtle"
+      >calendar_today</mat-icon
+    >
+    {{ row.from_date }} → {{ row.to_date }}
+  </span>
+</ng-template>
+
+<ng-template #attachmentTpl let-row>
+  @if (row.attachment_path) {
+    <a
+      [href]="row.attachment_path"
+      target="_blank"
+      rel="noopener"
+      class="flex items-center gap-1 text-indigo no-underline"
+    >
+      <mat-icon class="!h-[14px] !w-[14px] !text-[14px]">attach_file</mat-icon>
+      <span class="truncate" style="max-width: 110px">{{
+        row.attachment_path
+      }}</span>
+    </a>
+  } @else {
+    <span class="text-subtle">—</span>
+  }
+</ng-template>
+
+<ng-template #checkboxTpl let-row>
+  <span class="flex w-full justify-center">
+    <mat-checkbox
+      color="primary"
+      [checked]="!!row.selected"
+      (change)="toggleRow(row, $event.checked)"
+    ></mat-checkbox>
+  </span>
+</ng-template>
+
+<ng-template #historyBtnTpl let-row>
+  <button
+    type="button"
+    class="btn-action btn-reset"
+    title="View Employee Leave History"
+    (click)="$event.stopPropagation(); openHistoryModalFor(row)"
+  >
+    <mat-icon>history</mat-icon>
+    <span class="btn-action-label">History</span>
+  </button>
+</ng-template>

@@ -8,7 +8,7 @@
   [showDelete]="false"
   [isLoading]="isLoading()"
 >
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="row row-group align-items-end">
@@ -26,7 +26,7 @@
           <div class="col-xl-2 col-lg-2 col-md-6">
             <div class="field-group">
               <label class="field-label" for="sdate">Statement Date</label>
-              <input type="date" id="sdate" class="form-control" [(ngModel)]="statementDate" />
+              <app-date-picker [(ngModel)]="statementDate" placeholder="Select date" />
             </div>
           </div>
 
@@ -40,14 +40,14 @@
           <div class="col-xl-2 col-lg-2 col-md-6">
             <div class="field-group">
               <label class="field-label" for="fromDate">Voucher From</label>
-              <input type="date" id="fromDate" class="form-control" [(ngModel)]="fromDate" />
+              <app-date-picker [(ngModel)]="fromDate" placeholder="From date" />
             </div>
           </div>
 
           <div class="col-xl-2 col-lg-2 col-md-6">
             <div class="field-group">
               <label class="field-label" for="toDate">Voucher To</label>
-              <input type="date" id="toDate" class="form-control" [(ngModel)]="toDate" />
+              <app-date-picker [(ngModel)]="toDate" placeholder="To date" />
             </div>
           </div>
 

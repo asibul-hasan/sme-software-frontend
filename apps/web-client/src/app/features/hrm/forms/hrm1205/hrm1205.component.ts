@@ -1,20 +1,27 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject, computed } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
 import { Hrm1205ModelService, BonusRun } from './services/model.service';
+
 import { Hrm1205DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
 
 import { hrmConstants } from '../../constants/hrm.constants';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1205',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Hrm1205ModelService, Hrm1205DataService],
   templateUrl: './hrm1205.component.html',
   styles: [`:host { display: block; height: 100%; }`],

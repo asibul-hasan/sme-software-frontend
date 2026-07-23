@@ -1,19 +1,26 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+
 import { Sal1101ModelService, Customer } from './services/model.service';
 import { Sal1101DataService } from './services/data.service';
+
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+
 import { salConstants } from '../../constants/sal.constants';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1101',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Sal1101ModelService, Sal1101DataService],
   templateUrl: './sal1101.component.html',
   styles: [`:host { display: block; height: 100%; }`],

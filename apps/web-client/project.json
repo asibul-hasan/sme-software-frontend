@@ -30,11 +30,6 @@
             "apps/web-client/src/assets/styles"
           ]
         },
-        "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.js"
-
-          
-        ]
       },
       "configurations": {
         "production": {

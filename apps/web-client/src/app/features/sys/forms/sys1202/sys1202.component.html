@@ -94,21 +94,19 @@
                           />
                         </td>
                         <td>
-                          <input
-                            type="date"
-                            class="form-control form-control-sm"
-                            [value]="m.enroll_start_date ?? ''"
+                          <app-date-picker
+                            [ngModel]="m.enroll_start_date ?? ''"
                             [disabled]="!m.enrolled || m.is_lifetime === 1"
-                            (change)="model.setStart(m.menu_no, $any($event.target).value)"
+                            (ngModelChange)="model.setStart(m.menu_no, $event)"
+                            placeholder="Start"
                           />
                         </td>
                         <td>
-                          <input
-                            type="date"
-                            class="form-control form-control-sm"
-                            [value]="m.enroll_end_date ?? ''"
+                          <app-date-picker
+                            [ngModel]="m.enroll_end_date ?? ''"
                             [disabled]="!m.enrolled || m.is_lifetime === 1"
-                            (change)="model.setEnd(m.menu_no, $any($event.target).value)"
+                            (ngModelChange)="model.setEnd(m.menu_no, $event)"
+                            placeholder="End"
                           />
                         </td>
                       </tr>

@@ -37,6 +37,7 @@ import { LogoUploadComponent } from './components/logo-upload/logo-upload.compon
 import { PageFormLayoutComponent } from './components/page-form-layout/page-form-layout.component';
 import { SidebarPaginationComponent } from './components/sidebar-pagination/sidebar-pagination.component';
 import { CommonTableComponent } from './components/common-table';
+import { FORM_UI } from './components/form-ui';
 import { DateOnlyPipe } from './pipes/date-format.pipe';
 import { DateTimePipe } from './pipes/date-time.pipe';
 import { DateTimeGmtPipe } from './pipes/date-time-gmt.pipe';
@@ -91,6 +92,7 @@ const PIPES = [
     PageFormLayoutComponent,
     SidebarPaginationComponent,
     CommonTableComponent,
+    ...FORM_UI,
     ...UI_KIT,
     ...PIPES,
   ],
@@ -103,6 +105,7 @@ const PIPES = [
     PageFormLayoutComponent,
     SidebarPaginationComponent,
     CommonTableComponent,
+    ...FORM_UI,
     ...UI_KIT,
     ...PIPES,
   ],

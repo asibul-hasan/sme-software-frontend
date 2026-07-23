@@ -1,8 +1,8 @@
 <app-page-form-layout
   [title]="'Approval Workflow Setup'"
   [icon]="'approval'"
-  [recordsCount]="model.filtered().length"
-  [sidebarTitle]="'Approval Rules'"
+  [recordsCount]="scopeTableData().length"
+  [hasSidebar]="false"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
   (save)="onSave()"
@@ -11,114 +11,144 @@
   (delete)="onDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [showDelete]="false"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <div sidebarList>
-    @for (w of model.pager.paged(); track w.workflow_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === w.workflow_no"
-        (click)="model.select(w)"
-      >
-        <h6 class="list-item-title mb-0 text-truncate">{{ w.document_type }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ w.approver_role_label || ('Role #' + w.approver_role_no) }}</p>
-        <div class="list-item-meta">
-          <span class="list-item-tag">Step {{ w.step_number }}</span>
-          @if (w.is_final === 1) {
-            <span class="list-item-tag list-item-tag--primary">Final</span>
-          }
-        </div>
-      </button>
-    }
-    @if (model.filtered().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>approval</mat-icon>
-        <p>No records found</p>
-      </div>
-    }
-  </div>
 
-  <div formContent>
-    <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">approval</mat-icon>
-                Approval Rule
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="document_type">Document Type</label>
-                    <ng-select id="document_type" labelForId="document_type" formControlName="document_type" [clearable]="false" placeholder="Select document type">
-                      @for (opt of model.documentTypeOptions; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label required" for="step_number">Step</label>
-                    <input type="number" id="step_number" formControlName="step_number" class="form-control" min="1" step="1" />
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="is_final">Final Step</label>
-                    <ng-select id="is_final" labelForId="is_final" formControlName="is_final" [clearable]="false">
-                      @for (opt of yesNoOptions; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="approver_role_no">Approver Role</label>
-                    <ng-select id="approver_role_no" labelForId="approver_role_no" formControlName="approver_role_no" [clearable]="false" placeholder="Select role">
-                      @for (r of model.roleOptions(); track r.value) {
-                        <ng-option [value]="r.value">{{ r.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="amount_min">Amount From</label>
-                    <input type="number" id="amount_min" formControlName="amount_min" class="form-control" step="0.01" min="0" inputmode="decimal" />
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="amount_max">Amount To</label>
-                    <input type="number" id="amount_max" formControlName="amount_max" class="form-control" step="0.01" min="0" inputmode="decimal" placeholder="No limit" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      @for (opt of activeStatusOptions; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
+
+  <div formContent class="gap-2 overflow-y-auto">
+    <!-- Level 1: Approval Scope (Master) -->
+    <div
+      class="form-section-card card fill-card"
+      style="
+        flex: 1 1 33%;
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+      "
+    >
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">business</mat-icon>
+          Workflow
+        </h4>
+        <button
+          type="button"
+          class="btn-action btn-new btn-row-add ms-auto"
+          title="Add Workflow"
+          (click)="addScopeRow()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+      <div
+        class="card-body p-0"
+        style="
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <app-common-table
+          #scopesTable
+          [columns]="scopeTableColumns()"
+          [data]="scopeTableData()"
+          [config]="scopeTableConfig"
+          [tableId]="'scopes-table'"
+          (rowClick)="onScopeRowClick($event)"
+        ></app-common-table>
+      </div>
+    </div>
+
+    <!-- Level 2 & 3: Split View -->
+    <div class="row row-group m-0" style="flex: 1 1 66%; min-height: 250px">
+      <!-- Level 2: Approval Steps -->
+      <div class="col-6 p-0 pe-1 d-flex flex-column h-100">
+        <div
+          class="form-section-card card fill-card h-100"
+          style="display: flex; flex-direction: column"
+        >
+          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle"
+                >format_list_numbered</mat-icon
+              >
+              Approval Steps
+            </h4>
+            <button
+              type="button"
+              class="btn-action btn-new btn-row-add ms-auto"
+              title="Add Step"
+              [disabled]="!model.selectedScopeUid()"
+              (click)="addStepRow()"
+            >
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          <div
+            class="card-body p-0"
+            style="
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            "
+          >
+            <app-common-table
+              #stepsTable
+              [columns]="stepTableColumns()"
+              [data]="stepTableData()"
+              [config]="stepTableConfig"
+              [tableId]="'steps-table'"
+              (rowClick)="onStepRowClick($event)"
+            ></app-common-table>
           </div>
         </div>
       </div>
-    </form>
-  </div>
 
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+      <!-- Level 3: Step Approvers -->
+      <div class="col-6 p-0 ps-1 d-flex flex-column h-100">
+        <div
+          class="form-section-card card fill-card h-100"
+          style="display: flex; flex-direction: column"
+        >
+          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle">people</mat-icon>
+              Step Approvers
+            </h4>
+            <button
+              type="button"
+              class="btn-action btn-new btn-row-add ms-auto"
+              title="Add Approver"
+              [disabled]="!model.selectedStepUid()"
+              (click)="addStepApproverRow()"
+            >
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          <div
+            class="card-body p-0"
+            style="
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            "
+          >
+            <app-common-table
+              #approversTable
+              [columns]="approverTableColumns()"
+              [data]="approverTableData()"
+              [config]="approverTableConfig"
+              [tableId]="'approvers-table'"
+              (rowClick)="onApproverRowClick($event)"
+            ></app-common-table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </app-page-form-layout>

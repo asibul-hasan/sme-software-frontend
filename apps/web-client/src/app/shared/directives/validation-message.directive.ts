@@ -52,28 +52,35 @@ export class ValidationMessageDirective implements OnInit, OnDestroy {
 
   private showError(msg: string): void {
     if (!this.errorElement) {
-      this.errorElement = this.renderer.createElement('div');
-      this.renderer.addClass(this.errorElement, 'invalid-feedback');
-      this.renderer.setStyle(this.errorElement, 'display', 'block');
-      this.renderer.setStyle(this.errorElement, 'font-size', '11px');
-      this.renderer.setStyle(this.errorElement, 'margin-top', '4px');
-
-      const parent = this.el.nativeElement.parentElement;
-      this.renderer.appendChild(parent, this.errorElement);
+      // Reuse an existing message node if one is already under this field —
+      // guards against orphans when a directive instance is destroyed mid-error.
+      const parent: HTMLElement | null = this.el.nativeElement.parentElement;
+      const existing = parent?.querySelector(':scope > .invalid-feedback');
+      if (existing) {
+        this.errorElement = existing as HTMLElement;
+      } else {
+        this.errorElement = this.renderer.createElement('div');
+        this.renderer.addClass(this.errorElement, 'invalid-feedback');
+        this.renderer.setStyle(this.errorElement, 'display', 'block');
+        this.renderer.setStyle(this.errorElement, 'font-size', '11px');
+        this.renderer.setStyle(this.errorElement, 'margin-top', '4px');
+        this.renderer.appendChild(parent, this.errorElement);
+      }
     }
     this.renderer.setProperty(this.errorElement, 'innerText', msg);
     this.renderer.addClass(this.el.nativeElement, 'is-invalid');
   }
 
   private removeError(): void {
-    if (this.errorElement) {
-      this.renderer.removeChild(this.el.nativeElement.parentElement, this.errorElement);
-      this.errorElement = null;
-    }
+    // Detach directly: Renderer2.removeChild goes through the animations
+    // renderer, which can defer/drop the removal and leave the node behind.
+    this.errorElement?.remove();
+    this.errorElement = null;
     this.renderer.removeClass(this.el.nativeElement, 'is-invalid');
   }
 
   ngOnDestroy(): void {
+    this.removeError();
     this.destroy$.next();
     this.destroy$.complete();
   }

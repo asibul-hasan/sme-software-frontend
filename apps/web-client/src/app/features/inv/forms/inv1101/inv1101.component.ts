@@ -1,17 +1,23 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
 import { Inv1101ModelService } from './services/model.service';
+
 import { Inv1101DataService } from './services/data.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv1101',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Inv1101ModelService, Inv1101DataService],
   templateUrl: './inv1101.component.html',
   styles: [],

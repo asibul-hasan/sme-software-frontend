@@ -1,24 +1,24 @@
-<div class="page-card d-flex flex-column h-100">
+<div class="page-card">
   <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
   <div
-    class="page-card-header d-flex flex-column flex-md-row justify-content-between px-2 py-1 border-bottom flex-shrink-0"
+    class="page-card-header flex flex-col justify-between px-2 py-1 shrink-0 md:flex-row"
   >
-    <div class="d-flex align-items-center gap-2 py-1">
+    <div class="flex items-center gap-2 py-1">
       <div class="header-icon-box shadow-sm">
         <mat-icon>{{ icon }}</mat-icon>
       </div>
       <div>
-        <h2 class="page-card-title m-0 fw-bolder gradient-text-header">
+        <h2 class="page-card-title m-0 gradient-text-header">
           {{ title }}
         </h2>
-        <p class="text-secondary m-0 small mt-1">
+        <!-- <p class="text-subtle m-0 small mt-1">
           {{ subtitle }}
-        </p>
+        </p> -->
       </div>
     </div>
 
     <!-- Action Buttons -->
-    <div class="btn-action-group mt-md-0 d-flex gap-2">
+    <div class="btn-action-group flex !gap-2">
       <button
         *ngIf="showSave"
         class="btn-action btn-save"
@@ -68,21 +68,20 @@
   <ng-content select="[tabBarContent]"></ng-content>
 
   <!-- ── SPLIT BODY ──────────────────── -->
-  <div class="row g-0 flex-grow-1 form-content-row overflow-hidden">
+  <div class="row g-0 grow form-content-row overflow-hidden">
     <!-- LEFT SIDEBAR -->
     <div
       *ngIf="hasSidebar"
-      class="col-12 col-md-4 col-xl-3 border-end h-100 d-flex flex-column form-content-col"
+      class="col-12 col-md-4 col-xl-3 h-full flex flex-col border-r border-line form-content-col"
     >
-
       <!-- Fixed: filters → search → results meta bar -->
-      <div class="sidebar-filters-section flex-shrink-0 border-bottom">
+      <div class="sidebar-filters-section shrink-0 border-b border-line">
         <!-- 1. Host-provided filter dropdowns (top) -->
         <ng-content select="[sidebarFilters]"></ng-content>
 
         <!-- 2. Search (with clear) + sort toggle -->
-        <div class="px-2 pt-1 pb-2 d-flex align-items-center gap-2">
-          <div class="field-group mb-0 sidebar-search flex-grow-1">
+        <div class="px-2 pt-1 pb-2 flex items-center gap-2">
+          <div class="field-group mb-0 sidebar-search grow">
             <mat-icon class="sidebar-search__icon">search</mat-icon>
             <input
               type="text"
@@ -113,7 +112,8 @@
           </button>
         </div>
 
-        <!-- 3. Clear-all — only while a search/filter is narrowing the list -->
+        <!-- 3. Clear-all — intentionally disabled (kept for reference).
+             The search box's own × and each filter's clear already cover it.
         <div class="sidebar-meta-bar px-2 pb-2" *ngIf="isFiltering">
           <button
             type="button"
@@ -124,17 +124,18 @@
             <mat-icon>filter_alt_off</mat-icon> Clear all
           </button>
         </div>
+        -->
       </div>
 
       <!-- Scrollable: list content -->
-      <div class="flex-grow-1 overflow-auto sidebar-scroll-area">
+      <div class="grow overflow-auto sidebar-scroll-area">
         <div class="sidebar-list-wrap">
           <ng-content select="[sidebarList]"></ng-content>
         </div>
       </div>
 
       <!-- Fixed: optional footer (e.g. pagination) -->
-      <div class="sidebar-footer flex-shrink-0">
+      <div class="sidebar-footer shrink-0">
         <ng-content select="[sidebarFooter]"></ng-content>
       </div>
     </div>
@@ -142,9 +143,9 @@
     <!-- RIGHT SIDE: FORM -->
     <div
       [ngClass]="hasSidebar ? 'col-12 col-md-8 col-xl-9' : 'col-12'"
-      class="h-100 d-flex flex-column form-content-col overflow-auto"
+      class="h-full flex flex-col form-content-col overflow-auto"
     >
-      <div class="page-card-body flex-grow-1 p-2">
+      <div class="page-card-body grow !p-2">
         <ng-content select="[formContent]"></ng-content>
       </div>
     </div>

@@ -1,23 +1,32 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+
 import { isSuccess } from '../../../../core/models/response.model';
 import { makePaginator } from '../../../../core/utils/paginator';
+
 import { purConstants } from '../../constants/pur.constants';
 import { ToastrService } from 'ngx-toastr';
+
 import { LandedCost, LandedCostAlloc, Pur1106DataService } from './services/data.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1106',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Pur1106DataService],
   templateUrl: './pur1106.component.html',
   styles: [':host { display: block; height: 100%; }'],

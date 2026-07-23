@@ -23,6 +23,7 @@
 
 // ── Fixed Header (never scrolls) ─────────────────────────────
 .page-card-header {
+  height: 35px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -44,8 +45,8 @@
 
 // ── Global Premium Header Styles ──
 .header-icon-box {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   border-radius: 14px;
   background: var(--indigo-g);
   color: white;
@@ -110,8 +111,8 @@
 }
 
 .row-group {
-  --bs-gutter-x: 0.5rem;
-  --bs-gutter-y: 0.5rem;
+  --gutter-x: 0.5rem;
+  --gutter-y: 0.5rem;
 }
 
 // ── Custom Checkbox Field ─────────────────────────────────────────
@@ -170,6 +171,15 @@
   background: var(--card-bg);
   border-radius: 10px;
   margin-bottom: 4px;
+
+  // A card inside a flex column (the [formContent] wrapper) must keep its
+  // natural height — the column scrolls instead. Without this, `overflow:
+  // hidden` sets the card's automatic min-size to 0 and flex-shrink squeezes
+  // it to a sliver whenever the stacked cards exceed the column height.
+  // Fill cards opt out: `.fill-card` declares its own `flex: 1 1 auto`.
+  &:not(.fill-card) {
+    flex-shrink: 0;
+  }
 
   .card-header {
     padding: 0.5rem 0.75rem;
@@ -356,7 +366,7 @@
   font-size: var(--text-xxs);
   color: var(--text-secondary);
   margin: 0;
-  font-family: var(--bs-font-monospace, monospace);
+  font-family: var(--font-mono, monospace);
   letter-spacing: 0.3px;
 }
 
@@ -412,10 +422,10 @@
   align-items: center;
   justify-content: center;
   width: auto;
-  height: 32px;
-  padding: 0 10px;
-  gap: 5px;
-  border-radius: 8px;
+  height: 20px;
+  padding: 0 8px;
+  gap: 4px;
+  border-radius: 6px;
   border: 1px solid transparent;
   cursor: pointer;
   font-family: inherit;
@@ -424,10 +434,10 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   mat-icon {
-    font-size: 17px !important;
-    width: 17px !important;
-    height: 17px !important;
-    line-height: 17px !important;
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+    line-height: 14px !important;
   }
 
   &:hover {
@@ -463,8 +473,9 @@
 }
 
 .btn-row-add {
-  width: 32px;
-  min-width: 32px;
+  height: 20px;
+  width: 20px;
+  min-width: 20px;
   padding: 0;
 }
 

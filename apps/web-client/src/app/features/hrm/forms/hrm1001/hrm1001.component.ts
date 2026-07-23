@@ -10,11 +10,13 @@ import { Hrm1001DataService } from './services/data.service';
 import { hrmConstants } from '../../constants/hrm.constants';
 import { employeeProfileReportTemplate } from '../../report-templates';
 
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1001',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Hrm1001ModelService, Hrm1001DataService],
   templateUrl: './hrm1001.component.html',
   styleUrls: ['./hrm1001.component.scss'],

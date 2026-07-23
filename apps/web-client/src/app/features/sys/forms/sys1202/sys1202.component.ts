@@ -1,19 +1,24 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { Sys1202ModelService } from './services/model.service';
 import { Sys1202DataService } from './services/data.service';
 
 /**
  * SYS1202 – Menu Enrollment. Grant a client company the menus (forms) it has purchased.
  */
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sys1202',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Sys1202ModelService, Sys1202DataService],
   templateUrl: './sys1202.component.html',
   styles: [],

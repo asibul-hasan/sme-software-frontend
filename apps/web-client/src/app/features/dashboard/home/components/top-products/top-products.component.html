@@ -1,18 +1,18 @@
-<div class="card border-0 shadow-sm h-100">
-  <div class="card-header border-0 py-3 d-flex justify-content-between align-items-center">
-    <h6 class="mb-0 fw-bold">Top Selling Products</h6>
-    <select class="form-select form-select-sm w-auto border-0 bg-light-2d xx-small fw-bold">
+<div class="bg-surface rounded-2xl shadow-sm border border-line flex flex-col h-full">
+  <div class="p-4 flex justify-between items-center bg-transparent border-b-0">
+    <h6 class="mb-0 font-bold text-lg text-content">Top Selling Products</h6>
+    <select class="form-select form-select-sm w-auto bg-muted border-none rounded-lg text-xs font-bold p-1 px-2">
       <option>This Month</option>
     </select>
   </div>
-  <div class="card-body">
-    <div *ngFor="let product of products" class="mb-3">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <span class="small text-muted fw-bold">{{product.name}}</span>
-        <span class="small fw-black">৳ {{product.amount}}</span>
+  <div class="p-4 pt-0 flex-1">
+    <div *ngFor="let product of products" class="mb-4 last:mb-0">
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-sm text-subtle font-bold">{{product.name}}</span>
+        <span class="text-sm font-black text-content">৳ {{product.amount}}</span>
       </div>
-      <div class="progress" style="height: 6px;">
-        <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="product.percentage"></div>
+      <div class="w-full bg-muted rounded-full h-1.5">
+        <div class="bg-primary h-1.5 rounded-full" [style.width.%]="product.percentage"></div>
       </div>
     </div>
   </div>

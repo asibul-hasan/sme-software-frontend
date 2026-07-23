@@ -71,8 +71,7 @@
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="rate_date">Rate Date</label>
-                    <input type="date" id="rate_date" formControlName="rate_date" class="form-control"
-                      [readonly]="true" [attr.disabled]="true" />
+                    <app-date-picker formControlName="rate_date" placeholder="Select date" [disabled]="true" />
                   </div>
                 </div>
                 <div class="col-md-3">

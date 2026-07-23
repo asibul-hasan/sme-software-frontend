@@ -6,7 +6,7 @@
   [showSave]="false" [showNew]="false" [showDelete]="false"
   [isLoading]="isLoading()"
 >
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="d-flex align-items-end gap-3 flex-wrap">
@@ -17,9 +17,9 @@
             </ng-select>
           </div>
           <div class="field-group" style="min-width:150px"><label class="field-label" for="from">From</label>
-            <input type="date" id="from" class="form-control" [(ngModel)]="from" (change)="load()" /></div>
+            <app-date-picker [(ngModel)]="from" (ngModelChange)="load()" placeholder="From date" /></div>
           <div class="field-group" style="min-width:150px"><label class="field-label" for="to">To</label>
-            <input type="date" id="to" class="form-control" [(ngModel)]="to" (change)="load()" /></div>
+            <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" /></div>
           @if (result(); as r) {
             <div class="ms-auto d-flex align-items-center gap-4">
               <div class="text-end"><span class="field-label mb-0">Opening</span><div class="fw-semibold">{{ r.opening_balance | number: '1.2-2' }}</div></div>

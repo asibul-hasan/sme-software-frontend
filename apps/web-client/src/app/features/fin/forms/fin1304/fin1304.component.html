@@ -6,17 +6,17 @@
   [showSave]="false" [showNew]="false" [showDelete]="false"
   [isLoading]="isLoading()"
 >
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="d-flex align-items-end gap-3 flex-wrap">
           <div class="field-group" style="min-width: 170px">
             <label class="field-label" for="from">From Date</label>
-            <input type="date" id="from" class="form-control" [(ngModel)]="from" (change)="load()" />
+            <app-date-picker [(ngModel)]="from" (ngModelChange)="load()" placeholder="From date" />
           </div>
           <div class="field-group" style="min-width: 170px">
             <label class="field-label" for="to">To Date</label>
-            <input type="date" id="to" class="form-control" [(ngModel)]="to" (change)="load()" />
+            <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" />
           </div>
           <div class="ms-auto d-flex align-items-center gap-4">
             <div class="text-end"><span class="field-label mb-0">Total Income</span><div class="fw-bold">{{ totalIncome() | number: '1.2-2' }}</div></div>

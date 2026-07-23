@@ -1,26 +1,35 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
 import { isSuccess } from '../../../../core/models/response.model';
+
 import { makePaginator } from '../../../../core/utils/paginator';
 import { purConstants } from '../../constants/pur.constants';
+
 import { ToastrService } from 'ngx-toastr';
 import { Pur1105DataService, Receipt, ReceiptLine } from './services/data.service';
 
 interface WorkLine extends ReceiptLine { __uid: number; }
 
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1105',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Pur1105DataService],
   templateUrl: './pur1105.component.html',
   styles: [':host { display: block; height: 100%; }'],

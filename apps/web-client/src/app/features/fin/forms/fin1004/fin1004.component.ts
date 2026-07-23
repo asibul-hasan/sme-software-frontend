@@ -5,6 +5,7 @@ import { finalize, forkJoin } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, SelectOption, TableConfig } from '../../../../shared/components/common-table';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1004DataService, OpeningAccount } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -29,7 +30,7 @@ interface WorkingLine {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1004',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Fin1004DataService],
   templateUrl: './fin1004.component.html',
   styles: [`:host { display: block; height: 100%; }`],

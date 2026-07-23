@@ -75,11 +75,11 @@
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
                   <label class="field-label" for="disbursement_date">Disbursement Date</label>
-                  <input type="date" id="disbursement_date" formControlName="disbursement_date" class="form-control" [readonly]="!editable" />
+                  <app-date-picker formControlName="disbursement_date" placeholder="Select date" />
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
                   <label class="field-label" for="recovery_start">Recovery Start</label>
-                  <input type="date" id="recovery_start" formControlName="recovery_start" class="form-control" [readonly]="!editable" />
+                  <app-date-picker formControlName="recovery_start" placeholder="Select date" />
                 </div></div>
                 <div class="col-12"><div class="field-group">
                   <label class="field-label" for="reason">Reason</label>

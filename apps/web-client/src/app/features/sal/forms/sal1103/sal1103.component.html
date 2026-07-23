@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>assignment_returned</mat-icon><p>No returns found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">assignment_returned</mat-icon> {{ selectedNo() ? ('Return · ' + statusLabel(status())) : 'New Return' }}</h4>
@@ -44,7 +44,7 @@
           <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
             <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Restock into" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
-            <input type="date" class="form-control" [(ngModel)]="returnDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="returnDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Reason</label>
             <ng-select [(ngModel)]="reason" [items]="reasons" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Refund Via</label>

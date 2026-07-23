@@ -1,6 +1,4 @@
 /* Core Frameworks */
-@use 'bootstrap/scss/bootstrap' as *;
-@use 'bootstrap-icons/font/bootstrap-icons.css' as *;
 @use 'material-theme' as *;
 @use 'material-icons/iconfont/material-icons.css' as *;
 @use 'ngx-toastr/toastr' as *;
@@ -14,19 +12,17 @@
 
 @import '@ng-select/ng-select/themes/default.theme.css';
 
-/* ── Sidebar: override Bootstrap's global `a { text-decoration: underline }` ── */
-app-sidebar a {
-  text-decoration: none !important;
-  color: inherit;
-}
-
 /* ----------------------------------------- */
 /* BASE STYLES AND SCROLLBARS                */
 /* ----------------------------------------- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Layered so Tailwind's `utilities` layer (margin/padding classes) can
+   override this reset — unlayered rules would always win over utilities. */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html,
@@ -88,13 +84,11 @@ body {
 }
 
 // Toggles
-.mat-mdc-slide-toggle.mat-checked .mdc-switch__track,
-.form-check-input:checked {
+.mat-mdc-slide-toggle.mat-checked .mdc-switch__track {
   background: var(--toggle-on-bg) !important;
   border-color: transparent !important;
 }
-.mat-mdc-slide-toggle:not(.mat-checked) .mdc-switch__track,
-.form-check-input:not(:checked) {
+.mat-mdc-slide-toggle:not(.mat-checked) .mdc-switch__track {
   background: var(--toggle-off-bg) !important;
 }
 
@@ -535,6 +529,35 @@ app-common-table .mat-mdc-table tbody tr:first-child td.mat-mdc-cell {
 app-common-table .mat-mdc-row .mat-mdc-cell,
 app-common-table td.mat-mdc-cell {
   border-bottom: 1px solid var(--table-row-border) !important;
+  border-right: 1px solid var(--table-row-border, #dee2e6) !important;
+}
+
+app-common-table .mat-mdc-header-cell,
+app-common-table th.mat-mdc-header-cell {
+  border-right: 1px solid var(--table-header-border, #dee2e6) !important;
+}
+
+app-common-table .mdc-data-table__cell,
+app-common-table .mdc-data-table__header-cell {
+  padding: 0 2px !important;
+}
+
+/* Match input and ng-select heights inside tables */
+table, .mat-mdc-table {
+  .form-control {
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+  
+  .ng-select, .custom-ng-select {
+    .ng-select-container {
+      min-height: 38px !important;
+      height: 38px !important;
+    }
+    .ng-value-container {
+      min-height: 36px !important;
+    }
+  }
 }
 
 app-common-table .common-table-pagination {
@@ -643,3 +666,15 @@ app-common-table .common-table-pagination .mat-mdc-paginator {
     overflow: visible !important;
   }
 }
+
+/* Hide number input arrows globally */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+

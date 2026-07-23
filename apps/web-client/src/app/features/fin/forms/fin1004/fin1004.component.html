@@ -12,14 +12,14 @@
     <span class="btn-action-label">Post</span>
   </button>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-body">
         <div class="row row-group align-items-end">
           <div class="col-md-2">
             <div class="field-group">
               <label class="field-label" for="vdate">Voucher Date <span class="text-danger">*</span></label>
-              <input type="date" id="vdate" class="form-control" [(ngModel)]="voucherDate" />
+              <app-date-picker [(ngModel)]="voucherDate" placeholder="Select date" />
             </div>
           </div>
 

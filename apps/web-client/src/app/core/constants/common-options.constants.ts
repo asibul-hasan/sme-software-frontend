@@ -342,6 +342,11 @@ export const sysApprovalDocumentTypeOptions: readonly CommonSelectOption<string>
   { value: 'RECEIPT', label: 'RECEIPT' },
   { value: 'JOURNAL_VOUCHER', label: 'JOURNAL_VOUCHER' },
   { value: 'EXPENSE', label: 'EXPENSE' },
+  { value: 'HRM_LEAVE', label: 'HRM_LEAVE' },
+  { value: 'HRM_PAYROLL', label: 'HRM_PAYROLL' },
+  { value: 'HRM_ATT_ADJ', label: 'HRM_ATT_ADJ' },
+  { value: 'HRM_SEPARATION', label: 'HRM_SEPARATION' },
+  { value: 'HRM_FINAL_SETTLEMENT', label: 'HRM_FINAL_SETTLEMENT' },
 ] as const;
 
 export const sysMenuTypeOptions: readonly CommonSelectOption<string>[] = [

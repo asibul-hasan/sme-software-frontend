@@ -1,24 +1,32 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+
 import { Sal1001DataService, Sale, SaleLine, SalOption } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
 import { isSuccess } from '../../../../core/models/response.model';
+
 import { salConstants } from '../../constants/sal.constants';
 import { ToastrService } from 'ngx-toastr';
 
 interface WorkLine extends SaleLine { __uid: number; }
 
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1001',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Sal1001DataService],
   templateUrl: './sal1001.component.html',
   styles: [`:host { display: block; height: 100%; }`],

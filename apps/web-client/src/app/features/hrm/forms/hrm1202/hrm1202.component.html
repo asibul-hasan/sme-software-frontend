@@ -92,13 +92,13 @@
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="period_start">Period Start</label>
-                    <input type="date" id="period_start" formControlName="period_start" class="form-control" [readonly]="!isNew" />
+                    <app-date-picker formControlName="period_start" placeholder="Select date" />
                   </div>
                 </div>
                 <div class="col-md-3">
                   <div class="field-group">
                     <label class="field-label required" for="period_end">Period End</label>
-                    <input type="date" id="period_end" formControlName="period_end" class="form-control" [readonly]="!isNew" />
+                    <app-date-picker formControlName="period_end" placeholder="Select date" />
                   </div>
                 </div>
               </div>

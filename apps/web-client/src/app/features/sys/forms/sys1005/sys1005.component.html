@@ -185,22 +185,18 @@
                 <label class="field-label required" for="effective_from">{{
                   'effectiveFrom' | translate
                 }}</label>
-                <input
-                  type="date"
-                  id="effective_from"
+                <app-date-picker
                   formControlName="effective_from"
-                  class="form-control"
+                  placeholder="Select date"
                 />
               </div>
               <div class="field-group mb-3">
                 <label class="field-label" for="effective_to">{{
                   'effectiveTo' | translate
                 }}</label>
-                <input
-                  type="date"
-                  id="effective_to"
+                <app-date-picker
                   formControlName="effective_to"
-                  class="form-control"
+                  placeholder="Select date"
                 />
               </div>
               <div class="field-group mb-3">

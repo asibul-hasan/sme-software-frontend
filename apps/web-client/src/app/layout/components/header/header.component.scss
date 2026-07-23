@@ -3,136 +3,14 @@
   flex-shrink: 0;
 }
 
-.topbar {
-  position: relative;
-  width: 100%;
-  height: 48px;
-  background: var(--header-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--header-border);
-  color: var(--header-text);
-  display: flex;
-  align-items: center;
-}
-
-.crumb-link {
-  color: var(--header-text);
-  opacity: 0.7;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: var(--text-xs);
-
-  &:hover {
-    opacity: 1;
-    color: white;
-  }
-}
-
-.sep {
-  font-size: var(--text-sm);
-  color: var(--header-text);
-  opacity: 0.4;
-}
-
-.current {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: white;
-}
-
-.form-chip {
-  background: rgba(var(--indigo-rgb, 99, 102, 241), 0.15);
-  border: 1px solid rgba(var(--indigo-rgb, 99, 102, 241), 0.3);
-  color: var(--indigo);
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 20px;
-  flex-shrink: 0;
-}
-
-/* ── Shared Action Styles (Glass Effect) ── */
-.top-btn,
-.user-card,
-.branch-sw {
-  height: 34px; // Decreased from 40px
-  border-radius: 10px;
-  background: rgba(var(--indigo-rgb, 99, 102, 241), 0.08) !important;
-  border: 1px solid rgba(var(--indigo-rgb, 99, 102, 241), 0.25) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--header-text);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  position: relative;
-
-  &:hover,
-  &[aria-expanded='true'] {
-    background: rgba(var(--indigo-rgb, 99, 102, 241), 0.15) !important;
-    border-color: var(--indigo) !important;
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.98);
-  }
-}
-
-/* ── Icon Buttons ── */
-.top-btn {
-  width: 34px; // Matches new height
-  justify-content: center;
-  padding: 0;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    line-height: 1;
-    transition: transform 0.2s;
-  }
-
-  &:hover mat-icon {
-    transform: scale(1.1);
-  }
-}
-
-/* ── Notification Badge ── */
-.notif-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--rose);
-  border: 2px solid var(--header-bg);
-  pointer-events: none;
-  box-shadow: 0 0 8px var(--rose);
-  animation: statusPulse 2s ease-in-out infinite;
-}
-
-/* ── User Card & Branch Switcher ── */
-.user-card {
-  padding: 0 10px 0 4px; // Tightened for 34px
-  gap: 8px;
-}
-
+/* ── Branch Switcher (ng-select internals — not reachable with utilities) ── */
 .branch-select-glass {
   width: 180px !important;
   min-width: 180px !important;
   max-width: 180px !important;
   flex-shrink: 0;
   display: block;
-  
+
   ::ng-deep {
     .ng-select-container {
       height: 34px !important;
@@ -153,13 +31,6 @@
       }
     }
 
-    .ng-arrow-wrapper {
-      display: block !important;
-      .ng-arrow {
-        border-color: rgba(255, 255, 255, 0.5) transparent transparent !important;
-      }
-    }
-
     &.ng-select-opened .ng-select-container {
       background: rgba(var(--indigo-rgb, 99, 102, 241), 0.15) !important;
       border-color: var(--indigo) !important;
@@ -169,11 +40,13 @@
 
     .ng-value-container {
       padding: 0 !important;
+
       .ng-value {
         color: white !important;
         font-size: 13.5px !important;
         font-weight: 500 !important;
       }
+
       .ng-placeholder {
         color: rgba(255, 255, 255, 0.4) !important;
         font-size: 13.5px !important;
@@ -181,7 +54,9 @@
     }
 
     .ng-arrow-wrapper {
+      display: block !important;
       padding-right: 0 !important;
+
       .ng-arrow {
         border-color: rgba(255, 255, 255, 0.5) transparent transparent !important;
       }
@@ -218,53 +93,9 @@
       }
     }
   }
-
-  .branch-name {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: white;
-    letter-spacing: -0.1px;
-  }
 }
 
-.user-ava {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--indigo-g);
-  font-size: 11px;
-  font-weight: 800;
-  color: white;
-  flex-shrink: 0;
-  display: grid !important;
-  place-items: center !important;
-  line-height: 1;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  .user-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: white;
-    line-height: 1.1;
-  }
-
-  .user-role {
-    font-size: 9.5px;
-    color: var(--header-text);
-    opacity: 0.6;
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-top: 1px;
-  }
-}
-
-/* ── Glass Dropdown Menus ── */
+/* ── Glass Dropdown Menus (CDK overlay panels — outside component DOM) ── */
 ::ng-deep .custom-mat-menu {
   &.mat-mdc-menu-panel {
     background: rgba(255, 255, 255, 0.9) !important; // Light glass background
@@ -307,32 +138,6 @@
       font-weight: 600;
     }
   }
-}
-
-.branch-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: var(--indigo);
-  flex-shrink: 0;
-}
-
-.chevron-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: var(--header-text);
-  opacity: 0.4;
-  margin-left: auto;
-  flex-shrink: 0;
-  transition: transform 0.3s;
-}
-
-.branch-sw[aria-expanded='true'] .chevron-icon,
-.user-card[aria-expanded='true'] .chevron-icon {
-  transform: rotate(180deg);
-  opacity: 1;
-  color: white;
 }
 
 .tab-icon {

@@ -32,6 +32,7 @@ export class Inv2002Component implements OnInit {
   ];
 
   readonly tableConfig: Partial<TableConfig> = {
+    rowKey: (row) => row['rack_no'] ?? row,
     showTitle: true,
     title: 'Racks',
     showSearch: true,

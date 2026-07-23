@@ -9,6 +9,7 @@ import { Sys1003DataService } from './services/data.service';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
 import { ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,7 @@ import { ColumnDef, TableConfig } from '../../../../shared/components/common-tab
     FormsModule,
     SharedModule,
     PageFormLayoutComponent,
+    AppDatePickerComponent,
   ],
   providers: [Sys1003ModelService, Sys1003DataService, DatePipe],
   templateUrl: './sys1003.component.html',

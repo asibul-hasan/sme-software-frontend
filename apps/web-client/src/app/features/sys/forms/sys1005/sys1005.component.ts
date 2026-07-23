@@ -1,14 +1,21 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { sysTaxTypeOptions } from '../../../../core/constants/common-options.constants';
+
 import { Sys1005ModelService, TaxRule } from './services/model.service';
 import { Sys1005DataService } from './services/data.service';
+
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +27,7 @@ import { AlertService } from '../../../../core/services/alert.service';
     FormsModule,
     SharedModule,
     PageFormLayoutComponent,
+    AppDatePickerComponent,
   ],
   providers: [Sys1005ModelService, Sys1005DataService, DatePipe],
   templateUrl: './sys1005.component.html',

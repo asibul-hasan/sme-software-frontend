@@ -24,4 +24,7 @@ export class Hrm1006DataService {
   deleteHoliday(no: number): Observable<ApiResponse<void>> {
     return this.hrService.delete<void>('forms/hrm1006/holidays', no);
   }
+  generateHolidays(year: number): Observable<ApiResponse<void>> {
+    return this.hrService.insert<void>('forms/hrm1006/holidays/generate', { year });
+  }
 }

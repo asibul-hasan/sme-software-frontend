@@ -1,19 +1,26 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { Hrm1003ModelService, Shift } from './services/model.service';
+
 import { Hrm1003DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1003',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Hrm1003ModelService, Hrm1003DataService],
   templateUrl: './hrm1003.component.html',
   styles: [`:host { display: block; height: 100%; }`],

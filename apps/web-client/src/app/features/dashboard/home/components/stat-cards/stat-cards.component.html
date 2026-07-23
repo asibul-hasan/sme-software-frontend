@@ -1,93 +1,83 @@
-<div class="row g-3 mb-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
   <!-- Today's Sales -->
-  <div class="col">
-    <div class="kpi-card-v1">
-      <div class="d-flex align-items-center mb-2">
-        <div class="icon-box-v1 bg-success-light text-success me-3">
-          <i class="bi bi-bag-fill"></i>
-        </div>
-        <span class="text-muted small fw-bold">Today's Sales</span>
+  <div class="bg-surface p-4 rounded-2xl shadow-sm border border-line flex flex-col h-full">
+    <div class="flex items-center mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-success/10 text-success me-3">
+        <i class="bi bi-bag-fill"></i>
       </div>
-      <div class="amount-v1 fw-black h4 mb-2">৳ 125,750</div>
-      <div class="d-flex align-items-center justify-content-between">
-        <span class="text-success xx-small fw-bold">+12.5% vs yesterday</span>
-        <div class="spark-v1">
-          <canvas id="salesSparkline" width="60" height="20"></canvas>
-        </div>
+      <span class="text-subtle text-sm font-bold">Today's Sales</span>
+    </div>
+    <div class="font-black text-2xl mb-2 text-content">৳ 125,750</div>
+    <div class="flex items-center justify-between mt-auto">
+      <span class="text-success text-xs font-bold">+12.5% vs yesterday</span>
+      <div>
+        <canvas id="salesSparkline" width="60" height="20"></canvas>
       </div>
     </div>
   </div>
 
   <!-- Total Revenue -->
-  <div class="col">
-    <div class="kpi-card-v1">
-      <div class="d-flex align-items-center mb-2">
-        <div class="icon-box-v1 bg-primary-light text-primary me-3">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <span class="text-muted small fw-bold">Total Revenue (May)</span>
+  <div class="bg-surface p-4 rounded-2xl shadow-sm border border-line flex flex-col h-full">
+    <div class="flex items-center mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary me-3">
+        <i class="bi bi-wallet2"></i>
       </div>
-      <div class="amount-v1 fw-black h4 mb-2">৳ 3,245,650</div>
-      <div class="d-flex align-items-center justify-content-between">
-        <span class="text-primary xx-small fw-bold">+18.3% vs last month</span>
-        <div class="spark-v1">
-          <canvas id="revenueSparkline" width="60" height="20"></canvas>
-        </div>
+      <span class="text-subtle text-sm font-bold">Total Revenue (May)</span>
+    </div>
+    <div class="font-black text-2xl mb-2 text-content">৳ 3,245,650</div>
+    <div class="flex items-center justify-between mt-auto">
+      <span class="text-primary text-xs font-bold">+18.3% vs last month</span>
+      <div>
+        <canvas id="revenueSparkline" width="60" height="20"></canvas>
       </div>
     </div>
   </div>
 
   <!-- Expenses -->
-  <div class="col">
-    <div class="kpi-card-v1">
-      <div class="d-flex align-items-center mb-2">
-        <div class="icon-box-v1 bg-warning-light text-warning me-3">
-          <i class="bi bi-credit-card-fill"></i>
-        </div>
-        <span class="text-muted small fw-bold">Expenses (May)</span>
+  <div class="bg-surface p-4 rounded-2xl shadow-sm border border-line flex flex-col h-full">
+    <div class="flex items-center mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-warning/10 text-warning me-3">
+        <i class="bi bi-credit-card-fill"></i>
       </div>
-      <div class="amount-v1 fw-black h4 mb-2">৳ 1,245,320</div>
-      <div class="d-flex align-items-center justify-content-between">
-        <span class="text-warning xx-small fw-bold">+8.7% vs last month</span>
-        <div class="spark-v1">
-          <canvas id="expensesSparkline" width="60" height="20"></canvas>
-        </div>
+      <span class="text-subtle text-sm font-bold">Expenses (May)</span>
+    </div>
+    <div class="font-black text-2xl mb-2 text-content">৳ 1,245,320</div>
+    <div class="flex items-center justify-between mt-auto">
+      <span class="text-warning text-xs font-bold">+8.7% vs last month</span>
+      <div>
+        <canvas id="expensesSparkline" width="60" height="20"></canvas>
       </div>
     </div>
   </div>
 
   <!-- Profit / Loss -->
-  <div class="col">
-    <div class="kpi-card-v1">
-      <div class="d-flex align-items-center mb-2">
-        <div class="icon-box-v1 bg-info-light text-info me-3">
-          <i class="bi bi-graph-up-arrow"></i>
-        </div>
-        <span class="text-muted small fw-bold">Profit / Loss (May)</span>
+  <div class="bg-surface p-4 rounded-2xl shadow-sm border border-line flex flex-col h-full">
+    <div class="flex items-center mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-info/10 text-info me-3">
+        <i class="bi bi-graph-up-arrow"></i>
       </div>
-      <div class="amount-v1 fw-black h4 mb-2">৳ 1,999,330</div>
-      <div class="d-flex align-items-center justify-content-between">
-        <span class="text-success xx-small fw-bold">+24.6% vs last month</span>
-        <div class="spark-v1">
-          <canvas id="profitSparkline" width="60" height="20"></canvas>
-        </div>
+      <span class="text-subtle text-sm font-bold">Profit / Loss (May)</span>
+    </div>
+    <div class="font-black text-2xl mb-2 text-content">৳ 1,999,330</div>
+    <div class="flex items-center justify-between mt-auto">
+      <span class="text-success text-xs font-bold">+24.6% vs last month</span>
+      <div>
+        <canvas id="profitSparkline" width="60" height="20"></canvas>
       </div>
     </div>
   </div>
 
   <!-- Pending Payments -->
-  <div class="col">
-    <div class="kpi-card-v1">
-      <div class="d-flex align-items-center mb-2">
-        <div class="icon-box-v1 bg-danger-light text-danger me-3">
-          <i class="bi bi-file-earmark-text-fill"></i>
-        </div>
-        <span class="text-muted small fw-bold">Pending Payments</span>
+  <div class="bg-surface p-4 rounded-2xl shadow-sm border border-line flex flex-col h-full">
+    <div class="flex items-center mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-danger/10 text-danger me-3">
+        <i class="bi bi-file-earmark-text-fill"></i>
       </div>
-      <div class="amount-v1 fw-black h4 mb-2">৳ 865,300</div>
-      <div class="d-flex align-items-center">
-        <span class="text-danger xx-small fw-bold">12 Invoices</span>
-      </div>
+      <span class="text-subtle text-sm font-bold">Pending Payments</span>
+    </div>
+    <div class="font-black text-2xl mb-2 text-content">৳ 865,300</div>
+    <div class="flex items-center mt-auto">
+      <span class="text-danger text-xs font-bold">12 Invoices</span>
     </div>
   </div>
 </div>

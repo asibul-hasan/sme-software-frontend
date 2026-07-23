@@ -7,7 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { DatePipe, NgTemplateOutlet, CommonModule } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort as MatSortEvent } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -50,11 +50,17 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
     TableViewModalComponent
   ],
   providers: [AppDecimalPipe],
+  host: {
+    /* The host must NOT be a blanket `height: 100%`: inside an auto-height
+       parent (the common `.card-body.p-0` wrapper) that resolves to 0, and the
+       parent's `overflow: hidden` then clips the card to a sliver. Fill mode
+       opts in explicitly; every other mode lets the host size to the card. */
+    '[style.height]': "isFillMode() ? '100%' : null",
+    '[style.min-height]': "isFillMode() ? '0' : null",
+  },
   styles: [`
     :host {
       display: block;
-      height: 100%;
-      min-height: 20vh;
     }
     .common-table-card {
       --common-table-header-bg: var(--table-header-bg, var(--bg-secondary));
@@ -62,12 +68,12 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       flex-direction: column;
       width: 100%;
       height: 100%;
-      min-height: 20vh;
       overflow: hidden;
     }
     .common-table-toolbar,
     .common-table-pagination {
       background: transparent !important;
+      flex-shrink: 0; /* fixed bands — only the scroll area flexes */
     }
     .common-table-pagination {
       background: var(--table-header-bg, var(--bg-secondary)) !important;
@@ -129,6 +135,7 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
         overflow: hidden;
         text-overflow: ellipsis;
         box-sizing: border-box;
+        position: relative; /* anchors .erp-col-resizer; Material's sticky (!important) still wins */
       }
       .mat-mdc-header-cell .mat-sort-header-container { width: 100%; min-width: 0; }
       .mat-mdc-header-cell .mat-sort-header-content {
@@ -137,14 +144,14 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       }
       .mat-mdc-header-cell.mat-sort-header-sorted { color: var(--indigo); }
       .mat-mdc-header-cell .mat-sort-header-arrow { color: var(--indigo); }
-      /* Column separators in the HEADER only (AG-Grid look) — body stays clean */
-      .mat-mdc-header-cell:not(:last-child) {
-        border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
+      /* Column separators in the HEADER and BODY for spreadsheet grid look */
+      .mat-mdc-header-cell {
+        border-right: 1px solid var(--border-color, #dee2e6) !important;
       }
 
       /* Body rows — comfortable height */
       .mat-mdc-row { min-height: 46px; transition: background 0.12s ease; }
-      .mat-mdc-cell:not(:last-child) { border-right: 1px solid var(--table-header-border, var(--border-color)) !important; }
+      .mat-mdc-cell { border-right: 1px solid var(--border-color, #dee2e6) !important; }
       .mat-mdc-cell {
         padding: 8px 14px;
         font-size: 13px;
@@ -228,16 +235,24 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
          A cell in edit mode drops its vertical padding and stretches its control to
          100% of the row, so the editor height matches the standard data rows exactly. */
       .mat-mdc-cell.is-editing {
-        padding-top: 0;
-        padding-bottom: 0;
+        padding: 0 !important;
       }
       .mat-mdc-cell.is-editing .form-control,
       .mat-mdc-cell.is-editing .table-edit-ngselect,
       .mat-mdc-cell.is-editing .table-edit-ngselect .ng-select-container {
+        width: 100%;
         height: 100%;
-        min-height: 0;          /* override the fixed 28/30px so it tracks the row */
-        border-radius: 6px;
+        min-height: 0;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
         font-size: 12.5px;
+        padding: 0 8px;
+        background: transparent;
+      }
+      .mat-mdc-cell.is-editing .form-control:focus {
+        background: var(--input-bg, #fff);
       }
       .table-edit-ngselect { min-width: 150px; display: block; }
       /* Vertically centre ng-select value/placeholder now that it fills the row */
@@ -254,9 +269,11 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       padding-left: 11px !important;  /* 14px cell-padding − 3px border = same visual gap */
     }
 
-    /* Footer band — uses the same table layout engine as header/body */
-    .erp-footer-row .mat-mdc-footer-cell,
-    .erp-footer-row .erp-footer-cell {
+    /* Footer band — a real mat-footer-row INSIDE the table, so columns stay
+       perfectly aligned with the header/body and Material's sticky engine pins
+       the cells to the scroll container's bottom edge. */
+    .mat-mdc-footer-row .mat-mdc-footer-cell {
+      height: 38px;
       padding: 8px 14px !important;
       font-size: 12px;
       font-weight: 700;
@@ -264,59 +281,63 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
       background: var(--table-header-bg, var(--bg-secondary)) !important;
       border-top: 1px solid var(--table-header-border, var(--border-color)) !important;
       border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
+      border-bottom: none !important;
       box-sizing: border-box;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    .erp-footer-row .mat-mdc-footer-cell:last-child,
-    .erp-footer-row .erp-footer-cell:last-child {
-      border-right: none !important;
-    }
-    .erp-footer-row {
-      position: sticky;
-      bottom: 0;
-      background: var(--table-header-bg, var(--bg-secondary)) !important;
-      z-index: 4;
       box-shadow: 0 -2px 6px -3px rgba(0, 0, 0, 0.16);
+    }
+    .mat-mdc-footer-row .mat-mdc-footer-cell:last-child {
+      border-right: none !important;
     }
 
-    .erp-footer-grid {
-      position: sticky;
-      bottom: 0;
-      z-index: 4;
-      display: grid;
-      grid-auto-flow: column;
-      flex: 0 0 auto;
-      margin-top: auto;
-      width: max-content;
-      min-width: 100%;
-      background: var(--table-header-bg, var(--bg-secondary)) !important;
-      border-top: 1px solid var(--table-header-border, var(--border-color));
-      box-shadow: 0 -2px 6px -3px rgba(0, 0, 0, 0.16);
+    /* ─── Pinned (left/right) columns ─────────────────────────────────────
+       Body/footer pinned cells get .sticky (position) + inline left/right
+       offsets from getPinStyle(). They need an opaque background and a z-index
+       above their unpinned siblings; pinned HEADER cells must additionally
+       beat Material's sticky-header z-index so they don't slide under other
+       header cells while scrolling horizontally. */
+    td.mat-mdc-cell.mat-mdc-table-sticky {
+      background: var(--card-bg);
     }
-    .erp-footer-grid .erp-footer-cell {
-      min-height: 38px;
-      padding: 8px 14px !important;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-primary);
-      background: var(--table-header-bg, var(--bg-secondary)) !important;
-      border-right: 1px solid var(--table-header-border, var(--border-color)) !important;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      overflow: hidden;
+    .erp-striped .mat-mdc-row:nth-child(even) td.mat-mdc-cell.mat-mdc-table-sticky {
+      background: var(--bg-secondary);
     }
-    .erp-footer-grid .erp-footer-cell:last-child {
-      border-right: none !important;
-    }
-    .erp-footer-grid .erp-footer-cell.erp-align-left { justify-content: flex-start; text-align: left; }
-    .erp-footer-grid .erp-footer-cell.erp-align-center { justify-content: center; text-align: center; }
-    .erp-footer-grid .erp-footer-cell.erp-align-right { justify-content: flex-end; text-align: right; }
 
     .sticky-bottom { position: sticky; bottom: 0; z-index: 2; }
+
+    /* ─── Column resize handle (AG-Grid style) ──────────────────────────── */
+    .erp-col-resizer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 5;
+      touch-action: none;
+      user-select: none;
+    }
+    .erp-col-resizer::after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      top: 20%;
+      height: 60%;
+      width: 2px;
+      background: transparent;
+      transition: background 0.15s ease;
+    }
+    .erp-col-resizer:hover::after,
+    .is-col-resizing .erp-col-resizer::after {
+      background: var(--indigo);
+    }
+    .is-col-resizing,
+    .is-col-resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
 
     .erp-cell-content,
     .erp-footer-content {
@@ -334,6 +355,36 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
 
     .erp-striped .mat-mdc-row:nth-child(even) .mat-mdc-cell {
       background: var(--bg-secondary);
+    }
+
+    /* No-data / loading row (matNoDataRow) */
+    .erp-empty-row { display: table-row; }
+    .erp-empty-cell {
+      text-align: center;
+      vertical-align: middle;
+      border: none;
+      padding: 16px;
+    }
+    .erp-empty-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 120px; /* the card's own 20vh floor supplies the rest */
+    }
+    .erp-skeleton-bar {
+      height: 14px;
+      width: 100%;
+      border-radius: 4px;
+      background: linear-gradient(
+        90deg,
+        var(--bg-secondary) 25%,
+        var(--border-color) 50%,
+        var(--bg-secondary) 75%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
     @keyframes skeleton-pulse {
@@ -363,7 +414,7 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly sort = viewChild.required(MatSort);
   readonly paginator = viewChild(MatPaginator);
   readonly tableElement = viewChild<ElementRef<HTMLTableElement>>('tableElement');
-  readonly footerGrid = viewChild<ElementRef<HTMLElement>>('footerGrid');
+  readonly matTable = viewChild(MatTable);
 
   private readonly exportService = inject(TableExportService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -371,8 +422,6 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   private readonly appDecimalPipe = inject(AppDecimalPipe);
   private readonly destroy$ = new Subject<void>();
   private readonly host = inject(ElementRef<HTMLElement>);
-  private resizeObserver?: ResizeObserver;
-  private footerSyncFrame: number | null = null;
 
   readonly dataSource = new MatTableDataSource<Record<string, unknown>>([]);
   readonly searchControl = new FormControl('', { nonNullable: true });
@@ -381,14 +430,53 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   readonly viewModalRow = signal<Record<string, unknown> | null>(null);
   readonly visibleColumns = signal<ColumnDef[]>([]);
   readonly showSkeleton = signal(false);
-  readonly measuredFooterGridTemplate = signal('');
-  readonly measuredFooterWidth = signal('');
+  /** Per-field width overrides from drag-resizing, e.g. { amount: '184px' }. */
+  readonly colWidthOverrides = signal<Record<string, string>>({});
   /**
-   * Index (within the current page) of the row in edit mode, or null.
-   * Tracked by INDEX, not object reference, so the edit survives the consumer
-   * replacing the row object immutably ({...r}) on every field change.
+   * Card height contract — every table always gets a definite height:
+   *  1. `height` passed        → exactly that.
+   *  2. `maxHeight: '100%'`    → fill the (flex) parent — the fill-layout idiom.
+   *  3. nothing passed         → the standard 20vh table.
+   * `minHeight` is applied separately and naturally wins over a smaller height,
+   * so a form can raise the floor without opting out of the default.
    */
+  readonly cardHeight = computed(() => {
+    const user = this.config();
+    if (user.height) return user.height;
+    if (this.isFillMode()) return '100%';
+    return null; // auto — the card is exactly as tall as the table it holds
+  });
+
+  /**
+   * Floor only — never a fixed height. A table with few (or no) rows keeps a
+   * sensible 20vh presence; one with more rows simply grows, so the card is
+   * always exactly the table's height and never scrolls with nothing in it.
+   */
+  readonly cardMinHeight = computed(() => {
+    const user = this.config();
+    if (user.minHeight) return user.minHeight;
+    if (user.height || this.isFillMode()) return null;
+    return '20vh';
+  });
+
+  /**
+   * Fill mode = the form wants the table to consume the remaining height of a
+   * flex-column parent (`maxHeight: '100%'`, or an explicit `height: '100%'`).
+   * Only then does the host stretch; otherwise it wraps the card so it can't
+   * collapse inside an auto-height wrapper.
+   */
+  readonly isFillMode = computed(() => {
+    const user = this.config();
+    return user.maxHeight === '100%' || user.height === '100%';
+  });
+  /** Field currently being drag-resized (drives the col-resize cursor state). */
+  readonly resizingField = signal<string | null>(null);
+  private stopResizeListeners: (() => void) | null = null;
   readonly editingRowIndex = signal<number | null>(null);
+  /** Identity of the single active row (see `rowIdentity`). Null = nothing selected. */
+  readonly selectedRowKey = signal<unknown>(null);
+  /** The active row object itself — handy for consumers reading current state. */
+  readonly selectedRow = signal<Record<string, unknown> | null>(null);
   /** Working copy of the editing row's editable fields, keyed by field. */
   readonly rowEdits = signal<Record<string, unknown>>({});
   /** Row whose kebab (⋯) menu is open — the shared action menu renders for this row. */
@@ -433,8 +521,15 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     // NOTE: consumers MUST update immutably (pass a new array/row refs) — an in-place
     // mutation won't change the input reference and this effect won't re-run.
     effect(() => {
-      this.dataSource.data = this.data() ?? [];
-      this.scheduleFooterSync();
+      const rows = this.data() ?? [];
+      this.dataSource.data = rows;
+      // Drop a stale active row (row deleted, or the whole dataset replaced) so
+      // clicking it again is a real change and re-emits `rowClick`.
+      const key = this.selectedRowKey();
+      if (key !== null && !rows.some((r) => this.rowIdentity(r) === key)) {
+        this.selectedRowKey.set(null);
+        this.selectedRow.set(null);
+      }
       this.cdr.markForCheck();
     });
 
@@ -449,7 +544,6 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       } else {
         this.visibleColumns.set(cols.filter((c) => c.visible !== false));
       }
-      this.scheduleFooterSync();
     });
 
     effect(() => { if (this.loading()) this.showSkeleton.set(true); else setTimeout(() => this.showSkeleton.set(false), 200); });
@@ -469,13 +563,9 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
     effect(() => {
       this.displayFields();
-      if (this.hasFooterTotal()) {
-        this.scheduleFooterSync();
-      }
       this.mergedConfig().showActions;
       this.mergedConfig().showRowNumbers;
       this.mergedConfig().selectable;
-      this.scheduleFooterSync();
     });
   }
 
@@ -490,8 +580,6 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       const raw = col?.value ? col.value(row) : row[field];
       return typeof raw === 'number' ? raw : String(raw ?? '').toLowerCase();
     };
-    this.setupFooterSyncObserver();
-    this.scheduleFooterSync();
   }
 
   /** Human-readable text of a cell, used for search. Mirrors what the user actually sees. */
@@ -520,7 +608,6 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['totalCount'] && this.mergedConfig().serverSide) { const pg = this.paginator(); if (pg) pg.length = this.totalCount(); }
-    this.scheduleFooterSync();
   }
 
   // ─── Column Toggle + Persistence ─────────────────────────────────────────
@@ -572,10 +659,14 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     if (action.type === 'view') { this.onViewRow(row); return; }
     this.cancelRowEdit();
     this.actionMenuRow.set(null);
+    // The row is about to change or disappear (edit/delete/custom) — drop it from
+    // both the checkbox selection and the active-row state so a later click on it
+    // counts as a genuine change.
     if (this.selection.isSelected(row)) {
       this.selection.deselect(row);
       this.emitSelection();
     }
+    if (this.isRowActive(row)) this.clearSelection();
     if (action.onClick) action.onClick(row);
     this.rowAction.emit({ action, row });
   }
@@ -588,18 +679,115 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
       default:       return 'Action';
     }
   }
+  // ─── Row interaction (AG-Grid style) ─────────────────────────────────────
+  /**
+   * Stable identity of a row. `rowClick` fires only when this value changes,
+   * so re-clicking the active row never repeats the consumer's API call.
+   */
+  rowIdentity(row: Record<string, unknown>): unknown {
+    const key = this.mergedConfig().rowKey;
+    if (key) return typeof key === 'function' ? key(row) : row[key];
+    return row['__uid'] ?? row['id'] ?? row;
+  }
+
+  /** True for the single active (highlighted) row — independent of checkbox selection. */
+  isRowActive(row: Record<string, unknown>): boolean {
+    const active = this.selectedRowKey();
+    return active !== null && active === this.rowIdentity(row);
+  }
+
+  /**
+   * Interactive cell content handles its own clicks; a row click must not also
+   * fire. Checked centrally so cell templates don't each need stopPropagation.
+   */
+  private isInteractiveTarget(event: MouseEvent): boolean {
+    const el = event.target as HTMLElement | null;
+    return !!el?.closest(
+      'button, a, input, select, textarea, label, ' +
+      'mat-checkbox, mat-select, ng-select, .btn-action, .mat-mdc-menu-trigger',
+    );
+  }
+
+  /**
+   * Single click = select. Emits `rowClick` ONCE, and only when the selected
+   * row actually changes. The second click of a double-click (`detail > 1`) is
+   * ignored outright, so double-clicking never double-fires the consumer.
+   */
   onRowClick(row: Record<string, unknown>, index: number, event: MouseEvent): void {
+    if (this.isInteractiveTarget(event)) return;
+    if (event.detail > 1) return; // part of a dbl/triple click — dblclick handles it
+
     // Clicking a DIFFERENT row finishes editing the previous one (its fields already
     // committed on change/blur). Clicking inside the editing row keeps it open.
     if (this.editingRowIndex() !== null && this.editingRowIndex() !== index) this.commitRow();
-    this.selection.clear();
-    this.selection.select(row);
-    this.emitSelection();
+
+    const key = this.rowIdentity(row);
+    if (this.selectedRowKey() !== null && this.selectedRowKey() === key) {
+      this.selectedRow.set(row); // keep the reference fresh; no re-emit
+      return;
+    }
+
+    this.selectedRowKey.set(key);
+    this.selectedRow.set(row);
+    if (!this.mergedConfig().selectable) {
+      // Single-select mode: the SelectionModel mirrors the active row.
+      // With checkboxes on, it belongs to the checkboxes and is left alone.
+      this.selection.clear();
+      this.selection.select(row);
+      this.emitSelection();
+    }
+    this.rowClick.emit(row);
+  }
+
+  /** Clear the active row so the next click on it re-emits (e.g. after New/Reset). */
+  clearSelection(): void {
+    this.selectedRowKey.set(null);
+    this.selectedRow.set(null);
+    if (!this.mergedConfig().selectable) this.selection.clear();
+  }
+
+  /**
+   * Set the active row WITHOUT emitting `rowClick`. Use this to mirror state a
+   * parent already owns (model → table sync), so no feedback loop is possible.
+   */
+  setActiveRow(row: Record<string, unknown> | null): void {
+    if (!row) {
+      this.clearSelection();
+      return;
+    }
+    this.selectedRowKey.set(this.rowIdentity(row));
+    this.selectedRow.set(row);
+    if (!this.mergedConfig().selectable) {
+      this.selection.clear();
+      this.selection.select(row);
+      this.emitSelection();
+    }
+  }
+
+  /** Select a row programmatically. Emits `rowClick` only if it isn't already active. */
+  selectRow(row: Record<string, unknown>): void {
+    if (
+      this.selectedRowKey() !== null &&
+      this.selectedRowKey() === this.rowIdentity(row)
+    ) {
+      return;
+    }
+    this.setActiveRow(row);
     this.rowClick.emit(row);
   }
 
   // ─── Inline Edit (ROW-LEVEL, index-stable) ────────────────────────────────
-  /** Double-click a row → put EVERY editable cell in that row into edit mode at once. */
+  /**
+   * Double-click a row → put EVERY editable cell in that row into edit mode at once.
+   * The row is made active first (without re-emitting `rowClick` when it already is),
+   * so edit mode and selection stay consistent however the row was reached.
+   */
+  onRowDblClick(row: Record<string, unknown>, index: number, event: MouseEvent): void {
+    if (this.isInteractiveTarget(event)) return;
+    this.selectRow(row); // no-op + no emit when this row is already active
+    this.startRowEdit(row, index);
+  }
+
   startRowEdit(row: Record<string, unknown>, index: number): void {
     const editable = this.visibleColumns().filter((c) => this.isColumnEditable(c, row));
     if (!editable.length) return;
@@ -781,7 +969,45 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   getColumnWidth(col: ColumnDef): string {
-    return col.width || col.minWidth || this.getDefaultColumnWidth(col);
+    return (
+      this.colWidthOverrides()[col.field] ||
+      col.width ||
+      col.minWidth ||
+      this.getDefaultColumnWidth(col)
+    );
+  }
+
+  // ─── Column Resizing ─────────────────────────────────────────────────────
+  isResizable(col: ColumnDef): boolean {
+    return this.mergedConfig().resizableColumns !== false && col.resizable !== false;
+  }
+
+  startResize(event: PointerEvent, col: ColumnDef): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const th = (event.target as HTMLElement).closest('th');
+    if (!th) return;
+    const startX = event.clientX;
+    const startWidth = th.getBoundingClientRect().width;
+    this.resizingField.set(col.field);
+
+    const onMove = (e: PointerEvent) => {
+      const width = Math.round(Math.max(60, startWidth + (e.clientX - startX)));
+      this.colWidthOverrides.update((m) => ({ ...m, [col.field]: `${width}px` }));
+      // Keep native sticky-column offsets in sync with the new widths.
+      this.matTable()?.updateStickyColumnStyles();
+      this.cdr.markForCheck();
+    };
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      this.resizingField.set(null);
+      this.matTable()?.updateStickyColumnStyles();
+      this.cdr.markForCheck();
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    this.stopResizeListeners = onUp;
   }
 
   private getDefaultColumnWidth(col: ColumnDef): string {
@@ -802,140 +1028,36 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
     }
   }
 
-  getPinStyle(col: ColumnDef): Record<string, string> {
-    if (!col.pin) return {};
-    const cols = this.columns(); let offset = 0;
-    if (this.mergedConfig().selectable) offset += 40;
-    if (this.mergedConfig().showRowNumbers) offset += 40;
-    if (col.pin === 'left') {
-      for (const c of cols) {
-        if (c === col) break;
-        if (c.pin === 'left') offset += parseInt(this.getColumnWidth(c), 10);
-      }
-      return { left: `${offset}px`, 'z-index': '2' };
-    }
-    if (col.pin === 'right') {
-      let r = 0;
-      for (const c of [...cols].reverse()) {
-        if (c === col) break;
-        if (c.pin === 'right') r += parseInt(this.getColumnWidth(c), 10);
-      }
-      if (this.mergedConfig().showActions) r += 80;
-      return { right: `${r}px`, 'z-index': '2' };
-    }
-    return {};
-  }
+  /* Pinning is delegated to mat-table's native sticky-column engine
+     ([sticky]/[stickyEnd] on the column defs) — it computes cumulative
+     left/right offsets and corner z-indexes itself, and stays in sync with
+     column resizing via updateStickyColumnStyles(). */
+  readonly hasLeftPins = computed(() => this.visibleColumns().some((c) => c.pin === 'left'));
+  readonly hasRightPins = computed(() => this.visibleColumns().some((c) => c.pin === 'right'));
 
   isSticky(col: ColumnDef): boolean { return col.pin === 'left' || col.pin === 'right'; }
 
   getHeaderClass(col: ColumnDef): string {
     const c: string[] = [this.getAlignClass(col)];
-    if (this.isSticky(col)) c.push('sticky');
     if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
     if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');
     if (col.headerClass) c.push(col.headerClass);
     return c.join(' ');
   }
 
-  getFooterGridTemplate(): string {
-    const measured = this.measuredFooterGridTemplate();
-    return measured || this.getFallbackFooterGridTemplate();
-  }
-
-  private getFallbackFooterGridTemplate(): string {
-    const tracks: string[] = [];
-    if (this.mergedConfig().selectable) tracks.push('40px');
-    if (this.mergedConfig().showRowNumbers) tracks.push('40px');
-    for (const col of this.visibleColumns()) {
-      tracks.push(this.getColumnWidth(col));
-    }
-    if (this.mergedConfig().showActions) tracks.push('64px');
-    return tracks.join(' ');
-  }
-
-  getFooterGridWidth(): string | null {
-    return this.measuredFooterWidth() || null;
-  }
-
-  private setupFooterSyncObserver(): void {
-    if (typeof ResizeObserver === 'undefined') return;
-    this.resizeObserver?.disconnect();
-    this.resizeObserver = new ResizeObserver(() => this.scheduleFooterSync());
-    this.resizeObserver.observe(this.host.nativeElement);
-    const table = this.tableElement()?.nativeElement;
-    if (table) this.resizeObserver.observe(table);
-  }
-
-  private scheduleFooterSync(): void {
-    if (typeof window === 'undefined') return;
-    if (this.footerSyncFrame !== null) {
-      window.cancelAnimationFrame(this.footerSyncFrame);
-    }
-    this.footerSyncFrame = window.requestAnimationFrame(() => {
-      this.footerSyncFrame = window.requestAnimationFrame(() => {
-        this.footerSyncFrame = null;
-        this.syncFooterToHeader();
-      });
-    });
-  }
-
-  private syncFooterToHeader(): void {
-    if (!this.hasFooterTotal() || this.showSkeleton()) {
-      this.measuredFooterGridTemplate.set('');
-      this.measuredFooterWidth.set('');
-      this.applyFooterGridStyle('', '');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    const table = this.tableElement()?.nativeElement;
-    const headerCells = Array.from(
-      this.host.nativeElement.querySelectorAll('tr.mat-mdc-header-row th.mat-mdc-header-cell'),
-    ) as HTMLTableCellElement[];
-
-    if (!table || headerCells.length !== this.displayFields().length) {
-      this.measuredFooterGridTemplate.set('');
-      this.measuredFooterWidth.set('');
-      this.applyFooterGridStyle('', '');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    const widths = headerCells.map((cell) => Math.round(cell.getBoundingClientRect().width * 100) / 100);
-    if (widths.some((width) => width <= 0)) {
-      this.measuredFooterGridTemplate.set('');
-      this.measuredFooterWidth.set('');
-      this.applyFooterGridStyle('', '');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    const totalWidth = Math.round(widths.reduce((sum, width) => sum + width, 0) * 100) / 100;
-    const template = widths.map((width) => `${width}px`).join(' ');
-    const width = `${totalWidth}px`;
-    this.measuredFooterGridTemplate.set(template);
-    this.measuredFooterWidth.set(width);
-    this.applyFooterGridStyle(template, width);
-    this.cdr.markForCheck();
-  }
-
-  private applyFooterGridStyle(template: string, width: string): void {
-    const footer = this.footerGrid()?.nativeElement;
-    if (!footer) return;
-    footer.style.display = 'grid';
-    footer.style.gridAutoFlow = 'column';
-    footer.style.gridTemplateColumns = template || this.getFallbackFooterGridTemplate();
-    footer.style.width = width || '';
-    footer.style.minWidth = '100%';
-  }
-
   getCellClass(col: ColumnDef, row?: any): string {
     const c: string[] = [this.getAlignClass(col)];
-    if (this.isSticky(col)) c.push('sticky');
     if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
     if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');
     if (col.cellClass) c.push(col.cellClass);
     return c.filter(Boolean).join(' ');
+  }
+
+  getFooterCellClass(col: ColumnDef): string {
+    const c: string[] = [this.getAlignClass(col)];
+    if (col.pin === 'left') c.push('shadow-[2px_0_4px_rgba(0,0,0,0.04)]');
+    if (col.pin === 'right') c.push('shadow-[-2px_0_4px_rgba(0,0,0,0.04)]');
+    return c.join(' ');
   }
 
   getFooterValue(col: ColumnDef): string {
@@ -968,11 +1090,8 @@ export class CommonTableComponent implements AfterViewInit, OnChanges, OnDestroy
   get skeletonRows(): number[] { return Array.from({ length: this.paginator()?.pageSize || 10 }, (_, i) => i); }
 
   ngOnDestroy(): void {
+    this.stopResizeListeners?.();
     this.destroy$.next();
     this.destroy$.complete();
-    this.resizeObserver?.disconnect();
-    if (this.footerSyncFrame !== null && typeof window !== 'undefined') {
-      window.cancelAnimationFrame(this.footerSyncFrame);
-    }
   }
 }

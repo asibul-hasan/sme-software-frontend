@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>receipt_long</mat-icon><p>No invoices found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <!-- Header -->
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
@@ -51,7 +51,7 @@
           <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier Bill No</label>
             <input type="text" class="form-control" [(ngModel)]="supplierInvoiceNo" [disabled]="!editable()" /></div></div>
           <div class="col-md-3"><div class="field-group"><label class="field-label">Invoice Date</label>
-            <input type="date" class="form-control" [(ngModel)]="invoiceDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="invoiceDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
           <div class="col-md-2"><div class="field-group"><label class="field-label">Paid Now</label>
             <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Due Date</label>
-            <input type="date" class="form-control" [(ngModel)]="dueDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="dueDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
             <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" /></div></div>
         </div>

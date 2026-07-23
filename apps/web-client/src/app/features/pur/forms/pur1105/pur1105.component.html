@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>inventory</mat-icon><p>No GRNs found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">inventory</mat-icon> {{ selectedNo() ? 'GRN ' + statusLabel(status()) : 'New GRN' }}</h4>
@@ -48,7 +48,7 @@
           <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
             <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Receipt Date</label>
-            <input type="date" class="form-control" [(ngModel)]="receiptDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="receiptDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">PO No</label>
             <input type="number" class="form-control text-end" [(ngModel)]="orderNo" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
@@ -74,7 +74,7 @@
             <div class="col-md-1"><div class="field-group"><label class="field-label">Batch</label>
               <input type="text" class="form-control" [(ngModel)]="newBatch" /></div></div>
             <div class="col-md-1"><div class="field-group"><label class="field-label">Expiry</label>
-              <input type="date" class="form-control" [(ngModel)]="newExpiryDate" /></div></div>
+              <app-date-picker [(ngModel)]="newExpiryDate" placeholder="Select date" /></div></div>
             <div class="col-md-1"><button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()"><mat-icon>add</mat-icon></button></div>
           </div>
         </div>

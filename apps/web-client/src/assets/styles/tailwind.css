@@ -3,6 +3,7 @@
  * The SCSS layer (styles.scss) is loaded separately by the build.
  * ============================================================ */
 @import 'tailwindcss';
+@import './_components.css';
 
 /* Dark mode is driven by the data-theme attribute on <html>
    (toggled by ThemeService) — not the default `prefers-color-scheme`. */
@@ -13,6 +14,7 @@
    Breakpoints match Bootstrap's so responsive behavior is unchanged. */
 @theme {
   --font-sans: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-mono: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
 
   --text-xxs: 11px;
   --text-xs: 12px;

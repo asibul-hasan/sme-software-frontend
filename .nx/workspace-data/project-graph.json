@@ -144,10 +144,7 @@
                 "includePaths": [
                   "apps/web-client/src/assets/styles"
                 ]
-              },
-              "scripts": [
-                "node_modules/bootstrap/dist/js/bootstrap.js"
-              ]
+              }
             },
             "configurations": {
               "production": {
@@ -233,5 +230,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1783963475819
+  "computedAt": 1784799091382
 }

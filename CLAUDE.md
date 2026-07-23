@@ -87,6 +87,34 @@ Apply this rule to every `filteredXxx = computed(...)` signal that feeds a sideb
 App-wide conventions. Reuse these instead of `mat-tab-group`, a raw
 `mat-checkbox`, or ad-hoc markup so every form stays visually consistent.
 
+### Form building blocks — `shared/components/form-ui` (CRITICAL, the standard)
+
+**Forms ship ZERO css** (only the `:host { display:block; height:100% }` inline
+block). Form bodies are built from these SharedModule components — do NOT
+hand-roll `.row/.col-md-*` grids, `.field-group` wrappers, or `.custom--checkbox`
+markup in new/touched forms. Reference implementation: **FIN_1001** (Chart of
+Accounts). Full standard: `../aidly-business-doc/form-design-standard.md`.
+
+```html
+<app-form-section title="Account" icon="menu_book">        <!-- card + 12-col grid body -->
+  <app-form-field label="Account Code" for="account_code" required [span]="3">
+    <input id="account_code" formControlName="account_code" class="form-control" />
+  </app-form-field>
+  <app-check-field label="Status" text="Active" [span]="2" formControlName="is_active" />
+</app-form-section>
+```
+
+- `[span]` = grid columns of 12 from the `md` breakpoint (replaces `col-md-*`);
+  spans on one visual row sum to 12. Optional `[xlSpan]` refines at `xl`.
+- `<app-check-field>` is a CVA that round-trips the numeric `1/0` flag contract —
+  bind it with `formControlName`, never `[checked]`/`(change)`.
+- `<app-form-section flush>` gives a `p-0` body for `<app-common-table>` grids.
+- Validation messages render automatically under any projected `formControlName`
+  control (`ValidationMessageDirective`) — don't add per-form error markup.
+- Tailwind utilities are layered; legacy global SCSS is unlayered and wins ties.
+  If a utility must beat a global class on the same element, use the `!` form
+  (`!p-2`, `!text-indigo`) — never a per-form stylesheet.
+
 ### Form Archetypes — pick ONE layout, don't mix (CRITICAL)
 
 There are exactly **two** form layouts. Every form is one of them. Drift (each
@@ -620,10 +648,34 @@ async exportToPdf() {
     buildSections: () => [
       { type: 'title', text: 'Data List' },
       { type: 'table', columns: this.columns, rows: this.data }
+```ts
+import { PdfTemplateService } from '@app/shared/pdf-templates/pdf-template.service';
+
+private readonly pdfTemplateService = inject(PdfTemplateService);
+
+async exportToPdf() {
+  await this.pdfTemplateService.render({
+    id: 'my-custom-report',
+    module: 'SYS',
+    formId: 'SYS1001',
+    title: 'Report Title',
+    fileName: 'report-file-name',
+    showSignatures: true,
+    showPageFooter: true,
+    buildSections: () => [
+      { type: 'title', text: 'Data List' },
+      { type: 'table', columns: this.columns, rows: this.data }
     ]
   }, {});
 }
 ```
 
 If your PDF requires a heavily custom-drawn layout, use a `custom` section type, which gives you access to the `jsPDF` instance and `helpers` (`{ drawHeader, drawPageFooter }`) for adding headers/footers on new pages.
-```
+
+---
+
+## Database Schema Changes (CRITICAL)
+
+**Never add or delete database columns dynamically from middleware or Java services** (e.g., using `jdbcTemplate` in a `@PostConstruct` block). 
+
+All database structure modifications must be done via explicit SQL migration scripts provided to the developer, placed in the `../sme-software-backend/db-migration/` or equivalent backend migration directories. Always output the script for the user to run manually or manage via the database migration tool.

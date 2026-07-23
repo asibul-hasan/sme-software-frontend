@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1306DataService, CashFlow, CashFlowRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { isSuccess } from '../../../../core/models/response.model';
@@ -14,7 +15,7 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1306',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Fin1306DataService],
   templateUrl: './fin1306.component.html',
   styles: [`

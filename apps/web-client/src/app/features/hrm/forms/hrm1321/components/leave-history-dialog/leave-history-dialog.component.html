@@ -1,0 +1,86 @@
+<div class="form-section-card card shadow-lg border-0 m-0 overflow-hidden">
+  <!-- Dialog Header -->
+  <div class="modal-header card-header d-flex justify-content-between align-items-center py-2.5 px-4 bg-surface border-bottom">
+    <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2 text-content">
+      <mat-icon class="text-primary">history</mat-icon>
+      Leave History — <span class="text-primary">{{ historyEmployeeName() }}</span>
+    </h4>
+    <button type="button" class="btn-close" (click)="close()"></button>
+  </div>
+
+  <!-- Dialog Body -->
+  <div class="modal-body p-4 flex flex-col gap-3 bg-body overflow-y-auto" style="max-height: 78vh;">
+    
+    <!-- 1. Top Small Cards for Leave Balances (Filtered by selected Leave Type) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+      @for (b of visibleBalances(); track b.leave_type_no) {
+        <div class="rounded-lg border border-line bg-surface p-3 flex flex-col justify-between shadow-xs">
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="text-[13px] font-bold text-content truncate" [title]="b.leave_type_name">
+              {{ b.leave_type_name }}
+            </span>
+            <span class="badge bg-emerald/15 text-emerald text-[11px] font-semibold px-2 py-0.5 rounded">
+              {{ b.available_days }} left
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-subtle border-t border-line/60 pt-1.5 mt-1">
+            <span>Entitled: <strong class="text-content">{{ b.entitled_days }}</strong></span>
+            <span>Availed: <strong class="text-amber">{{ b.consumed_days }}</strong></span>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-span-full p-3 text-center text-subtle text-xs bg-muted/20 rounded-lg">
+          No leave balance records available for this employee
+        </div>
+      }
+    </div>
+
+    <!-- 2. Filters Bar: Date Range Picker + Leave Type -->
+    <div class="rounded-lg border border-line bg-muted/30 p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+      <!-- Date Range Picker -->
+      <div class="field-group mb-0 sm:col-span-2">
+        <label class="field-label text-[11px]">Date Range</label>
+        <app-date-range-picker
+          [startPlaceholder]="'From Date'"
+          [endPlaceholder]="'To Date'"
+          [ngModel]="{ startDate: historyFromDate(), endDate: historyToDate() }"
+          (rangeChange)="onDateRangeChange($any($event))"
+        >
+        </app-date-range-picker>
+      </div>
+
+      <!-- Leave Type Dropdown -->
+      <div class="field-group mb-0">
+        <label class="field-label text-[11px]">Leave Type</label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="historySelectedLeaveType()"
+          (ngModelChange)="onLeaveTypeChange($event)"
+        >
+          <option [ngValue]="null">All Leave Types</option>
+          @for (lt of leaveTypes(); track lt.leave_type_no) {
+            <option [ngValue]="lt.leave_type_no">{{ lt.leave_type_name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- 3. History Table (View Only) -->
+    <div class="flex-1 min-h-[300px]">
+      <app-common-table
+        [columns]="historyTableColumns"
+        [data]="$any(filteredHistoryList())"
+        [config]="historyTableConfig"
+        [loading]="isHistoryLoading()"
+      />
+    </div>
+
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="modal-footer py-2.5 px-4 border-top bg-surface d-flex justify-content-end">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="close()">
+      Close
+    </button>
+  </div>
+</div>

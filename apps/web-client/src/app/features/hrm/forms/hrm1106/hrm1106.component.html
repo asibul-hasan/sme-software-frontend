@@ -63,7 +63,7 @@
                 </div></div>
                 <div class="col-md-3"><div class="field-group">
                   <label class="field-label required" for="effective_date">Effective Date</label>
-                  <input type="date" id="effective_date" formControlName="effective_date" class="form-control" [readonly]="!editable" />
+                  <app-date-picker formControlName="effective_date" placeholder="Select date" />
                 </div></div>
                 <div class="col-md-5"><div class="field-group">
                   <label class="field-label" for="to_designation_no">New Designation</label>

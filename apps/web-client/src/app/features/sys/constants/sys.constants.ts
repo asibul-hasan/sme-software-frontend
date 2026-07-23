@@ -303,6 +303,11 @@ export const sysConstants = {
     { label: 'Closed', value: 'Closed' },
     { label: 'Locked', value: 'Locked' },
   ],
+  approvalStepTypes: [
+    { label: 'Forward', value: 1 },
+    { label: 'Backward', value: 2 },
+    { label: 'Reject', value: 3 },
+  ],
   // period_status is a SMALLINT column (DB-first numeric codes)
   periodStatuses: [
     { value: 1, label: 'Open' },

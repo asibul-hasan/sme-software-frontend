@@ -1,23 +1,31 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { CommonTableComponent, ColumnDef, TableConfig, statusBadge } from '../../../../shared/components/common-table';
+
 import { Hrm1301ModelService, LeaveApplication } from './services/model.service';
 import { Hrm1301DataService } from './services/data.service';
+
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
 
 import { hrmConstants } from '../../constants/hrm.constants';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1301',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Hrm1301ModelService, Hrm1301DataService],
   templateUrl: './hrm1301.component.html',
-  styles: [`:host { display: block; height: 100%; }`],
+  styles: [`:host { display: block; height: 100%; } .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; } .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }`],
 })
 export class Hrm1301Component implements OnInit {
   public model             = inject(Hrm1301ModelService);
@@ -38,8 +46,31 @@ export class Hrm1301Component implements OnInit {
 
   onSearchTermChange(val: string): void {
     this.model.searchTerm.set(val);
-    this.model.pager.reset();
   }
+
+  tableColumns: ColumnDef[] = [
+    { title: 'ID', field: 'leave_application_no', sort: true, cellType: 'text', width: '80px', pin: 'left' },
+    { title: 'Employee', field: 'employee_no', sort: true, cellType: 'text', value: (r) => this.model.employeeName(r['employee_no'] as number) },
+    { title: 'Leave Type', field: 'leave_type_no', sort: true, cellType: 'text', value: (r) => this.model.leaveTypeName(r['leave_type_no'] as number) },
+    { title: 'From Date', field: 'from_date', sort: true, cellType: 'date', dateFormat: 'dd/MM/yyyy' },
+    { title: 'To Date', field: 'to_date', sort: true, cellType: 'date', dateFormat: 'dd/MM/yyyy' },
+    { title: 'Days', field: 'total_days', sort: true, cellType: 'text', align: 'right' },
+    { title: 'Reason', field: 'reason', sort: true, cellType: 'text' },
+    { title: 'Reliever', field: 'reliever_employee_no', sort: true, cellType: 'text', value: (r) => this.model.employeeName(r['reliever_employee_no'] as number) },
+    { title: 'Status', field: 'status', sort: true, cellType: 'badge', width: '120px', badgeConfig: statusBadge },
+  ];
+
+  tableConfig: Partial<TableConfig> = {
+    showSearch: true,
+    pagination: true,
+    defaultPageSize: 10,
+    dense: true,
+    striped: true,
+    minHeight: '320px',
+    // Identity for the row-selection contract: re-clicking the loaded record
+    // must not reload it. Unsaved rows fall back to object identity.
+    rowKey: (row) => row['leave_application_no'] ?? row,
+  };
 
   get formdata() { return this.model.form; }
   get status(): number { return this.model.status(); }
@@ -64,7 +95,10 @@ export class Hrm1301Component implements OnInit {
     });
   }
 
-  selectLeave(item: LeaveApplication): void { this.model.selectLeave(item); }
+  selectLeave(item: LeaveApplication | Record<string, unknown>): void {
+    const leaveItem = item as unknown as LeaveApplication;
+    this.model.selectLeave(leaveItem);
+  }
   onLookupChange(): void { this.model.refreshBalance(); }
 
   submit(): void  { this.model.doAction('submit'); }

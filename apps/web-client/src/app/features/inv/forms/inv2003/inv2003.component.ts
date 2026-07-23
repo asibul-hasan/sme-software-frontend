@@ -1,17 +1,23 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
+
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
+
 import { AlertService } from '../../../../core/services/alert.service';
 import { Inv2003ModelService } from './services/model.service';
+
 import { Inv2003DataService } from './services/data.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv2003',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Inv2003ModelService, Inv2003DataService],
   templateUrl: './inv2003.component.html',
   styles: [],

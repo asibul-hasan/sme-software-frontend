@@ -1,407 +1,362 @@
-<section class="min-vh-100 d-flex align-items-center py-4 py-xl-5 login-page">
-  <div class="container">
-    <div class="row gy-4 align-items-center justify-content-center">
-      <!-- ══ LEFT: BRANDING (hidden on mobile) ══ -->
-      <div class="col-12 col-md-6 col-xl-7 d-none d-md-block">
-        <div class="d-flex justify-content-center">
-          <div class="col-12 col-xl-9">
-            <!-- Logo -->
-            <div class="d-flex align-items-center gap-2 mb-4">
-              <mat-icon
-                style="
-                  font-size: 28px;
-                  width: 28px;
-                  height: 28px;
-                  color: var(--indigo);
-                "
-                >rocket_launch</mat-icon
-              >
+<section
+  class="min-h-screen flex items-center justify-center py-12 login-page"
+  style="background-color: #0b1120"
+>
+  <style>
+    /* Ensure ng-select matches Tailwind text inputs perfectly */
+    .ng-select-login .ng-select-container {
+      height: 46px !important;
+      background-color: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 12px !important;
+      font-size: 14px !important;
+      color: #0f172a !important;
+      box-shadow: none !important;
+    }
+    .ng-select-login.ng-select-focused .ng-select-container {
+      border-color: #7a6efe !important;
+      box-shadow: 0 0 0 4px rgba(122, 110, 254, 0.1) !important;
+      background-color: #ffffff !important;
+    }
+    .ng-select-login .ng-value-container {
+      padding-left: 12px !important;
+    }
+    .ng-select-login .ng-arrow-wrapper {
+      padding-right: 12px !important;
+    }
+  </style>
+
+  <div class="w-full max-w-[1140px] mx-auto px-4">
+    <div
+      class="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-6 xl:gap-8"
+    >
+      <!-- LEFT SECTION -->
+      <div class="w-full lg:w-7/12 hidden md:block">
+        <div class="max-w-[540px] mx-auto lg:mx-0 lg:ml-auto lg:pr-8 xl:pr-12">
+          <!-- Logo -->
+          <div class="flex items-center gap-3 mb-8">
+            <mat-icon
+              style="font-size: 32px; width: 32px; height: 32px; color: #7a6efe"
+              >rocket_launch</mat-icon
+            >
+            <span
+              style="
+                font-size: 1.75rem;
+                font-weight: 800;
+                color: #ffffff;
+                letter-spacing: -0.5px;
+              "
+            >
+              Aidly<span style="color: #7a6efe">ERP</span>
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h2
+            style="
+              font-size: 3.25rem;
+              font-weight: 800;
+              color: #ffffff;
+              line-height: 1.1;
+              margin-bottom: 1rem;
+              letter-spacing: -1px;
+            "
+          >
+            Your business.<br />One unified hub.
+          </h2>
+          <p
+            style="
+              font-size: 16px;
+              color: rgba(255, 255, 255, 0.7);
+              margin-bottom: 3rem;
+              line-height: 1.6;
+            "
+          >
+            Retail, wholesale, and pharmacy — all managed from a single,
+            powerful dashboard.
+          </p>
+
+          <!-- Features -->
+          <div class="flex flex-col gap-5">
+            <div
+              class="flex items-center gap-4"
+              style="font-size: 14.5px; color: rgba(255, 255, 255, 0.8)"
+            >
               <span
+                class="flex items-center justify-center shrink-0"
                 style="
-                  font-size: 1.55rem;
-                  font-weight: 800;
-                  color: #fff;
-                  letter-spacing: -0.3px;
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(255, 255, 255, 0.03);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
                 "
               >
-                Aidly<span style="color: var(--indigo)">ERP</span>
+                <mat-icon
+                  style="
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: #7a6efe;
+                  "
+                  >account_tree</mat-icon
+                >
               </span>
+              Log in once to manage all branches easily
             </div>
 
-            <hr style="border-color: rgba(255, 255, 255, 0.1)" class="mb-4" />
-
-            <h2 class="h1 fw-bold mb-3" style="color: #fff; line-height: 1.2">
-              Your business.<br />One unified hub.
-            </h2>
-            <p
-              class="lead mb-5"
-              style="color: var(--sidebar-text); opacity: 0.8; font-size: 15px"
+            <div
+              class="flex items-center gap-4"
+              style="font-size: 14.5px; color: rgba(255, 255, 255, 0.8)"
             >
-              Retail, wholesale, and pharmacy — all managed from a single,
-              powerful dashboard.
-            </p>
-
-            <!-- Feature list -->
-            <div class="d-flex flex-column gap-3 mb-5">
-              <div
-                class="d-flex align-items-center gap-3"
-                style="color: var(--sidebar-text); font-size: 13.5px"
+              <span
+                class="flex items-center justify-center shrink-0"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(255, 255, 255, 0.03);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
               >
-                <span
-                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                <mat-icon
                   style="
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: #7a6efe;
                   "
+                  >inventory_2</mat-icon
                 >
-                  <mat-icon
-                    style="
-                      font-size: 17px;
-                      width: 17px;
-                      height: 17px;
-                      color: var(--indigo);
-                    "
-                    >account_tree</mat-icon
-                  >
-                </span>
-                Log in once to manage all branches easily
-              </div>
-
-              <div
-                class="d-flex align-items-center gap-3"
-                style="color: var(--sidebar-text); font-size: 13.5px"
-              >
-                <span
-                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                  style="
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                  "
-                >
-                  <mat-icon
-                    style="
-                      font-size: 17px;
-                      width: 17px;
-                      height: 17px;
-                      color: var(--indigo);
-                    "
-                    >inventory_2</mat-icon
-                  >
-                </span>
-                Check stock and sales live from any location
-              </div>
-
-              <div
-                class="d-flex align-items-center gap-3"
-                style="color: var(--sidebar-text); font-size: 13.5px"
-              >
-                <span
-                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                  style="
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                  "
-                >
-                  <mat-icon
-                    style="
-                      font-size: 17px;
-                      width: 17px;
-                      height: 17px;
-                      color: var(--indigo);
-                    "
-                    >calculate</mat-icon
-                  >
-                </span>
-                Handle internal accounting automatically without errors
-              </div>
-
-              <div
-                class="d-flex align-items-center gap-3"
-                style="color: var(--sidebar-text); font-size: 13.5px"
-              >
-                <span
-                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                  style="
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                  "
-                >
-                  <mat-icon
-                    style="
-                      font-size: 17px;
-                      width: 17px;
-                      height: 17px;
-                      color: var(--indigo);
-                    "
-                    >rocket_launch</mat-icon
-                  >
-                </span>
-                Add new features anytime as your business grows
-              </div>
-              <div
-                class="d-flex align-items-center gap-3"
-                style="color: var(--sidebar-text); font-size: 13.5px"
-              >
-                <span
-                  class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                  style="
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                  "
-                >
-                  <mat-icon
-                    style="
-                      font-size: 17px;
-                      width: 17px;
-                      height: 17px;
-                      color: var(--indigo);
-                    "
-                    >analytics</mat-icon
-                  >
-                </span>
-                Generate full business reports with just one click
-              </div>
+              </span>
+              Check stock and sales live from any location
             </div>
 
-            <!-- Stats -->
-            <!-- <div
-              class="d-flex gap-5 pt-3"
-              style="border-top: 1px solid rgba(255, 255, 255, 0.08)"
+            <div
+              class="flex items-center gap-4"
+              style="font-size: 14.5px; color: rgba(255, 255, 255, 0.8)"
             >
-              <div>
-                <div
-                  class="fw-bold"
+              <span
+                class="flex items-center justify-center shrink-0"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(255, 255, 255, 0.03);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
+              >
+                <mat-icon
                   style="
-                    font-size: 1.7rem;
-                    color: var(--indigo);
-                    line-height: 1;
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: #7a6efe;
                   "
+                  >calculate</mat-icon
                 >
-                  50+
-                </div>
-                <div
+              </span>
+              Handle internal accounting automatically without errors
+            </div>
+
+            <div
+              class="flex items-center gap-4"
+              style="font-size: 14.5px; color: rgba(255, 255, 255, 0.8)"
+            >
+              <span
+                class="flex items-center justify-center shrink-0"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(255, 255, 255, 0.03);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
+              >
+                <mat-icon
                   style="
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                    color: var(--sidebar-text);
-                    opacity: 0.55;
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: #7a6efe;
                   "
+                  >rocket_launch</mat-icon
                 >
-                  Forms
-                </div>
-              </div>
-              <div>
-                <div
-                  class="fw-bold"
+              </span>
+              Add new features anytime as your business grows
+            </div>
+
+            <div
+              class="flex items-center gap-4"
+              style="font-size: 14.5px; color: rgba(255, 255, 255, 0.8)"
+            >
+              <span
+                class="flex items-center justify-center shrink-0"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(255, 255, 255, 0.03);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
+              >
+                <mat-icon
                   style="
-                    font-size: 1.7rem;
-                    color: var(--indigo);
-                    line-height: 1;
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: #7a6efe;
                   "
+                  >analytics</mat-icon
                 >
-                  7
-                </div>
-                <div
-                  style="
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                    color: var(--sidebar-text);
-                    opacity: 0.55;
-                  "
-                >
-                  Modules
-                </div>
-              </div>
-              <div>
-                <div
-                  class="fw-bold"
-                  style="
-                    font-size: 1.7rem;
-                    color: var(--indigo);
-                    line-height: 1;
-                  "
-                >
-                  2–4w
-                </div>
-                <div
-                  style="
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                    color: var(--sidebar-text);
-                    opacity: 0.55;
-                  "
-                >
-                  Go-live
-                </div>
-              </div>
-            </div> -->
+              </span>
+              Generate full business reports with just one click
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ══ RIGHT: LOGIN CARD ══ -->
-      <div class="col-12 col-md-6 col-xl-5">
-        <!-- Mobile logo -->
-        <div class="d-flex d-md-none align-items-center gap-2 mb-3">
+      <!-- RIGHT SECTION (CARD) -->
+      <div class="w-full lg:w-5/12">
+        <!-- Mobile Logo -->
+        <div class="flex md:hidden items-center gap-2 mb-8 justify-center">
           <mat-icon
-            style="
-              font-size: 24px;
-              width: 24px;
-              height: 24px;
-              color: var(--indigo);
-            "
+            style="font-size: 32px; width: 32px; height: 32px; color: #7a6efe"
             >rocket_launch</mat-icon
           >
           <span
             style="
-              font-size: 1.3rem;
+              font-size: 1.75rem;
               font-weight: 800;
-              color: var(--text-primary);
+              color: #ffffff;
+              letter-spacing: -0.5px;
             "
           >
-            Aidly<span style="color: var(--indigo)">ERP</span>
+            Aidly<span style="color: #7a6efe">ERP</span>
           </span>
         </div>
 
         <div
-          class="card border-0 rounded-4"
           style="
-            background: var(--card-bg);
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--border-color) !important;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
           "
         >
-          <div class="card-body p-3 p-md-4 p-xl-5">
-            <!-- Card heading -->
-            <div class="mb-4">
-              <span
-                class="d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 mb-3"
-                style="
-                  background: rgba(16, 185, 129, 0.1);
-                  color: #10b981;
-                  font-size: 10px;
-                  font-weight: 700;
-                  letter-spacing: 0.06em;
-                "
-              >
-                <mat-icon style="font-size: 13px; width: 13px; height: 13px"
-                  >lock</mat-icon
-                >
-                SECURE LOGIN
-              </span>
-              <h3
-                class="fw-bold mb-1"
-                style="
-                  color: var(--text-primary);
-                  font-size: 1.6rem;
-                  letter-spacing: -0.3px;
-                "
-              >
-                Sign in to AidlyERP
-              </h3>
-              <p
-                class="mb-0"
-                style="font-size: 13.5px; color: var(--text-secondary)"
-              >
-                Enter your credentials to access your dashboard.
-              </p>
-            </div>
-
-            <!-- Form -->
-            <form
-              [formGroup]="loginForm"
-              (ngSubmit)="onSubmit()"
-              autocomplete="off"
+          <!-- Card Header -->
+          <div class="mb-8">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5"
+              style="
+                background-color: #ecfdf5;
+                color: #059669;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+              "
             >
-              <div class="row gy-3 overflow-hidden">
-                <!-- Username -->
-                <div class="col-12">
-                  <label
-                    for="login-username"
-                    class="form-label fw-bold"
-                    style="
-                      font-size: 11px;
-                      text-transform: uppercase;
-                      letter-spacing: 0.04em;
-                      color: var(--text-secondary);
-                    "
-                  >
-                    Username
-                  </label>
-                  <div class="position-relative">
-                    <mat-icon
-                      class="position-absolute top-50 translate-middle-y"
-                      style="
-                        left: 11px;
-                        font-size: 18px;
-                        width: 18px;
-                        height: 18px;
-                        color: var(--text-secondary);
-                        opacity: 0.65;
-                        pointer-events: none;
-                      "
-                    >
-                      person
-                    </mat-icon>
-                    <input
-                      id="login-username"
-                      type="text"
-                      class="form-control"
-                      formControlName="userName"
-                      placeholder="Enter username"
-                      (blur)="onUserNameBlur()"
-                      style="
-                        padding-left: 40px;
-                        height: 42px;
-                        background: var(--bg-secondary);
-                        border: 1px solid var(--input-border);
-                        border-radius: 9px;
-                        font-size: 13.5px;
-                        color: var(--text-primary);
-                      "
-                    />
-                    @if (isLoadingMetadata()) {
-                      <span
-                        class="position-absolute top-50 translate-middle-y spinner-border spinner-border-sm"
-                        style="
-                          right: 12px;
-                          color: var(--indigo);
-                          width: 15px;
-                          height: 15px;
-                          border-width: 2px;
-                        "
-                      ></span>
-                    }
-                  </div>
-                </div>
+              <mat-icon style="font-size: 12px; width: 12px; height: 12px"
+                >lock</mat-icon
+              >
+              SECURE LOGIN
+            </span>
+            <h3
+              style="
+                color: #0f172a;
+                font-size: 1.75rem;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+                margin-bottom: 0.5rem;
+                margin-top: 0;
+              "
+            >
+              Sign in to AidlyERP
+            </h3>
+            <p style="color: #64748b; font-size: 14px; margin: 0">
+              Enter your credentials to access your dashboard.
+            </p>
+          </div>
 
-                <!-- Company -->
-                <div class="col-12">
-                  <label
-                    for="login-company"
-                    class="form-label fw-bold"
+          <!-- Form -->
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()"
+            autocomplete="off"
+          >
+            <div class="flex flex-col gap-5">
+              <!-- Username -->
+              <div>
+                <label
+                  for="login-username"
+                  class="block mb-2"
+                  style="
+                    color: #64748b;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                  "
+                >
+                  Username
+                </label>
+                <div class="relative">
+                  <mat-icon
+                    class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"
                     style="
-                      font-size: 11px;
-                      text-transform: uppercase;
-                      letter-spacing: 0.04em;
-                      color: var(--text-secondary);
+                      font-size: 20px;
+                      width: 20px;
+                      height: 20px;
+                      color: #94a3b8;
                     "
+                    >person</mat-icon
                   >
-                    Company
-                  </label>
+                  <input
+                    id="login-username"
+                    type="text"
+                    formControlName="userName"
+                    placeholder="Enter username"
+                    (blur)="onUserNameBlur()"
+                    class="w-full focus:outline-none focus:border-[#7A6EFE] focus:ring-4 focus:ring-[#7A6EFE]/10 transition-all focus:bg-white"
+                    style="
+                      height: 46px;
+                      padding-left: 44px;
+                      padding-right: 16px;
+                      background-color: #f8fafc;
+                      border: 1px solid #e2e8f0;
+                      border-radius: 12px;
+                      font-size: 14px;
+                      color: #0f172a;
+                    "
+                  />
+                  @if (isLoadingMetadata()) {
+                    <span
+                      class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#7A6EFE] border-t-transparent rounded-full animate-spin"
+                    ></span>
+                  }
+                </div>
+              </div>
+
+              <!-- Company -->
+              <div>
+                <label
+                  for="login-company"
+                  class="block mb-2"
+                  style="
+                    color: #64748b;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                  "
+                >
+                  Company
+                </label>
+                <div class="relative">
                   <ng-select
                     id="login-company"
                     labelForId="login-company"
@@ -412,18 +367,18 @@
                     (change)="onCompanyChange()"
                     [clearable]="false"
                     [loading]="isLoadingMetadata()"
-                    class="ng-select-aidly"
+                    class="ng-select-login w-full"
                   >
                     <ng-option [value]="null">Select Company</ng-option>
                     @for (item of companies; track item.company_no) {
                       <ng-option [value]="item.company_no">
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="flex items-center gap-2">
                           <mat-icon
                             style="
-                              font-size: 16px;
-                              width: 16px;
-                              height: 16px;
-                              color: var(--text-secondary);
+                              font-size: 18px;
+                              width: 18px;
+                              height: 18px;
+                              color: #94a3b8;
                             "
                             >business</mat-icon
                           >
@@ -433,21 +388,24 @@
                     }
                   </ng-select>
                 </div>
+              </div>
 
-                <!-- Branch -->
-                <div class="col-12">
-                  <label
-                    for="login-branch"
-                    class="form-label fw-bold"
-                    style="
-                      font-size: 11px;
-                      text-transform: uppercase;
-                      letter-spacing: 0.04em;
-                      color: var(--text-secondary);
-                    "
-                  >
-                    Branch
-                  </label>
+              <!-- Branch -->
+              <div>
+                <label
+                  for="login-branch"
+                  class="block mb-2"
+                  style="
+                    color: #64748b;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                  "
+                >
+                  Branch
+                </label>
+                <div class="relative">
                   <ng-select
                     id="login-branch"
                     labelForId="login-branch"
@@ -456,18 +414,18 @@
                     bindValue="branch_no"
                     placeholder="Select Branch"
                     [clearable]="false"
-                    class="ng-select-aidly"
+                    class="ng-select-login w-full"
                   >
                     <ng-option [value]="null">Select Branch</ng-option>
                     @for (item of branches; track item.branch_no) {
                       <ng-option [value]="item.branch_no">
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="flex items-center gap-2">
                           <mat-icon
                             style="
-                              font-size: 16px;
-                              width: 16px;
-                              height: 16px;
-                              color: var(--text-secondary);
+                              font-size: 18px;
+                              width: 18px;
+                              height: 18px;
+                              color: #94a3b8;
                             "
                             >storefront</mat-icon
                           >
@@ -476,163 +434,157 @@
                       </ng-option>
                     }
                   </ng-select>
-                  @if (
-                    loginForm.get('branch_no')?.touched &&
-                    loginForm.get('branch_no')?.errors?.['required']
-                  ) {
-                    <div
-                      style="
-                        font-size: 11px;
-                        color: var(--rose);
-                        font-weight: 500;
-                        margin-top: 4px;
-                      "
-                    >
-                      Branch selection is required.
-                    </div>
-                  }
                 </div>
-
-                <!-- Password -->
-                <div class="col-12">
+                @if (
+                  loginForm.get('branch_no')?.touched &&
+                  loginForm.get('branch_no')?.errors?.['required']
+                ) {
                   <div
-                    class="d-flex justify-content-between align-items-center mb-1"
+                    style="
+                      color: #ef4444;
+                      font-size: 12px;
+                      font-weight: 500;
+                      margin-top: 6px;
+                    "
                   >
-                    <label
-                      for="login-password"
-                      class="form-label mb-0 fw-bold"
-                      style="
-                        font-size: 11px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        color: var(--text-secondary);
-                      "
-                    >
-                      Password
-                    </label>
-                    <a
-                      href="javascript:void(0)"
-                      style="
-                        font-size: 11.5px;
-                        font-weight: 600;
-                        color: var(--indigo);
-                        text-decoration: none;
-                      "
-                    >
-                      Forgot password?
-                    </a>
-                  </div>
-                  <div class="position-relative">
-                    <mat-icon
-                      class="position-absolute top-50 translate-middle-y"
-                      style="
-                        left: 11px;
-                        font-size: 18px;
-                        width: 18px;
-                        height: 18px;
-                        color: var(--text-secondary);
-                        opacity: 0.65;
-                        pointer-events: none;
-                      "
-                    >
-                      lock_open
-                    </mat-icon>
-                    <input
-                      id="login-password"
-                      [type]="showPassword ? 'text' : 'password'"
-                      class="form-control"
-                      formControlName="password"
-                      placeholder="••••••••"
-                      style="
-                        padding-left: 40px;
-                        padding-right: 42px;
-                        height: 42px;
-                        background: var(--bg-secondary);
-                        border: 1px solid var(--input-border);
-                        border-radius: 9px;
-                        font-size: 13.5px;
-                        color: var(--text-primary);
-                      "
-                    />
-                    <button
-                      type="button"
-                      class="position-absolute top-50 translate-middle-y d-flex align-items-center border-0 bg-transparent p-1"
-                      style="
-                        right: 8px;
-                        color: var(--text-secondary);
-                        cursor: pointer;
-                      "
-                      (click)="showPassword = !showPassword"
-                    >
-                      <mat-icon
-                        style="font-size: 18px; width: 18px; height: 18px"
-                      >
-                        {{ showPassword ? 'visibility_off' : 'visibility' }}
-                      </mat-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Lock banner -->
-                @if (lockedUntil) {
-                  <div class="col-12">
-                    <div
-                      class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0 rounded-3"
-                    >
-                      <mat-icon
-                        style="font-size: 17px; width: 17px; height: 17px"
-                        >timer</mat-icon
-                      >
-                      Account locked. Try again in
-                      <strong>{{ lockedRemainingSeconds }}s</strong>
-                    </div>
+                    Branch selection is required.
                   </div>
                 }
+              </div>
 
-                <!-- Submit -->
-                <div class="col-12">
-                  <div class="d-grid">
-                    <button
-                      type="submit"
-                      class="btn btn-lg fw-bold d-flex align-items-center justify-content-center gap-2"
-                      [disabled]="isLoading() || loginForm.invalid"
-                      style="
-                        height: 46px;
-                        background: var(--indigo);
-                        color: #fff;
-                        border: none;
-                        border-radius: 9px;
-                        font-size: 14.5px;
-                        transition:
-                          transform 0.25s,
-                          box-shadow 0.25s,
-                          filter 0.25s;
-                        box-shadow: 0 4px 14px rgba(var(--indigo-rgb), 0.32);
-                      "
+              <!-- Password -->
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label
+                    for="login-password"
+                    class="block m-0"
+                    style="
+                      color: #64748b;
+                      font-size: 11px;
+                      font-weight: 700;
+                      text-transform: uppercase;
+                      letter-spacing: 0.05em;
+                    "
+                  >
+                    Password
+                  </label>
+                  <a
+                    href="javascript:void(0)"
+                    style="
+                      color: #7a6efe;
+                      font-size: 12px;
+                      font-weight: 600;
+                      text-decoration: none;
+                    "
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <div class="relative">
+                  <mat-icon
+                    class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"
+                    style="
+                      font-size: 20px;
+                      width: 20px;
+                      height: 20px;
+                      color: #94a3b8;
+                    "
+                    >lock_open</mat-icon
+                  >
+                  <input
+                    id="login-password"
+                    [type]="showPassword ? 'text' : 'password'"
+                    formControlName="password"
+                    placeholder="••••••••"
+                    class="w-full focus:outline-none focus:border-[#7A6EFE] focus:ring-4 focus:ring-[#7A6EFE]/10 transition-all focus:bg-white"
+                    style="
+                      height: 46px;
+                      padding-left: 44px;
+                      padding-right: 44px;
+                      background-color: #f8fafc;
+                      border: 1px solid #e2e8f0;
+                      border-radius: 12px;
+                      font-size: 14px;
+                      color: #0f172a;
+                    "
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center border-none bg-transparent cursor-pointer rounded-full transition-colors hover:bg-[#F1F5F9]"
+                    style="width: 36px; height: 36px; color: #94a3b8"
+                    (click)="showPassword = !showPassword"
+                  >
+                    <mat-icon
+                      style="font-size: 20px; width: 20px; height: 20px"
+                      >{{
+                        showPassword ? 'visibility_off' : 'visibility'
+                      }}</mat-icon
                     >
-                      @if (!isLoading()) {
-                        Sign In
-                        <mat-icon
-                          style="font-size: 18px; width: 18px; height: 18px"
-                          >arrow_forward</mat-icon
-                        >
-                      } @else {
-                        <span class="spinner-border spinner-border-sm"></span>
-                      }
-                    </button>
-                  </div>
+                  </button>
                 </div>
               </div>
-            </form>
 
-            <!-- Footer note -->
-            <p
-              class="text-center mt-4 mb-0"
-              style="font-size: 12px; color: var(--text-secondary)"
-            >
-              © {{ currentYear }} InfoAidTech. All rights reserved.
-            </p>
-          </div>
+              <!-- Lock banner -->
+              @if (lockedUntil) {
+                <div
+                  class="flex items-center gap-2 p-3 mt-1 rounded-xl"
+                  style="
+                    background-color: #fef3c7;
+                    color: #b45309;
+                    font-size: 14px;
+                  "
+                >
+                  <mat-icon style="font-size: 20px; width: 20px; height: 20px"
+                    >timer</mat-icon
+                  >
+                  <span
+                    >Account locked. Try again in
+                    <strong style="font-weight: 700"
+                      >{{ lockedRemainingSeconds }}s</strong
+                    ></span
+                  >
+                </div>
+              }
+
+              <!-- Submit -->
+              <div class="mt-4">
+                <button
+                  type="submit"
+                  [disabled]="isLoading() || loginForm.invalid"
+                  class="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed hover:opacity-90 cursor-pointer"
+                  style="
+                    height: 48px;
+                    background-color: #7a6efe;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 12px;
+                    font-size: 15px;
+                    font-weight: 700;
+                    box-shadow: 0 4px 14px rgba(122, 110, 254, 0.35);
+                  "
+                >
+                  @if (!isLoading()) {
+                    Sign In
+                    <mat-icon style="font-size: 20px; width: 20px; height: 20px"
+                      >arrow_forward</mat-icon
+                    >
+                  } @else {
+                    <span
+                      class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                    ></span>
+                  }
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Footer -->
+          <p
+            class="text-center mt-8 mb-0"
+            style="color: #94a3b8; font-size: 12px"
+          >
+            © {{ currentYear }} InfoAidTech. All rights reserved.
+          </p>
         </div>
       </div>
     </div>

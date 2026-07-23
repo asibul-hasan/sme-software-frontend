@@ -28,12 +28,18 @@ export class Hrm1303Component implements OnInit {
   readonly columns: ColumnDef[] = [
     { title: 'Employee',    field: 'employee_name',   sort: true, cellType: 'text', pin: 'left' },
     { title: 'Leave Type',  field: 'leave_type_name', sort: true, cellType: 'text' },
-    { title: 'Year',        field: 'leave_year',      sort: true, cellType: 'number', align: 'center', width: '90px' },
+    { title: 'Year',        field: 'leave_year',      sort: true, cellType: 'text', align: 'center', width: '90px' },
+    // Ledger order per the business document: Opening → Availed → Encashment →
+    // Carry Forward → Closing, plus lapse tracking.
+    { title: 'Opening',     field: 'opening_balance', cellType: 'decimal', align: 'right', precision: 1 },
     { title: 'Entitled',    field: 'entitled_days',   cellType: 'decimal', align: 'right', precision: 1 },
     { title: 'Accrued',     field: 'accrued_days',    cellType: 'decimal', align: 'right', precision: 1 },
     { title: 'Carried Fwd', field: 'carried_forward', cellType: 'decimal', align: 'right', precision: 1 },
     { title: 'Consumed',    field: 'consumed_days',   cellType: 'decimal', align: 'right', precision: 1 },
-    { title: 'Available',   field: 'available_days',  cellType: 'decimal', align: 'right', precision: 1, bottomTotal: true },
+    { title: 'Pending',     field: 'pending_days',    cellType: 'decimal', align: 'right', precision: 1 },
+    { title: 'Encashed',    field: 'encashed_days',   cellType: 'decimal', align: 'right', precision: 1 },
+    { title: 'Lapsed',      field: 'lapsed_days',     cellType: 'decimal', align: 'right', precision: 1 },
+    { title: 'Available',   field: 'available_days',  cellType: 'decimal', align: 'right', precision: 1, bottomTotal: true, pin: 'right' },
   ];
   readonly config: Partial<TableConfig> = {
     showSearch: true, pagination: true, defaultPageSize: 20, dense: true, striped: true,

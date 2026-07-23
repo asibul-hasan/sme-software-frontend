@@ -25,6 +25,12 @@ export interface LeaveApplication extends BaseEntity {
   branch_no?: number | null;
   is_active: number;
   row_version: number;
+  reliever_employee_no?: number | null;
+  reliever_name?: string | null;
+  attachment_path?: string | null;
+  /** Server-authoritative: the applicant may still edit until an approver acts. */
+  can_edit?: boolean | null;
+  decision_remarks?: string | null;
 }
 
 export interface LeaveBalance {
@@ -60,7 +66,26 @@ export class Hrm1301ModelService {
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
   status        = signal<number>(1);
-  sortDirection = signal<SortDirection>('');
+  activeTab     = signal<'application' | 'balance'>('application');
+  balanceLeaveType = signal<number | null>(null);
+
+  filterFromDate = signal<string>(this.getFirstDayOfMonth());
+  filterToDate = signal<string>(this.getLastDayOfMonth());
+  balanceHistory = signal<LeaveApplication[]>([]);
+  filterBalance = signal<LeaveBalance | null>(null);
+
+  private getFirstDayOfMonth(): string {
+    const d = new Date();
+    d.setDate(1);
+    return d.toISOString().split('T')[0];
+  }
+
+  private getLastDayOfMonth(): string {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    d.setDate(0);
+    return d.toISOString().split('T')[0];
+  }
 
   employeeName(employeeNo?: number | null): string {
     if (employeeNo == null) return '';
@@ -71,19 +96,58 @@ export class Hrm1301ModelService {
     return this.leaveTypes().find((t) => t.leave_type_no === no)?.leave_type_name ?? '';
   }
 
-  /** Status: 1=Draft 2=Applied 3=Approved 4=Rejected 5=Cancelled. */
-  readonly isEditable = computed(() => this.status() === 1 || this.status() === 2);
+  /**
+   * Status: 1=Draft 2=Applied 3=Approved 4=Rejected 5=Cancelled.
+   *
+   * There is no Submit step — saving applies the leave immediately. The applicant keeps
+   * ownership (may edit) until the FIRST approver acts; `canEdit` carries that decision
+   * from the server, so the UI can't disagree with what the API will allow.
+   */
+  readonly canEdit = signal(true);
+  readonly isEditable = computed(
+    () => (this.status() === 1 || this.status() === 2) && this.canEdit(),
+  );
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const filtered = this.leaves()
-      .filter((l) => this.employeeName(l.employee_no).toLowerCase().includes(term) || (l.from_date || '').includes(term));
-    if (this.sortDirection() === '') return filtered;
-    const sorted = [...filtered].sort((a, b) => b.leave_application_no - a.leave_application_no);
-    return this.sortDirection() === 'desc' ? sorted : [...sorted].reverse();
+    return this.leaves()
+      .filter((l) => this.employeeName(l.employee_no).toLowerCase().includes(term) || (l.from_date || '').includes(term))
+      .sort((a, b) => b.leave_application_no - a.leave_application_no);
   });
 
-  pager = makePaginator(this.filtered);
+  refreshFilteredHistory(): void {
+    const emp = this.form?.get('employee_no')?.value;
+    if (!emp) {
+      this.balanceHistory.set([]);
+      this.filterBalance.set(null);
+      return;
+    }
+    this.data.loadFilteredHistory(emp, this.balanceLeaveType(), this.filterFromDate(), this.filterToDate()).subscribe({
+      next: (res) => { if (isSuccess(res) && res.data) this.balanceHistory.set(res.data); }
+    });
+    
+    const filterType = this.balanceLeaveType();
+    if (filterType) {
+      const year = this.filterFromDate() ? new Date(this.filterFromDate()).getFullYear() : undefined;
+      this.data.loadBalance(emp, filterType, year).subscribe({
+        next: (res) => { if (isSuccess(res) && res.data) this.filterBalance.set(res.data); }
+      });
+    } else {
+      this.filterBalance.set(null);
+    }
+  }
+
+  applicant = computed(() => {
+    const empNo = this.form?.get('employee_no')?.value;
+    if (!empNo) return null;
+    return this.employees().find(e => e.employee_no === empNo) || null;
+  });
+
+  relievers = computed(() => {
+    const app = this.applicant();
+    if (!app) return [];
+    return this.employees().filter(e => e.department_no === app.department_no && e.employee_no !== app.employee_no);
+  });
 
   form!: FormGroup;
 
@@ -97,6 +161,9 @@ export class Hrm1301ModelService {
       to_date:              [today, [Validators.required]],
       is_half_day:          [0],
       reason:               [''],
+      need_reliever:        [0],
+      reliever_employee_no: [null],
+      attachment_path:      [null],
       is_active:            [1],
     });
   }
@@ -116,6 +183,10 @@ export class Hrm1301ModelService {
     const emp = this.form.get('employee_no')?.value;
     const type = this.form.get('leave_type_no')?.value;
     const from = this.form.get('from_date')?.value as string;
+    
+    // Always refresh history when form selection changes
+    this.refreshFilteredHistory();
+
     if (!emp || !type) { this.balance.set(null); return; }
     const year = from ? new Date(from).getFullYear() : undefined;
     this.data.loadBalance(emp, type, year).subscribe({
@@ -150,6 +221,8 @@ export class Hrm1301ModelService {
         if (isSuccess(res) && res.data) {
           const d = res.data;
           this.status.set(d.status);
+          // Server decides: editable only while pending AND no approver has acted.
+          this.canEdit.set(d.can_edit !== false);
           this.form.patchValue({
             leave_application_no: d.leave_application_no,
             employee_no:          d.employee_no,
@@ -158,6 +231,9 @@ export class Hrm1301ModelService {
             to_date:              (d.to_date ?? '').slice(0, 10),
             is_half_day:          d.is_half_day ?? 0,
             reason:               d.reason,
+            need_reliever:        d.reliever_employee_no ? 1 : 0,
+            reliever_employee_no: d.reliever_employee_no,
+            attachment_path:      d.attachment_path,
             is_active:            d.is_active,
           });
           this.refreshBalance();
@@ -184,8 +260,11 @@ export class Hrm1301ModelService {
       from_date:            val.from_date,
       to_date:              val.to_date,
       is_half_day:          val.is_half_day ? 1 : 0,
-      status:               1,   // save as Draft; use Submit to apply
+      // No separate Submit step: saving IS applying. The backend routes the
+      // application into the configured approval workflow and owns the status.
       reason:               val.reason,
+      reliever_employee_no: val.need_reliever ? val.reliever_employee_no : null,
+      attachment_path:      val.attachment_path,
       branch_no:            this.currentBranchNo,
       is_active:            val.is_active,
     };
@@ -244,7 +323,8 @@ export class Hrm1301ModelService {
     const today = new Date().toISOString().split('T')[0];
     this.selectedNo.set(null);
     this.status.set(1);
+    this.canEdit.set(true);       // a brand-new application is always editable
     this.balance.set(null);
-    this.form?.reset({ from_date: today, to_date: today, is_half_day: 0, is_active: 1 });
+    this.form?.reset({ from_date: today, to_date: today, is_half_day: 0, need_reliever: 0, is_active: 1 });
   }
 }

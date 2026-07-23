@@ -67,7 +67,7 @@
             @if (model.form.get('adjustment_id')?.value) {
               <div class="col-md-3"><div class="field-group"><label class="field-label">Document No</label><input class="form-control" formControlName="adjustment_id" /></div></div>
             }
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">Date</label><input type="date" class="form-control" formControlName="adjustment_date" /></div></div>
+            <div class="col-md-3"><div class="field-group"><label class="field-label required">Date</label><app-date-picker formControlName="adjustment_date" placeholder="Select date" /></div></div>
             <div class="col-md-3"><div class="field-group"><label class="field-label required">Warehouse</label>
               <ng-select formControlName="warehouse_no" [clearable]="false" placeholder="Select">
                 @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }

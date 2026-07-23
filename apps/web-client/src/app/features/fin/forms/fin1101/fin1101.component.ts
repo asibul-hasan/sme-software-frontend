@@ -35,6 +35,8 @@ import {
 } from '../../report-templates';
 import { pdfReportTemplate } from '../../../../shared/pdf-templates';
 
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1101',
@@ -46,6 +48,7 @@ import { pdfReportTemplate } from '../../../../shared/pdf-templates';
     SharedModule,
     PageFormLayoutComponent,
     CommonTableComponent,
+    AppDatePickerComponent,
   ],
   providers: [Fin1101ModelService, Fin1101DataService],
   templateUrl: './fin1101.component.html',

@@ -64,8 +64,7 @@
                     <label class="field-label required" for="start_date">{{
                       'startDate' | translate
                       }}</label>
-                    <input type="date" id="start_date" formControlName="start_date" class="form-control"
-                      (change)="autoGeneratePeriods()" />
+                    <app-date-picker formControlName="start_date" (ngModelChange)="autoGeneratePeriods()" placeholder="Select start date" />
                   </div>
                 </div>
                 <div class="col-md-3">
@@ -73,8 +72,7 @@
                     <label class="field-label required" for="end_date">{{
                       'endDate' | translate
                       }}</label>
-                    <input type="date" id="end_date" formControlName="end_date" class="form-control"
-                      (change)="autoGeneratePeriods()" />
+                    <app-date-picker formControlName="end_date" (ngModelChange)="autoGeneratePeriods()" placeholder="Select end date" />
                   </div>
                 </div>
                 <div class="col-md-3">

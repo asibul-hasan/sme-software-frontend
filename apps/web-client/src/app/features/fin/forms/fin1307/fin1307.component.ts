@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1307DataService, Aging, AgingRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { isSuccess } from '../../../../core/models/response.model';
@@ -15,7 +16,7 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1307',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Fin1307DataService],
   templateUrl: './fin1307.component.html',
   styles: [`

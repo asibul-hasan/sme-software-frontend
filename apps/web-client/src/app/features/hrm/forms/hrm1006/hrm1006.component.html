@@ -17,120 +17,213 @@
   [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
+  [hasSidebar]="false"
 >
-  <div sidebarList>
-    @for (item of model.pager.paged(); track item.holiday_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.holiday_no"
-        (click)="selectHoliday(item)"
-      >
-        <span
-          class="status-dot status-dot--corner"
-          [class.status-dot--active]="item.is_active === 1"
-          [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"
-        ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.holiday_date }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.holiday_name }}</p>
-        <div class="list-item-meta">
-          <span class="list-item-tag" [class.list-item-tag--primary]="item.holiday_type === 1">{{ typeLabel(item.holiday_type) }}</span>
-          @if (item.is_recurring === 1) {
-            <span class="list-item-tag">Recurring</span>
-          }
-        </div>
-      </button>
-    }
-    @if (model.filtered().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>event</mat-icon>
-        <p>No records found</p>
-      </div>
-    }
-  </div>
 
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">info</mat-icon>
-                Holiday Information
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="holiday_date">Date</label>
-                    <input type="date" id="holiday_date" formControlName="holiday_date" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="holiday_name">Holiday Name</label>
-                    <input type="text" id="holiday_name" formControlName="holiday_name" class="form-control" placeholder="e.g. Independence Day" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="holiday_type">Type</label>
-                    <ng-select id="holiday_type" labelForId="holiday_type" formControlName="holiday_type" [clearable]="false" placeholder="Select type">
-                      @for (opt of holidayTypes; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="leave_year">Leave Year</label>
-                    <input type="number" id="leave_year" formControlName="leave_year" class="form-control" step="1" placeholder="e.g. 2026" />
-                  </div>
-                </div>
-              </div>
-            </div>
+
+  <!-- ═══ CONTENT AREA ═══ -->
+  <div formContent class="h-full flex flex-col">
+    <div class="row row-group h-100">
+      <!-- ─── Left Column: Table Grid ─── -->
+      <div class="col-xl-8 col-lg-12 d-flex flex-column" style="min-height: 0;">
+        <div class="form-section-card card flex-grow-1 d-flex flex-column mb-0">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-header__title mb-0 fw-bold">
+              <mat-icon class="me-2 align-middle" style="font-size: 18px; width: 18px; height: 18px;">event_note</mat-icon>
+              Holiday List &mdash; {{ model.generateYear() || 'All' }}
+            </h4>
+            <span class="text-muted" style="font-size: 12px; font-weight: 600;">{{ tableData().length }} entries</span>
+          </div>
+          <div class="card-body p-0 flex-grow-1" style="min-height: 0; display: flex; flex-direction: column;">
+            <app-common-table
+              [columns]="tableColumns"
+              [data]="tableData()"
+              [config]="tableConfig"
+              style="flex: 1 1 auto; min-height: 0;"
+            />
           </div>
         </div>
+      </div>
 
+        <!-- ─── Right Column: Calendar ─── -->
         <div class="col-xl-4 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">settings</mat-icon>
-                Rules & Status
-              </h4>
+          <!-- Generate Section -->
+          <div class="form-section-card card mb-2">
+            <div class="card-body p-2 d-flex align-items-center gap-2">
+              <span class="fw-bold" style="font-size: 13px; white-space: nowrap;">Generate Year:</span>
+              <input type="number" class="form-control form-control-sm" placeholder="e.g. 2025" style="width: 90px;" [ngModel]="model.generateYear()" (ngModelChange)="model.generateYear.set($event)" [ngModelOptions]="{standalone: true}" />
+              <button type="button" class="btn btn-sm btn-primary ms-auto d-flex align-items-center gap-1" [disabled]="!model.generateYear() || model.isGenerating()" (click)="model.onGenerate()">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">autorenew</mat-icon> Generate
+              </button>
             </div>
-            <div class="card-body">
-              <div class="field-group mb-3">
-                <label class="field-label">Recurring</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_recurring')?.value === 1" (change)="toggleFlag('is_recurring', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Repeats every year</span>
-                  </mat-checkbox>
-                </div>
+          </div>
+
+          <div class="form-section-card card" style="position: sticky; top: 0">
+            <div
+              class="card-header"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              "
+            >
+              <h4 class="card-header__title mb-0 fw-bold">
+                <mat-icon class="me-2 align-middle">calendar_month</mat-icon>
+                {{ model.calendarTitle() }}
+              </h4>
+              <div class="d-flex gap-1">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline"
+                  (click)="prevMonth()"
+                >
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px"
+                    >chevron_left</mat-icon
+                  >
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline"
+                  (click)="nextMonth()"
+                >
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px"
+                    >chevron_right</mat-icon
+                  >
+                </button>
               </div>
-              <div class="field-group mb-3">
-                <label class="field-label" for="remarks">Remarks</label>
-                <textarea id="remarks" formControlName="remarks" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="card-body" style="padding: 12px">
+              <!-- Legend -->
+              <div class="d-flex gap-2 mb-2" style="flex-wrap: wrap">
+                <span
+                  class="d-flex align-items-center gap-1"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                  "
+                >
+                  <span
+                    style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: #ef4444;
+                    "
+                  ></span>
+                  Public
+                </span>
+                <span
+                  class="d-flex align-items-center gap-1"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                  "
+                >
+                  <span
+                    style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: #8b5cf6;
+                    "
+                  ></span>
+                  Religious
+                </span>
+                <span
+                  class="d-flex align-items-center gap-1"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                  "
+                >
+                  <span
+                    style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: #f59e0b;
+                    "
+                  ></span>
+                  Optional
+                </span>
               </div>
-              <div class="field-group">
-                <label class="field-label">Status</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_active')?.value === 1" (change)="toggleFlag('is_active', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Active</span>
-                  </mat-checkbox>
-                </div>
+
+              <!-- Calendar Grid -->
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(7, 1fr);
+                  gap: 3px;
+                "
+              >
+                <!-- Weekday Headers -->
+                @for (day of model.weekdayNames; track day) {
+                  <div
+                    style="
+                      text-align: center;
+                      font-size: 10.5px;
+                      font-weight: 700;
+                      color: var(--text-secondary);
+                      text-transform: uppercase;
+                      letter-spacing: 0.04em;
+                      padding: 4px 0;
+                    "
+                  >
+                    {{ day }}
+                  </div>
+                }
+
+                <!-- Calendar Days -->
+                @for (day of model.calendarDays(); track $index) {
+                  <div
+                    class="cal-day"
+                    [class.muted]="!day.isCurrentMonth"
+                    [class.today]="day.isToday"
+                    [class.weekend]="
+                      day.isWeekend && day.isCurrentMonth && !day.holiday
+                    "
+                    [class.has-holiday]="!!day.holiday"
+                    [class.public]="day.holiday?.holiday_type === 1"
+                    [class.religious]="day.holiday?.holiday_type === 2"
+                    [class.optional]="day.holiday?.holiday_type === 3"
+                    [class.selected-day]="day.dateStr === model.selectedDate()"
+                    [ngClass]="day.holiday ? typeTextClass(day.holiday.holiday_type) : ''"
+                    [title]="day.holiday?.holiday_name || ''"
+                    (click)="onCalendarDayClick(day)"
+                    style="
+                      aspect-ratio: 1;
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 12px;
+                      font-weight: 600;
+                      position: relative;
+                      cursor: pointer;
+                    "
+                  >
+                    {{ day.date }}
+                    @if (day.holiday) {
+                      <span
+                        style="
+                          position: absolute;
+                          bottom: 2px;
+                          width: 4px;
+                          height: 4px;
+                          border-radius: 50%;
+                        "
+                        [ngClass]="typeDotClass(day.holiday.holiday_type)"
+                      ></span>
+                    }
+                  </div>
+                }
               </div>
             </div>
           </div>
         </div>
       </div>
-    </form>
   </div>
-
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>

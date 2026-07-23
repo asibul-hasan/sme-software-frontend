@@ -63,7 +63,7 @@
                 </div></div>
                 <div class="col-md-4"><div class="field-group">
                   <label class="field-label required" for="last_working_day">Last Working Day</label>
-                  <input type="date" id="last_working_day" formControlName="last_working_day" class="form-control" [readonly]="!editable" />
+                  <app-date-picker formControlName="last_working_day" placeholder="Select date" />
                 </div></div>
               </div>
             </div>

@@ -12,6 +12,13 @@ export class Hrm1301DataService {
   loadLeaves(): Observable<ApiResponse<LeaveApplication[]>> {
     return this.hrService.getList<LeaveApplication[]>('forms/hrm1301/leaves');
   }
+  loadFilteredHistory(employeeNo: number, leaveTypeNo?: number | null, fromDate?: string | null, toDate?: string | null): Observable<ApiResponse<LeaveApplication[]>> {
+    const params: Record<string, string | number> = { employeeNo };
+    if (leaveTypeNo != null) params['leaveTypeNo'] = leaveTypeNo;
+    if (fromDate) params['fromDate'] = fromDate;
+    if (toDate) params['toDate'] = toDate;
+    return this.hrService.getList<LeaveApplication[]>('forms/hrm1301/leaves/filtered', params);
+  }
   loadLeaveDetail(no: number): Observable<ApiResponse<LeaveApplication>> {
     return this.hrService.getDtl<LeaveApplication>('forms/hrm1301/leaves', no);
   }
@@ -19,7 +26,8 @@ export class Hrm1301DataService {
     return this.hrService.insert<LeaveApplication>('forms/hrm1301/leaves', payload);
   }
   updateLeave(no: number, payload: Partial<LeaveApplication>): Observable<ApiResponse<LeaveApplication>> {
-    return this.hrService.update<LeaveApplication>('forms/hrm1301/leaves', no, payload);
+    // Backend uses POST /leaves for both insert and update
+    return this.hrService.insert<LeaveApplication>('forms/hrm1301/leaves', payload);
   }
   deleteLeave(no: number): Observable<ApiResponse<void>> {
     return this.hrService.delete<void>('forms/hrm1301/leaves', no);

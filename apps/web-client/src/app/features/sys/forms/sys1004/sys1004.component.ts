@@ -1,18 +1,27 @@
 import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed, effect, ElementRef } from '@angular/core';
+
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+
 import { activeStatusOptions, sysNumberSystemOptions } from '../../../../core/constants/common-options.constants';
 import { Sys1004ModelService, CurrencyLookup } from './services/model.service';
+
 import { Sys1004DataService } from './services/data.service';
 import { Sys1006ModelService, IExchangeRate } from '../sys1006/services/model.service';
+
 import { Sys1006DataService } from '../sys1006/services/data.service';
 import { FormPermissionService } from 'apps/web-client/src/app/core/services/form-permission.service';
+
 import { AlertService } from 'apps/web-client/src/app/core/services/alert.service';
 import { MatDialog } from '@angular/material/dialog';
+
 import { ColumnDef, TableConfig, statusBadge } from '../../../../shared/components/common-table';
 import { CurrencySettingsService } from '../../../../core/services/currency-settings.service';
+
+import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +33,7 @@ import { CurrencySettingsService } from '../../../../core/services/currency-sett
     FormsModule,
     SharedModule,
     PageFormLayoutComponent,
+    AppDatePickerComponent,
   ],
   providers: [Sys1004ModelService, Sys1004DataService, Sys1006ModelService, Sys1006DataService, DatePipe],
   templateUrl: './sys1004.component.html',
@@ -140,6 +150,7 @@ export class Sys1004Component implements OnInit {
   });
 
   rateTableConfig: Partial<TableConfig> = {
+    rowKey: (row) => row['exchange_rate_no'] ?? row,
     showSearch:        false,
     showExport:        false,   // no export bar — this is an embedded form table
     showColumnToggle:  false,   // no column-toggle button

@@ -28,7 +28,7 @@
     @if (filtered().length === 0) { <div class="list-empty-state"><mat-icon>request_quote</mat-icon><p>No receipts found</p></div> }
   </div>
 
-  <div formContent class="h-100 d-flex flex-column">
+  <div formContent class="h-full flex flex-col">
     <div class="form-section-card card flex-shrink-0">
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">request_quote</mat-icon> {{ selectedNo() ? ('Receipt · ' + statusLabel(status())) : 'New Receipt' }}</h4>
@@ -44,7 +44,7 @@
           <div class="col-md-2"><div class="field-group"><label class="field-label">Method</label>
             <ng-select [(ngModel)]="paymentMethod" [items]="methods" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
-            <input type="date" class="form-control" [(ngModel)]="receiptDate" [disabled]="!editable()" /></div></div>
+            <app-date-picker [(ngModel)]="receiptDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
           <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
             <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
           <div class="col-md-3"><div class="field-group"><label class="field-label">Txn / Cheque Ref</label>

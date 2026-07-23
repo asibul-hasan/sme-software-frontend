@@ -1,158 +1,72 @@
 <app-page-form-layout
   [title]="'Leave Type Setup'"
-  [subtitle]="'Define leave categories, entitlement and accrual rules'"
-  [icon]="'event_available'"
-  [recordsCount]="model.filtered().length"
-  [sidebarTitle]="'Leave Types'"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  [sortDirection]="model.sortDirection()"
-  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()"
-  (new)="onNew()"
+  [subtitle]="'Manage and configure leave types globally'"
+  [icon]="'time_to_leave'"
+  [hasSidebar]="false"
   (reset)="onReset()"
-  (delete)="onDelete()"
+  (save)="save()"
+  (new)="addLine()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
-  [isSaving]="model.isSaving()"
-  [isLoading]="model.isLoading()"
+  [showDelete]="false"
+  [isLoading]="isLoading()"
+  [isSaving]="isSaving()"
 >
-  <div sidebarList>
-    @for (item of model.pager.paged(); track item.leave_type_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.leave_type_no"
-        (click)="selectLeaveType(item)"
-      >
-        <span
-          class="status-dot status-dot--corner"
-          [class.status-dot--active]="item.is_active === 1"
-          [class.status-dot--inactive]="item.is_active !== 1"
-          [title]="item.is_active === 1 ? 'Active' : 'Inactive'"
-        ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ item.leave_type_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ item.leave_type_name }}</p>
-        <div class="list-item-meta">
-          <span class="list-item-tag" [class.list-item-tag--primary]="item.is_paid === 1">{{ item.is_paid === 1 ? 'Paid' : 'Unpaid' }}</span>
-          @if (item.default_days_per_year != null) {
-            <span class="list-item-value">{{ item.default_days_per_year }} d/yr</span>
+  <div formContent class="h-100 flex flex-col gap-3 overflow-hidden">
+    <div class="form-section-card card m-0 flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
+        <h4 class="card-header__title mb-0 fw-bold">
+          <mat-icon class="me-2 align-middle">list_alt</mat-icon>
+          Leave Types
+        </h4>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <button type="button" class="btn-action btn-new" (click)="addLine()">
+            <mat-icon>add</mat-icon>
+            <span class="btn-action-label">Add Row</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <app-common-table
+          [columns]="columns()"
+          [data]="tableData()"
+          [config]="config"
+          (rowClick)="onRowClick($event)"
+          class="h-100 flex-1"
+        />
+      </div>
+    </div>
+
+    @if (selectedLeaveTypeNo()) {
+      <div class="form-section-card card m-0 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div class="card-header d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
+          <h4 class="card-header__title mb-0 fw-bold">
+            <mat-icon class="me-2 align-middle">settings_applications</mat-icon>
+            Policies for: <span class="text-primary">{{ selectedLeaveTypeName() }}</span>
+          </h4>
+          <button type="button" class="btn-action btn-new ms-2" (click)="addPolicyLine()">
+            <mat-icon>add</mat-icon>
+            <span class="btn-action-label">Add Row</span>
+          </button>
+        </div>
+
+        <div class="card-body p-0 position-relative flex-1 min-h-0 flex flex-col overflow-hidden">
+          @if (isPolicyLoading()) {
+            <div class="position-absolute w-100 h-100 d-flex justify-content-center align-items-center bg-white" style="z-index: 10; opacity: 0.7;">
+              <div class="spinner-border text-primary" role="status"></div>
+            </div>
           }
+          <app-common-table
+            #policyTable
+            [columns]="policyColumns()"
+            [data]="policyTableData()"
+            [config]="policyConfig"
+            class="h-100 flex-1"
+          />
         </div>
-      </button>
-    }
-    @if (model.filtered().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>event_available</mat-icon>
-        <p>No records found</p>
       </div>
     }
   </div>
-
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">info</mat-icon>
-                Leave Type Information
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="leave_type_id">Leave Code</label>
-                    <input type="text" id="leave_type_id" formControlName="leave_type_id" class="form-control text-uppercase" placeholder="e.g. CL" (input)="toUpper('leave_type_id')" />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="leave_type_name">Leave Name</label>
-                    <input type="text" id="leave_type_name" formControlName="leave_type_name" class="form-control" placeholder="e.g. Casual Leave" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="accrual_method">Accrual Method</label>
-                    <ng-select id="accrual_method" labelForId="accrual_method" formControlName="accrual_method" [clearable]="false" placeholder="Select method">
-                      @for (opt of accrualMethods; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="default_days_per_year">Days / Year</label>
-                    <input type="number" id="default_days_per_year" formControlName="default_days_per_year" class="form-control" step="0.5" />
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="max_carry_forward_days">Max Carry-forward</label>
-                    <input type="number" id="max_carry_forward_days" formControlName="max_carry_forward_days" class="form-control" step="0.5" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-xl-4 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">settings</mat-icon>
-                Rules & Status
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="field-group mb-3">
-                <label class="field-label">Paid Leave</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_paid')?.value === 1" (change)="toggleFlag('is_paid', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Paid</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label">Approval</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('requires_approval')?.value === 1" (change)="toggleFlag('requires_approval', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Requires approval</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label">Encashment</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_encashable')?.value === 1" (change)="toggleFlag('is_encashable', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Encashable</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-              <div class="field-group mb-3">
-                <label class="field-label" for="remarks">Remarks</label>
-                <textarea id="remarks" formControlName="remarks" class="form-control" rows="2"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Status</label>
-                <div class="custom--checkbox">
-                  <mat-checkbox [checked]="formdata.get('is_active')?.value === 1" (change)="toggleFlag('is_active', $event)" color="primary">
-                    <span class="field-label mb-0" style="cursor: pointer">Active</span>
-                  </mat-checkbox>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-
-  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
 </app-page-form-layout>
