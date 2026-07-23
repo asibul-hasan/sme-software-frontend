@@ -72,13 +72,24 @@ export class Hrm1321ModelService {
 
   // ── Loads ────────────────────────────────────────────────────────────────
 
-  /** The workflow status currently being viewed (1=in-flight, 2=Approved, 3=Rejected). */
-  statusFilter = signal<number | null>(null);
+  /** The filter values the list is currently loaded with — every filter is server-side. */
+  private filters: {
+    status?: number | null;
+    department_no?: number | null;
+    designation_no?: number | null;
+    employee_no?: number | null;
+    leave_type_no?: number | null;
+  } = {};
 
-  loadPending(status?: number | null): void {
-    if (status !== undefined) this.statusFilter.set(status);
+  /**
+   * (Re)load the approval list from the server. Pass a partial filter set to change filters; it is
+   * merged over the current ones, so any single filter change re-queries with all of them. Called
+   * with no argument (e.g. after an approval) to reload with the same filters.
+   */
+  loadApprovalList(patch?: Partial<typeof this.filters>): void {
+    if (patch) this.filters = { ...this.filters, ...patch };
     this.isLoading.set(true);
-    this.data.loadPending(this.statusFilter()).subscribe({
+    this.data.loadApprovalList(this.filters).subscribe({
       next: (res) => {
         const rows = isSuccess(res) && res.data ? res.data : [];
         this.requests.set(rows.map((r) => ({ ...r, selected: false })));
@@ -93,7 +104,7 @@ export class Hrm1321ModelService {
         this.requests.set([]);
         this.selectRequest(null);
         this.isLoading.set(false);
-        this.toastr.error('Failed to load pending leave requests');
+        this.toastr.error('Failed to load leave requests');
       },
     });
   }
@@ -145,7 +156,7 @@ export class Hrm1321ModelService {
     if (done < total) return;
     this.isSaving.set(false);
     this.toastr.success(`${total} leave request(s) processed`);
-    this.loadPending();
+    this.loadApprovalList();
   }
 
   private decide(call: ReturnType<Hrm1321DataService['approve']>, message: string): void {
@@ -155,7 +166,7 @@ export class Hrm1321ModelService {
         this.isSaving.set(false);
         if (isSuccess(res)) {
           this.toastr.success(message);
-          this.loadPending();
+          this.loadApprovalList();
         } else {
           this.toastr.error(res.message || 'Action failed');
         }

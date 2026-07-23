@@ -38,13 +38,22 @@ export class Hrm1321DataService {
   private hrService = inject(HrmDataService);
 
   /**
-   * The approval list for the current approver, by workflow status:
-   * 1/undefined = in-flight (Pending/Waiting), 2 = Approved history, 3 = Rejected history.
+   * The approval list for the current approver, filtered entirely server-side.
+   * status: 1/undefined = in-flight (Pending/Waiting), 2 = Approved, 3 = Rejected.
+   * The other ids narrow the approver's own list. Any filter change re-calls this.
    */
-  loadPending(status?: number | null): Observable<ApiResponse<LeaveRequest[]>> {
+  loadApprovalList(filters: {
+    status?: number | null;
+    department_no?: number | null;
+    designation_no?: number | null;
+    employee_no?: number | null;
+    leave_type_no?: number | null;
+  } = {}): Observable<ApiResponse<LeaveRequest[]>> {
     const params: Record<string, string | number> = {};
-    if (status != null) params['status'] = status;
-    return this.hrService.getList<LeaveRequest[]>('forms/hrm1301/leaves/pending', params);
+    for (const [k, v] of Object.entries(filters)) {
+      if (v != null) params[k] = v;
+    }
+    return this.hrService.getList<LeaveRequest[]>('forms/hrm1301/leaves/status', params);
   }
 
   /** Approve — remarks optional (doc: "Remarks optional for approval"). */

@@ -88,42 +88,29 @@ export class Hrm1321Component implements OnInit {
     { label: 'Rejected', value: 3 },
   ];
 
-  readonly filteredRequests = computed(() => {
-    let list = this.model.requests();
-    const dept = this.filterDept();
-    const desig = this.filterDesig();
-    const emp = this.filterEmp();
-    const lt = this.filterLeaveType();
-    const st = this.filterStatus();
+  // All filtering is server-side — the table binds directly to what the API returned.
+  readonly filteredRequests = computed(() => this.model.requests());
 
-    if (dept != null) {
-      const deptObj = this.departments().find(d => d.department_no === dept);
-      if (deptObj) {
-        list = list.filter(r => r.department_name === deptObj.department_name);
-      }
-    }
-    if (desig != null) {
-      const desigObj = this.designations().find(d => d.designation_no === desig);
-      if (desigObj) {
-        list = list.filter(r => r.designation_name === desigObj.designation_name);
-      }
-    }
-    if (emp != null) {
-      list = list.filter(r => r.employee_no === emp);
-    }
-    if (lt != null) {
-      list = list.filter(r => r.leave_type_no === lt);
-    }
-    // Status is applied server-side (see onStatusChange) — the returned set already matches it.
-    void st;
-
-    return list;
-  });
-
-  /** Reload from the server for the chosen workflow status (Pending/Waiting, Approved, Rejected). */
+  /** Any filter change re-queries the server with the full filter set. No client-side filtering. */
+  onDeptChange(value: number | null): void {
+    this.filterDept.set(value);
+    this.model.loadApprovalList({ department_no: value });
+  }
+  onDesigChange(value: number | null): void {
+    this.filterDesig.set(value);
+    this.model.loadApprovalList({ designation_no: value });
+  }
+  onEmpChange(value: number | null): void {
+    this.filterEmp.set(value);
+    this.model.loadApprovalList({ employee_no: value });
+  }
+  onLeaveTypeChange(value: number | null): void {
+    this.filterLeaveType.set(value);
+    this.model.loadApprovalList({ leave_type_no: value });
+  }
   onStatusChange(value: number | null): void {
     this.filterStatus.set(value);
-    this.model.loadPending(value);
+    this.model.loadApprovalList({ status: value });
   }
 
   clearFilters(): void {
@@ -132,6 +119,10 @@ export class Hrm1321Component implements OnInit {
     this.filterEmp.set(null);
     this.filterLeaveType.set(null);
     this.filterStatus.set(null);
+    this.model.loadApprovalList({
+      department_no: null, designation_no: null, employee_no: null,
+      leave_type_no: null, status: null,
+    });
   }
 
   openHistoryModal(): void {
@@ -229,7 +220,7 @@ export class Hrm1321Component implements OnInit {
     setTimeout(() => {
       this.permissionService.useLocalPermissions('HRM_1321');
       this.loadFilterLookups();
-      this.model.loadPending();
+      this.model.loadApprovalList();
     });
   }
 
@@ -308,6 +299,6 @@ export class Hrm1321Component implements OnInit {
   }
 
   onRefresh(): void {
-    this.model.loadPending();
+    this.model.loadApprovalList();
   }
 }

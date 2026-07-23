@@ -44,7 +44,7 @@
             bindLabel="department_name"
             bindValue="department_no"
             [ngModel]="filterDept()"
-            (ngModelChange)="filterDept.set($event)"
+            (ngModelChange)="onDeptChange($event)"
             [clearable]="true"
             placeholder="All Departments"
           >
@@ -61,7 +61,7 @@
             bindLabel="designation_name"
             bindValue="designation_no"
             [ngModel]="filterDesig()"
-            (ngModelChange)="filterDesig.set($event)"
+            (ngModelChange)="onDesigChange($event)"
             [clearable]="true"
             placeholder="All Designations"
           >
@@ -78,7 +78,7 @@
             bindLabel="full_name_with_id"
             bindValue="employee_no"
             [ngModel]="filterEmp()"
-            (ngModelChange)="filterEmp.set($event)"
+            (ngModelChange)="onEmpChange($event)"
             [clearable]="true"
             placeholder="All Employees"
           >
@@ -95,7 +95,7 @@
             bindLabel="leave_type_name"
             bindValue="leave_type_no"
             [ngModel]="filterLeaveType()"
-            (ngModelChange)="filterLeaveType.set($event)"
+            (ngModelChange)="onLeaveTypeChange($event)"
             [clearable]="true"
             placeholder="All Leave Types"
           >
