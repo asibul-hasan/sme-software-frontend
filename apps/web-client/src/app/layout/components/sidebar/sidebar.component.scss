@@ -569,11 +569,15 @@
   }
 
   .sidebar:not(.collapsed) .sb-rail {
-    display: none;
+    display: flex;
+    width: 64px;
+    flex-shrink: 0;
   }
 
   .sidebar:not(.collapsed) .sb-panel {
-    width: 100%;
+    width: calc(100vw - 64px);
+    flex: 1;
+    min-width: 0;
   }
 
   .sidebar:not(.collapsed) .sb-topbar {

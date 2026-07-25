@@ -1,8 +1,7 @@
-import { Component, ChangeDetectionStrategy, signal, OnInit, inject, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { filter } from 'rxjs/operators';
 import { HeaderComponent } from '../components/header/header.component';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
@@ -22,11 +21,10 @@ import { GlobalLoaderComponent } from '../../shared/components/global-loader/glo
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
 })
-export class MainLayoutComponent implements OnInit {
+export class MainLayoutComponent {
   isMobile = signal(false);
   isTablet = signal(false);
   sidebarCollapsed = signal(false);
-  private router = inject(Router);
 
   constructor(private breakpointObserver: BreakpointObserver) {
     this.observeBreakpoints();
@@ -53,24 +51,16 @@ export class MainLayoutComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        if (this.isMobile() || this.isTablet()) {
-          this.sidebarCollapsed.set(true);
-        }
-      });
-  }
-
   private observeBreakpoints() {
     this.breakpointObserver
       .observe([
+        '(max-width: 991.98px)',
         Breakpoints.HandsetPortrait,
         Breakpoints.HandsetLandscape,
         Breakpoints.TabletPortrait,
       ])
       .subscribe((result) => {
+        const isSmallScreen = this.breakpointObserver.isMatched('(max-width: 991.98px)');
         const isHandset = this.breakpointObserver.isMatched([
           Breakpoints.HandsetPortrait,
           Breakpoints.HandsetLandscape,
@@ -80,10 +70,10 @@ export class MainLayoutComponent implements OnInit {
           Breakpoints.TabletPortrait,
         );
 
-        this.isMobile.set(isHandset);
+        this.isMobile.set(isHandset || isSmallScreen);
         this.isTablet.set(isTablet);
 
-        if (isHandset || isTablet) {
+        if (isHandset || isTablet || isSmallScreen) {
           this.sidebarCollapsed.set(true); // Mobile sidebar is closed by default
         } else {
           const saved = localStorage.getItem('sme_sidebar_collapsed');

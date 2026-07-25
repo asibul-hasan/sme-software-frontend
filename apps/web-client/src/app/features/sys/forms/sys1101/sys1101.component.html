@@ -14,8 +14,8 @@
   (reset)="onReset()"
   (delete)="onDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedUserNo()"
+  [showNew]="false"
+  [showDelete]="false"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
@@ -85,20 +85,7 @@
           [title]="emp.is_active === 1 ? 'Active' : 'Inactive'"
         ></span>
         <div class="d-flex align-items-baseline gap-2" style="min-width: 0; padding-right: 16px">
-          <h6 class="list-item-title mb-0 text-truncate">{{ emp.full_name }}</h6>
-          <span class="list-item-id">{{ emp.employee_id }}</span>
-        </div>
-        <div class="list-item-meta">
-          @if (emp.department_name) {
-            <span class="list-item-chip">
-              <mat-icon>apartment</mat-icon><span>{{ emp.department_name }}</span>
-            </span>
-          }
-          @if (emp.designation_name) {
-            <span class="list-item-chip">
-              <mat-icon>badge</mat-icon><span>{{ emp.designation_name }}</span>
-            </span>
-          }
+          <h6 class="list-item-title mb-0 text-truncate">{{ emp.employee_id }}: {{ emp.full_name }}</h6>
         </div>
       </button>
     }
@@ -129,19 +116,6 @@
                 Employee Summary
               </h4>
               <div class="d-flex align-items-center gap-2">
-                @if (!model.selectedUserNo() && model.selectedEmployee() && permissionService.canInsert()) {
-                  <button
-                    type="button"
-                    class="btn-action btn-save"
-                    style="height: 32px; padding: 0 12px"
-                    (click)="model.createFromEmployee()"
-                    [disabled]="model.isSaving()"
-                    title="Create a login user using employee data (login id & initial password = Employee ID)"
-                  >
-                    <mat-icon style="font-size: 16px; width: 16px; height: 16px">person_add</mat-icon>
-                    Create user from employee
-                  </button>
-                }
                 <span class="security-pill">
                   <mat-icon class="icon-small">{{
                     model.selectedUserNo() ? 'verified_user' : 'person_add'
@@ -155,8 +129,9 @@
               <div class="row row-group">
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Employee Name</label>
+                    <label class="field-label" for="emp_full_name">Employee Name</label>
                     <input
+                      id="emp_full_name"
                       type="text"
                       class="form-control"
                       [value]="emp?.full_name || ''"
@@ -166,8 +141,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Employee Code</label>
+                    <label class="field-label" for="emp_employee_id">Employee Code</label>
                     <input
+                      id="emp_employee_id"
                       type="text"
                       class="form-control"
                       [value]="emp?.employee_id || ''"
@@ -177,8 +153,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Department</label>
+                    <label class="field-label" for="emp_department_name">Department</label>
                     <input
+                      id="emp_department_name"
                       type="text"
                       class="form-control"
                       [value]="emp?.department_name || ''"
@@ -188,8 +165,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Designation</label>
+                    <label class="field-label" for="emp_designation_name">Designation</label>
                     <input
+                      id="emp_designation_name"
                       type="text"
                       class="form-control"
                       [value]="emp?.designation_name || ''"
@@ -199,8 +177,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Employment Status</label>
+                    <label class="field-label" for="emp_is_active">Employment Status</label>
                     <input
+                      id="emp_is_active"
                       type="text"
                       class="form-control"
                       [value]="model.employeeStatusLabel(emp?.is_active) || ''"
@@ -210,8 +189,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Joining Date</label>
+                    <label class="field-label" for="emp_joining_date">Joining Date</label>
                     <input
+                      id="emp_joining_date"
                       type="text"
                       class="form-control"
                       [value]="$any(emp)?.joining_date || ''"
@@ -221,8 +201,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Work Email</label>
+                    <label class="field-label" for="emp_official_email">Work Email</label>
                     <input
+                      id="emp_official_email"
                       type="text"
                       class="form-control"
                       [value]="emp?.official_email || ''"
@@ -232,8 +213,9 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-sm-6">
                   <div class="field-group mb-3">
-                    <label class="field-label">Contact Number</label>
+                    <label class="field-label" for="emp_mobile_number">Contact Number</label>
                     <input
+                      id="emp_mobile_number"
                       type="text"
                       class="form-control"
                       [value]="emp?.mobile_number || ''"
@@ -245,32 +227,42 @@
             </div>
           </div>
         </div>
-        <div class="col-xl-7 col-lg-12">
+        <div class="col-12">
           <div class="form-section-card card">
-            <div class="card-header">
+            <div class="card-header d-flex align-items-center justify-content-between">
               <h4 class="card-header__title mb-0 fw-bold">
                 <mat-icon class="me-2 align-middle">manage_accounts</mat-icon>
                 User Information
               </h4>
+              <div class="d-flex align-items-center gap-2">
+                @if (model.selectedUserNo()) {
+                  <button
+                    type="button"
+                    class="btn-action btn-save"
+                    (click)="openLoginInfoModal()"
+                  >
+                    <mat-icon>lock_person</mat-icon>
+                    <span class="btn-action-label">Login Info</span>
+                  </button>
+                } @else if (model.selectedEmployee() && permissionService.canInsert()) {
+                  <button
+                    type="button"
+                    class="btn-action btn-save"
+                    (click)="model.createFromEmployee()"
+                    [disabled]="model.isSaving()"
+                    title="Create user from employee where User No = Employee No"
+                  >
+                    <mat-icon>person_add</mat-icon>
+                    <span class="btn-action-label">Create User</span>
+                  </button>
+                }
+              </div>
             </div>
             <div class="card-body">
               <div class="row row-group">
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="user_id">User ID</label>
-                    <input
-                      id="user_id"
-                      type="text"
-                      class="form-control"
-                      formControlName="user_id"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="user_name"
-                      >Username</label
-                    >
+                    <label class="field-label required" for="user_name">Username</label>
                     <input
                       id="user_name"
                       type="text"
@@ -279,28 +271,21 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="is_active"
-                      >Active Status</label
-                    >
-                    <ng-select
-                      id="is_active"
-                      labelForId="is_active"
-                      formControlName="is_active"
-                      [clearable]="false"
-                    >
-                      @for (opt of activeStatusOptions; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label" for="failed_login_count"
-                      >Failed Login Attempts</label
-                    >
+                    <label class="field-label" for="is_active_display">Active Status</label>
+                    <input
+                      id="is_active_display"
+                      type="text"
+                      class="form-control"
+                      [value]="model.form.get('is_active')?.value === 1 ? 'Active' : 'Inactive'"
+                      readonly
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label class="field-label" for="failed_login_count">Failed Login Attempts</label>
                     <input
                       id="failed_login_count"
                       type="number"
@@ -311,52 +296,28 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="last_login_at"
-                      >Last Login At</label
-                    >
+                    <label class="field-label" for="last_login_at">Last Login At</label>
                     <input
                       id="last_login_at"
                       type="text"
                       class="form-control"
-                      [value]="
-                        (model.form.get('last_login_at')?.value | dateTime) || ''
-                      "
+                      [value]="(model.form.get('last_login_at')?.value | dateTime) || ''"
                       readonly
                     />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="field-group">
-                    <label class="field-label" for="password_changed_at"
-                      >Password Changed At</label
-                    >
+                    <label class="field-label" for="password_changed_at">Password Changed At</label>
                     <input
                       id="password_changed_at"
                       type="text"
                       class="form-control"
-                      [value]="
-                        (model.form.get('password_changed_at')?.value
-                          | dateTime) || ''
-                      "
+                      [value]="(model.form.get('password_changed_at')?.value | dateTime) || ''"
                       readonly
                     />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label">Account Lock</label>
-                    <div class="custom--checkbox">
-                      <mat-checkbox
-                        color="primary"
-                        [checked]="model.form.get('is_locked')?.value === 1"
-                        [disabled]="!model.selectedUserNo()"
-                        (change)="model.lockSelected($event.checked ? 1 : 0)"
-                      >
-                        <span class="field-label mb-0" style="cursor: pointer">Locked</span>
-                      </mat-checkbox>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -383,7 +344,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (role of model.roleMappings(); track role.role_no) {
+                    @for (role of model.roleMappings(); track role.user_role_no || $index) {
                       <tr>
                         <td class="fw-bold">{{ role.role_name }}</td>
                         <td>
@@ -413,122 +374,6 @@
               @if (model.roleMappings().length === 0) {
                 <div class="text-center text-muted small py-3">
                   No roles assigned
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div class="col-xl-5 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">lock_reset</mat-icon>
-                Password Management
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="form-tab-bar d-flex gap-1 mb-3">
-                <button
-                  type="button"
-                  class="form-tab-btn"
-                  [class.active]="passwordTab() === 'change'"
-                  (click)="passwordTab.set('change')"
-                >
-                  <mat-icon class="tab-icon">vpn_key</mat-icon>
-                  Change Password
-                </button>
-                <button
-                  type="button"
-                  class="form-tab-btn"
-                  [class.active]="passwordTab() === 'reset'"
-                  (click)="passwordTab.set('reset')"
-                >
-                  <mat-icon class="tab-icon">password</mat-icon>
-                  Reset Password
-                </button>
-              </div>
-
-              @if (passwordTab() === 'change') {
-                <div [formGroup]="model.changePasswordForm">
-                  <div class="field-group mb-3">
-                    <label class="field-label" for="old_password"
-                      >Current Password</label
-                    >
-                    <input
-                      id="old_password"
-                      type="password"
-                      class="form-control"
-                      formControlName="old_password"
-                    />
-                  </div>
-                  <div class="row row-group">
-                    <div class="col-md-6">
-                      <div class="field-group mb-3">
-                        <label class="field-label" for="new_password">
-                          New Password
-                          <mat-icon
-                            class="ms-1 align-middle text-muted cursor-help"
-                            style="font-size: 14px; width: 14px; height: 14px"
-                            matTooltip="Password will be minimum of 6 characters"
-                            >info_outline</mat-icon
-                          >
-                        </label>
-                        <input
-                          id="new_password"
-                          type="password"
-                          class="form-control"
-                          formControlName="new_password"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="field-group mb-3">
-                        <label class="field-label" for="confirm_password"
-                          >Confirm Password</label
-                        >
-                        <input
-                          id="confirm_password"
-                          type="password"
-                          class="form-control"
-                          formControlName="confirm_password"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="btn-action btn-save w-100"
-                    (click)="model.changePassword()"
-                  >
-                    <mat-icon>vpn_key</mat-icon>
-                    <span class="btn-action-label">Change Password</span>
-                  </button>
-                </div>
-              }
-
-              @if (passwordTab() === 'reset') {
-                <div [formGroup]="model.passwordForm">
-                  <div class="field-group mb-3">
-                    <label class="field-label" for="temporary_password"
-                      >Temporary Password</label
-                    >
-                    <input
-                      id="temporary_password"
-                      type="password"
-                      class="form-control"
-                      formControlName="temporary_password"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    class="btn-action btn-reset w-100"
-                    [disabled]="!model.selectedUserNo()"
-                    (click)="model.resetPassword()"
-                  >
-                    <mat-icon>password</mat-icon>
-                    <span class="btn-action-label">Reset Password</span>
-                  </button>
                 </div>
               }
             </div>

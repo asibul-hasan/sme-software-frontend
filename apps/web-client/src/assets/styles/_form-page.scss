@@ -119,7 +119,7 @@
 // Use this wrapper div around mat-checkbox for a consistent bordered
 // checkbox that matches the input field height and hover border color.
 .custom--checkbox {
-  height: 36px;
+  height: var(--field-height, 42px);
   border: 1px solid var(--input-border) !important;
   border-radius: 6px;
   padding: 0 12px;
@@ -133,6 +133,17 @@
 
   &:hover {
     border-color: var(--input-focus-border) !important;
+  }
+
+  // A checkbox field holding a disabled mat-checkbox reads as not-editable too.
+  &:has(.mat-mdc-checkbox-disabled),
+  &:has(.mdc-checkbox--disabled) {
+    background: var(--input-disabled-bg);
+    border-color: var(--input-disabled-border) !important;
+    cursor: not-allowed;
+    .field-label {
+      color: var(--input-disabled-text) !important;
+    }
   }
 
   // Remove mat-checkbox ripple/hover circle
@@ -1259,7 +1270,8 @@
   background-color: var(--input-bg) !important;
   border: 1px solid var(--input-border) !important;
   border-radius: 6px !important;
-  min-height: 30px;
+  // One shared height for every control so a form row reads as a single line.
+  min-height: var(--field-height, 42px) !important;
   color: var(--text-primary) !important;
   font-size: 14.5px !important;
   font-weight: 500 !important;
@@ -1271,7 +1283,7 @@
     opacity: 0.65;
   }
 
-  &:hover {
+  &:hover:not(:disabled):not([readonly]):not(.ng-select-disabled) {
     border-color: var(--input-focus-border) !important;
   }
 
@@ -1285,26 +1297,6 @@
     outline: none !important;
   }
 
-  /* Disabled and Readonly States */
-  &:disabled,
-  &[readonly],
-  &.ng-select-disabled .ng-select-container {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    cursor: not-allowed !important;
-    opacity: 0.85 !important;
-    border-style: dashed !important;
-    border-color: var(--border-color) !important;
-    box-shadow: none !important;
-
-    // Icon color adjustment within disabled groups
-    & ~ .input-group-text {
-      background-color: var(--bg-secondary) !important;
-      opacity: 0.75;
-      border-style: dashed !important;
-    }
-  }
-
   // Datepicker indicator enhancement
   &::-webkit-calendar-picker-indicator {
     cursor: pointer;
@@ -1316,6 +1308,48 @@
       filter: brightness(1.2);
     }
   }
+}
+
+// ── NOT-EDITABLE STATE — one look for disabled + readonly, every control ──────
+// A greyer fill + muted text + not-allowed cursor, so an uneditable field is
+// obvious next to an editable (white) one. The date-picker's <input> is ALWAYS
+// `readonly` (you pick from the calendar, never type), so it must NOT be caught
+// by the readonly rule — otherwise every date field looks permanently disabled.
+// It shows the disabled look only through its real `:disabled` state instead.
+.form-control:disabled,
+.form-select:disabled,
+textarea.form-control:disabled,
+.form-control[readonly]:not(.adp-input),
+.form-select[readonly],
+textarea.form-control[readonly],
+.ng-select.ng-select-disabled .ng-select-container,
+.custom-ng-select.ng-select-disabled .ng-select-container {
+  background-color: var(--input-disabled-bg) !important;
+  color: var(--input-disabled-text) !important;
+  border-color: var(--input-disabled-border) !important;
+  border-style: solid !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+
+  &::placeholder {
+    color: var(--input-disabled-text) !important;
+  }
+
+  & ~ .input-group-text {
+    background-color: var(--input-disabled-bg) !important;
+    color: var(--input-disabled-text) !important;
+  }
+}
+// ng-select renders its value/placeholder in inner spans — mute them too.
+.ng-select.ng-select-disabled,
+.custom-ng-select.ng-select-disabled {
+  .ng-value,
+  .ng-placeholder,
+  .ng-arrow-wrapper {
+    color: var(--input-disabled-text) !important;
+  }
+  cursor: not-allowed !important;
 }
 
 /* ── NATIVE SELECT OPTIONS ── */
@@ -1351,6 +1385,7 @@ select option,
     box-shadow: none !important;
     border: 1px solid var(--input-border) !important;
     background-color: var(--input-bg) !important;
+    height: var(--field-height, 42px) !important;
   }
 
   .ng-value-container {
@@ -1358,7 +1393,7 @@ select option,
     display: flex;
     align-items: center;
     align-content: center;
-    min-height: 44px;
+    min-height: var(--field-height, 42px);
     width: 100%;
   }
 

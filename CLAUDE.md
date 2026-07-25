@@ -312,6 +312,85 @@ activeTab = signal<'first' | 'second'>('first');
 - **In-card tabs** sit directly inside a `.card-body` — see the Password
   Management card in `SYS1101` (Change Password / Reset Password).
 
+### Modals & Dialogs — `DialogService` (CRITICAL)
+
+**Never hand-roll HTML modal overlays** (`<div class="modal fade show d-block"...>`) inside a parent component template controlled by a boolean signal (`showModal()`).
+Always use central **`DialogService`** (`core/services/dialog.service`) to open modals/dialogs as standalone components. Reference implementation: **`HRM_1321`** (`LeaveHistoryDialogComponent` in `features/hrm/forms/hrm1321/components/leave-history-dialog/`).
+
+**1. Opening a Dialog from Parent Component (`.ts`):**
+
+```ts
+import { DialogService } from '../../../../core/services/dialog.service';
+import { LeaveHistoryDialogComponent } from './components/leave-history-dialog/leave-history-dialog.component';
+
+private dialogService = inject(DialogService);
+
+openHistoryModal(): void {
+  this.dialogService.open(LeaveHistoryDialogComponent, {
+    size: 'xl', // 'sm' (400px) | 'md' (650px) | 'lg' (900px) | 'xl' (1200px) | custom string
+    data: {
+      employeeNo: this.empNo(),
+      leaveTypes: this.leaveTypes(),
+    },
+  }).subscribe((res) => {
+    // Handle dialog close result if applicable
+  });
+}
+```
+
+**2. Dialog Component Class (`.ts`):**
+Inject `MatDialogRef` for closing and `MAT_DIALOG_DATA` for receiving payload data:
+
+```ts
+import { Component, inject, Inject, Optional } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+
+export interface MyDialogData {
+  employeeNo?: number;
+}
+
+@Component({
+  selector: 'app-my-dialog',
+  templateUrl: './my-dialog.component.html',
+})
+export class MyDialogComponent {
+  private dialogRef = inject(MatDialogRef<MyDialogComponent>);
+  @Optional() @Inject(MAT_DIALOG_DATA) public data?: MyDialogData;
+
+  close(): void {
+    this.dialogRef.close();
+  }
+}
+```
+
+**3. Dialog Component Template (`.html`):**
+Do NOT include `<div class="modal fade...">` or `<div class="modal-dialog">` or `<div class="modal-content">`. The `MatDialog` container automatically supplies the overlay, backdrop, centering, and dialog wrapper. Start directly with the card container:
+
+```html
+<div class="form-section-card card shadow-lg border-0 m-0 overflow-hidden">
+  <!-- Dialog Header -->
+  <div class="modal-header card-header d-flex justify-content-between align-items-center py-2.5 px-4 bg-surface border-bottom">
+    <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2 text-content">
+      <mat-icon class="text-primary">history</mat-icon>
+      Dialog Title
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+  </div>
+
+  <!-- Dialog Body -->
+  <div class="modal-body p-4 bg-body overflow-y-auto" style="max-height: 78vh;">
+    <!-- Modal content goes here -->
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="modal-footer py-2.5 px-4 border-top bg-surface d-flex justify-content-end">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="close()">
+      Close
+    </button>
+  </div>
+</div>
+```
+
 ### Checkboxes — `.custom--checkbox`
 
 Wrap every `mat-checkbox` in a `.custom--checkbox` div so it renders as a

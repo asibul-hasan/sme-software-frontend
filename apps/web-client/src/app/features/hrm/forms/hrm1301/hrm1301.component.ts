@@ -7,7 +7,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import { SharedModule } from '../../../../shared/shared.module';
 
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig, statusBadge } from '../../../../shared/components/common-table';
+import { CommonTableComponent, ColumnDef, TableConfig, BadgeConfig } from '../../../../shared/components/common-table';
 
 import { Hrm1301ModelService, LeaveApplication } from './services/model.service';
 import { Hrm1301DataService } from './services/data.service';
@@ -57,8 +57,25 @@ export class Hrm1301Component implements OnInit {
     { title: 'Days', field: 'total_days', sort: true, cellType: 'text', align: 'right' },
     { title: 'Reason', field: 'reason', sort: true, cellType: 'text' },
     { title: 'Reliever', field: 'reliever_employee_no', sort: true, cellType: 'text', value: (r) => this.model.employeeName(r['reliever_employee_no'] as number) },
-    { title: 'Status', field: 'status', sort: true, cellType: 'badge', width: '120px', badgeConfig: statusBadge },
+    { title: 'Status', field: 'status', sort: true, cellType: 'badge', width: '120px',
+      badgeConfig: (val) => this.leaveStatusBadge(val), value: (r) => this.statusLabel(r['status'] as number) },
   ];
+
+  /**
+   * Leave status → pill. The shared {@link statusBadge} treats the numeric code {@code 1} as an
+   * "active" flag (green "Active"), which mislabels a Draft leave; leave status is its own 1–5
+   * enum (Draft/Applied/Approved/Rejected/Cancelled), so map it explicitly.
+   */
+  leaveStatusBadge(value: unknown): BadgeConfig {
+    switch (Number(value)) {
+      case 1:  return { label: 'Draft',     variant: 'neutral' };
+      case 2:  return { label: 'Applied',   variant: 'warning' };
+      case 3:  return { label: 'Approved',  variant: 'success' };
+      case 4:  return { label: 'Rejected',  variant: 'danger'  };
+      case 5:  return { label: 'Cancelled', variant: 'neutral' };
+      default: return { label: this.statusLabel(Number(value)), variant: 'neutral' };
+    }
+  }
 
   tableConfig: Partial<TableConfig> = {
     showSearch: true,

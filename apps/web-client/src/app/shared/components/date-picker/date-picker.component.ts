@@ -19,24 +19,37 @@ import dayjs, { Dayjs } from 'dayjs';
     .adp-input-wrap { position: relative; display: flex; align-items: center; }
     .adp-input {
       width: 100%;
-      height: 42px;
+      height: var(--field-height, 42px);
       padding: 0 36px 0 12px;
       font-size: var(--text-base, 13.5px);
       font-family: var(--font-family-base, inherit);
       color: var(--text-primary);
       background: var(--input-bg, #fff);
-      border: 1px solid var(--border-color, #dee2e6);
+      border: 1px solid var(--input-border, #dee2e6);
       border-radius: 6px;
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       cursor: pointer;
       box-sizing: border-box;
+      /* Always readonly by design (calendar-only entry) — never inherit the
+         layered .form-control[readonly] fade, or an editable date looks disabled. */
+      opacity: 1;
     }
+    .adp-input:not(:disabled):hover { border-color: var(--input-focus-border, #6366f1); }
     .adp-input:focus {
-      border-color: var(--indigo, #6366f1);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      border-color: var(--input-focus-border, #6366f1);
+      box-shadow: 0 0 0 3px var(--input-focus-ring, rgba(99, 102, 241, 0.15));
     }
-    .adp-input:disabled { background: var(--bg-secondary); opacity: 0.7; cursor: not-allowed; }
+    /* Matches the global not-editable look (see _form-page.scss) so a disabled
+       date field reads identically to a disabled input/select. */
+    .adp-input:disabled {
+      background: var(--input-disabled-bg) !important;
+      color: var(--input-disabled-text) !important;
+      border-color: var(--input-disabled-border) !important;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+    .adp-host:has(.adp-input:disabled) .adp-icon { color: var(--input-disabled-text); }
     .adp-icon {
       position: absolute;
       right: 10px;
@@ -204,12 +217,12 @@ import dayjs, { Dayjs } from 'dayjs';
           [class]="inputClass()"
           [value]="displayText()"
           [placeholder]="placeholder()"
-          [disabled]="disabled()"
+          [disabled]="isDisabled()"
           (focus)="onInputFocus()"
           (keydown)="onInputKeydown($event)"
           readonly
         />
-        @if (value() && !disabled()) {
+        @if (value() && !isDisabled()) {
           <button class="adp-clear" (click)="clearValue($event)" type="button">&times;</button>
         } @else {
           <span class="adp-icon material-icons" style="font-size:18px">calendar_today</span>
@@ -296,7 +309,12 @@ import dayjs, { Dayjs } from 'dayjs';
 export class AppDatePickerComponent implements ControlValueAccessor, OnDestroy {
   readonly value = signal<string | null>(null);
   readonly placeholder = input('Select date');
+  /** Explicit `[disabled]` input. Combined with reactive-forms disable via {@link isDisabled}. */
   readonly disabled = input(false);
+  /** Set by Angular reactive forms when the bound control is `.disable()`d. */
+  private readonly formDisabled = signal(false);
+  /** Effective disabled state — either the `[disabled]` input OR a disabled form control. */
+  readonly isDisabled = computed(() => this.disabled() || this.formDisabled());
   readonly required = input(false);
   readonly inputClass = input('');
   readonly min = input<string | null>(null);
@@ -403,7 +421,7 @@ export class AppDatePickerComponent implements ControlValueAccessor, OnDestroy {
   }
 
   toggleOpen(): void {
-    if (this.disabled()) return;
+    if (this.isDisabled()) return;
     if (this.isOpen()) {
       this.isOpen.set(false);
       this.viewMode.set('days');
@@ -444,10 +462,10 @@ export class AppDatePickerComponent implements ControlValueAccessor, OnDestroy {
 
   registerOnChange(fn: (v: string | null) => void): void { this.onChange = fn; }
   registerOnTouched(fn: () => void): void { this.onTouched = fn; }
-  setDisabledState(isDisabled: boolean): void {}
+  setDisabledState(isDisabled: boolean): void { this.formDisabled.set(isDisabled); }
 
   onInputFocus(): void {
-    if (!this.disabled()) {
+    if (!this.isDisabled()) {
       this.checkPosition();
       this.isOpen.set(true);
       this.onTouched();

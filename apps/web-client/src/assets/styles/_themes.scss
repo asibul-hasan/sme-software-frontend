@@ -1,5 +1,3 @@
-
-
 @use 'variables' as *;
 
 // ═══════════════════════════════════════════════════════════════
@@ -39,6 +37,11 @@
   --input-focus-border: #4f6ef7;
   --input-focus-ring: rgba(79, 110, 247, 0.18);
   --input-filled: #f7f8fc;
+  // Not-editable state — a clearly greyer fill + muted text so a disabled/readonly
+  // field is unmistakable next to an editable (white) one.
+  --input-disabled-bg: #eceef4;
+  --input-disabled-border: rgba(99, 120, 255, 0.16);
+  --input-disabled-text: #8a90a2;
 
   // ── Toggles ──────────────────────────────────────────────────
   --toggle-on-bg: linear-gradient(90deg, #4f6ef7, #818cf8);
@@ -79,7 +82,7 @@
   --sidebar-bg: #0f1225;
   --sidebar-text: #cbd5e1;
   --sidebar-hover: rgba(255, 255, 255, 0.07);
-  --sidebar-active: #4f6ef7; 
+  --sidebar-active: #4f6ef7;
   --sidebar-border: rgba(255, 255, 255, 0.08);
 
   --header-bg: #0f1225;
@@ -142,6 +145,10 @@
   --input-focus-border: #6366f1;
   --input-focus-ring: rgba(99, 102, 241, 0.25);
   --input-filled: rgba(99, 102, 241, 0.08);
+  // Not-editable state — darker/flatter than an editable field, muted text.
+  --input-disabled-bg: rgba(255, 255, 255, 0.02);
+  --input-disabled-border: rgba(255, 255, 255, 0.07);
+  --input-disabled-text: #6b7488;
 
   // ── Toggles ──────────────────────────────────────────────────
   --toggle-on-bg: linear-gradient(90deg, #6366f1, #14b8a6);
@@ -179,7 +186,7 @@
   --sidebar-bg: #080d1e;
   --sidebar-text: #cbd5e1;
   --sidebar-hover: rgba(255, 255, 255, 0.07);
-  --sidebar-active: #6366f1; 
+  --sidebar-active: #6366f1;
   --sidebar-border: rgba(255, 255, 255, 0.08);
 
   --header-bg: #080d1e;
@@ -207,6 +214,11 @@
   --text-xs: 12px;
   --text-xxs: 11px;
   --font-family-base: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  // Single source of truth for form-control height — every editable surface
+  // (input, textarea, .form-select, ng-select, app-date-picker, .custom--checkbox)
+  // lines up to this so a form row is visually even. Change it here, not per-field.
+  --field-height: 32px;
 }
 
 // ─────────────────────────────────────────────────────────────────

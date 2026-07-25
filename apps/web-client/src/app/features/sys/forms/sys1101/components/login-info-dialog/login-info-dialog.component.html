@@ -1,0 +1,173 @@
+<div class="form-section-card card shadow-lg border-0 m-0 overflow-hidden" style="max-height: 90vh;">
+  <!-- Dialog Header -->
+  <div class="modal-header card-header d-flex justify-content-between align-items-center py-2.5 px-4 bg-surface border-bottom">
+    <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2">
+      <mat-icon class="text-primary">lock_person</mat-icon>
+      Login Info &amp; Password Management
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+  </div>
+
+  <!-- Dialog Body -->
+  <div class="modal-body p-4 bg-body overflow-y-auto">
+    @if (model) {
+      <form [formGroup]="model.form" (ngSubmit)="onSaveLoginInfo()">
+        <div class="form-section-card card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-header__title mb-0 fw-bold" style="font-size: 15px;">
+              <mat-icon class="me-2 align-middle" style="font-size: 18px; width: 18px; height: 18px;">person</mat-icon>
+              Account Information
+            </h5>
+            <button type="submit" class="btn-action btn-save">
+              <mat-icon>save</mat-icon>
+              <span class="btn-action-label">Save</span>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="row row-group">
+              <div class="col-md-6">
+                <div class="field-group">
+                  <label class="field-label" for="modal_user_name">Username <span class="text-danger">*</span></label>
+                  <input
+                    id="modal_user_name"
+                    type="text"
+                    class="form-control"
+                    formControlName="user_name"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="field-group">
+                  <label class="field-label">Status</label>
+                  <ng-select
+                    [items]="activeStatusOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="is_active"
+                    [clearable]="false"
+                  ></ng-select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Password Management Card -->
+      <div class="form-section-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-header__title mb-0 fw-bold" style="font-size: 15px;">
+            <mat-icon class="me-2 align-middle" style="font-size: 18px; width: 18px; height: 18px;">key</mat-icon>
+            Password Management
+          </h5>
+          <div class="d-flex align-items-center gap-2">
+            @if (passwordTab() === 'change') {
+              <button
+                type="button"
+                class="btn-action btn-save"
+                (click)="model.changePassword()"
+              >
+                <mat-icon>vpn_key</mat-icon>
+                <span class="btn-action-label">Change Password</span>
+              </button>
+            } @else if (passwordTab() === 'reset') {
+              <button
+                type="button"
+                class="btn-action btn-reset"
+                [disabled]="!model.selectedUserNo()"
+                (click)="model.resetPassword()"
+              >
+                <mat-icon>password</mat-icon>
+                <span class="btn-action-label">Reset Password</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="form-tab-bar d-flex gap-1 mb-3">
+            <button
+              type="button"
+              class="form-tab-btn"
+              [class.active]="passwordTab() === 'change'"
+              (click)="passwordTab.set('change')"
+            >
+              <mat-icon class="tab-icon">lock_reset</mat-icon>
+              Change Password
+            </button>
+            <button
+              type="button"
+              class="form-tab-btn"
+              [class.active]="passwordTab() === 'reset'"
+              (click)="passwordTab.set('reset')"
+            >
+              <mat-icon class="tab-icon">restart_alt</mat-icon>
+              Reset Password
+            </button>
+          </div>
+
+          <div class="password-panel">
+            @if (passwordTab() === 'change') {
+              <div [formGroup]="model.changePasswordForm">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="modal_old_password">Current Password</label>
+                      <input
+                        id="modal_old_password"
+                        type="password"
+                        class="form-control"
+                        formControlName="old_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="modal_new_password">New Password</label>
+                      <input
+                        id="modal_new_password"
+                        type="password"
+                        class="form-control"
+                        formControlName="new_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group mb-3">
+                      <label class="field-label" for="modal_confirm_password">Confirm Password</label>
+                      <input
+                        id="modal_confirm_password"
+                        type="password"
+                        class="form-control"
+                        formControlName="confirm_password"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (passwordTab() === 'reset') {
+              <div [formGroup]="model.passwordForm">
+                <div class="field-group mb-3">
+                  <label class="field-label" for="modal_temporary_password">Temporary Password</label>
+                  <input
+                    id="modal_temporary_password"
+                    type="password"
+                    class="form-control"
+                    formControlName="temporary_password"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="modal-footer py-2.5 px-4 border-top bg-surface d-flex justify-content-end">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="close()">Close</button>
+  </div>
+</div>
