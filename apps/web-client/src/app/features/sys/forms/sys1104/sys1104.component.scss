@@ -1,5 +1,5 @@
 // ── SYS1104 User-Branch Mapping ─────────────────────────────────────────
-// The mapping grid uses the shared <app-common-table>; this file styles only
+// The mapping grid uses the shared <app-data-grid> (AG Grid); this file styles only
 // the section header, the info hint, and the in-cell controls.
 
 :host {
@@ -29,35 +29,24 @@
   flex-direction: column;
 }
 
-// The common table fills the card body. Neutralise its OWN card chrome so it
-// reads as part of this card (no card-in-card border/shadow).
+// The data grid fills the card body. Neutralise its OWN border/shadow so it
+// reads as part of this card.
 .ub-fill {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 
-  ::ng-deep > .form-section-card.card {
+  ::ng-deep .data-grid {
     flex: 1 1 auto;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
     border: none;
-    box-shadow: none;
     border-radius: 0;
-    background: transparent;
+    box-shadow: none;
   }
-  ::ng-deep .card-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  ::ng-deep .card-body > .overflow-auto {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: none !important;
+  ::ng-deep .ag-root-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
   }
 }
 

@@ -72,23 +72,9 @@
           [class.status-dot--inactive]="emp.is_active !== 1"
           [title]="emp.is_active === 1 ? 'Active' : 'Inactive'"
         ></span>
-        <h6
-          class="list-item-title mb-0 text-truncate"
-          style="padding-right: 16px"
-        >
-          {{ emp.employee_id }}
-        </h6>
-        <p class="list-item-subtitle mb-0 text-truncate">
-          {{ emp.first_name }} {{ emp.last_name }}
-        </p>
-        @if (emp.mobile_number) {
-          <div class="list-item-meta">
-            <span class="list-item-chip"
-              ><mat-icon>call</mat-icon
-              ><span>{{ emp.mobile_number }}</span></span
-            >
-          </div>
-        }
+        <div class="d-flex align-items-baseline gap-2" style="min-width: 0; padding-right: 16px">
+          <h6 class="list-item-title mb-0 text-truncate">{{ emp.employee_id }}: {{ emp.first_name }} {{ emp.last_name }}</h6>
+        </div>
       </button>
     }
     @if (model.filteredEmployees().length === 0) {
@@ -857,11 +843,11 @@
                             ?.setValue($event.checked ? 1 : 0)
                         "
                       >
-                        <span
+                        <!-- <span
                           class="field-label mb-0"
                           style="cursor: pointer"
                           >{{ 'experiencedEmployee' | translate }}</span
-                        >
+                        > -->
                       </mat-checkbox>
                     </div>
                   </div>

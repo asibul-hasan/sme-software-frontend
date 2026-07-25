@@ -94,11 +94,11 @@
         },
         {
           "file": "apps/web-client/src/app/app.config.ts",
-          "hash": "1540086893871702551"
+          "hash": "17624921063824233381"
         },
         {
           "file": "apps/web-client/src/app/app.routes.ts",
-          "hash": "2836379644402196907"
+          "hash": "613940250887770452"
         },
         {
           "file": "apps/web-client/src/app/core/app-globals.ts",
@@ -758,7 +758,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1001/hrm1001.component.html",
-          "hash": "16111476269846539504"
+          "hash": "12272109037751779004"
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1001/hrm1001.component.scss",
@@ -774,7 +774,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1001/services/model.service.ts",
-          "hash": "11185060004465264837"
+          "hash": "6689957365415641668"
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1002/hrm1002.component.html",
@@ -1126,7 +1126,7 @@
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1301/services/model.service.ts",
-          "hash": "5371145890377476663"
+          "hash": "12808619290602539660"
         },
         {
           "file": "apps/web-client/src/app/features/hrm/forms/hrm1303/hrm1303.component.html",
@@ -1958,19 +1958,19 @@
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1104/services/model.service.ts",
-          "hash": "8067844274992581268"
+          "hash": "12861944335370921264"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1104/sys1104.component.html",
-          "hash": "8048997076193521784"
+          "hash": "1273438593028715815"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1104/sys1104.component.scss",
-          "hash": "9450344598279874653"
+          "hash": "4840431103416977934"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1104/sys1104.component.ts",
-          "hash": "1728899970426295173"
+          "hash": "9379406723449369348"
         },
         {
           "file": "apps/web-client/src/app/features/sys/forms/sys1105/services/data.service.ts",
@@ -2205,6 +2205,18 @@
           "hash": "16354487941161538354"
         },
         {
+          "file": "apps/web-client/src/app/shared/actions/action-button.component.ts",
+          "hash": "5005986901301465732"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/actions/erp-actions.ts",
+          "hash": "2348847939155753564"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/actions/index.ts",
+          "hash": "9755972399312038241"
+        },
+        {
           "file": "apps/web-client/src/app/shared/components/breadcrumb/breadcrumb.component.html",
           "hash": "10827997119580293494"
         },
@@ -2405,8 +2417,72 @@
           "hash": "15715800873883175637"
         },
         {
+          "file": "apps/web-client/src/app/shared/grid/cell-renderers/actions-cell.component.ts",
+          "hash": "13131812508008564147"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/cell-renderers/badge-cell.component.ts",
+          "hash": "8196176057050184332"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/cell-renderers/delete-cell.component.ts",
+          "hash": "17112152489322422208"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/cell-renderers/icon-cell.component.ts",
+          "hash": "13114623546312853268"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/cell-renderers/template-cell.component.ts",
+          "hash": "5497721264829579752"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/data-grid.component.html",
+          "hash": "13822264256847503550"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/data-grid.component.scss",
+          "hash": "3834113231148411948"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/data-grid.component.ts",
+          "hash": "6308337059104640307"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/grid-columns.ts",
+          "hash": "280386124286640939"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/grid-demo.component.ts",
+          "hash": "3540367934976297369"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/grid-setup.ts",
+          "hash": "1239690359014464838"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/grid-theme.ts",
+          "hash": "6183047849147902571"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/grid.types.ts",
+          "hash": "440331467368487077"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/grid/index.ts",
+          "hash": "9413820409707793550"
+        },
+        {
           "file": "apps/web-client/src/app/shared/index.ts",
           "hash": "2384431842933810000"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/numbering/index.ts",
+          "hash": "12464853643984441227"
+        },
+        {
+          "file": "apps/web-client/src/app/shared/numbering/numbering.ts",
+          "hash": "16497600594132275053"
         },
         {
           "file": "apps/web-client/src/app/shared/pdf-templates/README.md",
@@ -2566,7 +2642,7 @@
         },
         {
           "file": "apps/web-client/src/assets/styles/_themes.scss",
-          "hash": "3538472869558285426"
+          "hash": "5711101415233673133"
         },
         {
           "file": "apps/web-client/src/assets/styles/_utilities.scss",
@@ -2665,7 +2741,7 @@
       },
       {
         "file": "CLAUDE.md",
-        "hash": "6599646364162714398"
+        "hash": "2387264716854664164"
       },
       {
         "file": "README.md",
@@ -2685,7 +2761,7 @@
       },
       {
         "file": "package.json",
-        "hash": "6946302363905463637"
+        "hash": "17006830931822583193"
       },
       {
         "file": "tsconfig.base.json",

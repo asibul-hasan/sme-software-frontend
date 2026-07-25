@@ -692,6 +692,167 @@ tableData = computed(() => this.model.items() as unknown as Record<string, unkno
   icon buttons. Editable cells use `ng-select` (not native `<select>`) on double-click.
 - See `shared/components/common-table/example-usage.ts` for full feature demos.
 
+### AG Grid — `<app-data-grid>` (new grid infrastructure)
+
+AG Grid (Community, MIT) is installed and registered app-wide via
+`provideAidlyGrid()` in `app.config.ts`. The reusable wrapper lives in
+`shared/grid`. Reference page: **`/grid-demo`** (`shared/grid/grid-demo.component.ts`).
+
+**Status: additive.** `<app-common-table>` remains the standard for all existing
+forms and is untouched. Use `<app-data-grid>` for NEW grids, or when migrating a
+grid you are already working on. Do not mass-migrate.
+
+```html
+<div class="card-body p-0">
+  <app-data-grid
+    [columns]="columns" [data]="rows()" [config]="config"
+    (rowClick)="select($event)" />
+</div>
+```
+
+```ts
+columns: GridColumnDef[] = [
+  { title: 'Document No', field: 'doc_no', width: 150, pin: 'left' },
+  { title: 'Party', field: 'party', flex: 1 },
+  { title: 'Amount', field: 'amount', cellType: 'currency', bottomTotal: true },
+  { title: 'Status', field: 'status', cellType: 'badge', badgeConfig: statusBadge,
+    value: (r) => statusLabel(r['status']) },
+  { title: '', field: '__actions', cellType: 'actions', actions: [
+      { kind: 'view', onClick: (r) => open(r) },
+      { kind: 'delete', onClick: (r) => remove(r) },   // confirms automatically
+    ] },
+];
+config: Partial<GridConfig> = { rowKey: 'id', selection: 'multiple', stateKey: 'fin-invoices' };
+```
+
+**The contract deliberately mirrors `ColumnDef`** (`title`/`field`/`cellType`/
+`align`/`pin`/`badgeConfig`/`value`), so migration is a rename, not a rewrite.
+Rules carried over unchanged:
+- `field` matches the backend DTO (snake_case).
+- Any column whose display ≠ `row[field]` MUST set `value:` — search, sort and
+  export all read it.
+- Numeric columns right-align automatically; precision comes from app settings.
+
+**Select (dropdown) columns.** Declare `cellType: 'select'` with `options` from the
+module constants file — never an inline array:
+
+```ts
+{ title: 'Unit', field: 'unit', cellType: 'select', editable: true,
+  options: invConstants.unitTypes }     // [{ value: 1, label: 'Pcs' }, …]
+```
+
+The column **displays `label` and stores `value`** — the code the backend persists,
+per the DB-first value contract. Search and sort use the label; the row keeps the
+code. Do not add a `value:` accessor to a select column, and never put a
+`valueGetter` on any editable column: a getter replaces the stored value, so AG Grid
+has nothing to write back to and the edit is silently discarded.
+
+**Grid-specific notes:**
+- `showSerial` (default **on**) adds the `#` column — continuous across pages.
+  It is view-only and never exported.
+- `bottomTotal` / `footerLabel` / `footerValue` drive the pinned totals row, which
+  reflects the **current filter**, not the raw input.
+- `selection: 'multiple'` + `bulkActions` gives the toolbar bulk bar. Row click
+  never toggles checkboxes (it stays the "open record" gesture).
+- `rowKey` is strongly recommended — it keeps selection stable across refreshes.
+- `stateKey` persists column width/order/visibility to localStorage.
+- Export reuses `TableExportService` (Excel/CSV/PDF/print), so **no AG Grid
+  Enterprise licence is required**.
+- Height defaults to sizing-to-content capped by `maxAutoHeight`; pass
+  `height: '100%'` inside a flex-filled card. Never viewport math.
+- Empty / loading / error / no-results states are built in — drive them with
+  `config.loading` and `config.error`.
+
+### Editable line-item grids — `config.editable` (CRITICAL)
+
+Setting `editable: true` turns `<app-data-grid>` into an ERP line-item grid and
+switches on the whole interaction model at once:
+
+| Gesture | Result |
+|---|---|
+| **Single click** | Selects the row (indigo tint + accent bar) |
+| **Double click** | Opens the **whole row** for editing; read-only/computed columns stay read-only |
+| **Enter** | Commits the row (recalculates, marks dirty) |
+| **Esc** | Cancels the row |
+| **Tab** | Moves to the next editable cell **and recalculates live** — derived cells and the totals row update as you type across, without closing the row |
+| **Add Row** | Appends a line **already in edit mode**, focused on the first editable column |
+| **Red ✕** | Hides the row and records a pending deletion |
+
+```ts
+config: Partial<GridConfig> = {
+  editable: true,               // full-row edit + Add Row + ✕ column
+  rowKey: 'id',                 // strongly recommended
+  recalculate: (row) => {       // ← the calculation hook
+    const gross = Number(row['qty'] || 0) * Number(row['rate'] || 0);
+    row['amount'] = gross - Number(row['discount'] || 0);
+    row['vat']    = row['amount'] * 0.15;
+    row['total']  = row['amount'] + row['vat'];
+  },
+  newRowDefaults: () => ({ qty: 1, rate: 0, discount: 0 }),
+};
+```
+
+**Calculations.** Use `recalculate` for a row-wide cascade (the normal ERP case),
+or per-column `compute: (row) => …` for a single derived value. A column with
+`compute` is **automatically read-only** — letting a user type a total the next
+recalculation would overwrite is a data-integrity bug, not a convenience.
+In `editMode: 'fullRow'` (default) derived values refresh on **Tab** (read straight
+from the open editors) and settle again when the row commits — so a line total
+keeps up while the operator types across it. `editMode: 'cell'` recalculates on
+each individual cell commit instead.
+
+**Saving is the FORM's job — the grid never calls an API.** It records intent and
+hands it over:
+
+```ts
+<app-data-grid … (changesChange)="changes.set($event)" (gridReady)="grid = $event" />
+
+save() {
+  const { added, updated, deleted } = this.changes();   // or grid.getChanges()
+  // …persist through the form's normal save flow…
+  this.loadLines();          // reload from the server
+  this.grid.resetChanges();  // then clear pending state
+}
+```
+
+- Bind the Save button to `changes().dirty`. A no-op edit (open a row, commit
+  without changing anything) does **not** dirty the grid.
+- ✕ only hides — nothing is destroyed until you persist `deleted`.
+- A row added and then ✕-ed in the same session is dropped, never reported as a delete.
+- **Reload after saving.** `resetChanges()` un-hides rows it was hiding, so if you
+  call it without re-fetching, deleted rows reappear.
+
+### Standard action buttons — `<app-action-button>` (CRITICAL)
+
+Every ERP action (Add, Edit, View, Delete, Save, Update, Cancel, Submit, Approve,
+Reject, Post, Print, Export, Import, Refresh, Search, Filter, Reset, Download,
+Duplicate, Close) is defined ONCE in `shared/actions/erp-actions.ts`.
+
+```html
+<app-action-button kind="save"   (run)="save()" [loading]="saving()" />
+<app-action-button kind="delete" (run)="remove()" />        <!-- confirms automatically -->
+```
+
+- Naming the `kind` is enough — icon, label, tooltip and colour come from the catalog.
+- **`(run)` fires only after confirmation is accepted.** Destructive actions
+  (delete/reject/cancel) and consequential ones (submit/approve/post) confirm by
+  default via `AlertService`; pass `[confirm]="false"` to suppress or an object to
+  customise. Never hand-roll a confirm for these.
+- Do not invent new icon/label pairings in a form — add to the catalog instead.
+
+### Numbering — `shared/numbering`
+
+`serialNumber()`, `formatDocumentNumber()`, `parseDocumentNumber()`, `padNumber()`.
+
+```ts
+formatDocumentNumber(123, { prefix: 'PO', year: 2026 })   // PO-2026-000123
+```
+
+**Authority rule:** persisted document/transaction numbers are ALWAYS generated by
+the backend inside the saving transaction — that is the only gapless, race-free
+source. These helpers only format/parse/display. `previewNextSequence()` is for a
+UI hint only; never save its result.
+
 ### Currency and Decimal Handling (CRITICAL)
 
 **Never hardcode currency symbols or precision.** Always use the global `AppDecimalPipe` (`appDecimal`) which automatically reads the active currency precision from the centralized setup loaded at bootstrap via `CommonDataService`.

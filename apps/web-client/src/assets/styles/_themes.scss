@@ -96,6 +96,13 @@
   // ── Selection ────────────────────────────────────────────────
   --select-bg: rgba(79, 110, 247, 0.1);
   --select-text: #4f6ef7;
+
+  // ── Data grid rows ───────────────────────────────────────────────────────
+  // Hover and selection must be tellable apart — same hue, clearly different
+  // weight. Named separately from `--select-bg` so the grid's two row states can
+  // be tuned per theme without disturbing selection styling elsewhere in the app.
+  --grid-row-hover: rgba(79, 110, 247, 0.07);
+  --grid-row-selected: rgba(79, 110, 247, 0.18);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -202,6 +209,11 @@
   // ── Selection ────────────────────────────────────────────────
   --select-bg: rgba(99, 102, 241, 0.2);
   --select-text: #818cf8;
+
+  // ── Data grid rows ───────────────────────────────────────────────────────
+  // Lifted slightly for dark surfaces, where low-alpha tints wash out.
+  --grid-row-hover: rgba(129, 140, 248, 0.1);
+  --grid-row-selected: rgba(129, 140, 248, 0.26);
 }
 
 // ─────────────────────────────────────────────────────────────────

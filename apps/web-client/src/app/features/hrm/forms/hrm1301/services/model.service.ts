@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { finalize } from 'rxjs';
+import { finalize, Subject, debounceTime } from 'rxjs';
 import { Hrm1301DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
@@ -74,6 +74,14 @@ export class Hrm1301ModelService {
   balanceHistory = signal<LeaveApplication[]>([]);
   filterBalance = signal<LeaveBalance | null>(null);
 
+  private refreshBalance$ = new Subject<void>();
+  private refreshHistory$ = new Subject<void>();
+
+  constructor() {
+    this.refreshBalance$.pipe(debounceTime(150)).subscribe(() => this.executeRefreshBalance());
+    this.refreshHistory$.pipe(debounceTime(150)).subscribe(() => this.executeRefreshFilteredHistory());
+  }
+
   private getFirstDayOfMonth(): string {
     const d = new Date();
     d.setDate(1);
@@ -116,6 +124,10 @@ export class Hrm1301ModelService {
   });
 
   refreshFilteredHistory(): void {
+    this.refreshHistory$.next();
+  }
+
+  private executeRefreshFilteredHistory(): void {
     const emp = this.form?.get('employee_no')?.value;
     if (!emp) {
       this.balanceHistory.set([]);
@@ -180,6 +192,10 @@ export class Hrm1301ModelService {
   }
 
   refreshBalance(): void {
+    this.refreshBalance$.next();
+  }
+
+  private executeRefreshBalance(): void {
     const emp = this.form.get('employee_no')?.value;
     const type = this.form.get('leave_type_no')?.value;
     const from = this.form.get('from_date')?.value as string;
@@ -235,7 +251,7 @@ export class Hrm1301ModelService {
             reliever_employee_no: d.reliever_employee_no,
             attachment_path:      d.attachment_path,
             is_active:            d.is_active,
-          });
+          }, { emitEvent: false });
           this.refreshBalance();
         }
       },
@@ -325,6 +341,6 @@ export class Hrm1301ModelService {
     this.status.set(1);
     this.canEdit.set(true);       // a brand-new application is always editable
     this.balance.set(null);
-    this.form?.reset({ from_date: today, to_date: today, is_half_day: 0, need_reliever: 0, is_active: 1 });
+    this.form?.reset({ from_date: today, to_date: today, is_half_day: 0, need_reliever: 0, is_active: 1 }, { emitEvent: false });
   }
 }

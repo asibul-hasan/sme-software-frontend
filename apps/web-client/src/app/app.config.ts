@@ -25,6 +25,7 @@ import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
 import { AppBootstrapService } from './core/services/app-bootstrap.service';
+import { provideAidlyGrid } from './shared/grid/grid-setup';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
@@ -61,6 +62,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
+    provideAidlyGrid(), // AG Grid module registration + app-wide grid defaults
     provideToastr({
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,

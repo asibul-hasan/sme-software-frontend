@@ -45,6 +45,15 @@ export const routes: Routes = [
           ),
       },
       {
+        // Living reference for the shared AG Grid infrastructure. Touches no
+        // business data — safe to delete once the pattern is adopted.
+        path: 'grid',
+        loadComponent: () =>
+          import('./shared/grid/grid-demo.component').then(
+            (m) => m.GridDemoComponent,
+          ),
+      },
+      {
         path: 'hrm',
         loadChildren: () =>
           import('./features/hrm/hrm.routes').then((m) => m.HRM_ROUTES),

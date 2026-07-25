@@ -567,6 +567,13 @@ export class Hrm1001ModelService {
           return;
         }
       }
+
+      if (this.form.errors?.['atLeastOne']) {
+        this.toastr.warning('Either NID Number or Passport Number is required.');
+      } else {
+        this.toastr.warning('Please check form validation errors.');
+      }
+      return;
     }
 
     this.isSaving.set(true);
@@ -583,6 +590,9 @@ export class Hrm1001ModelService {
           this.toastr.success(this.translate.instant('saveSuccess'));
           this.loadEmployees(isUpdate ? this.selectedEmployeeNo() : null);
         }
+      },
+      error: (err) => {
+        console.error('Failed to save employee:', err);
       },
     });
   }
@@ -602,6 +612,9 @@ export class Hrm1001ModelService {
             this.onNew();
             this.loadEmployees();
           }
+        },
+        error: (err) => {
+          console.error('Failed to delete employee:', err);
         },
       });
   }
@@ -1027,6 +1040,26 @@ export class Hrm1001ModelService {
     payload.taxpayer_class = this.normalizeTaxpayerClass(
       payload.taxpayer_class,
     );
+    payload.company_no = payload.company_no ?? this.authCtx.user()?.company_no ?? null;
+    payload.branch_no = payload.branch_no ?? this.authCtx.user()?.branch_no ?? null;
+
+    const formatDateField = (dateVal: any): string | null => {
+      if (!dateVal) return null;
+      if (dateVal instanceof Date && !Number.isNaN(dateVal.getTime())) {
+        return dateVal.toISOString().slice(0, 10);
+      }
+      if (typeof dateVal === 'string' && dateVal.includes('T')) {
+        return dateVal.split('T')[0];
+      }
+      return String(dateVal).trim() || null;
+    };
+
+    ['date_of_birth', 'joining_date', 'confirmation_date', 'contract_start_date', 'contract_end_date'].forEach((field) => {
+      if (field in payload) {
+        payload[field] = formatDateField(payload[field]);
+      }
+    });
+
     [
       'present_road_village',
       'present_post_office',

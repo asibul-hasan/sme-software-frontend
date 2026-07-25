@@ -2,7 +2,6 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { finalize, forkJoin } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
-import { CommonLookupService } from '../../../../../core/services/common-lookup.service';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { Sys1104DataService } from './data.service';
 
@@ -51,7 +50,6 @@ export interface MappingRow {
 @Injectable()
 export class Sys1104ModelService {
   private data = inject(Sys1104DataService);
-  private commonLookup = inject(CommonLookupService);
   private toastr = inject(ToastrService);
 
   users = signal<UserOption[]>([]);
@@ -183,33 +181,28 @@ export class Sys1104ModelService {
    * assignment (empty `branch_nos` = all branches). With no branch chosen yet, show none.
    */
   rolesForBranch(branchNo: number | null): RoleOption[] {
-    if (branchNo == null) return [];
+    if (branchNo == null) return this.roles();
     return this.roles().filter((r) => !r.branch_nos?.length || r.branch_nos.includes(branchNo));
   }
 
   loadInitial(): void {
     this.isLoading.set(true);
     forkJoin({
-      employees: this.commonLookup.getEmployees(),
+      users: this.data.getUsers(),
       branches: this.data.getBranches(),
       roles: this.data.getRoles(),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe(({ employees, branches, roles }) => {
+      .subscribe(({ users, branches, roles }) => {
         if (isSuccess(branches) && branches.data) this.branches.set(branches.data);
         if (isSuccess(roles) && roles.data) this.roles.set(roles.data);
 
-        // Only employees with a login account can be mapped to branches/roles.
-        const opts: UserOption[] = (employees ?? [])
-          .filter((e) => e.user_no != null)
-          .map((e) => ({
-            user_no: e.user_no as number,
-            user_id: e.employee_id,
-            user_name: e.full_name,
-            employee_no: e.employee_no,
-            department_name: e.department_name,
-            designation_name: e.designation_name,
-          }));
+        const opts: UserOption[] = (isSuccess(users) && users.data ? users.data : []).map((u: any) => ({
+          user_no: u.user_no,
+          user_id: u.user_id || `USER-${u.user_no}`,
+          user_name: u.user_name || u.user_id || 'Unnamed User',
+          employee_no: u.employee_no,
+        }));
         this.users.set(opts);
         const first = opts[0];
         if (first) this.selectUser(first.user_no);
