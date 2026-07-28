@@ -192,6 +192,31 @@
     flex-shrink: 0;
   }
 
+  // A fill card grows to take the leftover height of its flex column and passes a
+  // DEFINITE height down to its body. That chain is what makes `height: 100%` mean
+  // anything to a child — without it a grid asking for 100% resolves against an
+  // indefinite parent, collapses to zero, and renders neither headers nor rows.
+  //
+  // This lived in individual components (FIN1301 had it, SYS1108 did not), so
+  // whether a grid appeared depended on which form you opened. It belongs here:
+  // forms ship no CSS, and every `.fill-card` behaves the same.
+  //
+  // `min-height: 0` on each link is required — a flex child's automatic minimum is
+  // its content, so without it the card grows past the column instead of scrolling.
+  &.fill-card {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    > .card-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
   .card-header {
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--border-color);
