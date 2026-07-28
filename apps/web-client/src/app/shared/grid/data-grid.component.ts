@@ -39,7 +39,7 @@ import {
   logicalValue,
   recalculateRow,
 } from './grid-columns';
-import { GRID_SIZING } from './grid-theme';
+import { GRID_DEFAULT_HEIGHT, GRID_SIZING } from './grid-theme';
 import {
   DEFAULT_GRID_CONFIG,
   type GridBulkAction,
@@ -253,6 +253,13 @@ export class DataGridComponent {
   readonly gridHeight = computed(() => {
     const cfg = this.cfg();
     if (cfg.height && cfg.height !== 'auto') return cfg.height;
+
+    // Default: a fixed, self-contained height. A grid that depends on its ancestors
+    // for height only works when every one of them passes a definite height down,
+    // and a single missing link renders it invisible with no error — which is
+    // exactly how SYS1108 came up blank. `'auto'` still opts into sizing by row
+    // count for short grids.
+    if (!cfg.height) return GRID_DEFAULT_HEIGHT;
 
     const sizing = cfg.dense ? GRID_SIZING.dense : GRID_SIZING.normal;
     const rowHeight = cfg.rowHeight ?? sizing.rowHeight;

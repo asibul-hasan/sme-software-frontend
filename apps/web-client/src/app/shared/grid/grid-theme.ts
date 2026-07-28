@@ -80,3 +80,13 @@ export const GRID_SIZING = {
   dense: { rowHeight: 30, headerHeight: 34 },
   normal: { rowHeight: 38, headerHeight: 40 },
 } as const;
+
+/**
+ * Default grid height when a config does not specify one.
+ *
+ * Fixed rather than inherited on purpose: `height: '100%'` only resolves when every
+ * ancestor passes a definite height down, and one missing link renders the grid
+ * invisible with no error to explain it. A self-contained default cannot fail that
+ * way. Pass an explicit `height` to override, or `'auto'` to size by row count.
+ */
+export const GRID_DEFAULT_HEIGHT = '40vh';

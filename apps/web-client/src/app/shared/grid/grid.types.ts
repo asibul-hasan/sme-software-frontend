@@ -319,9 +319,12 @@ export interface GridConfig {
   dense?: boolean;
   striped?: boolean;
   /**
-   * Grid height. Defaults to `'auto'`, which sizes to the row count up to
-   * `maxAutoHeight`. Pass `'100%'` inside a flex-filled card (see CLAUDE.md —
-   * never viewport math).
+   * Grid height. Defaults to `GRID_DEFAULT_HEIGHT` (40vh) — self-contained, so it
+   * cannot be broken by an ancestor that fails to pass a definite height down.
+   *
+   * Pass `'auto'` to size to the row count up to `maxAutoHeight`, or any CSS
+   * length. `'100%'` still works, but only where every ancestor has a definite
+   * height; a single missing link renders the grid invisible with no error.
    */
   height?: string;
   maxAutoHeight?: string;

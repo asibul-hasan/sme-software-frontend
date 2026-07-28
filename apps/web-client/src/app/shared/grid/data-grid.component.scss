@@ -6,21 +6,14 @@
 // Colours come from the app design tokens so the grid follows light/dark.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// The host element itself. Without this it is an unknown element, which the UA
-// lays out as `display: inline` — a box that cannot take a height. Any grid
-// configured with `height: '100%'` then resolves that 100% against an auto-height
-// inline parent, collapses, and renders no header row and no rows. The absolutely
-// positioned state overlay still paints, so the symptom is a blank card that says
-// "No data available" — which reads like missing data rather than broken layout.
-//
-// Grids that size themselves to content were unaffected, which is why the demo
-// page looked fine while `height: '100%'` forms (SYS1108) came up empty.
+// The host element. Without a rule here it is an unknown element, which the UA
+// lays out as display:inline — a box that cannot take a height, so the grid
+// collapsed and rendered neither headers nor rows. The state overlay is
+// absolutely positioned and still painted, which made a layout failure look like
+// missing data.
 app-data-grid {
-  display: flex;
-  flex-direction: column;
+  display: block;
   min-height: 0;
-  // Fill a flex parent (the `.card-body` case); inert when the parent is not flex.
-  flex: 1 1 auto;
 }
 
 .data-grid {
@@ -28,8 +21,6 @@ app-data-grid {
   flex-direction: column;
   width: 100%;
   min-height: 0;
-  // Fill the host so a `height: 100%` body has a definite box to resolve against.
-  flex: 1 1 auto;
 
   // ── Toolbar ───────────────────────────────────────────────────────────────
   &__toolbar {

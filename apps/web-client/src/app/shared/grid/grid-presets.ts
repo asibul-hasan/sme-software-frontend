@@ -12,7 +12,7 @@ import type { GridConfig, GridRow } from './grid.types';
 /**
  * An editable detail grid living inside a card in a master-detail form.
  *
- * Chrome off (the card header owns the title and the Add button), dense, fills its card, and
+ * Chrome off (the card header owns the title and the Add button), dense, and
  * keyed by `__uid` — the client-side row identity used before rows have a server primary key.
  *
  * ```ts
@@ -32,7 +32,6 @@ export function detailGridConfig(overrides: Partial<GridConfig> = {}): Partial<G
     showSerial: true,
     pagination: false,
     dense: true,
-    height: '100%',
     rowKey: '__uid',
     editable: true,
     ...overrides,
