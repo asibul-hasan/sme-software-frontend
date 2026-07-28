@@ -212,7 +212,7 @@ export class Sys1108ModelService {
     }
   }
 
-  addScopeRow(): void {
+  addScopeRow(): number {
     const scopeUid = this.uidSeq++;
 
     this.scopes.update(arr => [...arr, {
@@ -224,6 +224,7 @@ export class Sys1108ModelService {
     }]);
     
     this.selectScope(scopeUid);
+    return scopeUid;
   }
 
   updateScope(uid: number, data: Partial<ApprovalScope>): void {
@@ -261,9 +262,9 @@ export class Sys1108ModelService {
     }
   }
 
-  addStepRow(scopeUid?: number): void {
+  addStepRow(scopeUid?: number): number | null {
     const sUid = scopeUid ?? this.selectedScopeUid();
-    if (!sUid) return;
+    if (!sUid) return null;
     
     const existingSteps = this.steps().filter(s => s.scope_uid === sUid);
     const nextStep = existingSteps.length > 0 ? Math.max(...existingSteps.map(s => s.step_number)) + 1 : 1;
@@ -281,6 +282,7 @@ export class Sys1108ModelService {
     }]);
 
     this.selectStep(stepUid);
+    return stepUid;
   }
 
   updateStep(uid: number, data: Partial<ApprovalStep>): void {
@@ -310,16 +312,18 @@ export class Sys1108ModelService {
     }
   }
 
-  addStepApproverRow(stepUid?: number): void {
+  addStepApproverRow(stepUid?: number): number | null {
     const sUid = stepUid ?? this.selectedStepUid();
-    if (!sUid) return;
+    if (!sUid) return null;
 
+    const approverUid = this.uidSeq++;
     this.stepApprovers.update(arr => [...arr, {
-      __uid: this.uidSeq++,
+      __uid: approverUid,
       step_uid: sUid,
       emp_no: null,
       is_active: 1
     }]);
+    return approverUid;
   }
 
   updateStepApprover(uid: number, data: Partial<StepApprover>): void {

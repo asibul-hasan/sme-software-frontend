@@ -2,6 +2,8 @@ export * from './grid.types';
 export * from './grid-theme';
 export * from './grid-setup';
 export * from './grid-columns';
+export * from './grid-presets';
+export * from './column-builders';
 export * from './data-grid.component';
 export * from './cell-renderers/badge-cell.component';
 export * from './cell-renderers/actions-cell.component';

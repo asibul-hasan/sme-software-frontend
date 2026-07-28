@@ -391,6 +391,11 @@ export interface GridReadyEvent {
   refreshFooter: () => void;
   /** Append a row and open it for editing. */
   addRow: (seed?: GridRow) => void;
+  /**
+   * Start editing a row that already exists in the grid (added via `[data]` binding).
+   * Pass the row's `rowKey` value. Opens the first editable column.
+   */
+  startEdit: (rowKeyValue: unknown) => void;
   /** Pending adds / updates / deletes. */
   getChanges: () => GridChanges;
   /** Forget all pending changes and un-hide deleted rows (call after a successful save). */

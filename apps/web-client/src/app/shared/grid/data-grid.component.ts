@@ -349,6 +349,7 @@ export class DataGridComponent {
       api: event.api,
       refreshFooter: () => this.viewVersion.update((v) => v + 1),
       addRow: (seed) => this.addRow(seed),
+      startEdit: (rowKeyValue) => this.startEdit(rowKeyValue),
       getChanges: () => this.getChanges(),
       resetChanges: () => this.resetChanges(),
     });
@@ -433,6 +434,40 @@ export class DataGridComponent {
   }
 
   // ── Add / delete ───────────────────────────────────────────────────────────
+
+  /**
+   * Start editing a row that already exists in the grid (e.g. one that was just
+   * added by the model via `[data]` binding). Finds the row by its `rowKey`
+   * value and opens it for editing on the first editable column.
+   *
+   * <p>Use this instead of {@link addRow} when the owning model is the source
+   * of truth and the row already flows in through the data signal.</p>
+   */
+  startEdit(rowKeyValue: unknown): void {
+    if (!this.api) return;
+    const cfg = this.cfg();
+    const rowKey = cfg.rowKey;
+    if (!rowKey) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let found: any = null;
+    this.api.forEachNode((node) => {
+      if (found || !node.data) return;
+      const id = typeof rowKey === 'function'
+        ? rowKey(node.data as GridRow)
+        : (node.data as GridRow)?.[rowKey];
+      if (id === rowKeyValue) found = node;
+    });
+
+    if (!found) return;
+    const rowIndex: number | null = found.rowIndex;
+    if (rowIndex == null) return;
+    const firstEditable = this.firstEditableField(found.data as GridRow);
+    if (!firstEditable) return;
+
+    this.api.ensureIndexVisible(rowIndex);
+    setTimeout(() => this.api?.startEditingCell({ rowIndex, colKey: firstEditable }));
+  }
 
   /**
    * Append a row and open it for editing immediately — a new line is never left

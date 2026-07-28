@@ -1,16 +1,27 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, computed, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
-import { activeStatusOptions, yesNoOptions } from '../../../../core/constants/common-options.constants';
 import { sysConstants } from '../../constants/sys.constants';
 import { Sys1108ModelService } from './services/model.service';
 import { Sys1108DataService } from './services/data.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { DataGridComponent } from '../../../../shared/grid/data-grid.component';
-import type { GridColumnDef, GridConfig, GridReadyEvent, GridRow } from '../../../../shared/grid/grid.types';
+import { col } from '../../../../shared/grid/column-builders';
+import { detailGridConfig } from '../../../../shared/grid/grid-presets';
+import type { GridColumnDef, GridReadyEvent, GridRow } from '../../../../shared/grid/grid.types';
 
+/**
+ * SYS1108 — Approval Workflow Setup.
+ *
+ * Three chained editable grids: Workflow (scope) → Approval Steps → Step Approvers. Selecting a
+ * row in one narrows the grid below it.
+ *
+ * Everything reusable lives in `shared/grid`: {@link detailGridConfig} supplies the grid chrome
+ * and {@link col} builds the columns. What stays here is only what is genuinely specific to this
+ * form — which fields exist, and where each grid's rows come from.
+ */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sys1108',
@@ -22,159 +33,60 @@ import type { GridColumnDef, GridConfig, GridReadyEvent, GridRow } from '../../.
 })
 export class Sys1108Component implements OnInit {
   public model = inject(Sys1108ModelService);
+  public permissionService = inject(FormPermissionService);
 
-  readonly activeStatusOptions = activeStatusOptions;
-  readonly yesNoOptions = yesNoOptions;
-
-  // Grid-ready handles for imperative control (addRow, etc.)
+  /** Grid handles, used to open a freshly added row for editing. */
   scopesGrid?: GridReadyEvent;
   stepsGrid?: GridReadyEvent;
   approversGrid?: GridReadyEvent;
 
-  readonly permissionService = inject(FormPermissionService);
-
   // ── Grid configs ───────────────────────────────────────────────────────────
-  readonly scopeGridConfig: Partial<GridConfig> = {
-    showToolbar: false,
-    showSearch: false,
-    showExport: false,
-    showColumnToggle: false,
-    showSerial: true,
-    pagination: false,
-    dense: true,
-    height: '100%',
-    rowKey: '__uid',
-  };
+  // Chrome, density, height and row identity all come from the preset; each grid
+  // states only the defaults for a newly added row.
 
-  readonly stepGridConfig: Partial<GridConfig> = {
-    showToolbar: false,
-    showSearch: false,
-    showExport: false,
-    showColumnToggle: false,
-    showSerial: true,
-    pagination: false,
-    dense: true,
-    height: '100%',
-    rowKey: '__uid',
-  };
+  readonly scopeGridConfig = detailGridConfig({
+    newRowDefaults: () => ({ branch_no: null, department_no: null, menu_no: null, is_active: 1 }),
+  });
 
-  readonly approverGridConfig: Partial<GridConfig> = {
-    showToolbar: false,
-    showSearch: false,
-    showExport: false,
-    showColumnToggle: false,
-    showSerial: true,
-    pagination: false,
-    dense: true,
-    height: '100%',
-    rowKey: '__uid',
-  };
+  readonly stepGridConfig = detailGridConfig({
+    newRowDefaults: () => ({ step_number: 1, step_type: 1, next_step_no: null, step_name: '', is_active: 1 }),
+  });
+
+  readonly approverGridConfig = detailGridConfig({
+    newRowDefaults: () => ({ emp_no: null, is_active: 1 }),
+  });
 
   // ── Column definitions ─────────────────────────────────────────────────────
+  // `patch*` turns "this column edits this field" into one argument, so a column
+  // is a single readable line instead of a five-line object.
+
   readonly scopeColumns: GridColumnDef[] = [
-    {
-      title: 'Workflow Name', field: 'workflow_name', flex: 1, minWidth: 200, editable: true,
-      onChange: (v, r) => this.model.updateScope(r['__uid'] as number, { workflow_name: v as string }),
-    },
-    {
-      title: 'Branch', field: 'branch_no', cellType: 'select', width: 180, editable: true,
-      options: (row) => [{ value: null, label: '-- All Branches --' }, ...this.model.branchOptions()],
-      value: (r) => {
-        const opts = this.model.branchOptions();
-        const opt = opts.find(o => o.value === r['branch_no']);
-        return opt?.label ?? '';
-      },
-      onChange: (v, r) => this.model.updateScope(r['__uid'] as number, { branch_no: v as number }),
-    },
-    {
-      title: 'Department', field: 'department_no', cellType: 'select', width: 180, editable: true,
-      options: (row) => [{ value: null, label: '-- All Departments --' }, ...this.model.departmentOptions()],
-      value: (r) => {
-        const opts = this.model.departmentOptions();
-        const opt = opts.find(o => o.value === r['department_no']);
-        return opt?.label ?? '';
-      },
-      onChange: (v, r) => this.model.updateScope(r['__uid'] as number, { department_no: v as number }),
-    },
-    {
-      title: 'Menu', field: 'menu_no', cellType: 'select', width: 220, editable: true,
-      options: () => this.model.enrolledMenuOptions(),
-      value: (r) => {
-        const opts = this.model.enrolledMenuOptions();
-        const opt = opts.find(o => o.value === r['menu_no']);
-        return opt?.label ?? '';
-      },
-      onChange: (v, r) => this.model.updateScope(r['__uid'] as number, { menu_no: v as number }),
-    },
-    {
-      title: '', field: '__actions', cellType: 'actions', width: 60, pin: 'right',
-      actions: [
-        {
-          kind: 'delete',
-          tooltip: 'Remove Scope',
-          onClick: (r) => this.model.removeScope(r['__uid'] as number),
-        },
-      ],
-    },
+    col.text('Workflow Name', 'workflow_name', { flex: 1, minWidth: 200, onChange: this.patchScope('workflow_name') }),
+    col.selectNullable('Branch', 'branch_no', () => this.model.branchOptions(), '-- All Branches --',
+      { width: 180, onChange: this.patchScope('branch_no') }),
+    col.selectNullable('Department', 'department_no', () => this.model.departmentOptions(), '-- All Departments --',
+      { width: 180, onChange: this.patchScope('department_no') }),
+    col.select('Menu', 'menu_no', () => this.model.enrolledMenuOptions(),
+      { width: 220, onChange: this.patchScope('menu_no') }),
+    col.remove((r) => this.model.removeScope(r['__uid'] as number), 'Remove Workflow'),
   ];
 
   readonly stepColumns: GridColumnDef[] = [
-    {
-      title: 'Step No', field: 'step_number', cellType: 'number', width: 100, editable: true,
-      onChange: (v, r) => this.model.updateStep(r['__uid'] as number, { step_number: v as number }),
-    },
-    {
-      title: 'Step Type', field: 'step_type', cellType: 'select', width: 150, editable: true,
-      options: () => sysConstants.approvalStepTypes,
-      value: (r) => {
-        const opt = sysConstants.approvalStepTypes.find(o => o.value === r['step_type']);
-        return opt?.label ?? '';
-      },
-      onChange: (v, r) => this.model.updateStep(r['__uid'] as number, { step_type: v as number }),
-    },
-    {
-      title: 'Next Step No', field: 'next_step_no', cellType: 'number', width: 120, editable: true,
-      onChange: (v, r) => this.model.updateStep(r['__uid'] as number, { next_step_no: v as number }),
-    },
-    {
-      title: 'Step Name', field: 'step_name', flex: 1, minWidth: 150, editable: true,
-      onChange: (v, r) => this.model.updateStep(r['__uid'] as number, { step_name: v as string }),
-    },
-    {
-      title: '', field: '__actions', cellType: 'actions', width: 60, pin: 'right',
-      actions: [
-        {
-          kind: 'delete',
-          tooltip: 'Remove Step',
-          onClick: (r) => this.model.removeStep(r['__uid'] as number),
-        },
-      ],
-    },
+    col.number('Step No', 'step_number', { width: 100, onChange: this.patchStep('step_number') }),
+    col.select('Step Type', 'step_type', sysConstants.approvalStepTypes,
+      { width: 150, onChange: this.patchStep('step_type') }),
+    col.number('Next Step No', 'next_step_no', { width: 120, onChange: this.patchStep('next_step_no') }),
+    col.text('Step Name', 'step_name', { flex: 1, minWidth: 150, onChange: this.patchStep('step_name') }),
+    col.remove((r) => this.model.removeStep(r['__uid'] as number), 'Remove Step'),
   ];
 
   readonly approverColumns: GridColumnDef[] = [
-    {
-      title: 'Employee Name', field: 'emp_no', cellType: 'select', flex: 1, minWidth: 200, editable: true,
-      options: () => this.model.employeeOptions(),
-      value: (r) => {
-        const opt = this.model.employeeOptions().find(o => o.value === r['emp_no']);
-        return opt?.label ?? '';
-      },
-      onChange: (v, r) => this.model.updateStepApprover(r['__uid'] as number, { emp_no: v as number }),
-    },
-    {
-      title: '', field: '__actions', cellType: 'actions', width: 60, pin: 'right',
-      actions: [
-        {
-          kind: 'delete',
-          tooltip: 'Remove Approver',
-          onClick: (r) => this.model.removeStepApprover(r['__uid'] as number),
-        },
-      ],
-    },
+    col.select('Employee Name', 'emp_no', () => this.model.employeeOptions(),
+      { flex: 1, minWidth: 200, onChange: this.patchApprover('emp_no') }),
+    col.remove((r) => this.model.removeStepApprover(r['__uid'] as number), 'Remove Approver'),
   ];
 
-  // ── Table data (cast to GridRow) ───────────────────────────────────────────
+  // ── Data ───────────────────────────────────────────────────────────────────
   scopeTableData = computed(() => this.model.scopes() as unknown as GridRow[]);
   stepTableData = computed(() => this.model.currentSteps() as unknown as GridRow[]);
   approverTableData = computed(() => this.model.currentApprovers() as unknown as GridRow[]);
@@ -190,6 +102,7 @@ export class Sys1108Component implements OnInit {
     this.model.searchTerm.set(val);
   }
 
+  // ── Selection — drives the master-detail chain ─────────────────────────────
   onScopeRowClick(row: GridRow): void {
     this.model.selectScope(row['__uid'] as number);
   }
@@ -199,23 +112,25 @@ export class Sys1108Component implements OnInit {
   }
 
   onApproverRowClick(_row: GridRow): void {
-    // No-op — selection highlight is handled by the grid.
+    // Highlighting only — there is no grid below this one.
   }
 
+  // ── Add rows ───────────────────────────────────────────────────────────────
+  // The model owns the data; the grid picks the new row up through [data], then
+  // we open it for editing on the next tick once it has rendered.
   addScopeRow(): void {
-    this.model.addScopeRow();
-    // Focus the new row in edit mode after Angular renders it.
-    setTimeout(() => this.scopesGrid?.addRow());
+    const uid = this.model.addScopeRow();
+    setTimeout(() => this.scopesGrid?.startEdit(uid));
   }
 
   addStepRow(): void {
-    this.model.addStepRow();
-    setTimeout(() => this.stepsGrid?.addRow());
+    const uid = this.model.addStepRow();
+    if (uid != null) setTimeout(() => this.stepsGrid?.startEdit(uid));
   }
 
   addStepApproverRow(): void {
-    this.model.addStepApproverRow();
-    setTimeout(() => this.approversGrid?.addRow());
+    const uid = this.model.addStepApproverRow();
+    if (uid != null) setTimeout(() => this.approversGrid?.startEdit(uid));
   }
 
   onNew(): void {
@@ -231,6 +146,24 @@ export class Sys1108Component implements OnInit {
   }
 
   onDelete(): void {
-    // Handled by row actions
+    // Rows are removed through each grid's ✕ column.
+  }
+
+  // ── Edit plumbing ──────────────────────────────────────────────────────────
+  // One factory per level instead of an inline arrow on every column.
+
+  private patchScope(field: string) {
+    return (value: unknown, row: GridRow) =>
+      this.model.updateScope(row['__uid'] as number, { [field]: value });
+  }
+
+  private patchStep(field: string) {
+    return (value: unknown, row: GridRow) =>
+      this.model.updateStep(row['__uid'] as number, { [field]: value });
+  }
+
+  private patchApprover(field: string) {
+    return (value: unknown, row: GridRow) =>
+      this.model.updateStepApprover(row['__uid'] as number, { [field]: value });
   }
 }
