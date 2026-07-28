@@ -106,7 +106,7 @@ export class CommonDataService extends BaseDataService {
   // ─── Global List Loaders ───────────────────────────────────────────────────
 
   /**
-   * Load the full currency list and cache it in sessionStorage.
+   * Load the full currency list and cache it in localStorage.
    * Called by AppBootstrapService on login/refresh.
    */
   loadCurrencies(forceRefresh = false): void {
@@ -127,7 +127,7 @@ export class CommonDataService extends BaseDataService {
   }
 
   restoreCurrenciesFromCache(): boolean {
-    const cached = sessionStorage.getItem(CommonDataService.CURRENCIES_CACHE_KEY);
+    const cached = localStorage.getItem(CommonDataService.CURRENCIES_CACHE_KEY);
     if (!cached) {
       return false;
     }
@@ -138,7 +138,7 @@ export class CommonDataService extends BaseDataService {
       this.isCurrenciesLoaded.set(true);
       return true;
     } catch {
-      sessionStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
+      localStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
       return false;
     }
   }
@@ -147,14 +147,14 @@ export class CommonDataService extends BaseDataService {
     if (list) {
       this.currencies.set(list);
       try {
-        sessionStorage.setItem(CommonDataService.CURRENCIES_CACHE_KEY, JSON.stringify(list));
+        localStorage.setItem(CommonDataService.CURRENCIES_CACHE_KEY, JSON.stringify(list));
       } catch { /* ignore */ }
     }
     this.isCurrenciesLoaded.set(true);
   }
 
   clearCurrenciesCache(): void {
-    sessionStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
+    localStorage.removeItem(CommonDataService.CURRENCIES_CACHE_KEY);
     this.currencies.set([]);
     this.isCurrenciesLoaded.set(false);
   }

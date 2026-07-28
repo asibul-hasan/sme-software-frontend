@@ -7,9 +7,8 @@
  */
 export const globalConstants = {
   /**
-   * Storage keys. Per the SYS re-plan §4.5, the auth token + active context live in
-   * configured auth storage (sessionStorage by default, so two tabs can hold
-   * different branches). Keep these stable; renaming invalidates every active session.
+   * Storage keys. The auth token + active context live in the configured auth storage.
+   * Keep these stable; renaming invalidates every active session.
    */
   storageKeys: {
     accessToken:        'access_token',
@@ -26,7 +25,17 @@ export const globalConstants = {
     lastBranchNo:       'sme_last_branch_no',
   },
 
-  authStorageScope: 'session',
+  /**
+   * Where the token, user, permissions, menu and active context are kept.
+   *
+   * `local` — survives closing the tab and the browser, so a refresh or a reopened
+   * window resumes the session instead of bouncing to the login page.
+   *
+   * The trade-off of moving off `session`: localStorage is shared by every tab on the
+   * origin, so all tabs now share one active company/branch — switching branch in one
+   * tab changes it in the others. Two tabs can no longer sit on different branches.
+   */
+  authStorageScope: 'local',
 
   pagination: {
     defaultPageSize: 10,

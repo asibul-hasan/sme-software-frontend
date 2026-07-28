@@ -16,19 +16,9 @@
   [isLoading]="model.isLoading()"
 >
 
-
-  <div formContent class="h-full flex flex-col gap-2 overflow-hidden">
+  <div formContent class="flex flex-col gap-1 overflow-hidden">
     <!-- Level 1: Approval Scope (Master) -->
-    <div
-      class="form-section-card card fill-card"
-      style="
-        flex: 1 1 45%;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      "
-    >
+    <div class="form-section-card card fill-card" style="flex: 1 1 45%; min-height: 180px">
       <div class="card-header d-flex align-items-center gap-2 flex-wrap">
         <h4 class="card-header__title mb-0 fw-bold">
           <mat-icon class="me-2 align-middle">business</mat-icon>
@@ -43,24 +33,14 @@
           <mat-icon>add</mat-icon>
         </button>
       </div>
-      <div
-        class="card-body p-0"
-        style="
-          flex: 1 1 auto;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-        "
-      >
-        <app-common-table
-          #scopesTable
-          [columns]="scopeTableColumns()"
+      <div class="card-body p-0" style="flex: 1 1 auto; min-height: 0">
+        <app-data-grid
+          [columns]="scopeColumns"
           [data]="scopeTableData()"
-          [config]="scopeTableConfig"
-          [tableId]="'scopes-table'"
+          [config]="scopeGridConfig"
           (rowClick)="onScopeRowClick($event)"
-        ></app-common-table>
+          (gridReady)="scopesGrid = $event"
+        />
       </div>
     </div>
 
@@ -68,15 +48,10 @@
     <div class="row row-group m-0" style="flex: 1 1 55%; min-height: 200px">
       <!-- Level 2: Approval Steps -->
       <div class="col-6 p-0 pe-1 d-flex flex-column h-100">
-        <div
-          class="form-section-card card fill-card h-100"
-          style="display: flex; flex-direction: column; overflow: hidden"
-        >
+        <div class="form-section-card card fill-card h-100">
           <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
-              <mat-icon class="me-2 align-middle"
-                >format_list_numbered</mat-icon
-              >
+              <mat-icon class="me-2 align-middle">format_list_numbered</mat-icon>
               Approval Steps
             </h4>
             <button
@@ -89,34 +64,21 @@
               <mat-icon>add</mat-icon>
             </button>
           </div>
-          <div
-            class="card-body p-0"
-            style="
-              flex: 1 1 auto;
-              min-height: 0;
-              display: flex;
-              flex-direction: column;
-              overflow: hidden;
-            "
-          >
-            <app-common-table
-              #stepsTable
-              [columns]="stepTableColumns()"
+          <div class="card-body p-0" style="flex: 1 1 auto; min-height: 0">
+            <app-data-grid
+              [columns]="stepColumns"
               [data]="stepTableData()"
-              [config]="stepTableConfig"
-              [tableId]="'steps-table'"
+              [config]="stepGridConfig"
               (rowClick)="onStepRowClick($event)"
-            ></app-common-table>
+              (gridReady)="stepsGrid = $event"
+            />
           </div>
         </div>
       </div>
 
       <!-- Level 3: Step Approvers -->
       <div class="col-6 p-0 ps-1 d-flex flex-column h-100">
-        <div
-          class="form-section-card card fill-card h-100"
-          style="display: flex; flex-direction: column; overflow: hidden"
-        >
+        <div class="form-section-card card fill-card h-100">
           <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
               <mat-icon class="me-2 align-middle">people</mat-icon>
@@ -132,24 +94,14 @@
               <mat-icon>add</mat-icon>
             </button>
           </div>
-          <div
-            class="card-body p-0"
-            style="
-              flex: 1 1 auto;
-              min-height: 0;
-              display: flex;
-              flex-direction: column;
-              overflow: hidden;
-            "
-          >
-            <app-common-table
-              #approversTable
-              [columns]="approverTableColumns()"
+          <div class="card-body p-0" style="flex: 1 1 auto; min-height: 0">
+            <app-data-grid
+              [columns]="approverColumns"
               [data]="approverTableData()"
-              [config]="approverTableConfig"
-              [tableId]="'approvers-table'"
+              [config]="approverGridConfig"
               (rowClick)="onApproverRowClick($event)"
-            ></app-common-table>
+              (gridReady)="approversGrid = $event"
+            />
           </div>
         </div>
       </div>

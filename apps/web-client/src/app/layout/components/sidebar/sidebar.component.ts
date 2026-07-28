@@ -39,7 +39,7 @@ export class SidebarComponent {
 
   /**
    * Base64 data-URL for the company logo.  Loaded once at login by
-   * AppBootstrapService and cached in sessionStorage — no per-render API call.
+   * AppBootstrapService and cached in localStorage — no per-render API call.
    */
   readonly logoUrl = this.bootstrap.companyLogoDataUrl;
 

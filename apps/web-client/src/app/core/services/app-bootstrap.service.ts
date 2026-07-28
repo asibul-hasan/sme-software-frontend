@@ -21,8 +21,8 @@ interface AppBootstrapResponse {
  * ## What it manages
  * | Data | Signal | Cache key |
  * |------|--------|-----------|
- * | Company logo | `companyLogoDataUrl` | `sme_company_logo` (sessionStorage) |
- * | Base currency / number format | via `CurrencySettingsService` | `sme_currency_settings` (sessionStorage) |
+ * | Company logo | `companyLogoDataUrl` | `sme_company_logo` (localStorage) |
+ * | Base currency / number format | via `CurrencySettingsService` | `sme_currency_settings` (localStorage) |
  *
  * ## Call sites (three, no more)
  * | Where | When | Method |
@@ -50,7 +50,7 @@ export class AppBootstrapService {
    * Base64 data-URL for the company logo (e.g. `data:image/png;base64,...`).
    * {@code null} until loaded or when no logo has been uploaded.
    *
-   * Stored as base64 — not a blob URL — so it survives sessionStorage round-trips
+   * Stored as base64 — not a blob URL — so it survives localStorage round-trips
    * and page refreshes without needing another API call.
    *
    * ### Usage
@@ -83,7 +83,7 @@ export class AppBootstrapService {
 
   /**
    * Called by `APP_INITIALIZER` after `auth.initialize()` succeeds on a page
-   * refresh.  Reads from sessionStorage first; only hits the API if the cache
+   * refresh.  Reads from localStorage first; only hits the API if the cache
    * is absent.
    */
   loadFromStorage(): void {
@@ -103,7 +103,7 @@ export class AppBootstrapService {
    * Call from SYS1001 after a logo upload or deletion succeeds.
    */
   reloadLogo(): void {
-    sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
+    localStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
     this.fetchBootstrap();
   }
@@ -123,7 +123,7 @@ export class AppBootstrapService {
    * Called by `AuthService.logout()`.
    */
   clear(): void {
-    sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
+    localStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
     this.currency.clearCache();
     this.commonData.clearCurrenciesCache();
@@ -132,7 +132,7 @@ export class AppBootstrapService {
   // ── Private helpers ─────────────────────────────────────────────────────────
 
   private restoreLogo(): boolean {
-    const cached = sessionStorage.getItem(AppBootstrapService.LOGO_KEY);
+    const cached = localStorage.getItem(AppBootstrapService.LOGO_KEY);
     if (cached) {
       this.companyLogoDataUrl.set(cached);      // served from cache — no API call
       return true;
@@ -168,14 +168,14 @@ export class AppBootstrapService {
     if (dataUrl) {
       this.companyLogoDataUrl.set(dataUrl);
       try {
-        sessionStorage.setItem(AppBootstrapService.LOGO_KEY, dataUrl);
+        localStorage.setItem(AppBootstrapService.LOGO_KEY, dataUrl);
       } catch {
-        // sessionStorage quota exceeded (logo > 5 MB?) — signal still works in-memory
+        // localStorage quota exceeded (logo > 5 MB?) — signal still works in-memory
       }
       return;
     }
 
-    sessionStorage.removeItem(AppBootstrapService.LOGO_KEY);
+    localStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
   }
 }

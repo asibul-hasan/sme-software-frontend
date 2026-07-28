@@ -103,7 +103,7 @@ export class CoreFileApiService {
    * if (old?.startsWith('blob:')) URL.revokeObjectURL(old);
    * this.logoPreview.set(newUrl);
    * ```
-   * Prefer {@link fetchAsBlob} when you need to persist the data (e.g. base64 to sessionStorage).
+   * Prefer {@link fetchAsBlob} when you need to persist the data (e.g. base64 to localStorage).
    */
   fetchAsObjectUrl(servePath: string): Observable<string> {
     const url = this.toAbsoluteUrl(servePath);
@@ -115,7 +115,7 @@ export class CoreFileApiService {
   /**
    * Fetch file bytes and return the raw {@code Blob}.
    * Use this when you need to convert to a base64 data-URL for persistent caching
-   * (e.g. storing a company logo in {@code sessionStorage} so it survives page refresh).
+   * (e.g. storing a company logo in {@code localStorage} so it survives page refresh).
    */
   fetchAsBlob(servePath: string): Observable<Blob> {
     const url = this.toAbsoluteUrl(servePath);

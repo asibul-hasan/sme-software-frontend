@@ -159,7 +159,8 @@ export class AuthService {
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   private setSession(response: LoginResponse): void {
-    // Per re-plan §4.5: token + active context are per-tab (sessionStorage).
+    // Token + active context live in localStorage, so they survive a refresh and a
+    // reopened browser. Shared across tabs — see globalConstants.authStorageScope.
     this.authConfig.hydrate(response.auth_config);
     this.storageService.setItem(globalConstants.storageKeys.accessToken,  response.access_token,  this.authStorageScope);
     this.storageService.setItem(globalConstants.storageKeys.refreshToken, response.refresh_token, this.authStorageScope);
@@ -186,7 +187,7 @@ export class AuthService {
     }
 
     // Fetch company logo + currency once per login/branch-switch; results are
-    // cached in sessionStorage — no repeated API calls during the session.
+    // cached in localStorage — no repeated API calls during the session.
     this.appBootstrap.bootstrap();
   }
 

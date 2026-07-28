@@ -41,7 +41,7 @@ export function initApp(
       auth.initialize().subscribe({
         next: (result) => {
           // result is truthy when an existing session was rehydrated from
-          // sessionStorage (page refresh).  Restore cached logo + currency
+          // localStorage (page refresh / reopened browser). Restore cached logo + currency
           // without hitting the API again.
           if (result) {
             bootstrap.loadFromStorage();
