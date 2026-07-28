@@ -28,9 +28,12 @@ export function detailGridConfig(overrides: Partial<GridConfig> = {}): Partial<G
     showExport: false,
     showColumnToggle: false,
     showAdd: false,
-    showDelete: false,
+    // showDelete is deliberately left unset. It falls back to `editable`, so the grid
+    // supplies its own red ✕ column — the same one the demo shows. Declaring an actions
+    // column in the form suppresses that built-in and yields a different icon instead.
     showSerial: true,
-    pagination: false,
+    pagination: true,
+    pageSize: 10,
     dense: true,
     rowKey: '__uid',
     editable: true,

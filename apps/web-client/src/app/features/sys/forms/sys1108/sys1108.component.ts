@@ -68,7 +68,6 @@ export class Sys1108Component implements OnInit {
       { width: 180, onChange: this.patchScope('department_no') }),
     col.select('Menu', 'menu_no', () => this.model.enrolledMenuOptions(),
       { width: 220, onChange: this.patchScope('menu_no') }),
-    col.remove((r) => this.model.removeScope(r['__uid'] as number), 'Remove Workflow'),
   ];
 
   readonly stepColumns: GridColumnDef[] = [
@@ -77,13 +76,11 @@ export class Sys1108Component implements OnInit {
       { width: 150, onChange: this.patchStep('step_type') }),
     col.number('Next Step No', 'next_step_no', { width: 120, onChange: this.patchStep('next_step_no') }),
     col.text('Step Name', 'step_name', { flex: 1, minWidth: 150, onChange: this.patchStep('step_name') }),
-    col.remove((r) => this.model.removeStep(r['__uid'] as number), 'Remove Step'),
   ];
 
   readonly approverColumns: GridColumnDef[] = [
     col.select('Employee Name', 'emp_no', () => this.model.employeeOptions(),
       { flex: 1, minWidth: 200, onChange: this.patchApprover('emp_no') }),
-    col.remove((r) => this.model.removeStepApprover(r['__uid'] as number), 'Remove Approver'),
   ];
 
   // ── Data ───────────────────────────────────────────────────────────────────
