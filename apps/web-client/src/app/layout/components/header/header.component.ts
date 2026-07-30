@@ -15,28 +15,20 @@ import { AuthService, ThemeService, LanguageService } from '../../../core';
 import { MenuService } from '../sidebar/services/menu-builder.service';
 import { MenuItem } from '../sidebar/models/menu.model';
 import { SharedModule } from '../../../shared';
+import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
+import { NotificationToastComponent } from '../../../shared/components/notification-toast/notification-toast.component';
+import { NotificationModalComponent } from '../../../shared/components/notification-modal/notification-modal.component';
 
 export interface BreadcrumbItem {
   label: string;
   url?: string;
 }
 
-export interface NotificationItem {
-  id: string;
-  icon: string;
-  bgColor: string;
-  color: string;
-  title: string;
-  text: string;
-  time: string;
-  subtext?: string;
-}
-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   standalone: true,
-  imports: [SharedModule],
+  imports: [SharedModule, NotificationToastComponent, NotificationModalComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -56,54 +48,14 @@ export class HeaderComponent implements OnInit {
   public themeService = inject(ThemeService);
   public languageService = inject(LanguageService);
   public menuService = inject(MenuService);
+  public notificationService = inject(NotificationService);
 
   breadcrumbs = signal<BreadcrumbItem[]>([{ label: 'Dashboard', url: '/' }]);
   formCode = signal<string | null>(null);
   showAiPill = signal<boolean>(true);
 
-  notifications = signal<NotificationItem[]>([
-    {
-      id: '1',
-      icon: 'redeem',
-      bgColor: 'rgba(16, 185, 129, 0.1)',
-      color: '#10b981',
-      title: "It's Cristina danny's",
-      text: 'birthday today.',
-      time: '3:00 AM',
-      subtext: '2 min ago',
-    },
-    {
-      id: '2',
-      icon: 'chat',
-      bgColor: 'rgba(14, 165, 233, 0.1)',
-      color: '#0ea5e9',
-      title: 'Aida Burg',
-      text: 'commented your post.',
-      time: '6:00 PM',
-      subtext: '5 August',
-    },
-    {
-      id: '3',
-      icon: 'settings',
-      bgColor: 'rgba(244, 63, 94, 0.1)',
-      color: '#f43f5e',
-      title: 'Your Profile is Complete',
-      text: '60%',
-      time: '2:45 PM',
-      subtext: '7 hours ago',
-    },
-    {
-      id: '4',
-      icon: 'call',
-      bgColor: 'rgba(99, 102, 241, 0.1)',
-      color: '#6366f1',
-      title: 'Cristina Danny',
-      text: 'invited to join Meeting.',
-      time: '9:10 PM',
-      subtext: 'Daily scrum meeting time',
-    },
-  ]);
-  notificationCount = computed(() => this.notifications().length);
+  notifications = this.notificationService.notifications;
+  notificationCount = this.notificationService.unreadCount;
 
   activeProfileTab = signal<'profile' | 'setting'>('profile');
 

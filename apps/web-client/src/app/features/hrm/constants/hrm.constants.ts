@@ -210,6 +210,11 @@ export const hrmConstants = {
     { value: 4, label: 'Rejected' },
     { value: 5, label: 'Cancelled' },
   ],
+  relieverStatuses: [
+    { value: 0, label: 'Pending' },
+    { value: 1, label: 'Rejected' },
+    { value: 2, label: 'Accepted' },
+  ],
 
   // ── Recruitment (HRM_1401 / 1402 / 1404) ────────────────────────────────────
   requisitionEmploymentTypes: [

@@ -1,0 +1,58 @@
+<div class="app-grid" [class.app-grid--fullscreen]="isFullScreen()">
+  <app-grid-toolbar
+    [config]="config().toolbar"
+    [searchText]="filterService.searchText()"
+    [columns]="columnService.toggles()"
+    [density]="density()"
+    [isFullScreen]="isFullScreen()"
+    [hasActiveFilters]="filterService.hasActiveFilters()"
+    (search)="onSearch($event)"
+    (clearSearch)="onClearSearch()"
+    (refresh)="onRefresh()"
+    (exportExcel)="onExportExcel()"
+    (exportCsv)="onExportCsv()"
+    (print)="onPrint()"
+    (toggleColumn)="columnService.toggle($event)"
+    (showAllColumns)="columnService.showAll()"
+    (autoFit)="columnService.autoFit()"
+    (resetLayout)="onResetLayout()"
+    (densityChange)="onDensityChange($event)"
+    (toggleFullScreen)="onToggleFullScreen()"
+  />
+
+  <!-- Body. Height is per-screen; the grid fills it and scrolls internally. -->
+  <div class="app-grid__body" [style.height]="isFullScreen() ? null : effectiveHeight()">
+    <ag-grid-angular
+      class="app-grid__ag"
+      [columnDefs]="columnDefs()"
+      [rowData]="data()"
+      [gridOptions]="gridOptions()"
+      [pinnedBottomRowData]="pinnedBottomRows()"
+      (gridReady)="onGridReady($event)"
+      (rowClicked)="onRowClicked($event)"
+      (rowDoubleClicked)="onRowDoubleClicked($event)"
+      (selectionChanged)="onSelectionChanged()"
+      (cellValueChanged)="onCellValueChanged($event)"
+      (filterChanged)="onSortOrFilterChanged()"
+      (sortChanged)="onSortOrFilterChanged()"
+      (paginationChanged)="onViewChanged()"
+      (columnResized)="onColumnChanged()"
+      (columnMoved)="onColumnChanged()"
+      (columnVisible)="onColumnChanged()"
+    />
+
+    <!-- Error sits above the grid rather than replacing it, so the toolbar and
+         header stay usable and the user can retry without losing context. -->
+    @if (error()) {
+      <div class="app-grid__state">
+        <mat-icon class="app-grid__state-icon">error_outline</mat-icon>
+        <p class="app-grid__state-title">Could not load data</p>
+        <p class="app-grid__state-msg">{{ error() }}</p>
+      </div>
+    }
+  </div>
+
+  @if (config().statusBar) {
+    <app-grid-status-bar [counts]="gridApi.counts()" (clearSelection)="selection.clear()" />
+  }
+</div>

@@ -25,7 +25,7 @@ import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
 import { AppBootstrapService } from './core/services/app-bootstrap.service';
-import { provideAidlyGrid } from './shared/grid/grid-setup';
+import { provideErpGrid } from './shared/ag-grid';
 
 export function HttpLoaderFactory() {
   return new TranslateHttpLoader();
@@ -62,7 +62,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
-    provideAidlyGrid(), // AG Grid module registration + app-wide grid defaults
+    // Registers AG Grid's Community modules and the ERP grid theme once for the whole app.
+    // Single registration: the legacy <app-data-grid> shares the same module set, so it keeps
+    // working and simply inherits the new theme.
+    provideErpGrid(),
     provideToastr({
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,

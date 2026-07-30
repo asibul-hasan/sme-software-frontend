@@ -1,0 +1,153 @@
+@if (config().enabled) {
+  <div class="grid-toolbar">
+    <!-- Left: title + search -->
+    <div class="grid-toolbar__left">
+      @if (config().title) {
+        <span class="grid-toolbar__title">{{ config().title }}</span>
+      }
+
+      @if (config().search) {
+        <div class="grid-toolbar__search" [class.grid-toolbar__search--active]="hasActiveFilters()">
+          <mat-icon class="grid-toolbar__search-icon">search</mat-icon>
+          <input
+            type="text"
+            class="grid-toolbar__search-input"
+            placeholder="Search…"
+            [ngModel]="searchText()"
+            (ngModelChange)="onSearchInput($event)"
+            aria-label="Search grid"
+          />
+          @if (searchText()) {
+            <button
+              type="button"
+              class="grid-toolbar__search-clear"
+              (click)="clearSearch.emit()"
+              matTooltip="Clear search"
+              aria-label="Clear search"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Right: actions -->
+    @if (hasActions()) {
+      <div class="grid-toolbar__right">
+        @if (config().refresh) {
+          <button type="button" class="grid-toolbar__btn" (click)="refresh.emit()" matTooltip="Refresh" aria-label="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        }
+
+        @if (config().columnChooser) {
+          <button
+            type="button"
+            class="grid-toolbar__btn"
+            [matMenuTriggerFor]="columnMenu"
+            matTooltip="Choose columns"
+            aria-label="Choose columns"
+          >
+            <mat-icon>view_column</mat-icon>
+          </button>
+
+          <mat-menu #columnMenu="matMenu" class="grid-menu">
+            <div class="grid-menu__header" (click)="$event.stopPropagation()">
+              <span>Columns</span>
+              <button type="button" class="grid-menu__link" (click)="showAllColumns.emit()">Show all</button>
+            </div>
+            @for (column of columns(); track column.field) {
+              <button type="button" mat-menu-item (click)="toggleColumn.emit(column.field); $event.stopPropagation()">
+                <mat-icon>{{ column.visible ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                <span>{{ column.title }}</span>
+              </button>
+            }
+          </mat-menu>
+        }
+
+        @if (config().density) {
+          <button
+            type="button"
+            class="grid-toolbar__btn"
+            [matMenuTriggerFor]="densityMenu"
+            matTooltip="Row density"
+            aria-label="Row density"
+          >
+            <mat-icon>{{ densityIcon(density()) }}</mat-icon>
+          </button>
+
+          <mat-menu #densityMenu="matMenu" class="grid-menu">
+            @for (option of densities; track option) {
+              <button type="button" mat-menu-item (click)="densityChange.emit(option)">
+                <mat-icon>{{ densityIcon(option) }}</mat-icon>
+                <span>{{ densityLabel(option) }}</span>
+                @if (option === density()) { <mat-icon class="grid-menu__tick">check</mat-icon> }
+              </button>
+            }
+          </mat-menu>
+        }
+
+        @if (config().autoFit) {
+          <button type="button" class="grid-toolbar__btn" (click)="autoFit.emit()" matTooltip="Fit columns" aria-label="Fit columns">
+            <mat-icon>fit_screen</mat-icon>
+          </button>
+        }
+
+        @if (config().exportExcel || config().exportCsv || config().print) {
+          <button
+            type="button"
+            class="grid-toolbar__btn"
+            [matMenuTriggerFor]="exportMenu"
+            matTooltip="Export"
+            aria-label="Export"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <mat-menu #exportMenu="matMenu" class="grid-menu">
+            @if (config().exportExcel) {
+              <button type="button" mat-menu-item (click)="exportExcel.emit()">
+                <mat-icon>table_view</mat-icon><span>Excel</span>
+              </button>
+            }
+            @if (config().exportCsv) {
+              <button type="button" mat-menu-item (click)="exportCsv.emit()">
+                <mat-icon>description</mat-icon><span>CSV</span>
+              </button>
+            }
+            @if (config().print) {
+              <button type="button" mat-menu-item (click)="print.emit()">
+                <mat-icon>print</mat-icon><span>Print</span>
+              </button>
+            }
+          </mat-menu>
+        }
+
+        @if (config().resetLayout) {
+          <button
+            type="button"
+            class="grid-toolbar__btn"
+            (click)="resetLayout.emit()"
+            matTooltip="Reset layout"
+            aria-label="Reset layout"
+          >
+            <mat-icon>restart_alt</mat-icon>
+          </button>
+        }
+
+        @if (config().fullScreen) {
+          <button
+            type="button"
+            class="grid-toolbar__btn"
+            (click)="toggleFullScreen.emit()"
+            [matTooltip]="isFullScreen() ? 'Exit full screen' : 'Full screen'"
+            [attr.aria-label]="isFullScreen() ? 'Exit full screen' : 'Full screen'"
+          >
+            <mat-icon>{{ isFullScreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
+        }
+      </div>
+    }
+  </div>
+}

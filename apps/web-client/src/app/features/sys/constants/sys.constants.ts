@@ -329,4 +329,14 @@ export const sysConstants = {
     { label: 'Middle East', value: 'Middle East' },
     { label: 'Others', value: 'Others' },
   ],
+  notificationStatuses: [
+    { value: 0, label: 'Unread' },
+    { value: 1, label: 'Read' },
+    { value: 2, label: 'Action Taken' },
+  ],
+  relieverStatuses: [
+    { value: 0, label: 'Pending' },
+    { value: 1, label: 'Rejected' },
+    { value: 2, label: 'Accepted' },
+  ],
 };

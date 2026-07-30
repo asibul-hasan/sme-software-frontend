@@ -1,25 +1,23 @@
 <app-page-form-layout
   [title]="'Approval Workflow Setup'"
   [icon]="'approval'"
-  [recordsCount]="scopeTableData().length"
+  [recordsCount]="scopeRows().length"
   [hasSidebar]="false"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
   (save)="onSave()"
   (new)="onNew()"
   (reset)="onReset()"
-  (delete)="onDelete()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
   [showDelete]="false"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-
   <div formContent class="flex flex-col gap-1 overflow-auto">
-    <!-- Level 1: Approval Scope (Master) -->
+    <!-- Level 1: Workflow (master) -->
     <div class="form-section-card card">
-      <div class="card-header d-flex align-items-center gap-2 flex-wrap !py-1">
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
         <h4 class="card-header__title mb-0 fw-bold">
           <mat-icon class="me-2 align-middle">business</mat-icon>
           Workflow
@@ -34,23 +32,22 @@
         </button>
       </div>
       <div class="card-body p-0">
-        <app-data-grid
-          [columns]="scopeColumns"
-          [data]="scopeTableData()"
-          [config]="scopeGridConfig"
+        <app-grid
+          [config]="scopeGrid"
+          [data]="scopeRows()"
+          height="300px"
+          [loading]="model.isLoading()"
+          (ready)="onScopesReady($event)"
           (rowClick)="onScopeRowClick($event)"
-          (rowDelete)="model.removeScope($any($event)['__uid'])"
-          (gridReady)="scopesGrid = $event"
         />
       </div>
     </div>
 
-    <!-- Level 2 & 3: Split View -->
+    <!-- Levels 2 & 3 -->
     <div class="row row-group m-0">
-      <!-- Level 2: Approval Steps -->
       <div class="col-6 p-0 pe-1">
         <div class="form-section-card card">
-          <div class="card-header d-flex align-items-center gap-2 flex-wrap !py-1">
+          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
               <mat-icon class="me-2 align-middle">format_list_numbered</mat-icon>
               Approval Steps
@@ -66,22 +63,20 @@
             </button>
           </div>
           <div class="card-body p-0">
-            <app-data-grid
-              [columns]="stepColumns"
-              [data]="stepTableData()"
-              [config]="stepGridConfig"
+            <app-grid
+              [config]="stepGrid"
+              [data]="stepRows()"
+              height="300px"
+              (ready)="onStepsReady($event)"
               (rowClick)="onStepRowClick($event)"
-              (rowDelete)="model.removeStep($any($event)['__uid'])"
-              (gridReady)="stepsGrid = $event"
             />
           </div>
         </div>
       </div>
 
-      <!-- Level 3: Step Approvers -->
       <div class="col-6 p-0 ps-1">
         <div class="form-section-card card">
-          <div class="card-header d-flex align-items-center gap-2 flex-wrap !py-1">
+          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
             <h4 class="card-header__title mb-0 fw-bold">
               <mat-icon class="me-2 align-middle">people</mat-icon>
               Step Approvers
@@ -97,13 +92,11 @@
             </button>
           </div>
           <div class="card-body p-0">
-            <app-data-grid
-              [columns]="approverColumns"
-              [data]="approverTableData()"
-              [config]="approverGridConfig"
-              (rowClick)="onApproverRowClick($event)"
-              (rowDelete)="model.removeStepApprover($any($event)['__uid'])"
-              (gridReady)="approversGrid = $event"
+            <app-grid
+              [config]="approverGrid"
+              [data]="approverRows()"
+              height="300px"
+              (ready)="onApproversReady($event)"
             />
           </div>
         </div>

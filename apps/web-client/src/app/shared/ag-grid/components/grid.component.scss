@@ -1,0 +1,129 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// <app-grid>
+//
+// ViewEncapsulation.None, because AG Grid renders its own DOM. Every selector is
+// namespaced under .app-grid so nothing leaks into the rest of the application.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// The host element. Without this it is an unknown element and the browser lays it
+// out as display:inline — a box that cannot take a height, so a grid asking for one
+// collapses and renders no header and no rows. Cheap rule, whole class of bug.
+app-grid {
+  display: block;
+  min-height: 0;
+}
+
+.app-grid {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  background: var(--card-bg);
+
+  // ── Body ──────────────────────────────────────────────────────────────────
+  &__body {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  &__ag {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  // ── Full screen ───────────────────────────────────────────────────────────
+  // Fixed rather than the Fullscreen API: the API detaches the element from the
+  // document, which drops Material overlays (menus, tooltips) rendered elsewhere.
+  &--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    padding: 8px;
+    background: var(--body-bg, var(--card-bg));
+
+    .app-grid__body {
+      height: auto;
+      flex: 1 1 auto;
+    }
+  }
+
+  // ── States ────────────────────────────────────────────────────────────────
+  &__state {
+    position: absolute;
+    // Below the header row, so column headers stay readable behind the message.
+    inset: 40px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px;
+    text-align: center;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    z-index: 2;
+  }
+
+  &__state-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: var(--danger-text, #b42318);
+  }
+
+  &__state-title {
+    margin: 0;
+    font-size: var(--text-sm, 13px);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  &__state-msg {
+    margin: 0;
+    font-size: var(--text-xs, 12px);
+    color: var(--text-secondary);
+  }
+
+  &__empty {
+    font-size: var(--text-sm, 13px);
+    color: var(--text-secondary);
+  }
+
+  // ── Cell alignment ────────────────────────────────────────────────────────
+  // Applied through cellClass by the column factory, so alignment is decided once
+  // from the column type rather than restated per form.
+  .grid-cell--right {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .grid-cell--center {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .grid-cell--row-number {
+    justify-content: center;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  // ── AG Grid overrides ─────────────────────────────────────────────────────
+  .ag-header-cell-text {
+    font-weight: 600;
+  }
+
+  // Totals row: visually anchored, never mistaken for data.
+  .ag-floating-bottom {
+    border-top: 2px solid var(--border-color);
+    font-weight: 600;
+  }
+
+  .ag-paging-panel {
+    border-top: 1px solid var(--border-color);
+    font-size: var(--text-xs, 12px);
+    color: var(--text-secondary);
+  }
+}

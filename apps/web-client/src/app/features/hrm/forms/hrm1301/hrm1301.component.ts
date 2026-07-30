@@ -57,9 +57,23 @@ export class Hrm1301Component implements OnInit {
     { title: 'Days', field: 'total_days', sort: true, cellType: 'text', align: 'right' },
     { title: 'Reason', field: 'reason', sort: true, cellType: 'text' },
     { title: 'Reliever', field: 'reliever_employee_no', sort: true, cellType: 'text', value: (r) => this.model.employeeName(r['reliever_employee_no'] as number) },
+    { title: 'Reliever Status', field: 'reliever_status', sort: true, cellType: 'badge', width: '130px',
+      badgeConfig: (val) => this.relieverStatusBadge(val) },
     { title: 'Status', field: 'status', sort: true, cellType: 'badge', width: '120px',
       badgeConfig: (val) => this.leaveStatusBadge(val), value: (r) => this.statusLabel(r['status'] as number) },
   ];
+
+  readonly relieverStatusOptions = hrmConstants.relieverStatuses;
+
+  relieverStatusBadge(value: unknown): BadgeConfig {
+    const opt = this.relieverStatusOptions.find(o => o.value === Number(value));
+    const label = opt ? opt.label : 'Pending';
+    switch (Number(value)) {
+      case 1:  return { label, variant: 'danger' };
+      case 2:  return { label, variant: 'success' };
+      default: return { label, variant: 'warning' };
+    }
+  }
 
   /**
    * Leave status → pill. The shared {@link statusBadge} treats the numeric code {@code 1} as an

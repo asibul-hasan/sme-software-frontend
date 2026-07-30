@@ -208,6 +208,8 @@ export class Hrm1321Component implements OnInit {
       { title: 'Days', field: 'total_days', cellType: 'decimal', align: 'right', precision: 1, width: '90px' },
       { title: 'Reason', field: 'reason', cellType: 'text', minWidth: '180px' },
       { title: 'Reliever', field: 'reliever_name', cellType: 'text', minWidth: '150px' },
+      { title: 'Reliever Status', field: 'reliever_status', cellType: 'badge', width: '130px',
+        badgeConfig: (val) => this.relieverStatusBadge(val) },
       { title: 'Attachment', field: 'attachment_path', cellType: 'custom-template',
         customTemplate: this.attachmentTpl, value: (r) => r['attachment_path'] ?? '', width: '150px' },
       { title: 'Status', field: 'approval_state', cellType: 'badge', width: '130px',
@@ -256,6 +258,18 @@ export class Hrm1321Component implements OnInit {
       case 'WAITING':  return 'Waiting';
       case 'APPROVED': return 'Approved';
       default:         return String(value ?? '');
+    }
+  }
+
+  readonly relieverStatusOptions = hrmConstants.relieverStatuses;
+
+  relieverStatusBadge(value: unknown): BadgeConfig {
+    const opt = this.relieverStatusOptions.find(o => o.value === Number(value));
+    const label = opt ? opt.label : 'Pending';
+    switch (Number(value)) {
+      case 1:  return { label, variant: 'danger' };
+      case 2:  return { label, variant: 'success' };
+      default: return { label, variant: 'warning' };
     }
   }
 
