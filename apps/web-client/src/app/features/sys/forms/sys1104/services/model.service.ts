@@ -182,7 +182,7 @@ export class Sys1104ModelService {
    */
   rolesForBranch(branchNo: number | null): RoleOption[] {
     if (branchNo == null) return this.roles();
-    return this.roles().filter((r) => !r.branch_nos?.length || r.branch_nos.includes(branchNo));
+    return this.roles().filter((r) => !r.branch_nos?.length || r.branch_nos.includes(0) || r.branch_nos.includes(branchNo));
   }
 
   loadInitial(): void {
@@ -247,27 +247,47 @@ export class Sys1104ModelService {
     this.mappings.update((rows) => rows.filter((_, i) => i !== index));
   }
 
+  activeOptions: Option[] = [
+    { value: 1, label: 'Active' },
+    { value: 0, label: 'Inactive' },
+  ];
+  
+  defaultOptions: Option[] = [
+    { value: 1, label: 'Yes' },
+    { value: 0, label: 'No' },
+  ];
+
+  updateRow(row: MappingRow): void {
+    const i = this.indexOfRow(row);
+    if (i >= 0) {
+      this.mappings.update((rows) => {
+        const next = [...rows];
+        const oldRow = next[i];
+
+        // If branch changed, we might need to clear the role if invalid
+        if (oldRow.branch_no !== row.branch_no && row.role_no != null && row.branch_no != null) {
+          const ok = this.rolesForBranch(row.branch_no).some((ro) => ro.value === row.role_no);
+          if (!ok) row.role_no = null;
+        }
+
+        // If is_default changed to 1, we must clear others
+        if (row.is_default === 1 && oldRow.is_default !== 1) {
+          for (let j = 0; j < next.length; j++) {
+            if (j !== i) next[j] = { ...next[j], is_default: 0 };
+          }
+        }
+
+        next[i] = row;
+        return next;
+      });
+    }
+  }
+
   // ── Row-reference variants — used by the common-table custom templates ──────
   private indexOfRow(row: MappingRow): number {
     // Look up by the stable __uid so a stale (immutably-replaced) row object still resolves.
     if (row.__uid != null) return this.mappings().findIndex((r) => r.__uid === row.__uid);
     return this.mappings().indexOf(row);
-  }
-  setBranchForRow(row: MappingRow, value: number | null): void {
-    const i = this.indexOfRow(row);
-    if (i >= 0) this.setBranchNo(i, value);
-  }
-  setRoleForRow(row: MappingRow, value: number | null): void {
-    const i = this.indexOfRow(row);
-    if (i >= 0) this.setRoleNo(i, value);
-  }
-  setDefaultForRow(row: MappingRow): void {
-    const i = this.indexOfRow(row);
-    if (i >= 0) this.setDefault(i);
-  }
-  toggleActiveForRow(row: MappingRow): void {
-    const i = this.indexOfRow(row);
-    if (i >= 0) this.toggleActive(i);
   }
   removeRowRef(row: MappingRow): void {
     const i = this.indexOfRow(row);

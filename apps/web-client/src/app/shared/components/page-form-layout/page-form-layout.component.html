@@ -1,9 +1,9 @@
 <div class="page-card">
   <!-- ── CARD HEADER (Sticky Top) ─────────────────────── -->
   <div
-    class="page-card-header flex flex-col justify-between px-2 py-1 shrink-0 md:flex-row"
+    class="page-card-header flex flex-col justify-between px-3 py-0.5 shrink-0 md:flex-row items-center"
   >
-    <div class="flex items-center gap-2 py-1">
+    <div class="flex items-center gap-2">
       <div class="header-icon-box shadow-sm">
         <mat-icon>{{ icon }}</mat-icon>
       </div>
@@ -11,9 +11,6 @@
         <h2 class="page-card-title m-0 gradient-text-header">
           {{ title }}
         </h2>
-        <!-- <p class="text-subtle m-0 small mt-1">
-          {{ subtitle }}
-        </p> -->
       </div>
     </div>
 
@@ -55,6 +52,7 @@
         class="btn-action btn-delete"
         (click)="delete.emit()"
         [matTooltip]="'delete' | translate"
+        [disabled]="disabledDelete"
       >
         <mat-icon>delete</mat-icon>
         <span class="btn-action-label">{{ 'delete' | translate }}</span>
@@ -80,7 +78,7 @@
         <ng-content select="[sidebarFilters]"></ng-content>
 
         <!-- 2. Search (with clear) + sort toggle -->
-        <div class="px-2 pt-1 pb-2 flex items-center gap-2">
+        <div *ngIf="showSearch" class="px-2 pt-1 pb-2 flex items-center gap-2">
           <div class="field-group mb-0 sidebar-search grow">
             <mat-icon class="sidebar-search__icon">search</mat-icon>
             <input
@@ -111,25 +109,11 @@
             <mat-icon>{{ sortIcon }}</mat-icon>
           </button>
         </div>
-
-        <!-- 3. Clear-all — intentionally disabled (kept for reference).
-             The search box's own × and each filter's clear already cover it.
-        <div class="sidebar-meta-bar px-2 pb-2" *ngIf="isFiltering">
-          <button
-            type="button"
-            class="sidebar-meta-bar__clear"
-            (click)="clearAll()"
-            matTooltip="Clear search & filters"
-          >
-            <mat-icon>filter_alt_off</mat-icon> Clear all
-          </button>
-        </div>
-        -->
       </div>
 
       <!-- Scrollable: list content -->
-      <div class="grow overflow-auto sidebar-scroll-area">
-        <div class="sidebar-list-wrap">
+      <div class="grow overflow-auto sidebar-scroll-area flex flex-col">
+        <div class="sidebar-list-wrap h-full flex flex-col grow">
           <ng-content select="[sidebarList]"></ng-content>
         </div>
       </div>

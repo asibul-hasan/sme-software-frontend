@@ -178,7 +178,6 @@
           </div>
         </div>
 
-        <!-- ── Matrix table ─────────────────────────────────────────────── -->
         <div class="card-body p-0">
           <div class="perm-table-wrap">
             <table class="perm-matrix">
@@ -202,11 +201,7 @@
                     </th>
                   }
                   <th class="perm-col-all" title="Grant / revoke the whole row">All</th>
-                  <!-- Scope / Records columns hidden for now -->
-                  <!--
-                  <th class="perm-col-meta">Scope</th>
-                  <th class="perm-col-meta">Records</th>
-                  -->
+                  <th class="perm-col-meta">Data Scope</th>
                 </tr>
               </thead>
               <tbody>
@@ -217,7 +212,7 @@
                       <span class="perm-module-name">{{ group.module_name }}</span>
                       <span class="perm-module-count">{{ model.moduleGranted(group) }}/{{ model.moduleTotal(group) }}</span>
                     </td>
-                    <td [attr.colspan]="model.flagFields.length + 1" class="perm-module-row__rest">
+                    <td [attr.colspan]="model.flagFields.length + 2" class="perm-module-row__rest">
                       <button type="button" class="perm-module-btn" (click)="$event.stopPropagation(); model.grantModule(group, 1)">Grant all</button>
                       <span class="perm-module-sep">·</span>
                       <button type="button" class="perm-module-btn perm-module-btn--muted" (click)="$event.stopPropagation(); model.grantModule(group, 0)">Clear</button>
@@ -252,21 +247,13 @@
                             (change)="model.grantAll(row.menu_no, model.isRowAll(row) ? 0 : 1)"
                           />
                         </td>
-                        <!-- Scope / Records cells hidden for now -->
-                        <!--
                         <td class="text-center">
-                          <select class="perm-mini-select" [value]="row.perm_scope" (change)="model.setScope(row.menu_no, +$any($event.target).value)">
-                            <option [value]="1">Company</option>
-                            <option [value]="2">Branch</option>
+                          <select class="perm-mini-select" [value]="row.data_scope" (change)="model.setDataScope(row.menu_no, +$any($event.target).value)">
+                            @for (opt of dataScopeOptions; track opt.value) {
+                              <option [value]="opt.value">{{ opt.label }}</option>
+                            }
                           </select>
                         </td>
-                        <td class="text-center">
-                          <select class="perm-mini-select" [value]="row.record_filter" (change)="model.setRecordFilter(row.menu_no, +$any($event.target).value)">
-                            <option [value]="1">All</option>
-                            <option [value]="2">Own</option>
-                          </select>
-                        </td>
-                        -->
                       </tr>
                     }
                   }
@@ -274,13 +261,13 @@
 
                 @if (model.matrix().length === 0) {
                   <tr>
-                    <td [attr.colspan]="model.flagFields.length + 2" class="perm-table-empty">
+                    <td [attr.colspan]="model.flagFields.length + 3" class="perm-table-empty">
                       No forms enrolled for this company. Enroll forms first (Menu Enrollment).
                     </td>
                   </tr>
                 } @else if (model.filteredGrouped().length === 0) {
                   <tr>
-                    <td [attr.colspan]="model.flagFields.length + 2" class="perm-table-empty">
+                    <td [attr.colspan]="model.flagFields.length + 3" class="perm-table-empty">
                       No forms match the current filters.
                       <button type="button" class="btn btn-sm btn-link p-0" (click)="model.clearFilters()">Clear filters</button>
                     </td>

@@ -1,7 +1,7 @@
 <app-page-form-layout
   [title]="'Approval Workflow Setup'"
   [icon]="'approval'"
-  [recordsCount]="scopeRows().length"
+  [recordsCount]="scopes().length"
   [hasSidebar]="false"
   [searchTerm]="model.searchTerm()"
   (searchTermChange)="onSearchTermChange($event)"
@@ -10,94 +10,114 @@
   (reset)="onReset()"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   [showNew]="permissionService.canInsert()"
-  [showDelete]="false"
+  [showDelete]="permissionService.canDelete()"
+  (delete)="onDelete()"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <div formContent class="flex flex-col gap-1 overflow-auto">
-    <!-- Level 1: Workflow (master) -->
-    <div class="form-section-card card">
-      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-        <h4 class="card-header__title mb-0 fw-bold">
-          <mat-icon class="me-2 align-middle">business</mat-icon>
-          Workflow
-        </h4>
-        <button
-          type="button"
-          class="btn-action btn-new btn-row-add ms-auto"
-          title="Add Workflow"
-          (click)="addScopeRow()"
-        >
-          <mat-icon>add</mat-icon>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- ── Filter Card — every change re-queries the workflow list ────────── -->
+    <app-form-section title="Filter Workflows" icon="filter_alt" dense>
+      <div sectionActions>
+        <button type="button" class="btn-action btn-reset" (click)="clearFilters()">
+          <mat-icon>filter_alt_off</mat-icon>
+          <span class="btn-action-label">Clear Filters</span>
         </button>
       </div>
+
+      <div class="col-span-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="field-group">
+          <label class="field-label" for="filter_branch">Branch</label>
+          <ng-select
+            id="filter_branch"
+            labelForId="filter_branch"
+            [items]="model.branchOptions()"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="model.filterBranch()"
+            (ngModelChange)="onFilterBranch($event)"
+            [clearable]="true"
+            placeholder="All Branches"
+          ></ng-select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter_department">Department</label>
+          <ng-select
+            id="filter_department"
+            labelForId="filter_department"
+            [items]="model.departmentOptions()"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="model.filterDepartment()"
+            (ngModelChange)="onFilterDepartment($event)"
+            [clearable]="true"
+            placeholder="All Departments"
+          ></ng-select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter_menu">Menu Form</label>
+          <ng-select
+            id="filter_menu"
+            labelForId="filter_menu"
+            [items]="model.enrolledMenuOptions()"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="model.filterMenu()"
+            (ngModelChange)="onFilterMenu($event)"
+            [clearable]="true"
+            placeholder="All Menu Forms"
+          ></ng-select>
+        </div>
+      </div>
+    </app-form-section>
+
+    <!-- Level 1: Workflow (master) -->
+    <div class="form-section-card card">
       <div class="card-body p-0">
-        <app-grid
-          [config]="scopeGrid"
-          [data]="scopeRows()"
-          height="300px"
-          [loading]="model.isLoading()"
-          (ready)="onScopesReady($event)"
+        <app-erp-grid
+          [config]="workflowGrid"
+          [data]="scopes()"
+          [selectedId]="model.selectedScopeUid()"
+          (ready)="onWorkflowGridReady($event)"
           (rowClick)="onScopeRowClick($event)"
-        />
+          (rowChange)="onScopeChange($event)"
+          (rowRemove)="onScopeRemove($event)"
+          (addRow)="addScopeRow()"
+        ></app-erp-grid>
       </div>
     </div>
 
-    <!-- Levels 2 & 3 -->
+    <!-- Levels 2 & 3: steps for the selected workflow, approvers for the selected step -->
     <div class="row row-group m-0">
-      <div class="col-6 p-0 pe-1">
+      <div class="col-6 ps-0">
         <div class="form-section-card card">
-          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-            <h4 class="card-header__title mb-0 fw-bold">
-              <mat-icon class="me-2 align-middle">format_list_numbered</mat-icon>
-              Approval Steps
-            </h4>
-            <button
-              type="button"
-              class="btn-action btn-new btn-row-add ms-auto"
-              title="Add Step"
-              [disabled]="!model.selectedScopeUid()"
-              (click)="addStepRow()"
-            >
-              <mat-icon>add</mat-icon>
-            </button>
-          </div>
           <div class="card-body p-0">
-            <app-grid
+            <app-erp-grid
               [config]="stepGrid"
-              [data]="stepRows()"
-              height="300px"
-              (ready)="onStepsReady($event)"
+              [data]="steps()"
+              [selectedId]="model.selectedStepUid()"
+              (ready)="onStepGridReady($event)"
               (rowClick)="onStepRowClick($event)"
-            />
+              (rowChange)="onStepChange($event)"
+              (rowRemove)="onStepRemove($event)"
+              (addRow)="addStepRow()"
+            ></app-erp-grid>
           </div>
         </div>
       </div>
 
-      <div class="col-6 p-0 ps-1">
+      <div class="col-6 pe-0">
         <div class="form-section-card card">
-          <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-            <h4 class="card-header__title mb-0 fw-bold">
-              <mat-icon class="me-2 align-middle">people</mat-icon>
-              Step Approvers
-            </h4>
-            <button
-              type="button"
-              class="btn-action btn-new btn-row-add ms-auto"
-              title="Add Approver"
-              [disabled]="!model.selectedStepUid()"
-              (click)="addStepApproverRow()"
-            >
-              <mat-icon>add</mat-icon>
-            </button>
-          </div>
           <div class="card-body p-0">
-            <app-grid
+            <app-erp-grid
               [config]="approverGrid"
-              [data]="approverRows()"
-              height="300px"
-              (ready)="onApproversReady($event)"
-            />
+              [data]="approvers()"
+              (rowChange)="onApproverChange($event)"
+              (rowRemove)="onApproverRemove($event)"
+              (addRow)="addApproverRow()"
+            ></app-erp-grid>
           </div>
         </div>
       </div>

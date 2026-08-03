@@ -1,0 +1,56 @@
+<div class="erp-grid-wrapper card border shadow-sm flex flex-col h-full overflow-hidden">
+  <!-- Toolbar -->
+  <app-grid-toolbar
+    [config]="config().toolbar ?? {}"
+    [searchValue]="searchValue"
+    [selectedCount]="gridApiService.selectedUids().length"
+    [columns]="toolbarColumns"
+    [canAdd]="config().canAdd?.() ?? true"
+    (add)="onAddRow()"
+    (deleteSelected)="onDeleteSelected()"
+    (searchChange)="onSearchChange($event)"
+    (exportAs)="onExportAs($event)"
+    (resetLayout)="onResetLayout()"
+    (saveColumns)="onSaveColumns()"
+    (toggleColumn)="onToggleColumn($event)"
+  ></app-grid-toolbar>
+
+  <!-- AG Grid Viewport -->
+  <div class="erp-grid-viewport flex-grow-1 w-full" [style.height]="effectiveHeight()">
+    <ag-grid-angular
+      #agGrid
+      style="width: 100%; height: 100%;"
+      class="ag-theme-alpine"
+      [gridOptions]="gridOptions"
+      [rowData]="rowData"
+      (gridReady)="onGridReady($event)"
+      (modelUpdated)="onModelUpdated($event)"
+      (paginationChanged)="onPaginationChanged()"
+      (cellValueChanged)="onCellValueChanged($event)"
+      (cellClicked)="onCellClicked($event)"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowClicked)="onRowClicked($event)"
+    ></ag-grid-angular>
+  </div>
+
+  <!-- Status Bar -->
+  @if (config().showStatusBar !== false) {
+    <app-grid-status-bar
+      [totalRows]="rowData.length"
+      [selectedRows]="gridApiService.selectedUids().length"
+      [insertedCount]="getInsertedCount()"
+      [updatedCount]="getUpdatedCount()"
+      [deletedCount]="getDeletedCount()"
+      [showPagination]="config().showPagination === true"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="config().pageSizeOptions ?? [25, 50, 100, 500]"
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      (first)="gridApi?.paginationGoToFirstPage()"
+      (previous)="gridApi?.paginationGoToPreviousPage()"
+      (next)="gridApi?.paginationGoToNextPage()"
+      (last)="gridApi?.paginationGoToLastPage()"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-grid-status-bar>
+  }
+</div>

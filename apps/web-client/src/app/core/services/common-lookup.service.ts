@@ -15,6 +15,8 @@ export interface EmployeeLookupDto {
   full_name:         string;
   /** "{employee_id} — {full_name}" — preferred label for search dropdowns. */
   full_name_with_id: string;
+  /** "{employee_id}: {full_name}" — alternative label for search dropdowns. */
+  employee_name_id:  string;
   department_name:   string | null;
   designation_name:  string | null;
   /** Linked user account, or null when the employee has no login. */
@@ -78,7 +80,7 @@ export class CommonLookupService {
     return `${this.config.apiUrl}/common/lookups`;
   }
 
-  /** Active employees across the caller's company — use `full_name_with_id` as dropdown label. */
+  /** Active employees across the caller's company — use `full_name_with_id` or `employee_name_id` as dropdown label. */
   getEmployees(): Observable<EmployeeLookupDto[]> {
     return this.http
       .get<ApiResponse<EmployeeLookupDto[]>>(`${this.base}/employees`)

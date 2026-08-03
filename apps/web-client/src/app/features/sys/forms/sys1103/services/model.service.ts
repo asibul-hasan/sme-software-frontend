@@ -35,6 +35,7 @@ export interface MatrixRow {
   can_export: number;
   perm_scope: number;     // 1=Company, 2=Branch
   record_filter: number;  // 1=All, 2=Own
+  data_scope: number;     // 1=Branch, 2=Department, 3=Employee
 }
 
 export interface ModuleGroup {
@@ -157,6 +158,10 @@ export class Sys1103ModelService {
     return groups;
   });
 
+  filteredFlat = computed<MatrixRow[]>(() => {
+    return this.filteredGrouped().flatMap((g) => g.rows);
+  });
+
   /** menu_nos currently visible after filters — column/global ops act on these only. */
   private visibleMenuNos = computed<Set<number>>(() => {
     const s = new Set<number>();
@@ -219,6 +224,10 @@ export class Sys1103ModelService {
     this.matrix.update((rows) =>
       rows.map((r) => (r.menu_no === menuNo ? { ...r, [field]: r[field] === 1 ? 0 : 1 } : r)),
     );
+  }
+
+  updateRow(row: MatrixRow): void {
+    this.matrix.update((rows) => rows.map((r) => (r.menu_no === row.menu_no ? row : r)));
   }
 
   private withAllFlags(r: MatrixRow, value: number): MatrixRow {
@@ -360,6 +369,7 @@ export class Sys1103ModelService {
               can_approve: s.can_approve, can_post: s.can_post,
               can_cancel: s.can_cancel, can_export: s.can_export,
               perm_scope: s.perm_scope, record_filter: s.record_filter,
+              data_scope: s.data_scope,
             };
           }),
         );
@@ -380,6 +390,19 @@ export class Sys1103ModelService {
   setRecordFilter(menuNo: number, value: number): void {
     this.matrix.update((rows) =>
       rows.map((r) => (r.menu_no === menuNo ? { ...r, record_filter: value } : r)),
+    );
+  }
+
+  setDataScope(menuNo: number, value: number): void {
+    this.matrix.update((rows) =>
+      rows.map((r) => (r.menu_no === menuNo ? { ...r, data_scope: value } : r)),
+    );
+  }
+
+  setAllDataScope(value: number): void {
+    const vis = this.visibleMenuNos();
+    this.matrix.update((rows) =>
+      rows.map((r) => (vis.has(r.menu_no) ? { ...r, data_scope: value } : r)),
     );
   }
 

@@ -1,33 +1,63 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationService } from '../../../core/services/notification.service';
+import { MatIconModule } from '@angular/material/icon';
+import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
+import { DialogService } from '../../../core/services/dialog.service';
+import { NotificationModalComponent } from '../notification-modal/notification-modal.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-notification-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   template: `
     @if (notification(); as item) {
-      <div class="notification-toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
-        <div class="toast show shadow-lg border-0 rounded-3 overflow-hidden bg-white" style="min-width: 320px; max-width: 400px;">
-          <div class="toast-header bg-primary text-white d-flex align-items-center justify-content-between px-3 py-2">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-bell-fill me-1"></i>
-              <strong class="me-auto text-white">{{ item.form_name }}</strong>
+      <div class="notification-toast-container fixed right-4 top-4 z-[1080]">
+        <div
+          class="w-[360px] overflow-hidden rounded-xl border border-line bg-surface text-content shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+        >
+          <div class="flex items-start gap-3 p-3">
+            <span
+              class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(var(--indigo-rgb),0.1)] text-indigo"
+            >
+              <mat-icon class="!h-[18px] !w-[18px] !text-[18px] leading-none">notifications</mat-icon>
+            </span>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="truncate text-xs font-semibold text-indigo">{{ item.form_name }}</span>
+                <button
+                  type="button"
+                  class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-subtle hover:bg-muted"
+                  (click)="dismiss()"
+                >
+                  <mat-icon class="!h-[16px] !w-[16px] !text-[16px] leading-none">close</mat-icon>
+                </button>
+              </div>
+
+              <div class="truncate text-sm font-semibold">{{ item.title }}</div>
+              <p class="mb-0 mt-0.5 line-clamp-2 text-xs text-subtle">{{ item.message }}</p>
+
+              <div class="mt-2 flex justify-end gap-2">
+                <button
+                  class="cursor-pointer rounded-lg border border-line bg-transparent px-3 py-1.5 text-xs font-semibold"
+                  (click)="dismiss()"
+                >
+                  Dismiss
+                </button>
+                <button
+                  class="cursor-pointer rounded-lg border-0 bg-indigo px-3 py-1.5 text-xs font-semibold text-white"
+                  (click)="openModal(item)"
+                >
+                  View
+                </button>
+              </div>
             </div>
-            <button type="button" class="btn-close btn-close-white ms-2" (click)="dismiss()"></button>
           </div>
-          <div class="toast-body p-3">
-            <h6 class="fw-semibold text-dark mb-1">{{ item.title }}</h6>
-            <p class="text-muted small mb-3">{{ item.message }}</p>
-            <div class="d-flex justify-content-end gap-2">
-              <button class="btn btn-outline-secondary btn-sm px-3" (click)="dismiss()">Dismiss</button>
-              <button class="btn btn-primary btn-sm px-3" (click)="openModal(item)">Read</button>
-            </div>
-          </div>
-          <div class="progress" style="height: 3px;">
-            <div class="progress-bar bg-primary" [style.width.%]="progress()"></div>
+
+          <!-- Auto-dismiss countdown -->
+          <div class="h-[3px] w-full bg-muted">
+            <div class="h-full bg-indigo transition-[width] duration-100" [style.width.%]="progress()"></div>
           </div>
         </div>
       </div>
@@ -45,6 +75,7 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class NotificationToastComponent implements OnInit, OnDestroy {
   public notificationService = inject(NotificationService);
+  private dialogService = inject(DialogService);
   public notification = this.notificationService.activeToast;
 
   public progress = signal(100);
@@ -86,8 +117,16 @@ export class NotificationToastComponent implements OnInit, OnDestroy {
     this.notificationService.dismissToast();
   }
 
-  public openModal(item: any): void {
+  /** Opens the inbox dialog on the toasted item, via the shared DialogService. */
+  public openModal(item: NotificationItem): void {
     this.clearTimer();
-    this.notificationService.openModal(item);
+    this.notificationService.dismissToast();
+    this.dialogService
+      .open(NotificationModalComponent, {
+        size: 'xl',
+        panelClass: 'notification-dialog-panel',
+        data: { notificationNo: item.notification_no },
+      })
+      .subscribe(() => this.notificationService.fetchNotifications());
   }
 }

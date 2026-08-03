@@ -1,4 +1,41 @@
-import type { ErpActionKind, ErpActionVariant } from '../grid/grid.types';
+/**
+ * The canonical ERP action vocabulary. Every button in the app should name one of these rather
+ * than re-inventing an icon/label pair, so Approve/Reject/Post/Delete read identically in FIN,
+ * HRM, INV and SAL.
+ *
+ * Defined here, with the catalog it describes — a grid is one consumer of these actions, not
+ * their owner.
+ */
+export type ErpActionKind =
+  | 'add'
+  | 'edit'
+  | 'view'
+  | 'delete'
+  | 'save'
+  | 'update'
+  | 'cancel'
+  | 'submit'
+  | 'approve'
+  | 'reject'
+  | 'print'
+  | 'export'
+  | 'import'
+  | 'refresh'
+  | 'search'
+  | 'filter'
+  | 'reset'
+  | 'download'
+  | 'duplicate'
+  | 'post'
+  | 'close';
+
+export type ErpActionVariant =
+  | 'primary'
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'secondary'
+  | 'ghost';
 
 /**
  * The ERP action catalog — ONE definition per standard action.

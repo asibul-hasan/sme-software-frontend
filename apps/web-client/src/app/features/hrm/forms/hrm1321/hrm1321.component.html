@@ -141,15 +141,16 @@
           {{ filteredRequests().length }} requests
         </span>
       </div>
-
-      <app-common-table
-        [columns]="tableColumns"
-        [data]="$any(filteredRequests())"
-        [config]="tableConfig"
-        [loading]="model.isLoading()"
-        (rowClick)="onRowClick($event)"
-      />
-
+      <div class="h-[300px]">
+        <app-erp-grid
+          class="block h-full"
+          [config]="gridConfig"
+          [data]="$any(filteredRequests())"
+          (rowClick)="onRowClick($event)"
+          (rowChange)="onRowChange($event)"
+          height="100%"
+        ></app-erp-grid>
+      </div>
       <div
         class="flex items-center gap-2 border-t border-line px-3 py-2 text-[12px] text-subtle"
       >
@@ -338,52 +339,3 @@
   </div>
 </app-page-form-layout>
 
-<!-- ── Cell templates (context is { $implicit: row } → declare `let-row`) ── -->
-<ng-template #datesTpl let-row>
-  <span class="flex items-center gap-1 whitespace-nowrap">
-    <mat-icon class="!h-[14px] !w-[14px] !text-[14px] !text-subtle"
-      >calendar_today</mat-icon
-    >
-    {{ row.from_date }} → {{ row.to_date }}
-  </span>
-</ng-template>
-
-<ng-template #attachmentTpl let-row>
-  @if (row.attachment_path) {
-    <a
-      [href]="row.attachment_path"
-      target="_blank"
-      rel="noopener"
-      class="flex items-center gap-1 text-indigo no-underline"
-    >
-      <mat-icon class="!h-[14px] !w-[14px] !text-[14px]">attach_file</mat-icon>
-      <span class="truncate" style="max-width: 110px">{{
-        row.attachment_path
-      }}</span>
-    </a>
-  } @else {
-    <span class="text-subtle">—</span>
-  }
-</ng-template>
-
-<ng-template #checkboxTpl let-row>
-  <span class="flex w-full justify-center">
-    <mat-checkbox
-      color="primary"
-      [checked]="!!row.selected"
-      (change)="toggleRow(row, $event.checked)"
-    ></mat-checkbox>
-  </span>
-</ng-template>
-
-<ng-template #historyBtnTpl let-row>
-  <button
-    type="button"
-    class="btn-action btn-reset"
-    title="View Employee Leave History"
-    (click)="$event.stopPropagation(); openHistoryModalFor(row)"
-  >
-    <mat-icon>history</mat-icon>
-    <span class="btn-action-label">History</span>
-  </button>
-</ng-template>

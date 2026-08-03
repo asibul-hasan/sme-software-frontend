@@ -1,10 +1,9 @@
 <app-page-form-layout
   [title]="'Role Management'"
   [icon]="'badge'"
-  [recordsCount]="model.filteredRoles().length"
+  [recordsCount]="model.roles().length"
   [sidebarTitle]="'Roles'"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
+  [showSearch]="false"
   (save)="onSave()"
   (new)="onNew()"
   (reset)="onReset()"
@@ -16,36 +15,15 @@
   [isLoading]="model.isLoading()"
 >
   <!-- Sidebar List Content -->
-  <div sidebarList>
-    @for (role of model.pager.paged(); track role.role_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedRoleNo() === role.role_no"
-        (click)="model.selectRole(role)"
-      >
-        <span
-          class="status-dot status-dot--corner"
-          [class.status-dot--active]="role.is_active === 1"
-          [class.status-dot--inactive]="role.is_active !== 1"
-          [title]="role.is_active === 1 ? 'Active' : 'Inactive'"
-        ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ role.role_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ role.role_name }}</p>
-        @if (role.is_system_role === 1) {
-          <div class="list-item-meta">
-            <span class="list-item-tag list-item-tag--primary">System</span>
-          </div>
-        }
-      </button>
-    }
-
-    @if (model.filteredRoles().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>badge</mat-icon>
-        <p>No records found</p>
-      </div>
-    }
+  <div sidebarList class="h-full flex flex-col">
+    <app-erp-grid
+      class="block flex-1 h-full"
+      [config]="roleGrid"
+      [data]="model.roles()"
+      [selectedId]="model.selectedRoleNo()"
+      (rowClick)="model.selectRole($event)"
+      height="100%"
+    ></app-erp-grid>
   </div>
 
   <!-- Main Form Content -->
@@ -159,9 +137,5 @@
     </form>
   </div>
 
-  <!-- Pagination footer -->
-  <app-sidebar-pagination
-    sidebarFooter
-    [pager]="model.pager"
-  ></app-sidebar-pagination>
+
 </app-page-form-layout>

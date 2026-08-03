@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize, Subject, debounceTime } from 'rxjs';
@@ -68,6 +68,7 @@ export class Hrm1301ModelService {
   status        = signal<number>(1);
   activeTab     = signal<'application' | 'balance'>('application');
   balanceLeaveType = signal<number | null>(null);
+  balanceLeaveYear = signal<number | null>(new Date().getFullYear());
 
   filterFromDate = signal<string>(this.getFirstDayOfMonth());
   filterToDate = signal<string>(this.getLastDayOfMonth());
@@ -80,6 +81,23 @@ export class Hrm1301ModelService {
   constructor() {
     this.refreshBalance$.pipe(debounceTime(150)).subscribe(() => this.executeRefreshBalance());
     this.refreshHistory$.pipe(debounceTime(150)).subscribe(() => this.executeRefreshFilteredHistory());
+    
+    effect(() => {
+      const editable = this.isEditable();
+      if (this.form) {
+        const controlsToToggle = ['from_date', 'to_date', 'is_half_day', 'reason', 'need_reliever', 'reliever_employee_no', 'attachment_path'];
+        controlsToToggle.forEach(key => {
+          const ctrl = this.form.get(key);
+          if (ctrl) {
+            if (editable) {
+              ctrl.enable({ emitEvent: false });
+            } else {
+              ctrl.disable({ emitEvent: false });
+            }
+          }
+        });
+      }
+    });
   }
 
   private getFirstDayOfMonth(): string {
@@ -116,10 +134,42 @@ export class Hrm1301ModelService {
     () => (this.status() === 1 || this.status() === 2) && this.canEdit(),
   );
 
+  selectedEmployeeNo = signal<number | null>(null);
+
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     return this.leaves()
       .filter((l) => this.employeeName(l.employee_no).toLowerCase().includes(term) || (l.from_date || '').includes(term))
+      .sort((a, b) => b.leave_application_no - a.leave_application_no);
+  });
+
+  displayLeaves = computed(() => {
+    const list = this.leaves();
+    const empNo = this.selectedEmployeeNo();
+    const type = this.balanceLeaveType();
+    const year = this.balanceLeaveYear();
+    const term = this.searchTerm().toLowerCase().trim();
+
+    if (!empNo) return [];
+
+    return list
+      .filter((l) => {
+        if (l.employee_no !== empNo) return false;
+        if (type != null && l.leave_type_no !== type) return false;
+        if (year != null) {
+          const yr = l.leave_year ?? (l.from_date ? new Date(l.from_date).getFullYear() : null);
+          if (yr !== year) return false;
+        }
+        if (term) {
+          const empName = this.employeeName(l.employee_no).toLowerCase();
+          const reason = (l.reason || '').toLowerCase();
+          const fromDate = l.from_date || '';
+          if (!empName.includes(term) && !reason.includes(term) && !fromDate.includes(term)) {
+            return false;
+          }
+        }
+        return true;
+      })
       .sort((a, b) => b.leave_application_no - a.leave_application_no);
   });
 
@@ -134,15 +184,23 @@ export class Hrm1301ModelService {
       this.filterBalance.set(null);
       return;
     }
-    this.data.loadFilteredHistory(emp, this.balanceLeaveType(), this.filterFromDate(), this.filterToDate()).subscribe({
+    const year = this.balanceLeaveYear();
+    const fromDate = year ? `${year}-01-01` : null;
+    const toDate = year ? `${year}-12-31` : null;
+    const filterType = this.balanceLeaveType();
+
+    this.data.loadFilteredHistory(emp, filterType, fromDate, toDate).subscribe({
       next: (res) => { if (isSuccess(res) && res.data) this.balanceHistory.set(res.data); }
     });
     
-    const filterType = this.balanceLeaveType();
     if (filterType) {
-      const year = this.filterFromDate() ? new Date(this.filterFromDate()).getFullYear() : undefined;
-      this.data.loadBalance(emp, filterType, year).subscribe({
-        next: (res) => { if (isSuccess(res) && res.data) this.filterBalance.set(res.data); }
+      this.data.loadBalance(emp, filterType, year ?? undefined).subscribe({
+        next: (res) => {
+          if (isSuccess(res) && res.data) {
+            const item = Array.isArray(res.data) ? res.data[0] : res.data;
+            this.filterBalance.set(item ?? null);
+          }
+        }
       });
     } else {
       this.filterBalance.set(null);
@@ -165,9 +223,11 @@ export class Hrm1301ModelService {
 
   initForm(): void {
     const today = new Date().toISOString().split('T')[0];
+    const defaultEmpNo = this.authCtx.user()?.employee_no ?? null;
+    this.selectedEmployeeNo.set(defaultEmpNo);
     this.form = this.fb.group({
       leave_application_no: [null],
-      employee_no:          [null, [Validators.required]],
+      employee_no:          [defaultEmpNo, [Validators.required]],
       leave_type_no:        [null, [Validators.required]],
       from_date:            [today, [Validators.required]],
       to_date:              [today, [Validators.required]],
@@ -180,33 +240,83 @@ export class Hrm1301ModelService {
     });
   }
 
+  onEmployeeChange(empNo: number | null): void {
+    this.selectedEmployeeNo.set(empNo);
+    if (empNo) {
+      this.form.patchValue({ employee_no: empNo }, { emitEvent: false });
+    }
+    this.refreshBalance();
+  }
+
   loadEmployees(): void {
     this.commApi.getEmployeeList({ is_active: 1 }).subscribe({
-      next: (res) => { if (isSuccess(res) && res.data) this.employees.set(res.data); },
-    });
-  }
-  loadLeaveTypes(): void {
-    this.data.loadLeaveTypes().subscribe({
-      next: (res) => { if (isSuccess(res) && res.data) this.leaveTypes.set(res.data); },
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          this.employees.set(res.data);
+          const loginEmpNo = this.authCtx.user()?.employee_no;
+          const matched = res.data.find((e) => e.employee_no === loginEmpNo);
+          const empNo = matched ? matched.employee_no : (res.data[0]?.employee_no ?? null);
+          if (empNo) {
+            this.selectedEmployeeNo.set(empNo);
+            this.form.patchValue({ employee_no: empNo }, { emitEvent: false });
+            this.refreshBalance();
+          }
+        }
+      },
     });
   }
 
+  loadLeaveTypes(): void {
+    this.data.loadLeaveTypes().subscribe({
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          this.leaveTypes.set(res.data);
+          if (res.data.length > 0) {
+            const firstTypeNo = res.data[0].leave_type_no;
+            if (!this.balanceLeaveType()) {
+              this.balanceLeaveType.set(firstTypeNo);
+            }
+            this.form.patchValue({ leave_type_no: firstTypeNo }, { emitEvent: false });
+            this.refreshBalance();
+          }
+        }
+      },
+    });
+  }
+
+  setBalanceLeaveType(typeNo: number | null): void {
+    this.balanceLeaveType.set(typeNo);
+    if (typeNo != null) {
+      this.form.patchValue({ leave_type_no: typeNo }, { emitEvent: false });
+    }
+    this.refreshBalance();
+  }
+
+  private isSelectingRow = false;
+
   refreshBalance(): void {
+    if (this.isSelectingRow) return;
     this.refreshBalance$.next();
   }
 
   private executeRefreshBalance(): void {
     const emp = this.form.get('employee_no')?.value;
-    const type = this.form.get('leave_type_no')?.value;
+    const formType = this.form.get('leave_type_no')?.value;
+    const filterType = this.balanceLeaveType();
+    const type = filterType ?? formType;
     const from = this.form.get('from_date')?.value as string;
-    
-    // Always refresh history when form selection changes
-    this.refreshFilteredHistory();
+    const year = this.balanceLeaveYear() ?? (from ? new Date(from).getFullYear() : undefined);
 
     if (!emp || !type) { this.balance.set(null); return; }
-    const year = from ? new Date(from).getFullYear() : undefined;
     this.data.loadBalance(emp, type, year).subscribe({
-      next: (res) => { if (isSuccess(res) && res.data) this.balance.set(res.data); },
+      next: (res) => {
+        if (isSuccess(res) && res.data) {
+          const item = Array.isArray(res.data) ? res.data[0] : res.data;
+          this.balance.set(item ?? null);
+        } else {
+          this.balance.set(null);
+        }
+      },
     });
   }
 
@@ -216,9 +326,17 @@ export class Hrm1301ModelService {
       next: (res) => {
         if (isSuccess(res) && res.data) {
           this.leaves.set(res.data);
-          if (res.data.length > 0) {
-            const target = reselectNo != null ? res.data.find((l) => l.leave_application_no === reselectNo) : null;
-            this.selectLeave(target ?? res.data[0]);
+          if (reselectNo != null) {
+            const target = res.data.find((l) => l.leave_application_no === reselectNo);
+            if (target) {
+              this.selectLeave(target);
+              return;
+            }
+          }
+          const currentEmpNo = this.selectedEmployeeNo() ?? this.authCtx.user()?.employee_no;
+          const myLeaves = currentEmpNo ? res.data.filter((l) => l.employee_no === currentEmpNo) : [];
+          if (myLeaves.length > 0) {
+            this.selectLeave(myLeaves[0]);
           } else {
             this.onNew();
           }
@@ -229,16 +347,25 @@ export class Hrm1301ModelService {
   }
 
   selectLeave(item: LeaveApplication): void {
+    this.isSelectingRow = true;
     this.selectedNo.set(item.leave_application_no);
     this.status.set(item.status);
     this.isLoading.set(true);
-    this.data.loadLeaveDetail(item.leave_application_no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
+    this.data.loadLeaveDetail(item.leave_application_no).pipe(
+      finalize(() => {
+        this.isLoading.set(false);
+        setTimeout(() => { this.isSelectingRow = false; }, 200);
+      })
+    ).subscribe({
       next: (res) => {
         if (isSuccess(res) && res.data) {
           const d = res.data;
           this.status.set(d.status);
           // Server decides: editable only while pending AND no approver has acted.
           this.canEdit.set(d.can_edit !== false);
+          if (d.employee_no) {
+            this.selectedEmployeeNo.set(d.employee_no);
+          }
           this.form.patchValue({
             leave_application_no: d.leave_application_no,
             employee_no:          d.employee_no,
@@ -252,7 +379,27 @@ export class Hrm1301ModelService {
             attachment_path:      d.attachment_path,
             is_active:            d.is_active,
           }, { emitEvent: false });
-          this.refreshBalance();
+
+          if (d.leave_type_no) {
+            this.balanceLeaveType.set(d.leave_type_no);
+          }
+          if (d.leave_year) {
+            this.balanceLeaveYear.set(d.leave_year);
+          }
+
+          const emp = d.employee_no;
+          const type = d.leave_type_no;
+          const yr = d.leave_year ?? (d.from_date ? new Date(d.from_date).getFullYear() : new Date().getFullYear());
+          if (emp && type) {
+            this.data.loadBalance(emp, type, yr).subscribe({
+              next: (bRes) => {
+                if (isSuccess(bRes) && bRes.data) {
+                  const bItem = Array.isArray(bRes.data) ? bRes.data[0] : bRes.data;
+                  this.balance.set(bItem ?? null);
+                }
+              }
+            });
+          }
         }
       },
       error: () => this.toastr.error('Failed to load leave details'),
@@ -289,14 +436,14 @@ export class Hrm1301ModelService {
     obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) {
-          this.toastr.success(isUpdate ? 'Leave updated' : 'Leave saved as draft');
+          this.toastr.success(res.message || (isUpdate ? 'Leave updated' : 'Leave saved as draft'));
           const savedNo = isUpdate ? this.selectedNo() : (res.data?.leave_application_no ?? null);
           this.loadLeaves(savedNo);
         } else {
           this.toastr.error(res.message || 'Save failed');
         }
       },
-      error: () => this.toastr.error('Server error during save'),
+      error: (err) => this.toastr.error(err?.error?.message || 'Server error during save'),
     });
   }
 
@@ -324,14 +471,14 @@ export class Hrm1301ModelService {
     this.data.deleteLeave(no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) {
-          this.toastr.success('Leave deleted');
+          this.toastr.success(res.message || 'Leave deleted');
           this.loadLeaves(null);
           if (callback) callback();
         } else {
           this.toastr.error(res.message || 'Delete failed');
         }
       },
-      error: () => this.toastr.error('Server error during delete'),
+      error: (err) => this.toastr.error(err?.error?.message || 'Server error during delete'),
     });
   }
 
@@ -341,6 +488,23 @@ export class Hrm1301ModelService {
     this.status.set(1);
     this.canEdit.set(true);       // a brand-new application is always editable
     this.balance.set(null);
-    this.form?.reset({ from_date: today, to_date: today, is_half_day: 0, need_reliever: 0, is_active: 1 }, { emitEvent: false });
+    const defaultEmpNo = this.authCtx.user()?.employee_no ?? null;
+    this.selectedEmployeeNo.set(defaultEmpNo);
+    const firstTypeNo = this.leaveTypes().length > 0 ? this.leaveTypes()[0].leave_type_no : null;
+    if (firstTypeNo != null) {
+      this.balanceLeaveType.set(firstTypeNo);
+    }
+    this.form?.reset({
+      employee_no: defaultEmpNo,
+      leave_type_no: firstTypeNo,
+      from_date: today,
+      to_date: today,
+      is_half_day: 0,
+      need_reliever: 0,
+      is_active: 1,
+    }, { emitEvent: false });
+    if (defaultEmpNo && firstTypeNo) {
+      this.refreshBalance();
+    }
   }
 }

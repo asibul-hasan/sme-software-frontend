@@ -5,8 +5,10 @@ import { PageFormLayoutComponent } from '../../../../shared/components/page-form
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { activeStatusOptions } from '../../../../core/constants/common-options.constants';
-import { Sys1102ModelService } from './services/model.service';
+import { Sys1102ModelService, IRole } from './services/model.service';
 import { Sys1102DataService } from './services/data.service';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig, GridColumns } from '../../../../shared/ag-grid';
 
 /**
  * SYS1102 – Role Management.
@@ -18,7 +20,7 @@ import { Sys1102DataService } from './services/data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sys1102',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Sys1102ModelService, Sys1102DataService],
   templateUrl: './sys1102.component.html',
   styles: [],
@@ -29,6 +31,25 @@ export class Sys1102Component implements OnInit {
   private alertService = inject(AlertService);
   readonly activeStatusOptions = activeStatusOptions;
 
+  readonly roleGrid: GridConfig<IRole> = {
+    gridKey: 'SYS_1102_ROLES_SIDEBAR',
+    rowIdField: 'role_no',
+    selectionMode: 'single',
+    externalRowState: true,
+    showPagination: false,
+    showStatusBar: false,
+    canAdd: () => false,
+    canEdit: () => false,
+    canDeleteRow: () => false,
+    toolbar: {
+      showAdd: false, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true,
+    },
+    columns: [
+      GridColumns.text<IRole>('role_name', 'Name').flex(1).minWidth(120).build(),
+    ],
+  };
+
   ngOnInit(): void {
     this.model.initForm();
     this.permissionService.useLocalPermissions('SYS_1102');
@@ -37,8 +58,7 @@ export class Sys1102Component implements OnInit {
   }
 
   onSearchTermChange(val: string): void {
-    this.model.searchTerm.set(val);
-    this.model.pager.reset();
+    // left intentionally empty or completely removed
   }
 
   onSave(): void {

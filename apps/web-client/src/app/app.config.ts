@@ -20,7 +20,6 @@ import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthInterceptorFn } from './core/interceptors/auth.interceptor';
-// import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
@@ -40,9 +39,6 @@ export function initApp(
     new Promise((resolve) => {
       auth.initialize().subscribe({
         next: (result) => {
-          // result is truthy when an existing session was rehydrated from
-          // localStorage (page refresh / reopened browser). Restore cached logo + currency
-          // without hitting the API again.
           if (result) {
             bootstrap.loadFromStorage();
           }
@@ -62,18 +58,14 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
-    // Registers AG Grid's Community modules and the ERP grid theme once for the whole app.
-    // Single registration: the legacy <app-data-grid> shares the same module set, so it keeps
-    // working and simply inherits the new theme.
     provideErpGrid(),
     provideToastr({
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
-    }), // Toastr providers
+    }),
     provideHttpClient(
       withInterceptors([
         AuthInterceptorFn,
-        // apiErrorInterceptor,
         loaderInterceptor,
       ]),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),

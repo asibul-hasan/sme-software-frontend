@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
-import { Sys1103ModelService } from './services/model.service';
+import { Sys1103ModelService, MatrixRow } from './services/model.service';
 import { Sys1103DataService } from './services/data.service';
+
+import { sysConstants } from '../../constants/sys.constants';
 
 /**
  * SYS1103 – Role Permission Matrix. Pick a company role, then grant per-form
@@ -22,6 +24,8 @@ import { Sys1103DataService } from './services/data.service';
 export class Sys1103Component implements OnInit {
   public model = inject(Sys1103ModelService);
   public permissionService = inject(FormPermissionService);
+
+  public dataScopeOptions = sysConstants.dataScopeOptions;
 
   ngOnInit(): void {
     this.permissionService.useLocalPermissions('SYS_1103');

@@ -275,10 +275,7 @@ export class Hrm1001ModelService {
         designation_no: [null, [Validators.required]],
         grade_no: [null],
         reporting_to: [null],
-        branch_no: [
-          this.authCtx.user()?.branch_no ?? null,
-          [Validators.required],
-        ],
+        branch_no: [this.authCtx.user()?.branch_no ?? null],
 
         joining_date: ['', [Validators.required]],
         confirmation_date: [null],
@@ -333,10 +330,7 @@ export class Hrm1001ModelService {
         photo_url: [''],
         signature_url: [''],
 
-        company_no: [
-          this.authCtx.user()?.company_no ?? null,
-          [Validators.required],
-        ],
+        company_no: [this.authCtx.user()?.company_no ?? null],
         remarks: [''],
       },
       {
@@ -557,6 +551,10 @@ export class Hrm1001ModelService {
         const control = this.form.get(key);
         if (control?.invalid) {
           const nameKey = fieldMap[key];
+          if (key === 'company_no') {
+             this.toastr.warning(`Company is invalid! Value: ${control.value}, Errors: ${JSON.stringify(control.errors)}, AuthCompany: ${this.authCtx.user()?.company_no}`);
+             return;
+          }
           if (nameKey) {
             const errorMsg = this.translate.instant(nameKey);
             this.toastr.warning(errorMsg);

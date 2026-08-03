@@ -1,368 +1,275 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  contentChildren,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  output,
-  signal,
-  ViewEncapsulation,
+  Component, ChangeDetectionStrategy, input, output, effect, inject, OnInit, OnDestroy, ViewChild, ContentChildren, QueryList, TemplateRef
 } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import type {
-  CellValueChangedEvent,
-  GridApi,
-  GridOptions,
-  GridReadyEvent,
-  RowClickedEvent,
-  RowDoubleClickedEvent,
-} from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent, CellValueChangedEvent, SelectionChangedEvent } from 'ag-grid-community';
 
-import { AppSettingsService } from '../../../core/services/app-settings.service';
-import { GRID_DENSITY_METRICS, type GridDensity } from '../enums/grid-enums';
-import type {
-  AgGridConfig,
-  GridCellEdit,
-  GridColumn,
-  GridRowData,
-} from '../models/grid-types';
+import { GridFullConfig, ColumnConfig, GridRowData } from '../models/grid-types';
+import { SqlRowState } from '../models/grid-row-state.enum';
 import { GridApiService } from '../services/grid-api.service';
-import { GridColumnService } from '../services/grid-column.service';
-import { GridExportService } from '../services/grid-export.service';
-import { GridFilterService } from '../services/grid-filter.service';
-import { GridSelectionService } from '../services/grid-selection.service';
 import { GridStateService } from '../services/grid-state.service';
-import { buildColumnDefs, type TemplateMap } from '../utils/column-factory';
-import { buildFooterRow } from '../utils/grid-value.utils';
+import { GridValidationService } from '../services/grid-validation.service';
+import { GridExportService } from '../services/grid-export.service';
+import { DEFAULT_ERP_GRID_OPTIONS } from '../utils/grid-defaults';
+import { matchLookupOption, resolveLookupOptions } from '../utils/lookup-options';
+import { ActionCellRendererComponent } from '../renderers/action-cell-renderer.component';
+import { StatusCellRendererComponent } from '../renderers/status-cell-renderer.component';
+import { SelectCellEditorComponent } from '../editors/select-cell-editor.component';
 import { GridCellDirective } from '../directives/grid-cell.directive';
-import { GridStatusBarComponent } from './grid-status-bar.component';
 import { GridToolbarComponent } from './grid-toolbar.component';
+import { GridStatusBarComponent } from './grid-status-bar.component';
 
-/**
- * `<app-grid>` — the single grid component for the ERP.
- *
- * ```html
- * <app-grid [config]="grid" [data]="rows()" height="520px" (ready)="api = $event" />
- * ```
- *
- * ### Design
- *
- * The component is deliberately thin. It owns the template and the AG Grid event wiring; every
- * capability lives in a service ({@link GridStateService}, {@link GridExportService}, …) that is
- * provided **per instance**. Two grids on one screen therefore never share selection, filters or
- * saved layout — SYS1108 has three, and instance isolation is what makes that safe.
- *
- * Config is static and data is reactive: rows flow through `[data]` so refreshing a list never
- * rebuilds columns or loses the user's layout.
- *
- * Height is a per-screen decision, taken from `[height]`; the config's `defaultHeight` is only a
- * fallback so a forgotten input can't render an invisible grid.
- */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-grid',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  // AG Grid renders its own DOM outside Angular's emulated encapsulation, so styling it
-  // requires None. Every selector is namespaced under .app-grid to stay leak-free.
-  encapsulation: ViewEncapsulation.None,
-  imports: [AgGridAngular, MatIconModule, GridToolbarComponent, GridStatusBarComponent],
-  providers: [
-    GridApiService,
-    GridStateService,
-    GridSelectionService,
-    GridExportService,
-    GridColumnService,
-    GridFilterService,
+  imports: [
+    CommonModule,
+    AgGridAngular,
+    GridToolbarComponent,
+    GridStatusBarComponent,
   ],
+  providers: [GridApiService],
   templateUrl: './grid.component.html',
-  styleUrl: './grid.component.scss',
+  styleUrls: ['./grid.component.scss'],
 })
-export class GridComponent {
-  // ── Injected, instance-scoped ──────────────────────────────────────────────
-  readonly gridApi = inject(GridApiService);
-  readonly selection = inject(GridSelectionService);
-  readonly columnService = inject(GridColumnService);
-  readonly filterService = inject(GridFilterService);
-  private readonly state = inject(GridStateService);
-  private readonly exportService = inject(GridExportService);
-  private readonly settings = inject(AppSettingsService);
-  private readonly host = inject(ElementRef<HTMLElement>);
+export class GridComponent implements OnInit, OnDestroy {
+  public gridApiService = inject(GridApiService);
+  private gridStateService = inject(GridStateService);
+  private validationService = inject(GridValidationService);
+  private gridExportService = inject(GridExportService);
 
-  // ── Inputs ─────────────────────────────────────────────────────────────────
-  readonly config = input.required<AgGridConfig>();
-  readonly data = input<GridRowData[]>([]);
+  @ViewChild('agGrid') agGrid!: AgGridAngular;
+  @ContentChildren(GridCellDirective) cellDirectives!: QueryList<GridCellDirective>;
 
-  /** Per-screen height. Falls back to the config's `defaultHeight`. */
-  readonly height = input<string>();
+  config = input.required<GridFullConfig>();
+  data = input<GridRowData[]>([]);
+  height = input<string>('400px');
+  loading = input<boolean>(false);
 
-  readonly loading = input(false);
+  ready = output<GridApiService>();
+  rowClick = output<GridRowData>();
+  rowChange = output<GridRowData>();
 
-  /** Message shown instead of rows. Set it to surface a load failure. */
-  readonly error = input<string | null>(null);
-
-  // ── Outputs ────────────────────────────────────────────────────────────────
-  readonly ready = output<GridApiService>();
-  readonly rowClick = output<GridRowData>();
-  readonly rowDoubleClick = output<GridRowData>();
-  readonly selectionChange = output<GridRowData[]>();
-  readonly cellEdit = output<GridCellEdit>();
-  readonly refresh = output<void>();
-
-  // ── Projected cell templates ───────────────────────────────────────────────
-  private readonly cellTemplates = contentChildren(GridCellDirective);
-
-  private readonly templateMap = computed<TemplateMap>(() => {
-    const map: TemplateMap = new Map();
-    for (const directive of this.cellTemplates()) map.set(directive.appGridCell(), directive.template);
-    return map;
-  });
-
-  // ── Local state ────────────────────────────────────────────────────────────
-  private api: GridApi | null = null;
-  readonly density = signal<GridDensity>('comfortable');
-  readonly isFullScreen = signal(false);
-  /** Bumped on filter/sort/pagination so derived views recompute. */
-  private readonly viewVersion = signal(0);
-
-  readonly effectiveHeight = computed(() => this.height() ?? this.config().defaultHeight);
-
-  readonly columnDefs = computed(() =>
-    buildColumnDefs(
-      this.config(),
-      () => {
-        const s = this.settings.current();
-        return { precision: s.precision, numberStyle: s.numberStyle };
-      },
-      this.templateMap(),
-    ),
-  );
-
-  /** Pinned totals row, computed over the rows currently passing the filter. */
-  readonly pinnedBottomRows = computed(() => {
-    this.viewVersion();
-    const footer = buildFooterRow(this.config().columns, this.visibleRows());
-    return footer ? [footer] : [];
-  });
-
-  readonly gridOptions = computed<GridOptions>(() => {
-    const config = this.config();
-    const metrics = GRID_DENSITY_METRICS[this.density()];
-
-    const options: GridOptions = {
-      rowHeight: metrics.rowHeight,
-      headerHeight: metrics.headerHeight,
-
-      pagination: config.pagination,
-      paginationPageSize: config.pageSize,
-      paginationPageSizeSelector: config.pageSizeOptions,
-
-      suppressMovableColumns: config.suppressMovable,
-      // Keyboard navigation and cell focus are on by default; an ERP grid is used by
-      // keyboard-first operators and removing focus would break that outright.
-      suppressCellFocus: false,
-
-      overlayNoRowsTemplate: `<span class="app-grid__empty">No records found</span>`,
-
-      defaultColDef: {
-        sortable: true,
-        resizable: true,
-        filter: false,
-        minWidth: 90,
-        tooltipValueGetter: (p) => (p.value == null || p.value === '' ? null : String(p.value)),
-      },
-    };
-
-    if (config.rowIdField) {
-      options.getRowId = (params) => String(params.data?.[config.rowIdField as string] ?? '');
-    }
-
-    switch (config.selectionMode) {
-      case 'multiple':
-        options.rowSelection = {
-          mode: 'multiRow',
-          checkboxes: true,
-          headerCheckbox: true,
-          // Row click stays the "open this record" gesture; checkboxes do selection.
-          enableClickSelection: false,
-        };
-        break;
-      case 'single':
-        options.rowSelection = { mode: 'singleRow', checkboxes: false, enableClickSelection: true };
-        break;
-      default:
-        options.rowSelection = undefined;
-    }
-
-    if (config.editable) {
-      options.editType = 'fullRow';
-    }
-
-    return options;
-  });
+  public gridOptions = {
+    ...DEFAULT_ERP_GRID_OPTIONS,
+    context: { gridApiService: this.gridApiService }
+  };
+  public columnDefs: ColDef[] = [];
+  public rowData: any[] = [];
+  public searchValue = '';
+  public gridApi?: GridApi;
+  public projectedTemplates: Map<string, TemplateRef<any>> = new Map();
 
   constructor() {
-    // `loading` is a runtime option, not read from the initial gridOptions snapshot.
     effect(() => {
-      this.api?.setGridOption('loading', this.loading());
+      const list = this.data();
+      const cfg = this.config();
+      this.gridApiService.setRows(list as any[], cfg.rowIdField);
     });
 
-    // Data changes only need derived state refreshed — AG Grid picks the rows up from the
-    // template binding itself, so setting them again here would be duplicated work.
     effect(() => {
-      this.data();
-      if (!this.api) return;
-      queueMicrotask(() => this.syncDerived());
+      const wrappers = this.gridApiService.rows();
+      this.rowData = wrappers
+        .filter((w) => w.__sqlState !== SqlRowState.Delete)
+        .map((w) => ({
+          ...w.data,
+          __uid: w.__uid,
+          __sqlState: w.__sqlState,
+          __errors: w.__errors,
+        }));
     });
   }
 
-  // ── AG Grid events ─────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.buildColumns();
+  }
+
+  ngAfterContentInit(): void {
+    if (this.cellDirectives) {
+      this.cellDirectives.forEach((dir) => {
+        this.projectedTemplates.set(dir.name(), dir.templateRef);
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.gridApi && this.config().gridId) {
+      this.gridStateService.saveState(this.config().gridId, this.gridApi);
+    }
+  }
+
+  private buildColumns(): void {
+    const cfg = this.config();
+    const cols: ColDef[] = [];
+
+    for (const c of cfg.columns) {
+      if (c.type === 'status') {
+        cols.push({
+          field: '__sqlState',
+          headerName: c.headerName ?? 'Status',
+          width: c.width ?? 110,
+          pinned: c.pinned ?? 'left',
+          cellRenderer: StatusCellRendererComponent,
+          sortable: false,
+          filter: false,
+        });
+      } else if (c.type === 'actions' || c.type === 'remove') {
+        cols.push({
+          field: c.field,
+          headerName: c.headerName ?? 'Actions',
+          width: c.width ?? 100,
+          pinned: c.pinned ?? 'right',
+          cellRenderer: ActionCellRendererComponent,
+          sortable: false,
+          filter: false,
+        });
+      } else {
+        const isNumeric = c.type === 'number' || c.type === 'decimal' || c.type === 'currency' || c.align === 'right';
+        const isEditable = c.isEditable ?? !!cfg.editableConfig;
+
+        const colDef: ColDef = {
+          field: c.field,
+          headerName: c.headerName,
+          width: c.width,
+          minWidth: c.minWidth,
+          maxWidth: c.maxWidth,
+          flex: c.flex,
+          editable: typeof isEditable === 'function' ? (params: any) => (isEditable as Function)(params.value, params.data) : isEditable,
+          pinned: c.pinned,
+          sortable: true,
+          filter: true,
+          cellClass: isNumeric ? 'text-end' : undefined,
+          cellClassRules: {
+            'bg-danger-subtle text-danger font-semibold': (params) => !!params.data?.__errors?.[params.colDef.field as string],
+          },
+          valueFormatter: c.valueFn ? (params) => c.valueFn!(params.data) : undefined,
+        };
+
+        if (c.type === 'template' && c.templateName) {
+          colDef.cellRenderer = (params: any) => {
+            const tpl = this.projectedTemplates.get(c.templateName!);
+            if (!tpl) return params.value ?? '';
+            return params.value ?? '';
+          };
+        } else if (c.type === 'select') {
+          colDef.cellEditor = SelectCellEditorComponent;
+          colDef.cellEditorParams = { options: c.options };
+          colDef.cellEditorPopup = true;
+          // 'over' — the editor replaces the cell; 'under' shows the cell text and the
+          // editor at the same time, which reads as a duplicated value.
+          colDef.cellEditorPopupPosition = 'over';
+          // Show the option label, not the stored code. Shares the editor's matching so a
+          // code persisted as a string still resolves against a numeric option.
+          colDef.valueFormatter = (params) => {
+            const opts = resolveLookupOptions(c.options, params.data);
+            return matchLookupOption(opts, params.value)?.label ?? (params.value ?? '');
+          };
+        } else if (c.type === 'number' || c.type === 'decimal' || c.type === 'currency') {
+          colDef.cellEditor = 'agNumberCellEditor';
+          colDef.valueParser = (params) => (params.newValue != null && params.newValue !== '' ? Number(params.newValue) : null);
+          if (c.type === 'currency' && !c.valueFn) {
+            colDef.valueFormatter = (params) => (params.value != null ? Number(params.value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '');
+          }
+        }
+
+        cols.push(colDef);
+      }
+    }
+
+    this.columnDefs = cols;
+  }
 
   onGridReady(event: GridReadyEvent): void {
-    const config = this.config();
-    this.api = event.api;
+    this.gridApi = event.api;
+    this.gridApiService.setApi(event.api);
+    this.gridOptions.context = { gridApiService: this.gridApiService };
 
-    this.gridApi.init(event.api, config.gridId);
-    this.selection.init(event.api);
-    this.filterService.init(event.api);
-    this.columnService.init(event.api, config.columns);
-    this.exportService.init(event.api, config.columns, config.gridId.toLowerCase(), config.toolbar.title ?? '');
-    this.state.init(config.gridId, event.api, config.persistState);
+    if (this.config().gridId) {
+      this.gridStateService.restoreState(this.config().gridId, event.api);
+    }
 
-    this.density.set(config.density);
-
-    // Restore before the first sizing pass, so a saved layout is not immediately overwritten
-    // by auto-fit.
-    const restored = this.state.restore();
-    if (restored.density) this.density.set(restored.density);
-    if (restored.pageSize) event.api.setGridOption('paginationPageSize', restored.pageSize);
-
-    if (config.autoFitColumns && !restored.columnsRestored) event.api.sizeColumnsToFit();
-
-    this.columnService.sync();
-    this.syncDerived();
-    this.ready.emit(this.gridApi);
-  }
-
-  onRowClicked(event: RowClickedEvent): void {
-    if (event.data) this.rowClick.emit(event.data as GridRowData);
-  }
-
-  onRowDoubleClicked(event: RowDoubleClickedEvent): void {
-    if (event.data) this.rowDoubleClick.emit(event.data as GridRowData);
-  }
-
-  onSelectionChanged(): void {
-    this.selection.sync();
-    this.selectionChange.emit(this.selection.selected());
-    this.gridApi.syncCounts(this.selection.count());
+    this.ready.emit(this.gridApiService);
   }
 
   onCellValueChanged(event: CellValueChangedEvent): void {
-    const column = (event.colDef as { context?: { column?: GridColumn } })?.context?.column;
-    const row = event.data as GridRowData;
-    if (!column || !row) return;
+    if (!event.data || !event.data.__uid) return;
+    const field = event.colDef.field;
+    if (!field) return;
 
-    // The column's own hook first — that is where a form writes the value into its model —
-    // then the row-wide recalculation, so derived cells see the committed value.
-    column.onChange?.(event.newValue, row, column);
-    this.config().recalculate?.(row);
+    // 1. Update Cell Value in API Service
+    this.gridApiService.updateCellValue(event.data.__uid, field, event.newValue);
 
-    this.cellEdit.emit({ row, column, oldValue: event.oldValue, newValue: event.newValue });
-    this.syncDerived();
+    // 2. Custom edit handler from colDef.isEditable if it's a function
+    const colConfig = this.config().columns.find((c) => c.field === field);
+    if (colConfig && typeof colConfig.isEditable === 'function') {
+      (colConfig.isEditable as Function)(event.newValue, event.data);
+    }
+
+    // 3. Row recalculation cascade if configured
+    const editCfg = this.config().editableConfig;
+    if (editCfg?.recalculate) {
+      editCfg.recalculate(event.data);
+      this.rowChange.emit(event.data);
+    }
+
+    this.gridApiService.refreshView();
   }
 
-  onViewChanged(): void {
-    this.viewVersion.update((v) => v + 1);
-    this.filterService.syncActive();
-    this.gridApi.syncCounts(this.selection.count());
+  onSelectionChanged(event: SelectionChangedEvent): void {
+    const selectedNodes = event.api.getSelectedNodes();
+    const uids = selectedNodes.map((n) => n.data?.__uid).filter(Boolean);
+    this.gridApiService.selectedUids.set(uids);
+  }
 
-    // The row number is positional, so every filter, sort or page change invalidates it.
-    // AG Grid caches valueGetter results, so it has to be forced or the numbers develop gaps.
-    if (this.config().showRowNumbers) {
-      this.api?.refreshCells({ columns: ['__row_no'], force: true });
+  onRowClicked(event: any): void {
+    if (event.data) {
+      this.rowClick.emit(event.data);
     }
   }
 
-  onColumnChanged(): void {
-    this.columnService.sync();
-    this.state.save();
+  onSearchChange(text: string): void {
+    this.searchValue = text;
+    if (this.gridApi) {
+      this.gridApi.setGridOption('quickFilterText', text);
+    }
   }
 
-  onSortOrFilterChanged(): void {
-    this.onViewChanged();
-    this.state.save();
+  onAddRow(): void {
+    const editCfg = this.config().editableConfig;
+    const defaults = editCfg?.newRowDefaults ? editCfg.newRowDefaults() : {};
+    this.gridApiService.addRow(defaults as any);
   }
 
-  // ── Toolbar actions ────────────────────────────────────────────────────────
-
-  onSearch(text: string): void {
-    this.filterService.search(text);
-    this.onViewChanged();
-  }
-
-  onClearSearch(): void {
-    this.filterService.clearSearch();
-    this.onViewChanged();
-  }
-
-  onRefresh(): void {
-    this.refresh.emit();
-  }
-
-  onDensityChange(density: GridDensity): void {
-    this.density.set(density);
-    this.state.setDensity(density);
-    // Row height is a grid option, not a style — AG Grid must re-measure the rows.
-    this.api?.resetRowHeights();
-  }
-
-  onResetLayout(): void {
-    this.state.reset();
-    this.density.set(this.config().density);
-    this.columnService.sync();
-    if (this.config().autoFitColumns) this.columnService.autoFit();
-  }
-
-  onToggleFullScreen(): void {
-    const element = this.host.nativeElement as HTMLElement;
-    this.isFullScreen.update((v) => !v);
-    // Re-fit after the box changes size, once the browser has applied the new layout.
-    requestAnimationFrame(() => {
-      if (this.config().autoFitColumns) this.columnService.autoFit();
-      element.querySelector('.ag-root-wrapper');
-    });
+  onDeleteSelected(): void {
+    const uids = this.gridApiService.selectedUids();
+    for (const uid of uids) {
+      this.gridApiService.deleteRow(uid);
+    }
   }
 
   onExportExcel(): void {
-    this.exportService.toExcel();
+    if (this.gridApi) {
+      this.gridExportService.exportToExcel(this.gridApi, `${this.config().gridId || 'grid'}.csv`);
+    }
   }
 
-  onExportCsv(): void {
-    this.exportService.toCsv();
+  onResetLayout(): void {
+    if (this.gridApi && this.config().gridId) {
+      this.gridStateService.resetState(this.config().gridId, this.gridApi);
+    }
   }
 
-  onPrint(): void {
-    this.exportService.print();
+  getInsertedCount(): number {
+    return this.gridApiService.rows().filter((r) => r.__sqlState === SqlRowState.Insert).length;
   }
 
-  // ── Internals ──────────────────────────────────────────────────────────────
-
-  /** Rows passing the current filter, in display order — the basis for totals and exports. */
-  private visibleRows(): GridRowData[] {
-    if (!this.api) return this.data();
-    const rows: GridRowData[] = [];
-    this.api.forEachNodeAfterFilter((node) => {
-      if (node.data) rows.push(node.data as GridRowData);
-    });
-    return rows;
+  getUpdatedCount(): number {
+    return this.gridApiService.rows().filter((r) => r.__sqlState === SqlRowState.Update).length;
   }
 
-  private syncDerived(): void {
-    this.viewVersion.update((v) => v + 1);
-    this.gridApi.syncCounts(this.selection.count());
+  getDeletedCount(): number {
+    return this.gridApiService.rows().filter((r) => r.__sqlState === SqlRowState.Delete).length;
   }
 }

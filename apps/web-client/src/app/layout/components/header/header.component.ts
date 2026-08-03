@@ -18,6 +18,7 @@ import { SharedModule } from '../../../shared';
 import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
 import { NotificationToastComponent } from '../../../shared/components/notification-toast/notification-toast.component';
 import { NotificationModalComponent } from '../../../shared/components/notification-modal/notification-modal.component';
+import { DialogService } from '../../../core/services/dialog.service';
 
 export interface BreadcrumbItem {
   label: string;
@@ -28,7 +29,7 @@ export interface BreadcrumbItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   standalone: true,
-  imports: [SharedModule, NotificationToastComponent, NotificationModalComponent],
+  imports: [SharedModule, NotificationToastComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -49,6 +50,7 @@ export class HeaderComponent implements OnInit {
   public languageService = inject(LanguageService);
   public menuService = inject(MenuService);
   public notificationService = inject(NotificationService);
+  private dialogService = inject(DialogService);
 
   breadcrumbs = signal<BreadcrumbItem[]>([{ label: 'Dashboard', url: '/' }]);
   formCode = signal<string | null>(null);
@@ -184,8 +186,20 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  onNotifications() {
-    /* currently handled by matMenuTriggerFor in HTML */
+  /**
+   * Opens the notification inbox through the shared DialogService — the project's dialog standard —
+   * rather than toggling a hand-rolled overlay. Passing an item preselects it, so clicking a row in
+   * the header dropdown lands on that notification's detail.
+   */
+  openNotifications(item?: NotificationItem): void {
+    this.dialogService
+      .open(NotificationModalComponent, {
+        size: 'xl',
+        panelClass: 'notification-dialog-panel',
+        data: item ? { notificationNo: item.notification_no } : undefined,
+      })
+      // The dialog can mark things read or act on them, so refresh the bell when it closes.
+      .subscribe(() => this.notificationService.fetchNotifications());
   }
 
   onLanguage() {

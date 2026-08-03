@@ -15,16 +15,22 @@ export class AlertService {
    * @param title The dialog title
    * @param type The style of the confirm button
    */
-  confirm(message: string, title: string = 'Confirm Action', type: 'primary' | 'warn' | 'danger' = 'primary'): Observable<boolean> {
+  confirm(
+    message: string, 
+    title: string = 'Confirm Action', 
+    type: 'primary' | 'warn' | 'danger' = 'primary',
+    confirmText: string = 'Confirm'
+  ): Observable<boolean> {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '450px',
       data: {
         title,
         message,
         type,
-        confirmText: 'Yes, Proceed',
+        confirmText,
         cancelText: 'Cancel'
       },
+      panelClass: 'custom-dialog-panel',
       disableClose: true
     });
 
@@ -34,7 +40,7 @@ export class AlertService {
   /**
    * Specialized confirmation for delete operations.
    */
-  deleteConfirm(message: string = 'Are you sure you want to delete this record? This action cannot be undone.'): Observable<boolean> {
-    return this.confirm(message, 'Delete Confirmation', 'danger');
+  deleteConfirm(message: string = 'Are you sure to delete this record?'): Observable<boolean> {
+    return this.confirm(message, 'Delete Record', 'danger', 'Delete');
   }
 }

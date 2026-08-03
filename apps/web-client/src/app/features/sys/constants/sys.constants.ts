@@ -339,4 +339,9 @@ export const sysConstants = {
     { value: 1, label: 'Rejected' },
     { value: 2, label: 'Accepted' },
   ],
+  dataScopeOptions: [
+    { value: 1, label: 'Branch' },
+    { value: 2, label: 'Department' },
+    { value: 3, label: 'Employee' },
+  ],
 };

@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AlertService } from '../../core/services/alert.service';
-import type { ErpActionKind, ErpActionVariant } from '../grid/grid.types';
+import type { ErpActionKind, ErpActionVariant } from './erp-actions';
 import { erpAction, resolveConfirm } from './erp-actions';
 
 /**

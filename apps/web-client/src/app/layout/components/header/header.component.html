@@ -107,7 +107,7 @@
     <button
       class="group relative flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[rgba(var(--indigo-rgb),0.25)] bg-[rgba(var(--indigo-rgb),0.08)] text-header-foreground backdrop-blur-[12px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:border-indigo hover:bg-[rgba(var(--indigo-rgb),0.15)] hover:text-white hover:shadow-[0_4px_15px_rgba(0,0,0,0.15)] active:translate-y-0 active:scale-[0.98]"
       title="Notifications"
-      (click)="notificationService.openModal()"
+      (click)="openNotifications()"
     >
       <mat-icon
         class="!h-[18px] !w-[18px] !text-[18px] leading-none transition-transform duration-200 group-hover:scale-110"
@@ -182,7 +182,7 @@
         <div class="p-3 text-center text-subtle text-xs">No new notifications</div>
       }
       @for (item of notifications(); track item.notification_no) {
-        <button mat-menu-item class="notif-item !flex !items-start" (click)="notificationService.openModal(item)">
+        <button mat-menu-item class="notif-item !flex !items-start" (click)="openNotifications(item)">
           <div
             class="notif-icon-wrapper"
             style="background: rgba(13, 110, 253, 0.1); color: #0d6efd;"
@@ -284,4 +284,3 @@
 </header>
 
 <app-notification-toast></app-notification-toast>
-<app-notification-modal></app-notification-modal>

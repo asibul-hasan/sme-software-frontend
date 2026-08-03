@@ -27,12 +27,16 @@ export class PageFormLayoutComponent {
   @Input() showNew: boolean = true;
   @Input() showReset: boolean = true;
   @Input() showDelete: boolean = false;
+  @Input() disabledDelete: boolean = false;
   
   @Input() isSaving: boolean = false;
   @Input() isLoading: boolean = false;
 
   @Input() searchTerm: string = '';
   @Output() searchTermChange = new EventEmitter<string>();
+
+  /** Show the sidebar search box. Defaults to true. */
+  @Input() showSearch: boolean = true;
 
   /** Show the ascending/descending sort toggle beside the search box. */
   @Input() showSort: boolean = true;

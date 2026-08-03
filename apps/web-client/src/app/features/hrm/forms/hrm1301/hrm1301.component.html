@@ -11,350 +11,331 @@
     (permissionService.canInsert() || permissionService.canUpdate()) && editable
   "
   [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && status === 1"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [disabledDelete]="!editable"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <div formContent class="h-full flex flex-col overflow-y-auto">
-    <div class="row row-group flex-shrink-0">
-      <!-- Application -->
-      <div class="col-12">
-        <div class="form-section-card card">
-          <div
-            class="card-header d-flex align-items-center justify-content-between"
-          >
-            <h4 class="card-header__title mb-0 fw-bold">
-              <mat-icon class="me-2 align-middle">info</mat-icon>
-              Leave Request
-            </h4>
-            <span class="list-item-tag" [class]="statusClass(status)">{{
-              statusLabel(status)
-            }}</span>
+  <div formContent class="h-full flex flex-col gap-4 overflow-y-auto">
+    <!-- Top Section: Grid with Left: Leave Balance Card and Right: Leave Request Form Card -->
+    <div class="grid grid-cols-12 gap-2">
+      <!-- Left side: Leave Balance Card -->
+      <div class="col-span-12 lg:col-span-5 xl:col-span-4">
+        <app-form-section title="Leave Balance" icon="account_balance_wallet">
+          <span sectionActions class="text-[12px] font-semibold text-subtle">
+            {{ balanceType() }}
+          </span>
+
+          <!-- Two Filters: Leave Type & Leave Year -->
+          <div class="col-span-12 grid grid-cols-12 gap-2">
+            <div class="col-span-7">
+              <div class="field-group">
+                <label class="field-label" for="filter_leave_type"
+                  >Leave Type</label
+                >
+                <ng-select
+                  id="filter_leave_type"
+                  [ngModel]="model.balanceLeaveType()"
+                  (ngModelChange)="model.setBalanceLeaveType($event)"
+                  [clearable]="false"
+                  placeholder="Select Leave Type"
+                >
+                  @for (lt of model.leaveTypes(); track lt.leave_type_no) {
+                    <ng-option [value]="lt.leave_type_no">
+                      {{ lt.leave_type_name }}
+                    </ng-option>
+                  }
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-span-5">
+              <div class="field-group">
+                <label class="field-label" for="filter_leave_year"
+                  >Leave Year</label
+                >
+                <ng-select
+                  id="filter_leave_year"
+                  [items]="yearOptions"
+                  [ngModel]="model.balanceLeaveYear()"
+                  (ngModelChange)="
+                    model.balanceLeaveYear.set($event); model.refreshBalance()
+                  "
+                  [clearable]="false"
+                  placeholder="Year"
+                >
+                </ng-select>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <form [formGroup]="formdata" autocomplete="off">
-              <div class="row row-group">
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label required" for="employee_no"
-                      >Employee</label
+
+          <!-- Leave Balance Display Tiles -->
+          <div class="col-span-12">
+            <div
+              class="flex overflow-hidden rounded-lg border border-line bg-surface"
+            >
+              <!-- Available (primary tile) -->
+              <div
+                class="relative flex flex-1 flex-col items-center justify-center gap-1 border-r border-line p-3 text-center"
+              >
+                <span
+                  class="absolute right-2 top-2 grid h-[22px] w-[22px] place-items-center rounded-full bg-emerald/15"
+                >
+                  <mat-icon
+                    class="!h-[14px] !w-[14px] !text-[14px] !text-emerald"
+                    >check</mat-icon
+                  >
+                </span>
+                <span class="text-[26px] font-bold leading-tight text-emerald">
+                  {{ balance().available_days | appDecimal: 1 }}
+                </span>
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider text-subtle"
+                >
+                  Days available
+                </span>
+              </div>
+
+              <!-- Entitlement / consumed -->
+              <div class="flex flex-1 flex-col">
+                <div
+                  class="flex flex-1 items-center gap-2 border-b border-line px-3 py-2"
+                >
+                  <span
+                    class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-muted"
+                  >
+                    <mat-icon
+                      class="!h-[18px] !w-[18px] !text-[18px] !text-subtle"
+                      >edit_calendar</mat-icon
                     >
-                    <ng-select
-                      id="employee_no"
-                      labelForId="employee_no"
-                      formControlName="employee_no"
-                      [readonly]="!editable"
-                      [clearable]="false"
-                      (change)="onLookupChange()"
-                      placeholder="Select employee"
-                    >
-                      @for (emp of model.employees(); track emp.employee_no) {
-                        <ng-option [value]="emp.employee_no"
-                          >{{ emp.full_name || emp.first_name }} ({{
-                            emp.employee_id
-                          }})</ng-option
-                        >
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label required" for="leave_type_no"
-                      >Leave Type</label
-                    >
-                    <ng-select
-                      id="leave_type_no"
-                      labelForId="leave_type_no"
-                      formControlName="leave_type_no"
-                      [readonly]="!editable"
-                      [clearable]="false"
-                      (change)="onLookupChange()"
-                      placeholder="Select leave type"
-                    >
-                      @for (lt of model.leaveTypes(); track lt.leave_type_no) {
-                        <ng-option [value]="lt.leave_type_no">{{
-                          lt.leave_type_name
-                        }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label required" for="from_date"
-                      >From</label
-                    >
-                    <app-date-picker
-                      formControlName="from_date"
-                      placeholder="Select date"
-                      [disabled]="!editable"
-                      (ngModelChange)="onLookupChange()"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label required" for="to_date">To</label>
-                    <app-date-picker
-                      formControlName="to_date"
-                      placeholder="Select date"
-                      [disabled]="!editable"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label">Half Day</label>
-                    <div class="custom--checkbox">
-                      <mat-checkbox
-                        [checked]="formdata.get('is_half_day')?.value === 1"
-                        [disabled]="!editable"
-                        (change)="toggleFlag('is_half_day', $event)"
-                        color="primary"
-                      >
-                        <span class="field-label mb-0" style="cursor: pointer"
-                          >Half day</span
-                        >
-                      </mat-checkbox>
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-[11px] font-medium text-subtle">
+                      Entitled + carried forward
+                    </div>
+                    <div class="text-[14px] font-bold text-content">
+                      {{
+                        balance().entitled_days + balance().carried_forward
+                          | appDecimal: 1
+                      }}
+                      days
                     </div>
                   </div>
                 </div>
-                <div class="col-md-2">
-                  <div class="field-group">
-                    <label class="field-label">Reliever</label>
-                    <div class="custom--checkbox">
-                      <mat-checkbox
-                        [checked]="formdata.get('need_reliever')?.value === 1"
-                        [disabled]="!editable"
-                        (change)="toggleFlag('need_reliever', $event)"
-                        color="primary"
-                      >
-                        <span class="field-label mb-0" style="cursor: pointer"
-                          >Need Reliever</span
-                        >
-                      </mat-checkbox>
+
+                <div class="flex flex-1 items-center gap-2 px-3 py-2">
+                  <span
+                    class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-amber/15"
+                  >
+                    <mat-icon
+                      class="!h-[18px] !w-[18px] !text-[18px] !text-amber"
+                      >event_busy</mat-icon
+                    >
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-[11px] font-medium text-subtle">
+                      Consumed
                     </div>
-                  </div>
-                </div>
-                @if (formdata.get('need_reliever')?.value === 1) {
-                  <div class="col-md-3">
-                    <div class="field-group">
-                      <label
-                        class="field-label required"
-                        for="reliever_employee_no"
-                        >Reliever Employee</label
-                      >
-                      <ng-select
-                        id="reliever_employee_no"
-                        labelForId="reliever_employee_no"
-                        formControlName="reliever_employee_no"
-                        [readonly]="!editable"
-                        [clearable]="false"
-                        placeholder="Select reliever"
-                      >
-                        @for (emp of model.relievers(); track emp.employee_no) {
-                          <ng-option [value]="emp.employee_no"
-                            >{{ emp.full_name || emp.first_name }} ({{
-                              emp.employee_id
-                            }})</ng-option
-                          >
-                        }
-                      </ng-select>
+                    <div class="text-[14px] font-bold text-amber">
+                      {{ balance().consumed_days | appDecimal: 1 }} days
                     </div>
-                  </div>
-                }
-                <!-- <div class="col-md-12">
-                    <div class="field-group">
-                      <label class="field-label" for="attachment_path">Attachment</label>
-                      <input type="text" id="attachment_path" formControlName="attachment_path" class="form-control" placeholder="Attachment path or URL" [readonly]="!editable" />
-                    </div>
-                  </div> -->
-                <div class="col-4">
-                  <div class="field-group">
-                    <label class="field-label" for="reason">Reason</label>
-                    <textarea
-                      id="reason"
-                      formControlName="reason"
-                      class="form-control"
-                      rows="1"
-                      [readonly]="!editable"
-                    ></textarea>
                   </div>
                 </div>
               </div>
-            </form>
-          </div>
-          <!-- <div class="card-footer d-flex flex-wrap gap-2">
-            @if (
-              status === 1 &&
-              (permissionService.canInsert() || permissionService.canUpdate())
-            ) {
-              <button
-                type="button"
-                class="btn-action btn-save"
-                style="height: 32px; padding: 0 12px"
-                (click)="submit()"
-                [disabled]="model.isSaving() || !model.selectedNo()"
-              >
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px"
-                  >send</mat-icon
-                >
-                Submit
-              </button>
-            }
-            @if (status === 2 && permissionService.canApprove()) {
-              <button
-                type="button"
-                class="btn-action btn-save"
-                style="height: 32px; padding: 0 12px"
-                (click)="approve()"
-                [disabled]="model.isSaving()"
-              >
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px"
-                  >check_circle</mat-icon
-                >
-                Approve
-              </button>
-              <button
-                type="button"
-                class="btn-action btn-delete"
-                style="height: 32px; padding: 0 12px"
-                (click)="reject()"
-                [disabled]="model.isSaving()"
-              >
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px"
-                  >cancel</mat-icon
-                >
-                Reject
-              </button>
-            }
-            @if (status === 2 || status === 3) {
-              <button
-                type="button"
-                class="btn-action btn-reset"
-                style="height: 32px; padding: 0 12px"
-                (click)="cancel()"
-                [disabled]="model.isSaving()"
-              >
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px"
-                  >undo</mat-icon
-                >
-                Cancel
-              </button>
-            }
-          </div> -->
-        </div>
-      </div>
-    </div>
+            </div>
 
-    <div class="row row-group flex-shrink-0">
-      <div class="col-12">
-        <div class="form-section-card card">
-          <div
-            class="card-header d-flex align-items-center justify-content-between"
-          >
-            <h4 class="card-header__title mb-0 fw-bold">
-              <mat-icon class="me-2 align-middle">filter_list</mat-icon>
-              Filter Balance
-            </h4>
+            <!-- @if (selected(); as req) {
+              <div
+                class="mt-2 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-[12px] text-subtle"
+              >
+                <mat-icon class="!h-[15px] !w-[15px] !text-[15px]">event</mat-icon>
+                <span>
+                  Requesting
+                  <strong>{{ req.total_days | appDecimal: 1 }}</strong> day(s) from
+                  {{ req.from_date }} to {{ req.to_date }}
+                </span>
+              </div>
+            } -->
           </div>
-          <div class="card-body">
-            <div class="row row-group">
-              <div class="col-md-6 col-lg-4">
-                <div class="field-group">
-                  <ng-select
-                    id="filter_leave_type"
-                    [ngModel]="model.balanceLeaveType()"
-                    (ngModelChange)="
-                      model.balanceLeaveType.set($event);
-                      model.refreshFilteredHistory()
-                    "
-                    [clearable]="true"
-                    placeholder="All Types"
+        </app-form-section>
+      </div>
+
+      <!-- Right side: Leave Request Form Card -->
+      <div class="col-span-12 lg:col-span-7 xl:col-span-8">
+        <app-form-section title="Leave Request" icon="info">
+          <span
+            sectionActions
+            class="list-item-tag"
+            [class]="statusClass(status)"
+          >
+            {{ statusLabel(status) }}
+          </span>
+
+          <form
+            [formGroup]="formdata"
+            autocomplete="off"
+            class="col-span-12 grid grid-cols-12 gap-3"
+          >
+            <div class="col-span-12 sm:col-span-6 lg:col-span-6">
+              <div class="field-group">
+                <label class="field-label required" for="employee_no"
+                  >Employee</label
+                >
+                <ng-select
+                  id="employee_no"
+                  labelForId="employee_no"
+                  formControlName="employee_no"
+                  [readonly]="!editable"
+                  [clearable]="false"
+                  (change)="onLookupChange()"
+                  placeholder="Select employee"
+                >
+                  @for (emp of model.employees(); track emp.employee_no) {
+                    <ng-option [value]="emp.employee_no">
+                      {{ emp.full_name || emp.first_name }} ({{
+                        emp.employee_id
+                      }})
+                    </ng-option>
+                  }
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-span-12 sm:col-span-6 lg:col-span-6">
+              <div class="field-group">
+                <label class="field-label required" for="leave_type_no"
+                  >Leave Type</label
+                >
+                <ng-select
+                  id="leave_type_no"
+                  labelForId="leave_type_no"
+                  formControlName="leave_type_no"
+                  [readonly]="true"
+                  [clearable]="false"
+                  placeholder="Select leave type"
+                >
+                  @for (lt of model.leaveTypes(); track lt.leave_type_no) {
+                    <ng-option [value]="lt.leave_type_no">
+                      {{ lt.leave_type_name }}
+                    </ng-option>
+                  }
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-span-6 sm:col-span-3 lg:col-span-3">
+              <div class="field-group">
+                <label class="field-label required" for="from_date">From</label>
+                <app-date-picker
+                  formControlName="from_date"
+                  placeholder="Select date"
+                />
+              </div>
+            </div>
+
+            <div class="col-span-6 sm:col-span-3 lg:col-span-3">
+              <div class="field-group">
+                <label class="field-label required" for="to_date">To</label>
+                <app-date-picker
+                  formControlName="to_date"
+                  placeholder="Select date"
+                />
+              </div>
+            </div>
+
+            <div
+              class="col-span-6 sm:col-span-3 lg:col-span-3 flex items-center"
+            >
+              <div class="field-group">
+                <div class="custom--checkbox">
+                  <mat-checkbox
+                    [checked]="formdata.get('is_half_day')?.value === 1"
+                    [disabled]="!editable"
+                    (change)="toggleFlag('is_half_day', $event)"
+                    color="primary"
                   >
-                    @for (lt of model.leaveTypes(); track lt.leave_type_no) {
-                      <ng-option [value]="lt.leave_type_no">{{
-                        lt.leave_type_name
-                      }}</ng-option>
+                    <span class="field-label mb-0 cursor-pointer"
+                      >Half day</span
+                    >
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="col-span-6 sm:col-span-3 lg:col-span-3 flex items-center"
+            >
+              <div class="field-group">
+                <div class="custom--checkbox">
+                  <mat-checkbox
+                    [checked]="formdata.get('need_reliever')?.value === 1"
+                    [disabled]="!editable"
+                    (change)="toggleFlag('need_reliever', $event)"
+                    color="primary"
+                  >
+                    <span class="field-label mb-0 cursor-pointer"
+                      >Need Reliever</span
+                    >
+                  </mat-checkbox>
+                </div>
+              </div>
+            </div>
+
+            @if (formdata.get('need_reliever')?.value === 1) {
+              <div class="col-span-12 sm:col-span-6 lg:col-span-6">
+                <div class="field-group">
+                  <label class="field-label required" for="reliever_employee_no"
+                    >Reliever Employee</label
+                  >
+                  <ng-select
+                    id="reliever_employee_no"
+                    labelForId="reliever_employee_no"
+                    formControlName="reliever_employee_no"
+                    [readonly]="!editable"
+                    [clearable]="false"
+                    placeholder="Select reliever"
+                  >
+                    @for (emp of model.relievers(); track emp.employee_no) {
+                      <ng-option [value]="emp.employee_no">
+                        {{ emp.full_name || emp.first_name }} ({{
+                          emp.employee_id
+                        }})
+                      </ng-option>
                     }
                   </ng-select>
                 </div>
               </div>
-              <div class="col-md-3 col-lg-4">
-                <div class="field-group">
-                  <app-date-picker
-                    [ngModel]="model.filterFromDate()"
-                    (ngModelChange)="
-                      model.filterFromDate.set($event);
-                      model.refreshFilteredHistory()
-                    "
-                    placeholder="From date"
-                  />
-                </div>
-              </div>
-              <div class="col-md-3 col-lg-4">
-                <div class="field-group">
-                  <app-date-picker
-                    [ngModel]="model.filterToDate()"
-                    (ngModelChange)="
-                      model.filterToDate.set($event);
-                      model.refreshFilteredHistory()
-                    "
-                    placeholder="To date"
-                  />
-                </div>
+            }
+
+            <div class="col-span-12 sm:col-span-6 lg:col-span-6">
+              <div class="field-group">
+                <label class="field-label" for="reason">Reason</label>
+                <textarea
+                  id="reason"
+                  formControlName="reason"
+                  class="form-control"
+                  rows="1"
+                  [readonly]="!editable"
+                ></textarea>
               </div>
             </div>
-          </div>
-        </div>
+          </form>
+        </app-form-section>
       </div>
-
-      <!-- Summary Cards for Balances -->
-      @if (model.filterBalance(); as bal) {
-        <div class="col-md-4">
-          <div class="form-section-card card text-center p-3">
-            <h6 class="text-muted mb-1">Availed</h6>
-            <h3 class="mb-0 text-primary">{{ bal.entitled_days }}</h3>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-section-card card text-center p-3">
-            <h6 class="text-muted mb-1">Consumed</h6>
-            <h3 class="mb-0 text-warning">{{ bal.consumed_days }}</h3>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-section-card card text-center p-3">
-            <h6 class="text-muted mb-1">Remaining</h6>
-            <h3
-              class="mb-0"
-              [class.text-success]="bal.available_days > 0"
-              [class.text-danger]="bal.available_days <= 0"
-            >
-              {{ bal.available_days }}
-            </h3>
-          </div>
-        </div>
-      }
     </div>
 
     <!-- Filtered History Grid -->
-    <div class="form-section-card card mt-2">
-      <div class="card-header">
-        <h4 class="card-header__title mb-0 fw-bold">
-          <mat-icon class="me-2 align-middle">table_view</mat-icon>
-          Leave History (Filtered)
-        </h4>
-      </div>
-      <div class="card-body p-0">
-        <app-common-table
-          [columns]="tableColumns"
-          [data]="$any(model.balanceHistory())"
-          [config]="tableConfig"
+    <app-form-section title="Leave History (Filtered)" icon="table_view" flush>
+      <div class="h-[300px]">
+        <app-erp-grid
+          class="block h-full"
+          [config]="leaveGrid"
+          [data]="$any(model.displayLeaves())"
           (rowClick)="selectLeave($event)"
-        />
+          (rowRemove)="onGridDelete($event)"
+          height="100%"
+        ></app-erp-grid>
       </div>
-    </div>
+    </app-form-section>
   </div>
 </app-page-form-layout>

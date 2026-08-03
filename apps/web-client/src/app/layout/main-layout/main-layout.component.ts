@@ -6,6 +6,8 @@ import { HeaderComponent } from '../components/header/header.component';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { GlobalLoaderComponent } from '../../shared/components/global-loader/global-loader.component';
+import { ErpCommandPaletteComponent } from '../../shared/erp-ui/command/erp-command-palette.component';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-main-layout',
@@ -16,7 +18,8 @@ import { GlobalLoaderComponent } from '../../shared/components/global-loader/glo
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
-    GlobalLoaderComponent
+    GlobalLoaderComponent,
+    ErpCommandPaletteComponent,
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],

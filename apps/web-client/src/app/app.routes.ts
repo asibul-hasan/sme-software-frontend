@@ -38,19 +38,24 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'grid-demo',
+        loadComponent: () =>
+          import('./features/demo/grid-demo.component').then(
+            (m) => m.GridDemoComponent,
+          ),
+      },
+      {
+        path: 'grid-showcase',
+        loadComponent: () =>
+          import('./shared/ag-grid/grid-showcase.component').then(
+            (m) => m.GridShowcaseComponent,
+          ),
+      },
+      {
         path: 'sys',
         loadChildren: () =>
           import('./features/sys/settings.routes').then(
             (m) => m.SETTINGS_ROUTES,
-          ),
-      },
-      {
-        // Living reference for the shared AG Grid infrastructure. Touches no
-        // business data — safe to delete once the pattern is adopted.
-        path: 'grid',
-        loadComponent: () =>
-          import('./shared/grid/grid-demo.component').then(
-            (m) => m.GridDemoComponent,
           ),
       },
       {
@@ -80,7 +85,6 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/fin/fin.routes').then((m) => m.FIN_ROUTES),
       },
-      // rpt routes — add when reporting module is built
     ],
   },
 

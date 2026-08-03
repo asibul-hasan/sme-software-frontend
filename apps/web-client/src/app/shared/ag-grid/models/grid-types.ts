@@ -1,226 +1,225 @@
-import type { TemplateRef } from '@angular/core';
-import type { GridDensity, GridExportFormat, GridSelectionMode } from '../enums/grid-enums';
+import { TemplateRef } from '@angular/core';
+import { GridToolbarConfig } from './grid-config.model';
 
-/**
- * Unique, stable identity of a grid instance — `{MODULE}_{ENTITY}_GRID`.
- *
- * Everything persisted (column layout, filters, sort, preferences) is keyed off this id,
- * never off a component name: components get renamed, moved and reused, and each of those
- * would silently orphan the user's saved layout. The `_GRID` suffix is enforced by the
- * type so an id can't be confused with any other storage key.
- *
- * Examples: `INV_ITEM_GRID`, `PURCHASE_ORDER_GRID`, `SYS_APPROVAL_SCOPE_GRID`.
- */
 export type GridId = `${string}_GRID`;
-
-/** One row. Field names are the backend DTO's snake_case names — the single data contract. */
 export type GridRowData = Record<string, unknown>;
 
-/** Option for a select column: displays `label`, stores `value` (the code the backend persists). */
-export interface GridSelectOption {
-  value: unknown;
-  label: string;
+export interface ActionItemConfig {
+  kind: 'view' | 'edit' | 'delete' | 'custom';
+  label?: string;
+  icon?: string;
+  confirm?: boolean;
+  onClick: (row: GridRowData) => void;
 }
 
-/** Cell renderers available without writing a component. */
-export type GridCellType =
-  | 'text'
-  | 'number'
-  | 'decimal'
-  | 'currency'
-  | 'date'
-  | 'datetime'
-  | 'checkbox'
-  | 'select'
-  | 'badge'
-  | 'template';
-
-export interface GridBadge {
-  label: string;
-  variant: 'success' | 'danger' | 'warning' | 'info' | 'neutral';
-}
-
-/**
- * Column definition — the only column vocabulary forms use. AG Grid's `ColDef` never leaks
- * into a form; the mapping lives in one place (`utils/column-factory.ts`) so grid behaviour
- * is defined once, not re-invented per screen.
- */
-export interface GridColumn {
-  /** Backend DTO field, snake_case. Search, sort, export and editing all key off it. */
+export interface ColumnConfig {
   field: string;
-  title: string;
-  cellType?: GridCellType;
-
-  // ── Sizing ────────────────────────────────────────────────────────────────
+  headerName: string;
+  type?: 'text' | 'number' | 'decimal' | 'currency' | 'date' | 'datetime' | 'check' | 'select' | 'badge' | 'status' | 'template' | 'actions' | 'remove';
   width?: number;
   minWidth?: number;
   maxWidth?: number;
   flex?: number;
-
-  // ── Behaviour ─────────────────────────────────────────────────────────────
-  sortable?: boolean;
-  /** Per-column filter (quick search always works regardless). */
-  filter?: boolean;
-  resizable?: boolean;
-  hidden?: boolean;
   pinned?: 'left' | 'right';
   align?: 'left' | 'center' | 'right';
-  editable?: boolean | ((row: GridRowData) => boolean);
-  /** Fired when an editable cell commits. */
-  onChange?: (value: unknown, row: GridRowData, column: GridColumn) => void;
-
-  // ── Display ───────────────────────────────────────────────────────────────
-  /**
-   * Logical value accessor — what search, sort and export operate on when the display
-   * differs from `row[field]`.
-   *
-   * Do NOT set this on `select` columns: the grid already resolves the stored code to its
-   * option label, and on a read-only column an accessor would replace the stored value.
-   */
-  value?: (row: GridRowData) => unknown;
-  /** `date`/`datetime` display format (dayjs tokens). */
-  dateFormat?: string;
-  /** Decimal places for numeric types; defaults to the app-wide setting. */
-  precision?: number;
-  /** Options for a `select` column. A function re-reads per row, so lookups can be reactive. */
-  options?: GridSelectOption[] | ((row: GridRowData) => GridSelectOption[]);
-  badge?: (value: unknown, row: GridRowData) => GridBadge | null;
-  /** Template name registered via `*appGridCell="'name'"` for `cellType: 'template'`. */
+  isEditable?: boolean | ((value: unknown, row: GridRowData) => void);
+  options?: any[] | ((row: GridRowData) => any[]);
   templateName?: string;
-  /** Sum the column into the pinned footer row. */
-  footerSum?: boolean;
-  /** Static footer text (e.g. `'Total'`) or a computed footer value over the visible rows. */
-  footer?: string | ((rows: GridRowData[]) => unknown);
-  tooltip?: string;
-  excludeFromExport?: boolean;
+  badgeMapper?: (val: unknown) => { label: string; variant?: string };
+  actions?: ActionItemConfig[];
+  removeHandler?: (row: GridRowData) => void;
+  removeTooltip?: string;
+  isSum?: boolean;
+  footerFn?: (rows: GridRowData[]) => string | number;
+  valueFn?: (row: GridRowData) => string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Toolbar
-// ─────────────────────────────────────────────────────────────────────────────
+export class ColumnBuilderChain {
+  private colDef: ColumnConfig;
 
-/** Built-in toolbar actions. Each is a boolean switch; all default sensibly. */
-export interface GridToolbarConfig {
-  enabled?: boolean;
-  title?: string;
-  search?: boolean;
-  refresh?: boolean;
-  exportExcel?: boolean;
-  exportCsv?: boolean;
-  print?: boolean;
-  columnChooser?: boolean;
-  autoFit?: boolean;
-  resetLayout?: boolean;
-  density?: boolean;
-  fullScreen?: boolean;
+  constructor(field: string, headerName: string, type: ColumnConfig['type'] = 'text') {
+    this.colDef = {
+      field,
+      headerName,
+      type,
+      align: type === 'number' || type === 'decimal' || type === 'currency' ? 'right' : type === 'check' || type === 'badge' || type === 'status' || type === 'actions' || type === 'remove' ? 'center' : 'left',
+    };
+  }
+
+  width(w: number): this {
+    this.colDef.width = w;
+    return this;
+  }
+
+  minWidth(w: number): this {
+    this.colDef.minWidth = w;
+    return this;
+  }
+
+  maxWidth(w: number): this {
+    this.colDef.maxWidth = w;
+    return this;
+  }
+
+  flex(f: number): this {
+    this.colDef.flex = f;
+    return this;
+  }
+
+  pin(p: 'left' | 'right'): this {
+    this.colDef.pinned = p;
+    return this;
+  }
+
+  align(a: 'left' | 'center' | 'right'): this {
+    this.colDef.align = a;
+    return this;
+  }
+
+  editable(handler?: boolean | ((value: unknown, row: GridRowData) => void)): this {
+    this.colDef.isEditable = handler ?? true;
+    return this;
+  }
+
+  sum(): this {
+    this.colDef.isSum = true;
+    return this;
+  }
+
+  footer(fn: (rows: GridRowData[]) => string | number): this {
+    this.colDef.footerFn = fn;
+    return this;
+  }
+
+  value(fn: (row: GridRowData) => string): this {
+    this.colDef.valueFn = fn;
+    return this;
+  }
+
+  done(): ColumnConfig {
+    return { ...this.colDef };
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────────────────────────────────────
+export const col = {
+  text: (field: string, header: string) => new ColumnBuilderChain(field, header, 'text'),
+  number: (field: string, header: string) => new ColumnBuilderChain(field, header, 'number'),
+  decimal: (field: string, header: string) => new ColumnBuilderChain(field, header, 'decimal'),
+  currency: (field: string, header: string) => new ColumnBuilderChain(field, header, 'currency'),
+  date: (field: string, header: string) => new ColumnBuilderChain(field, header, 'date'),
+  datetime: (field: string, header: string) => new ColumnBuilderChain(field, header, 'datetime'),
+  check: (field: string, header: string) => new ColumnBuilderChain(field, header, 'check'),
+  select: (field: string, header: string, options: any[] | ((row: GridRowData) => any[])) => {
+    const b = new ColumnBuilderChain(field, header, 'select');
+    (b as any).colDef.options = options;
+    return b;
+  },
+  badge: (field: string, header: string, mapper?: (val: unknown) => { label: string; variant?: string }) => {
+    const b = new ColumnBuilderChain(field, header, 'badge');
+    (b as any).colDef.badgeMapper = mapper;
+    return b;
+  },
+  status: (field = '__sqlState', header = 'Status') => {
+    return new ColumnBuilderChain(field, header, 'status').pin('left').width(110);
+  },
+  template: (field: string, header: string, templateName: string) => {
+    const b = new ColumnBuilderChain(field, header, 'template');
+    (b as any).colDef.templateName = templateName;
+    return b;
+  },
+  actions: (items: ActionItemConfig[]) => {
+    const b = new ColumnBuilderChain('__actions', 'Actions', 'actions');
+    (b as any).colDef.actions = items;
+    return b.pin('right').width(100);
+  },
+  remove: (handler: (row: GridRowData) => void, tooltip = 'Remove row') => {
+    const b = new ColumnBuilderChain('__remove', 'Actions', 'remove');
+    (b as any).colDef.removeHandler = handler;
+    (b as any).colDef.removeTooltip = tooltip;
+    return b.pin('right').width(70);
+  },
+};
 
-/**
- * Full grid configuration. Produced by {@link GridBuilder} — forms should not assemble this
- * literal by hand, the builder is the API and validates the parts that matter.
- *
- * Deliberately does NOT carry row data. Config is static; data is reactive and flows through
- * the component's `[data]` input so changing rows never rebuilds the grid.
- */
-export interface AgGridConfig {
-  /** See {@link GridId}. Mandatory — state persistence and diagnostics key off it. */
-  readonly gridId: GridId;
-  columns: GridColumn[];
-
-  // ── Paging ────────────────────────────────────────────────────────────────
-  pagination: boolean;
-  pageSize: number;
-  pageSizeOptions: number[];
-
-  // ── Selection ─────────────────────────────────────────────────────────────
-  selectionMode: GridSelectionMode;
-  /** Stable row identity (field name). Keeps selection across refreshes; strongly recommended. */
-  rowIdField?: string;
-
-  // ── Layout ────────────────────────────────────────────────────────────────
-  /**
-   * Height is per-screen, set via the component's `[height]` input rather than here,
-   * so one config can serve differently-sized placements. This value is only the
-   * fallback when the input is absent.
-   */
-  defaultHeight: string;
-  density: GridDensity;
-  /** Stretch columns to fill the viewport width on first render. */
-  autoFitColumns: boolean;
-
-  // ── Features ──────────────────────────────────────────────────────────────
-  showRowNumbers: boolean;
-  statusBar: boolean;
-  toolbar: GridToolbarConfig;
-  /** Persist column layout / sort / filters under the gridId and restore on init. */
-  persistState: boolean;
-  suppressMovable: boolean;
-
-  // ── Editing ───────────────────────────────────────────────────────────────
-  editable: boolean;
-  /** Row-wide recalculation hook, run after any cell of the row commits. */
+export interface GridEditableConfig {
+  mode?: 'row' | 'cell';
+  singleClick?: boolean;
   recalculate?: (row: GridRowData) => void;
   newRowDefaults?: () => GridRowData;
-
-  // ── Reserved (AG Grid Enterprise; typed now so adoption is a flag, not a rewrite) ──
-  /** Requires AG Grid Enterprise. Ignored under the Community build. */
-  grouping?: never;
-  /** Requires AG Grid Enterprise. Ignored under the Community build. */
-  treeData?: never;
-  /** Requires AG Grid Enterprise. Ignored under the Community build. */
-  masterDetail?: never;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// State
-// ─────────────────────────────────────────────────────────────────────────────
 
-/** Everything the grid persists per {@link GridId}. */
-export interface GridPersistedState {
-  version: number;
-  /** AG Grid `ColumnState[]` — width, order, visibility, pin, sort. */
-  columns: unknown[];
-  filters: Record<string, unknown> | null;
-  density: GridDensity | null;
-  pageSize: number | null;
+
+export interface GridFullConfig {
+  gridId: GridId;
+  columns: ColumnConfig[];
+  rowIdField: string;
+  selectionMode: 'single' | 'multiple' | 'none';
+  editableConfig?: GridEditableConfig;
+  pageSize: number;
+  pageSizeOptions: number[];
+  hideRowNumbers?: boolean;
+  toolbarConfig?: GridToolbarConfig;
 }
 
-/**
- * Pluggable persistence. Default is localStorage; swap the injection token to move grid
- * preferences server-side without touching the grid.
- */
-export interface GridStatePersistence {
-  load(gridId: GridId): GridPersistedState | null;
-  save(gridId: GridId, state: GridPersistedState): void;
-  clear(gridId: GridId): void;
+export class GridBuilder {
+  private config: GridFullConfig;
+
+  private constructor(gridId: GridId) {
+    this.config = {
+      gridId,
+      columns: [],
+      rowIdField: '__uid',
+      selectionMode: 'single',
+      pageSize: 15,
+      pageSizeOptions: [15, 25, 50, 100],
+    };
+  }
+
+  static create(gridId: GridId): GridBuilder {
+    return new GridBuilder(gridId);
+  }
+
+  columns(cols: ColumnConfig[]): this {
+    this.config.columns = cols;
+    return this;
+  }
+
+  rowId(field: string): this {
+    this.config.rowIdField = field;
+    return this;
+  }
+
+  selection(mode: 'single' | 'multiple' | 'none'): this {
+    this.config.selectionMode = mode;
+    return this;
+  }
+
+  editable(cfg: GridEditableConfig): this {
+    this.config.editableConfig = cfg;
+    return this;
+  }
+
+  pageSize(sz: number): this {
+    this.config.pageSize = sz;
+    return this;
+  }
+
+  pageSizeOptions(opts: number[]): this {
+    this.config.pageSizeOptions = opts;
+    return this;
+  }
+
+  hideRowNumbers(hide = true): this {
+    this.config.hideRowNumbers = hide;
+    return this;
+  }
+
+  toolbar(cfg: GridToolbarConfig): this {
+    this.config.toolbarConfig = cfg;
+    return this;
+  }
+
+  build(): GridFullConfig {
+    return { ...this.config };
+  }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Events
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface GridCellEdit {
-  row: GridRowData;
-  column: GridColumn;
-  oldValue: unknown;
-  newValue: unknown;
-}
-
-/** Counters the status bar displays. */
-export interface GridCounts {
-  total: number;
-  filtered: number;
-  selected: number;
-}
-
-/** A named cell template collected from content projection. */
-export interface GridCellTemplate {
-  name: string;
-  template: TemplateRef<unknown>;
-}
-
-export type { GridExportFormat };

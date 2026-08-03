@@ -16,7 +16,7 @@
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <!-- Sidebar Filters: department + designation (like the user form) -->
+  <!-- Sidebar Filters -->
   <div sidebarFilters class="px-2 pb-2 flex-shrink-0 border-bottom">
     <div class="field-group mb-2">
       <ng-select
@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <!-- Sidebar: employee selector (multi-select for bulk assignment) -->
+  <!-- Sidebar List -->
   <div sidebarList>
     @if (model.filteredUsers().length > 0) {
       <div class="ub-selectbar">
@@ -97,36 +97,8 @@
     }
   </div>
 
-  <!-- Main: branch-role mappings for the selected user -->
+  <!-- Main: branch-role mappings -->
   <div formContent class="h-full flex flex-col">
-    <!-- ── Cell templates for the common table (always defined) ─────────────── -->
-    <ng-template #defaultTpl let-row>
-      <input
-        type="radio"
-        name="ub-default"
-        class="ub-radio"
-        [checked]="row.is_default === 1"
-        (change)="model.setDefaultForRow(row)"
-        title="Set as default login branch"
-      />
-    </ng-template>
-
-    <ng-template #activeTpl let-row>
-      <input
-        type="checkbox"
-        class="ub-check"
-        [checked]="row.is_active === 1"
-        (change)="model.toggleActiveForRow(row)"
-        title="Active branch access"
-      />
-    </ng-template>
-
-    <ng-template #removeTpl let-row>
-      <button type="button" class="ub-remove" (click)="model.removeRowRef(row)" title="Remove branch">
-        <mat-icon>delete_outline</mat-icon>
-      </button>
-    </ng-template>
-
     @if (!model.selectedUserNo()) {
       <div class="ub-empty">
         <mat-icon>hub</mat-icon>
@@ -144,19 +116,7 @@
         </div>
       }
 
-      <!-- Card-based content (per CLAUDE.md form pattern) -->
       <div class="form-section-card card ub-card">
-        <div class="card-header ub-card-header">
-          <h4 class="card-header__title mb-0 fw-bold d-flex align-items-center gap-2">
-            <mat-icon class="align-middle">hub</mat-icon>
-            Branch Access &amp; Roles
-            <span class="ub-count-pill">{{ model.mappings().length }}</span>
-          </h4>
-          <button type="button" class="btn btn-sm btn-primary ub-add" (click)="model.addRow()">
-            <mat-icon>add</mat-icon><span>Add Branch</span>
-          </button>
-        </div>
-
         <div class="ub-hint">
           <mat-icon>info</mat-icon>
           Assign the branches this employee can access and the role they hold at each. One branch is the
@@ -164,12 +124,15 @@
         </div>
 
         <div class="card-body p-0 ub-card-body">
-          <app-data-grid
-            class="ub-fill"
-            [columns]="columns()"
-            [data]="rows()"
-            [config]="gridConfig"
-          ></app-data-grid>
+          <app-erp-grid 
+            class="ub-fill" 
+            [config]="grid" 
+            [data]="rows()" 
+            height="100%"
+            (rowChange)="onRowChange($event)"
+            (rowRemove)="onRowRemove($event)"
+            (addRow)="addRow()"
+          ></app-erp-grid>
         </div>
       </div>
     }

@@ -1,110 +1,171 @@
 import { Injectable, signal } from '@angular/core';
-import type { GridApi } from 'ag-grid-community';
+import { GridApi } from 'ag-grid-community';
+import { ErpGridRowWrapper, GridBatchPayload, SqlRowState } from '../models/grid-row-state.enum';
 
-import type { GridCounts, GridId, GridRowData } from '../models/grid-types';
-
-/**
- * The public handle on a live grid.
- *
- * A form obtains this from `(ready)` and uses it for the few things that are genuinely
- * imperative — refresh, scroll to a row, open a row for editing. Everything declarative
- * (columns, data, height) stays in bindings.
- *
- * Deliberately narrow: exposing AG Grid's `GridApi` directly would let forms reach past the
- * framework, and every such call becomes a migration problem the day AG Grid's API shifts.
- *
- * Provided per grid instance.
- */
 @Injectable()
-export class GridApiService {
-  private api: GridApi | null = null;
+export class GridApiService<T = any> {
+  private gridApi?: GridApi;
+  private rowIdField?: string;
+  public rows = signal<ErpGridRowWrapper<T>[]>([]);
+  public selectedUids = signal<string[]>([]);
+  public isDirty = signal<boolean>(false);
 
-  /** Set once the grid is live; guards a form calling in too early. */
-  readonly isReady = signal(false);
-
-  /** Total / filtered / selected counts, for the status bar and for form logic. */
-  readonly counts = signal<GridCounts>({ total: 0, filtered: 0, selected: 0 });
-
-  gridId: GridId | null = null;
-
-  init(api: GridApi, gridId: GridId): void {
-    this.api = api;
-    this.gridId = gridId;
-    this.isReady.set(true);
+  setApi(api: GridApi): void {
+    this.gridApi = api;
   }
 
-  destroy(): void {
-    this.api = null;
-    this.isReady.set(false);
-  }
-
-  /**
-   * Escape hatch to the raw AG Grid API.
-   *
-   * Present because no wrapper can anticipate everything, but every call site is a place the
-   * framework is not doing its job — prefer adding a method here over reaching through it.
-   */
-  raw(): GridApi | null {
-    return this.api;
-  }
-
-  // ── Counts ─────────────────────────────────────────────────────────────────
-
-  /** Recomputes counts. Called on data, filter and selection changes. */
-  syncCounts(selected: number): void {
-    if (!this.api) return;
-
-    let filtered = 0;
-    this.api.forEachNodeAfterFilter(() => filtered++);
-
-    let total = 0;
-    this.api.forEachNode(() => total++);
-
-    this.counts.set({ total, filtered, selected });
-  }
-
-  // ── Common operations ──────────────────────────────────────────────────────
-
-  refreshCells(): void {
-    this.api?.refreshCells({ force: true });
-  }
-
-  /** Scrolls a row into view by its row-id value. Does nothing if the row is not loaded. */
-  scrollTo(rowId: string): void {
-    const node = this.api?.getRowNode(rowId);
-    if (node?.rowIndex != null) this.api?.ensureIndexVisible(node.rowIndex);
-  }
-
-  /** Opens a row for editing on its first editable column. */
-  startEdit(rowId: string): void {
-    const node = this.api?.getRowNode(rowId);
-    if (node?.rowIndex == null) return;
-
-    const firstEditable = this.api
-      ?.getColumnDefs()
-      ?.find((def) => (def as { editable?: unknown }).editable);
-
-    this.api?.startEditingCell({
-      rowIndex: node.rowIndex,
-      colKey: (firstEditable as { colId?: string })?.colId ?? '',
+  setRows(dataList: T[], rowIdField?: string): void {
+    this.rowIdField = rowIdField;
+    const wrappers: ErpGridRowWrapper<T>[] = dataList.map((item, index) => {
+      const uid = rowIdField && (item as any)[rowIdField] ? String((item as any)[rowIdField]) : `row_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`;
+      return {
+        __uid: uid,
+        __sqlState: SqlRowState.Unchanged,
+        __isDirty: false,
+        __errors: {},
+        data: { ...item },
+      };
     });
+    this.rows.set(wrappers);
+    this.isDirty.set(false);
   }
 
-  stopEdit(cancel = false): void {
-    this.api?.stopEditing(cancel);
+  addRow(defaultData?: Partial<T>, position: 'top' | 'bottom' = 'bottom'): string {
+    const uid = `new_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const newWrapper: ErpGridRowWrapper<T> = {
+      __uid: uid,
+      __sqlState: SqlRowState.Insert,
+      __isDirty: true,
+      __errors: {},
+      data: (defaultData ?? {}) as T,
+    };
+
+    const current = [...this.rows()];
+    if (position === 'top') {
+      current.unshift(newWrapper);
+    } else {
+      current.push(newWrapper);
+    }
+
+    this.rows.set(current);
+    this.isDirty.set(true);
+    return uid;
   }
 
-  /** Appends a row and returns it, so the caller can seed and then edit it. */
-  addRow(row: GridRowData): GridRowData {
-    this.api?.applyTransaction({ add: [row] });
-    return row;
+  deleteRow(uid: string): void {
+    const current = [...this.rows()];
+    const index = current.findIndex((r) => r.__uid === uid);
+    if (index < 0) return;
+
+    const row = current[index];
+    if (row.__sqlState === SqlRowState.Insert) {
+      current.splice(index, 1);
+    } else {
+      current[index] = {
+        ...row,
+        __sqlState: SqlRowState.Delete,
+        __isDirty: true,
+      };
+    }
+
+    // Remove from selected uids
+    this.selectedUids.update((uids) => uids.filter((id) => id !== uid));
+
+    this.rows.set(current);
+    this.isDirty.set(true);
   }
 
-  removeRow(row: GridRowData): void {
-    this.api?.applyTransaction({ remove: [row] });
+  duplicateRow(uid: string): string | null {
+    const row = this.rows().find((r) => r.__uid === uid);
+    if (!row) return null;
+
+    const copyData = JSON.parse(JSON.stringify(row.data));
+    if (this.rowIdField) delete copyData[this.rowIdField];
+    delete copyData['id'];
+    delete copyData['row_version'];
+    return this.addRow(copyData);
   }
 
-  setLoading(loading: boolean): void {
-    this.api?.setGridOption('loading', loading);
+  updateCellValue(uid: string, field: string, newValue: any): void {
+    const current = [...this.rows()];
+    const index = current.findIndex((r) => r.__uid === uid);
+    if (index < 0) return;
+
+    const wrapper = current[index];
+    const updatedData = { ...wrapper.data, [field]: newValue };
+    const nextState = wrapper.__sqlState === SqlRowState.Insert ? SqlRowState.Insert : SqlRowState.Update;
+
+    current[index] = {
+      ...wrapper,
+      __sqlState: nextState,
+      __isDirty: true,
+      data: updatedData,
+    };
+
+    this.rows.set(current);
+    this.isDirty.set(true);
+  }
+
+  setRowError(uid: string, field: string, errorMsg: string | null): void {
+    const current = [...this.rows()];
+    const index = current.findIndex((r) => r.__uid === uid);
+    if (index < 0) return;
+
+    const wrapper = current[index];
+    const errors = { ...wrapper.__errors };
+    if (errorMsg) {
+      errors[field] = errorMsg;
+    } else {
+      delete errors[field];
+    }
+
+    current[index] = {
+      ...wrapper,
+      __errors: errors,
+    };
+    this.rows.set(current);
+  }
+
+  getDirtyRows(): GridBatchPayload<T> {
+    const current = this.rows();
+    const inserted: T[] = [];
+    const updated: T[] = [];
+    const deleted: T[] = [];
+    let hasErrors = false;
+
+    for (const r of current) {
+      if (Object.keys(r.__errors).length > 0) hasErrors = true;
+
+      if (r.__sqlState === SqlRowState.Insert) {
+        inserted.push(r.data);
+      } else if (r.__sqlState === SqlRowState.Update) {
+        updated.push(r.data);
+      } else if (r.__sqlState === SqlRowState.Delete) {
+        deleted.push(r.data);
+      }
+    }
+
+    return { inserted, updated, deleted, hasErrors };
+  }
+
+  getAllRows(): T[] {
+    return this.rows().filter((r) => r.__sqlState !== SqlRowState.Delete).map((r) => r.data);
+  }
+
+  clearDirtyState(): void {
+    const current = this.rows().filter((r) => r.__sqlState !== SqlRowState.Delete).map((r) => ({
+      ...r,
+      __sqlState: SqlRowState.Unchanged,
+      __isDirty: false,
+      __errors: {},
+    }));
+    this.rows.set(current);
+    this.isDirty.set(false);
+  }
+
+  refreshView(): void {
+    if (this.gridApi) {
+      this.gridApi.refreshCells({ force: true });
+    }
   }
 }

@@ -32,7 +32,7 @@ import { CollapsibleCardDirective } from '../../directives';
   imports: [MatIconModule, CollapsibleCardDirective],
   template: `
     <section class="form-section-card card">
-      <div class="card-header flex items-center justify-between gap-2">
+      <div [class]="headerClasses()">
         <h4 class="card-header__title mb-0 flex items-center font-bold">
           @if (icon()) {
             <mat-icon class="mr-2 align-middle">{{ icon() }}</mat-icon>
@@ -57,6 +57,18 @@ export class FormSectionComponent {
   readonly icon = input<string>('');
   /** Zero-padding body without the field grid — for tables (SYS1003 pattern). */
   readonly flush = input(false, { transform: booleanAttribute });
+  /**
+   * Shorter header. Opt-in, so the documented 8px/12px card-header standard stays
+   * the default everywhere — use it for supporting sections (a filter bar above a
+   * grid) where a full-height title competes with the data below it.
+   */
+  readonly dense = input(false, { transform: booleanAttribute });
+
+  protected readonly headerClasses = computed(
+    () =>
+      'card-header flex items-center justify-between gap-2' +
+      (this.dense() ? ' form-section-card__header--dense' : ''),
+  );
 
   protected readonly bodyClasses = computed(() =>
     this.flush() ? 'card-body p-0' : 'card-body grid grid-cols-12 gap-2',

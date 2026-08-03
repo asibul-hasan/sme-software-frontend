@@ -108,7 +108,7 @@ Accounts). Full standard: `../aidly-business-doc/form-design-standard.md`.
   spans on one visual row sum to 12. Optional `[xlSpan]` refines at `xl`.
 - `<app-check-field>` is a CVA that round-trips the numeric `1/0` flag contract —
   bind it with `formControlName`, never `[checked]`/`(change)`.
-- `<app-form-section flush>` gives a `p-0` body for `<app-common-table>` grids.
+- `<app-form-section flush>` gives a `p-0` body for `<app-erp-grid>` grids.
 - Validation messages render automatically under any projected `formControlName`
   control (`ValidationMessageDirective`) — don't add per-form error markup.
 - Tailwind utilities are layered; legacy global SCSS is unlayered and wins ties.
@@ -171,19 +171,19 @@ A master-detail form that renders `filteredItems()` directly with no `[sidebarFo
 pagination is **wrong** — wire the paginator.
 
 **B. Data grid** — a tabular dataset (line items, periods, mappings) shown with
-**`<app-common-table>`**, which owns its own search / pagination / export / column
-toggle. Use it for the grid, NOT for the master record selector. A grid form may
-have `[hasSidebar]="false"`. If the grid requires a top-level global filter, place it in a separate "Filter Card" (`.form-section-card.card`) directly above the table card, exactly like `SYS1003` or `FIN_1006`.
+**`<app-erp-grid>`**, which owns its own search / pagination / export / column
+toggle / totals. Use it for the grid, NOT for the master record selector. A grid form
+may have `[hasSidebar]="false"`. If the grid requires a top-level global filter, place
+it in a separate "Filter Card" (`.form-section-card.card`) directly above the table
+card, exactly like `SYS1108` or `FIN_1006`.
 
-Reference forms: **SYS1003** (Financial Year — periods table), **SYS1104** (the
-mapping grid uses `<app-common-table>` with `custom-template` cells), and **FIN_1006** (GL Account Mapping, which demonstrates a standalone grid with a top-level filter card).
-**SYS1003 Accounting Periods is the canonical table structure and visual style.**
-Any form that shows an editable/supporting grid — including **SYS1006 Exchange
-Rate** — must copy the Accounting Periods pattern: an outer `.form-section-card`
-section, a normal card header/title/action row, a zero-padding `.card-body p-0`,
-and one `<app-common-table>` filling that body. Do not invent a different table
-wrapper, split-table layout, Bootstrap table, or custom `mat-table` for exchange
-rates or similar grids.
+Reference form: **SYS1108** (Approval Workflow Setup) — the canonical grid form; see
+the AG Grid section. **FIN_1006** (GL Account Mapping) shows a standalone grid with a
+top-level filter card.
+Any form that shows an editable/supporting grid must copy that pattern: an outer
+`.form-section-card` section, a normal card header/title/action row, a zero-padding
+`.card-body p-0`, and one `<app-erp-grid>` filling that body. Do not invent a different
+table wrapper, split-table layout, Bootstrap table, or custom `mat-table`.
 
 **Why two styles exist:** master-detail (browse many records, edit one) and
 data-grid (operate on rows in place) are genuinely different jobs. The mistake is
@@ -436,7 +436,7 @@ Whenever a form contains a dropdown, search box, or table column that displays a
     <ng-template ng-option-tmp let-item="item">{{ item.account_code }} {{ item.account_name }}</ng-template>
   </ng-select>
   ```
-- For `<app-common-table>` columns with `cellType: 'select'`, ensure the `label` property of your `SelectOption` matches this exact format:
+- For `GridColumns.select` / `GridColumns.lookup` columns, ensure the `label` property of your `GridLookupOption` matches this exact format:
   ```ts
   accountOptions = computed(() => this.accounts().map(a => ({ 
     label: `${a.account_code} ${a.account_name}`, 
@@ -531,10 +531,10 @@ must fill that space with **flex/`height:100%`**, not by guessing the viewport.
 
 - `min-height: 0` on every flex child is required, or the child grows to its content
   instead of scrolling.
-- With `<app-common-table>`, pass `maxHeight: '100%'` in its config and let the host
-  flex-fill (see SYS1104). Forms whose content is naturally short don't need this —
-  just don't impose a viewport-based height.
-- Reference forms: `SYS1103` (matrix), `SYS1104` (common-table grid).
+- With `<app-erp-grid>`, pass `height="100%"` and let the host flex-fill (see SYS1104).
+  Forms whose content is naturally short don't need this — just don't impose a
+  viewport-based height.
+- Reference forms: `SYS1103` (matrix), `SYS1104` (`<app-erp-grid>` filling a card).
 
 ### Card-to-Card Gap — `.form-section-card`
 
@@ -584,243 +584,245 @@ Cards within a form column stack vertically. The spacing system is:
 - Use `row-group` on every `.row` for consistent 8px gutters.
 - Reference form: `SYS1001` (Company Setup — 4 cards in 2 columns).
 
-### Common Table — `<app-common-table>`
+### Tables — use AG Grid, not `<app-common-table>` (LEGACY)
 
-Reusable ERP table at `shared/components/common-table`. Use it instead of
-ad-hoc `mat-table` markup for any data list.
+**AG Grid `<app-erp-grid>` is THE table for this app.** Every tabular data list — new
+or rewritten — renders with it. See the AG Grid section below for the full contract.
 
-**Fixed table rule (frontend + backend):** every tabular data list in a form MUST render
-with `<app-common-table>`; do not hand-roll `<table>`, `mat-table`, or Bootstrap table
-markup. The backing form API must return DTO fields whose snake_case names match the
-`ColumnDef.field` values exactly, so search, sort, export, and custom-template `value`
-accessors all work from the same data contract.
+`<app-common-table>` (`shared/components/common-table`) is **legacy**. It still exists
+and ~44 form templates still render it, so you will meet it when opening an older form,
+but:
 
-**Required table design rule (CRITICAL):** whenever any form needs a table, use the
-same common-table structure and visual behavior as **SYS1003 Financial Year Setup â†’
-Accounting Periods**. This is the reference table for the whole ERP. The common table
-owns the search/export/column controls, header styling, row dividers, pagination/footer
-colors, and sticky bottom total row. Do not create a form-specific table design.
+- **Do NOT use it in new forms**, and do not add features to it.
+- When you substantially rework a form that uses it, **migrate that form to
+  `<app-erp-grid>`** rather than patching the old table.
+- Do **not** delete the folder: `<app-erp-grid>` imports `TableExportService` from it,
+  so export behaviour is shared. (Status pills are not — AG Grid has its own
+  `GridColumns.status`.)
 
-**Visual structure rule (CRITICAL):** the common table must look and sit like
-**SYS1003 Accounting Periods**. That means:
-- table section = outer `.form-section-card.card` with its own `.card-header`;
-- table body = `.card-body.p-0`;
-- only child inside the body = `<app-common-table ...>`;
-- header row and footer/paginator colors come from the shared table tokens, not
-  per-form CSS;
-- search/export toolbar stays inside `<app-common-table>`, not in the parent card.
-- column totals use the built-in pinned footer row by setting `bottomTotal: true`
-  on the numeric `ColumnDef`; do not build a separate totals bar under the table.
-- the pinned footer row is generic: use `footerLabel: 'Total'` to show text under
-  any column, `bottomTotal: true` to sum a numeric column, and `footerValue:
-  (rows) => ...` when the footer value is computed from the visible rows. Never
-  place grid totals in a card header or form-specific footer outside the table.
+Never hand-roll `<table>`, `mat-table`, or Bootstrap table markup in either case.
 
-Exchange-rate grids (**SYS1006**) and all future rate/period/line-item grids must
-use this same Accounting Periods structure exactly.
+### AG Grid — `<app-erp-grid>` (THE grid, `shared/ag-grid`)
 
-**Quick usage:**
+AG Grid (Community 36, MIT) is registered app-wide by `provideErpGrid()` in
+`app.config.ts`. The framework lives in `shared/ag-grid`.
 
-```html
-<!-- Inside a form-section-card -->
-<div class="form-section-card card">
-  <div class="card-header">
-    <h4 class="card-header__title mb-0 fw-bold">
-      <mat-icon class="me-2">table_view</mat-icon>
-      List Title
-    </h4>
-  </div>
-  <div class="card-body p-0">
-    <app-common-table
-      [columns]="tableColumns"
-      [data]="tableData()"
-      [config]="tableConfig"
-      (rowClick)="onRowClick($event)"
-    />
-  </div>
-</div>
-```
+**Reference implementation: `SYS1108` Approval Workflow Setup** — three chained
+grids, per-selection API loading, filters, permissions, totals. Copy it. A simpler
+single-grid example is `SYS1104`.
 
-**Component:**
+> **Which component:** use **`<app-erp-grid>`**. A `<app-grid>` / `GridBuilder` pair
+> also exists in the folder but **no form uses it**, and it lacks most of what is
+> documented here (external row state, controlled selection, permissions, totals,
+> pagination). Do not start new work on it.
 
-```ts
-import { ColumnDef, TableConfig } from '@app/shared/components/common-table';
-
-tableColumns: ColumnDef[] = [
-  { title: 'Code',  field: 'code',  sort: true, cellType: 'text', width: '150px', pin: 'left' },
-  { title: 'Name',  field: 'name',  sort: true, cellType: 'text' },
-  { title: 'Date',  field: 'date',  sort: true, cellType: 'date', dateFormat: 'dd/MM/yyyy' },
-  { title: 'Amount', field: 'amount', sort: true, cellType: 'currency', align: 'right', precision: 2, bottomTotal: true },
-  { title: 'Status', field: 'status', sort: true, cellType: 'badge', width: '120px',
-    badgeConfig: (val) => val === 'A' ? { label: 'Active', variant: 'success' } : { label: 'Inactive', variant: 'neutral' } },
-];
-
-tableConfig: Partial<TableConfig> = {
-  showSearch: true,
-  pagination: true,
-  defaultPageSize: 10,
-  dense: true,
-  striped: true,
-};
-
-tableData = computed(() => this.model.items() as unknown as Record<string, unknown>[]);
-```
-
-**Key rules:**
-- `field` values must match the backend DTO field names (snake_case).
-- Wrap the table in `<div class="card-body p-0">` — zero padding so the table fills the card edge-to-edge.
-- Use `(rowClick)` to load a row's detail into the form (master-detail pattern).
-- Column types: `text`, `number`, `decimal`, `currency`, `date`, `datepipe`, `select`, `checkbox`, `badge`, `icon`, `button`, `custom-template`.
-- **`custom-template` (and any column whose display ≠ `row[field]`) MUST set a `value`
-  accessor** — `value: (row) => <label>` — so **search, sort, and export use the text the
-  user sees**, not the raw id. Without it, searching a `custom-template` column of ids is
-  useless and exports dump numbers. Example (SYS1104):
-  ```ts
-  { title: 'Branch', field: 'branch_no', cellType: 'custom-template',
-    customTemplate: this.branchTpl(), value: (r) => this.branchLabel(r['branch_no']) }
-  ```
-  The table resolves `value` centrally for the search box, `sortingDataAccessor`, and all
-  export formats — no per-form filtering hacks.
-- **Status columns** → `cellType: 'badge'` with the shared `statusBadge` mapper, so every
-  form renders the same pill:
-  ```ts
-  import { statusBadge } from '@app/shared/components/common-table';
-  { title: 'Status', field: 'status', cellType: 'badge', badgeConfig: statusBadge }
-  ```
-  It maps active flags (`1`/`0`) and common statuses (pending/posted/confirmed/…) to colored pills.
-- Row actions render as a single kebab (`⋯`) menu (config `actions: [...]`), not inline
-  icon buttons. Editable cells use `ng-select` (not native `<select>`) on double-click.
-- See `shared/components/common-table/example-usage.ts` for full feature demos.
-
-### AG Grid — `<app-data-grid>` (new grid infrastructure)
-
-AG Grid (Community, MIT) is installed and registered app-wide via
-`provideAidlyGrid()` in `app.config.ts`. The reusable wrapper lives in
-`shared/grid`. Reference page: **`/grid-demo`** (`shared/grid/grid-demo.component.ts`).
-
-**Status: additive.** `<app-common-table>` remains the standard for all existing
-forms and is untouched. Use `<app-data-grid>` for NEW grids, or when migrating a
-grid you are already working on. Do not mass-migrate.
+A grid is a `GridConfig` object plus `[data]`. Toolbar, search, column chooser,
+export, pagination, totals, layout persistence and density come from the framework.
 
 ```html
 <div class="card-body p-0">
-  <app-data-grid
-    [columns]="columns" [data]="rows()" [config]="config"
-    (rowClick)="select($event)" />
+  <app-erp-grid
+    [config]="stepGrid"
+    [data]="steps()"
+    [selectedId]="model.selectedStepUid()"
+    (ready)="onStepGridReady($event)"
+    (rowClick)="onStepRowClick($event)"
+    (rowChange)="onStepChange($event)"
+    (rowRemove)="onStepRemove($event)"
+    (addRow)="addStepRow()"
+  ></app-erp-grid>
 </div>
 ```
 
 ```ts
-columns: GridColumnDef[] = [
-  { title: 'Document No', field: 'doc_no', width: 150, pin: 'left' },
-  { title: 'Party', field: 'party', flex: 1 },
-  { title: 'Amount', field: 'amount', cellType: 'currency', bottomTotal: true },
-  { title: 'Status', field: 'status', cellType: 'badge', badgeConfig: statusBadge,
-    value: (r) => statusLabel(r['status']) },
-  { title: '', field: '__actions', cellType: 'actions', actions: [
-      { kind: 'view', onClick: (r) => open(r) },
-      { kind: 'delete', onClick: (r) => remove(r) },   // confirms automatically
-    ] },
-];
-config: Partial<GridConfig> = { rowKey: 'id', selection: 'multiple', stateKey: 'fin-invoices' };
-```
-
-**The contract deliberately mirrors `ColumnDef`** (`title`/`field`/`cellType`/
-`align`/`pin`/`badgeConfig`/`value`), so migration is a rename, not a rewrite.
-Rules carried over unchanged:
-- `field` matches the backend DTO (snake_case).
-- Any column whose display ≠ `row[field]` MUST set `value:` — search, sort and
-  export all read it.
-- Numeric columns right-align automatically; precision comes from app settings.
-
-**Select (dropdown) columns.** Declare `cellType: 'select'` with `options` from the
-module constants file — never an inline array:
-
-```ts
-{ title: 'Unit', field: 'unit', cellType: 'select', editable: true,
-  options: invConstants.unitTypes }     // [{ value: 1, label: 'Pcs' }, …]
-```
-
-The column **displays `label` and stores `value`** — the code the backend persists,
-per the DB-first value contract. Search and sort use the label; the row keeps the
-code. Do not add a `value:` accessor to a select column, and never put a
-`valueGetter` on any editable column: a getter replaces the stored value, so AG Grid
-has nothing to write back to and the edit is silently discarded.
-
-**Grid-specific notes:**
-- `showSerial` (default **on**) adds the `#` column — continuous across pages.
-  It is view-only and never exported.
-- `bottomTotal` / `footerLabel` / `footerValue` drive the pinned totals row, which
-  reflects the **current filter**, not the raw input.
-- `selection: 'multiple'` + `bulkActions` gives the toolbar bulk bar. Row click
-  never toggles checkboxes (it stays the "open record" gesture).
-- `rowKey` is strongly recommended — it keeps selection stable across refreshes.
-- `stateKey` persists column width/order/visibility to localStorage.
-- Export reuses `TableExportService` (Excel/CSV/PDF/print), so **no AG Grid
-  Enterprise licence is required**.
-- Height defaults to sizing-to-content capped by `maxAutoHeight`; pass
-  `height: '100%'` inside a flex-filled card. Never viewport math.
-- Empty / loading / error / no-results states are built in — drive them with
-  `config.loading` and `config.error`.
-
-### Editable line-item grids — `config.editable` (CRITICAL)
-
-Setting `editable: true` turns `<app-data-grid>` into an ERP line-item grid and
-switches on the whole interaction model at once:
-
-| Gesture | Result |
-|---|---|
-| **Single click** | Selects the row (indigo tint + accent bar) |
-| **Double click** | Opens the **whole row** for editing; read-only/computed columns stay read-only |
-| **Enter** | Commits the row (recalculates, marks dirty) |
-| **Esc** | Cancels the row |
-| **Tab** | Moves to the next editable cell **and recalculates live** — derived cells and the totals row update as you type across, without closing the row |
-| **Add Row** | Appends a line **already in edit mode**, focused on the first editable column |
-| **Red ✕** | Hides the row and records a pending deletion |
-
-```ts
-config: Partial<GridConfig> = {
-  editable: true,               // full-row edit + Add Row + ✕ column
-  rowKey: 'id',                 // strongly recommended
-  recalculate: (row) => {       // ← the calculation hook
-    const gross = Number(row['qty'] || 0) * Number(row['rate'] || 0);
-    row['amount'] = gross - Number(row['discount'] || 0);
-    row['vat']    = row['amount'] * 0.15;
-    row['total']  = row['amount'] + row['vat'];
+readonly stepGrid: GridConfig<ApprovalStep> = {
+  gridKey: 'SYS_1108_STEP_GRID',          // {MODULE}_{FORM}_{ENTITY}_GRID — permanent
+  rowIdField: '__uid',
+  height: '150px',
+  selectionMode: 'single',
+  autoSelectFirstRow: true,
+  externalRowState: true,                 // the FORM owns the rows (see below)
+  showPagination: true,
+  pageSize: 50,
+  pageSizeOptions: [25, 50, 100, 500],
+  // a child grid also requires a selected parent, or Add creates an orphan
+  canAdd:       () => this.permissionService.canInsert() && this.model.selectedScopeUid() !== null,
+  canEdit:      () => this.permissionService.canUpdate(),
+  canDeleteRow: (row) => this.canDeleteStep(row),
+  toolbar: {
+    title: 'Approval Steps', showAdd: true, showDelete: false, showSearch: true,
+    showExport: true, showColumnChooser: true, searchPlaceholder: 'Search steps...',
   },
-  newRowDefaults: () => ({ qty: 1, rate: 0, discount: 0 }),
+  columns: [
+    GridColumns.number<ApprovalStep>('step_number', 'Step No').width(90).build(),
+    GridColumns.select<ApprovalStep>('step_type', 'Step Type',
+        sysConstants.approvalStepTypes as GridLookupOption[]).width(140).build(),
+    GridColumns.text<ApprovalStep>('step_name', 'Step Name').flex(1).minWidth(140).build(),
+    GridColumns.action<ApprovalStep>().build(),
+  ],
 };
 ```
 
-**Calculations.** Use `recalculate` for a row-wide cascade (the normal ERP case),
-or per-column `compute: (row) => …` for a single derived value. A column with
-`compute` is **automatically read-only** — letting a user type a total the next
-recalculation would overwrite is a data-integrity bug, not a convenience.
-In `editMode: 'fullRow'` (default) derived values refresh on **Tab** (read straight
-from the open editors) and settle again when the row commits — so a line total
-keeps up while the operator types across it. `editMode: 'cell'` recalculates on
-each individual cell commit instead.
+**Build the config ONCE into a `readonly` field, in the `.ts`.** It is static; rows
+flow separately through `[data]`, so refreshing a list never rebuilds columns or
+loses the user's saved layout. Building it in the template re-evaluates it on every
+change-detection pass.
 
-**Saving is the FORM's job — the grid never calls an API.** It records intent and
-hands it over:
+**The Grid ID is mandatory and permanent.** Column widths, order, visibility and sort
+persist under `gridKey`. Renaming it silently discards every user's layout.
+
+#### Who owns the rows — pick one
+
+|  | Grid-owned (default) | Form-owned (`externalRowState: true`) |
+|---|---|---|
+| Rows live in | the grid's `GridApiService` | your model service |
+| Add / delete | grid mutates its own list | grid **emits**, you apply |
+| Saving | `getDirtyRows()` → `{inserted, updated, deleted}` | your own payload |
+| Use when | one self-contained grid | chained grids, or rows shared with anything the grid cannot see |
+
+**`externalRowState` is required whenever a grid shows a *slice* of a bigger list.**
+In SYS1108 the model holds every step and approver; changing workflow replaces the
+child grid's `[data]`, and grid-owned state would be thrown away with it. With it on,
+the grid reports intent and your model stays authoritative:
 
 ```ts
-<app-data-grid … (changesChange)="changes.set($event)" (gridReady)="grid = $event" />
-
-save() {
-  const { added, updated, deleted } = this.changes();   // or grid.getChanges()
-  // …persist through the form's normal save flow…
-  this.loadLines();          // reload from the server
-  this.grid.resetChanges();  // then clear pending state
-}
+onStepChange(row: ApprovalStep) { this.model.updateStep(row.__uid, row); }   // (rowChange)
+onStepRemove(row: ApprovalStep) { this.model.removeStep(row.__uid); }        // (rowRemove)
+addStepRow()                    { this.model.addStepRow(); }                 // (addRow)
 ```
 
-- Bind the Save button to `changes().dirty`. A no-op edit (open a row, commit
-  without changing anything) does **not** dirty the grid.
-- ✕ only hides — nothing is destroyed until you persist `deleted`.
-- A row added and then ✕-ed in the same session is dropped, never reported as a delete.
-- **Reload after saving.** `resetChanges()` un-hides rows it was hiding, so if you
-  call it without re-fetching, deleted rows reappear.
+Outputs always hand you the **domain row** (your object, original id type), never the
+grid's internal row. `(ready)` hands you the `GridApiService` — keep it only if you need
+imperative access (refresh, dirty rows); selection and data do not require it.
+
+#### Columns
+
+`GridColumns.text` · `number` · `decimal` · `currency` · `date` · `select` · `lookup` ·
+`checkbox` · `status` · `action`. Chain modifiers, finish with `.build()`.
+
+- `field` matches the backend DTO (snake_case) — search, sort, export and editing all key off it.
+- Numeric columns right-align automatically. **Never hard-code precision.**
+- **`select` / `lookup` display the option `label` and store the option `value`** — the
+  code the backend persists. Static enums come from the module constants file;
+  server-loaded lookups are passed as a **function** so they stay reactive as they load,
+  without rebuilding columns:
+  ```ts
+  GridColumns.lookup<ApprovalScope>('branch_no', 'Branch',
+      () => this.opts(this.model.branchOptions())).flex(1).build()
+  ```
+- Any *other* column whose display differs from `row[field]` must set
+  `.valueFormatter(...)`, so search, sort and export use the text on screen.
+- `.sum()` / `.footer('Total')` / `.footerValue(rows => ...)` drive the pinned totals
+  row, which reflects the **current filter**, not the raw input.
+- `GridColumns.action()` gives the pinned right delete column.
+
+#### Selection and editing
+
+Single click **selects**; double click **edits the whole row** (`editType: 'fullRow'`).
+Several forms drive a child grid off the selected parent row, so selection must not
+require hitting a checkbox — `selectionMode: 'single'` therefore renders **no** checkbox
+column.
+
+- `autoSelectFirstRow: true` keeps a row selected and emits `(rowClick)`, so the child
+  grid loads instead of sitting empty.
+- **`[selectedId]` makes selection controlled.** Bind it whenever the form decides what
+  is current — e.g. restoring the edited row after save. Without it the auto-select
+  fights the form and bounces the user back to row 1.
+- Add Row appends and immediately opens the new row for editing, seeded from
+  `newRowDefaults`.
+- A derived column must not be editable — letting a user type a value the next
+  recalculation overwrites is a data-integrity bug.
+- **The grid never calls an API.** It records intent; saving stays the form's job.
+
+#### Permissions — always wire them
+
+Pass **functions**, not booleans: permissions resolve after the config is built
+(`useLocalPermissions()` runs in `ngOnInit`), so a captured boolean freezes the
+pre-load value.
+
+```ts
+canAdd:       () => this.permissionService.canInsert(),
+canEdit:      () => this.permissionService.canUpdate(),   // ANDed into every column's editable
+canDeleteRow: (row) => this.permissionService.canDelete() && !this.hasChildren(row),
+```
+
+`canDeleteRow` is per-row, so use it for **both** permission and referential rules — a
+parent keeps its children or its delete button, never both. Removing a row does **not**
+confirm; Save is the commit point. A view-only user (no insert/update/delete) gets a
+read-only grid for free: no Add, no editing, no delete.
+
+A parent's child count changes without the parent's own rows changing, so the count must
+come from the server (`step_count` / `approver_count` on the list DTO) for rows whose
+children are not loaded, and from the loaded children for the selected row.
+
+#### Chained master–detail (the SYS1108 pattern)
+
+Selecting a row loads the next grid from its own endpoint:
+
+```
+GET /workflows?branch_no=&department_no=&menu_no=   -> grid 1
+GET /workflows/{scopeNo}/steps                      -> grid 2  (on grid-1 row click)
+GET /steps/{stepNo}/approvers                       -> grid 3  (on grid-2 row click)
+```
+
+Each level auto-selects its first row, which cascades to the next. After **save**,
+reload the list and pass the saved PK so the user lands back on the row they were
+editing (see the Post-Save Selection Rule at the top of this file). Filters above the
+grid re-query the list; put them in a `<app-form-section dense>` filter card.
+
+The list endpoint returns **parent rows only** — children load per selection. Nesting
+them costs a query per parent plus one per child (an N+1) for data the screen shows one
+parent at a time.
+
+**Consequence to design for:** because children load per selection, switching parent rows
+discards unsaved child edits. Save is per-parent, so that is coherent — but there is no
+unsaved-changes warning.
+
+#### Height, density, pagination
+
+- **Height belongs in the config** (`height: '220px'`). `[height]` on the component
+  overrides it for a one-off screen (`height="100%"` inside a flex-filled card). Never
+  viewport math.
+- `density`: `compact` 30/26 · `comfortable` 34/30 (default) · `spacious` 42/38.
+- `showPagination: true` + `pageSize: 50` + `pageSizeOptions: [25, 50, 100, 500]`. The
+  pager renders in the status bar; AG Grid's own panel is suppressed.
+- Totals sum the whole **filtered** set, not just the visible page.
+
+#### Toolbar
+
+Title + Add/Delete on the left; search + column chooser + export right-aligned as one
+segmented control. Search matches the **text on screen** (a lookup column is searched by
+its label, not its stored code). Export goes through the app's shared
+`TableExportService` (Excel / PDF / CSV / Print), so every export in the app looks the
+same, and only filtered rows and visible columns are written.
+
+#### Gotchas that fail silently
+
+AG Grid fails **silently**: a bad column type, a missing height or a stale class name
+renders a blank or wrong grid with nothing in the console. Inspect the DOM before
+assuming the code is wrong. Specifically:
+
+- **Never `appendTo="body"` on a cell editor.** `stopEditingWhenCellsLoseFocus` makes
+  editors modal popups that AG Grid destroys on any mousedown outside the popup — with
+  the panel on `body`, clicking an option kills the editor before its click handler runs
+  and the selection is silently dropped. *The tell: keyboard Enter commits, mouse click
+  does not.* The select editor overrides the app-wide `NgSelectConfig.appendTo = 'body'`
+  with a component-scoped config; the `appendTo` **input cannot** do this, because
+  ng-select resolves `appendTo() || config.appendTo`.
+- **Full-row editing needs INLINE editors**, not popups — a modal popup is dismissed by
+  clicking another field, which ends the whole row edit.
+- **v36 renamed the pinned-row classes** to `.ag-grid-pinned-bottom-rows` /
+  `.ag-row-pinned` (was `.ag-floating-bottom`). Old selectors match nothing.
+- **`cellRendererSelector` returning `undefined` falls back to `cellRenderer`** — to
+  suppress a renderer on the totals row, omit `cellRenderer` entirely.
+- **Signal inputs are unreadable in field initializers** (`NG8118`). Anything derived
+  from `config()` belongs in `ngOnInit`.
+- **`modelUpdated` fires before `gridReady` assigns the api** — take the api from the
+  event, not the field.
+- **Never put a backtick in a comment inside a `template:` or `styles:` literal** — it
+  terminates the string and yields a baffling `Failed to resolve styles` error.
+- **The dev server serves stale grid bundles.** If a change does not appear, check the
+  live `gridOptions` before re-debugging the code; touch the file or restart the server.
 
 ### Standard action buttons — `<app-action-button>` (CRITICAL)
 
@@ -858,8 +860,8 @@ UI hint only; never save its result.
 **Never hardcode currency symbols or precision.** Always use the global `AppDecimalPipe` (`appDecimal`) which automatically reads the active currency precision from the centralized setup loaded at bootstrap via `CommonDataService`.
 
 - **In templates:** Use `{{ amount | appDecimal }}` or `{{ amount | appDecimal:2 }}` if an override is explicitly needed. Do not use the standard Angular `number` pipe for monetary values.
-- **In common-table:** Use `cellType: 'currency'` or `cellType: 'decimal'`. The table automatically applies the correct pipe and precision using the global service.
-- **Alignment:** Decimal, Currency, and Number fields must ALWAYS be right-aligned (`align: 'right'`). The common table does this automatically based on `cellType`, but ensure any custom grid or form input follows this rule so that digits align cleanly.
+- **In a grid:** Use `GridColumns.currency(...)` or `GridColumns.decimal(...)`. The column automatically applies the correct pipe and precision using the global service — never call `.precision(2)` to hard-code it.
+- **Alignment:** Decimal, Currency, and Number fields must ALWAYS be right-aligned. The grid does this automatically from the column type, but ensure any form input follows this rule so that digits align cleanly.
 
 ### PDF Reports — `PdfTemplateService` (CRITICAL)
 

@@ -11,7 +11,9 @@
 
 /* Header never scrolls; flex-shrink:0 prevents compression */
 .page-card-header {
-  min-height: 60px;
+  min-height: 38px;
+  height: 38px;
+  padding: 0.25rem 0.75rem !important;
   flex-shrink: 0;
 }
 
@@ -191,6 +193,13 @@
    each control takes one of two columns; add `col-span-2` (Tailwind)
    on a control that should span the full row. No wrapper divs. */
 .sidebar-filters-section {
+  /* Hide this section entirely if it has no child elements (e.g. no search, no filters)
+     This prevents an empty border line from floating above the list. */
+  &:not(:has(*)) {
+    display: none;
+    border-bottom: none;
+  }
+
   ::ng-deep [sidebarFilters] {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -231,6 +240,17 @@
 /* ── Sidebar list container (holds the projected [sidebarList]) ── */
 .sidebar-list-wrap {
   padding: 6px;
+
+  /* When an AG Grid is placed inside the sidebar list, it should look flush
+     with the sidebar rather than like a floating card. */
+  ::ng-deep [sidebarList] > app-erp-grid .erp-grid-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: -6px; /* offset the parent padding to sit flush */
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+  }
 }
 
 /* ── Logo / Branding upload styles (shared via this component) ── */

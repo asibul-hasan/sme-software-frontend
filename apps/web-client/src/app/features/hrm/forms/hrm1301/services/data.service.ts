@@ -39,10 +39,10 @@ export class Hrm1301DataService {
   }
 
   // ── Lookups ───────────────────────────────────────────────────────────────
-  loadBalance(employeeNo: number, leaveTypeNo: number, leaveYear?: number): Observable<ApiResponse<LeaveBalance>> {
+  loadBalance(employeeNo: number, leaveTypeNo: number, leaveYear?: number): Observable<ApiResponse<LeaveBalance[] | LeaveBalance>> {
     const params: Record<string, number> = { employeeNo, leaveTypeNo };
     if (leaveYear != null) params['leaveYear'] = leaveYear;
-    return this.hrService.getList<LeaveBalance>('forms/hrm1301/balance', params);
+    return this.hrService.getList<LeaveBalance[] | LeaveBalance>('forms/hrm1301/balance', params);
   }
   loadLeaveTypes(): Observable<ApiResponse<LeaveTypeOption[]>> {
     return this.hrService.getList<LeaveTypeOption[]>('forms/hrm1005/leave-types');

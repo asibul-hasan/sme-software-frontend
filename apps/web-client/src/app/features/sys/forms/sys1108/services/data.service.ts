@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfigService } from '../../../../../core/services/app-config.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
-import { IApprovalScope, ISysLookup } from './model.service';
+import { IApprovalApprover, IApprovalScope, IApprovalStep, ISysLookup } from './model.service';
 
 @Injectable()
 export class Sys1108DataService {
@@ -13,8 +13,23 @@ export class Sys1108DataService {
   private baseUrl = `${this.config.apiUrl}/sys/forms/sys1108`;
   private lookupUrl = `${this.config.apiUrl}/common/lookups`;
 
-  getList(): Observable<ApiResponse<IApprovalScope[]>> {
-    return this.http.get<ApiResponse<IApprovalScope[]>>(`${this.baseUrl}/workflows`);
+  /** Workflow list. Omitted filters mean "all" for that column. */
+  getList(filters?: { branch_no?: number | null; department_no?: number | null; menu_no?: number | null }): Observable<ApiResponse<IApprovalScope[]>> {
+    let params = new HttpParams();
+    if (filters?.branch_no != null) params = params.set('branch_no', filters.branch_no);
+    if (filters?.department_no != null) params = params.set('department_no', filters.department_no);
+    if (filters?.menu_no != null) params = params.set('menu_no', filters.menu_no);
+    return this.http.get<ApiResponse<IApprovalScope[]>>(`${this.baseUrl}/workflows`, { params });
+  }
+
+  /** Steps of one workflow — loaded when a workflow row is selected. */
+  getSteps(scopeNo: number): Observable<ApiResponse<IApprovalStep[]>> {
+    return this.http.get<ApiResponse<IApprovalStep[]>>(`${this.baseUrl}/workflows/${scopeNo}/steps`);
+  }
+
+  /** Approvers of one step — loaded when a step row is selected. */
+  getApprovers(stepNo: number): Observable<ApiResponse<IApprovalApprover[]>> {
+    return this.http.get<ApiResponse<IApprovalApprover[]>>(`${this.baseUrl}/steps/${stepNo}/approvers`);
   }
   getEnrolledMenuOptions(): Observable<ApiResponse<ISysLookup[]>> {
     return this.http.get<ApiResponse<ISysLookup[]>>(`${this.baseUrl}/menus`);

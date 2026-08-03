@@ -13,11 +13,12 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import {
-  CommonTableComponent,
   ColumnDef,
   TableConfig,
   BadgeConfig,
 } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { hrmConstants } from '../../constants/hrm.constants';
@@ -47,7 +48,8 @@ import { LeaveHistoryDialogComponent } from './components/leave-history-dialog/l
     FormsModule,
     SharedModule,
     PageFormLayoutComponent,
-    CommonTableComponent,
+
+    ErpGridComponent,
     AppDecimalPipe,
   ],
   providers: [Hrm1321ModelService, Hrm1321DataService],
@@ -62,10 +64,7 @@ export class Hrm1321Component implements OnInit {
   private toastr = inject(ToastrService);
   private dialogService = inject(DialogService);
 
-  @ViewChild('datesTpl', { static: true }) datesTpl!: TemplateRef<any>;
-  @ViewChild('attachmentTpl', { static: true }) attachmentTpl!: TemplateRef<any>;
-  @ViewChild('checkboxTpl', { static: true }) checkboxTpl!: TemplateRef<any>;
-  @ViewChild('historyBtnTpl', { static: true }) historyBtnTpl!: TemplateRef<any>;
+
 
   readonly statusOptions = hrmConstants.leaveStatuses;
 
@@ -183,42 +182,43 @@ export class Hrm1321Component implements OnInit {
     () => this.selected()?.leave_type_name ?? 'No request selected',
   );
 
-  tableColumns: ColumnDef[] = [];
-  tableConfig: Partial<TableConfig> = {
-    showSearch: true,
-    searchPlaceholder: 'Search pending requests...',
-    pagination: true,
-    defaultPageSize: 10,
-    dense: true,
-    striped: true,
-    showActions: false,
-    minHeight: '280px',
-    rowKey: 'leave_application_no',
+  readonly gridConfig: GridConfig<LeaveRequest> = {
+    gridKey: 'HRM_1321_LEAVE_APPROVAL',
+    rowIdField: 'leave_application_no',
+    selectionMode: 'single', // We use custom 'selected' column for multi-selection logic
+    externalRowState: true,
+    showPagination: true,
+    showStatusBar: true,
+    canAdd: () => false,
+    canEdit: () => true, // To allow checkbox click
+    canDeleteRow: () => false,
+    toolbar: {
+      showAdd: false, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true,
+      searchPlaceholder: 'Search pending requests...',
+    },
+    columns: [
+      GridColumns.text<LeaveRequest>('employee_id', 'Emp ID').width(110).pinned('left').build(),
+      GridColumns.text<LeaveRequest>('employee_name', 'Employee').minWidth(170).build(),
+      GridColumns.text<LeaveRequest>('designation_name', 'Designation').minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('department_name', 'Department').minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('leave_type_name', 'Leave Type').width(140).build(),
+      GridColumns.text<LeaveRequest>('from_date', 'Dates').width(200)
+        .valueFormatter((_, r) => `${r.from_date} → ${r.to_date}`).build(),
+      GridColumns.number<LeaveRequest>('total_days', 'Days').precision(1).width(90).build(),
+      GridColumns.text<LeaveRequest>('reason', 'Reason').minWidth(180).build(),
+      GridColumns.text<LeaveRequest>('reliever_name', 'Reliever').minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('reliever_status', 'Reliever Status').width(130).valueFormatter((v, _) => {
+        const opt = this.relieverStatusOptions.find(o => o.value === Number(v));
+        return opt ? opt.label : 'Pending';
+      }).build(),
+      GridColumns.text<LeaveRequest>('attachment_path', 'Attachment').width(150).valueFormatter((v) => v ? v : '—').build(),
+      GridColumns.text<LeaveRequest>('approval_state', 'Status').width(130).valueFormatter((v, _) => this.approvalStateLabel(v)).build(),
+      GridColumns.checkbox<LeaveRequest>('selected', '').width(60).pinned('right').build(),
+    ],
   };
 
   ngOnInit(): void {
-    this.tableColumns = [
-      { title: 'Emp ID', field: 'employee_id', cellType: 'text', sort: true, width: '110px', pin: 'left' },
-      { title: 'Employee', field: 'employee_name', cellType: 'text', sort: true, minWidth: '170px' },
-      { title: 'Designation', field: 'designation_name', cellType: 'text', minWidth: '150px' },
-      { title: 'Department', field: 'department_name', cellType: 'text', minWidth: '150px' },
-      { title: 'Leave Type', field: 'leave_type_name', cellType: 'text', sort: true, width: '140px' },
-      { title: 'Dates', field: 'from_date', cellType: 'custom-template', customTemplate: this.datesTpl,
-        value: (r) => `${r['from_date']} → ${r['to_date']}`, width: '200px' },
-      { title: 'Days', field: 'total_days', cellType: 'decimal', align: 'right', precision: 1, width: '90px' },
-      { title: 'Reason', field: 'reason', cellType: 'text', minWidth: '180px' },
-      { title: 'Reliever', field: 'reliever_name', cellType: 'text', minWidth: '150px' },
-      { title: 'Reliever Status', field: 'reliever_status', cellType: 'badge', width: '130px',
-        badgeConfig: (val) => this.relieverStatusBadge(val) },
-      { title: 'Attachment', field: 'attachment_path', cellType: 'custom-template',
-        customTemplate: this.attachmentTpl, value: (r) => r['attachment_path'] ?? '', width: '150px' },
-      { title: 'Status', field: 'approval_state', cellType: 'badge', width: '130px',
-        badgeConfig: (val) => this.approvalStateBadge(val), value: (r) => this.approvalStateLabel(r['approval_state']) },
-      { title: 'History', field: 'history_action', cellType: 'custom-template', customTemplate: this.historyBtnTpl, width: '90px', sort: false },
-      { title: '', field: 'selected', cellType: 'custom-template', customTemplate: this.checkboxTpl,
-        width: '60px', sort: false, hideable: false, pin: 'right' },
-    ];
-
     setTimeout(() => {
       this.permissionService.useLocalPermissions('HRM_1321');
       this.loadFilterLookups();
@@ -288,8 +288,10 @@ export class Hrm1321Component implements OnInit {
     this.remarks.set('');
   }
 
-  toggleRow(row: LeaveRequest, checked: boolean): void {
-    this.model.toggleRowSelection(row.leave_application_no, checked);
+  onRowChange(row: LeaveRequest): void {
+    // When the checkbox in the grid is clicked, it updates row.selected directly (1 or 0).
+    // We synchronize this with the model service.
+    this.model.toggleRowSelection(row.leave_application_no, !!row.selected);
   }
 
   /** Apply the decision to the selected request. */

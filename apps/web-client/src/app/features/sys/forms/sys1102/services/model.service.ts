@@ -53,24 +53,11 @@ export class Sys1102ModelService {
   branches = signal<IBranchLookup[]>([]);
   isLoading = signal(false);
   isSaving = signal(false);
-  searchTerm = signal('');
   selectedRoleNo = signal<number | null>(null);
 
   form!: FormGroup;
 
   // ─── Derived state ────────────────────────────────────────────────────────────
-  filteredRoles = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const data = this.roles();
-    if (!term) return data;
-    return data.filter(
-      (r) =>
-        (r.role_name || '').toLowerCase().includes(term) ||
-        (r.role_id || '').toLowerCase().includes(term),
-    );
-  });
-
-  pager = makePaginator<IRole>(this.filteredRoles);
 
   /** True while a built-in/system role is selected (cannot be edited/deleted server-side). */
   isSystemSelected = computed(() => {
@@ -82,7 +69,7 @@ export class Sys1102ModelService {
   initForm(): void {
     this.form = this.fb.group({
       role_no:        [null],
-      company_no:     [this.authCtx.user()?.company_no ?? null, [Validators.required]],
+      company_no:     [this.authCtx.user()?.company_no ?? null],
       role_id:        ['', [Validators.required, Validators.maxLength(20)]],
       role_name:      ['', [Validators.required, Validators.maxLength(150)]],
       role_desc:      ['', [Validators.maxLength(500)]],

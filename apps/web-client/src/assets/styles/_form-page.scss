@@ -198,6 +198,25 @@
     background: transparent;
   }
 
+  // Opt-in compact header (`<app-form-section dense>`) for supporting sections such
+  // as a filter bar above a grid — the standard 8px/12px header stays the default.
+  .card-header.form-section-card__header--dense {
+    // Vertical only — the collapsible-card rule reserves padding-right for the
+    // toggle, and a shorthand here would wipe it and let the title run under it.
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+
+    .card-header__title {
+      font-size: 13.5px;
+    }
+
+    .card-header__title mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
   .card-body {
     padding: 0.5rem 0.75rem;
   }

@@ -667,6 +667,20 @@ app-common-table .common-table-pagination .mat-mdc-paginator {
   }
 }
 
+/* The notification inbox draws its own header, panes and edges, so the Material
+   dialog chrome is stripped to avoid a card-in-a-card. Must live here, not in the
+   component: the MDC surface is an ANCESTOR of the component host, which ::ng-deep
+   (descendant-only) cannot reach. */
+.notification-dialog-panel {
+  .mat-mdc-dialog-container,
+  .mat-mdc-dialog-surface,
+  .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+}
+
 /* Hide number input arrows globally */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
@@ -678,3 +692,16 @@ input[type='number'] {
 }
 
 
+
+/* Modern Dialog Panel override */
+.custom-dialog-panel {
+  .mat-mdc-dialog-container,
+  .mat-mdc-dialog-surface,
+  .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
