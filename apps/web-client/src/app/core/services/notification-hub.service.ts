@@ -46,6 +46,7 @@ export class NotificationHubService {
         // token refreshed since the first handshake is picked up automatically. Returning the
         // token here is what puts it in ?access_token=, which the API only honours on /hubs.
         accessTokenFactory: () => this.auth.getToken() ?? '',
+        withCredentials: false,
       })
       // Backoff rather than a fixed retry, so a server restart does not get hammered by every
       // open tab at once. null ends retries; the poll keeps working regardless.
