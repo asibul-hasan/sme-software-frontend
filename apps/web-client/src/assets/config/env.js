@@ -5,7 +5,7 @@
   const config = window.__config || {};
 
   // Restore fallbacks to prevent 'undefined' which causes relative path issues (like 4202/undefined)
-  const localUrl = config.apiUrlLocal;
+  const localUrl = config.apiUrlLive;
   const liveUrl = config.apiUrlLive;
 
   // 1. Set a "Predictive" default (Live)
