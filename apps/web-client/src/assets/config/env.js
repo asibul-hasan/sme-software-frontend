@@ -1,32 +1,49 @@
 (function (window) {
   window.__env = window.__env || {};
 
-  // Retrieve URLs from config.js source
+  // Retrieve configuration strictly from config.js
   const config = window.__config || {};
+  const localUrl = config.apiUrlLocal || '';
+  const liveUrl = config.apiUrlLive || '';
 
-  // Restore fallbacks to prevent 'undefined' which causes relative path issues (like 4202/undefined)
-  const localUrl = config.apiUrlLive;
-  const liveUrl = config.apiUrlLive;
+  window.__env.apiUrlLocal = localUrl;
+  window.__env.apiUrlLive = liveUrl;
+  window.__env.version = config.version || '';
+  window.__env.production = !!config.production;
+  window.__env.hostname = config.hostname || '';
 
-  // 1. Set a "Predictive" default (Live)
-  window.__env.apiUrl = liveUrl;
+  // Default to localUrl initially
+  window.__env.apiUrl = localUrl;
 
-  // // 2. Perform a "Connection Check" to Local API
-  console.log('Environment: Checking connectivity to Local API...');
-
-  fetch(localUrl + '/auth/contexts?user_name=ping', {
-    method: 'GET',
-    mode: 'no-cors',
-    cache: 'no-cache',
-  })
-    .then(() => {
-      window.__env.apiUrl = localUrl;
-      console.log('Environment: Local API detected. Switching to:', localUrl);
-    })
-    .catch(() => {
+  // Check connectivity to Local API
+  function checkLocalHealth() {
+    if (!localUrl) {
       window.__env.apiUrl = liveUrl;
-      console.log('Environment: Local API unreachable. Using Live:', liveUrl);
-    });
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+    fetch(localUrl + '/common/lookups/branches', {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache',
+      signal: controller.signal,
+    })
+      .then(() => {
+        clearTimeout(timeoutId);
+        window.__env.apiUrl = localUrl;
+        console.log('Environment: Local API active. Routing requests to:', localUrl);
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+        window.__env.apiUrl = liveUrl;
+        console.log('Environment: Local API unreachable. Falling back to Live:', liveUrl);
+      });
+  }
+
+  checkLocalHealth();
 
   window.__env.enableDebug = true;
 })(this);

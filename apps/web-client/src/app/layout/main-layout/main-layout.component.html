@@ -43,3 +43,16 @@
   <!-- Global ERP Command Palette (Ctrl+K) -->
   <erp-command-palette></erp-command-palette>
 </div>
+
+<!--
+  Mounted at the layout ROOT, deliberately outside <app-header>.
+
+  It used to live inside the header component. `<app-header>` is a flex item carrying `z-[100]`,
+  and a flex item with an explicit z-index establishes a stacking context even without `position` —
+  so the toast's own `z-index: 1080` was resolved INSIDE that z-100 context. A Material dialog sits
+  at z-1000 on `.cdk-overlay-container` at body level, so the dialog always won and no amount of
+  raising 1080 could change it.
+
+  Out here it competes at the root stacking context, above the CDK overlay.
+-->
+<app-notification-toast></app-notification-toast>

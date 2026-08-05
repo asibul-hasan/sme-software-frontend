@@ -21,6 +21,7 @@ import { provideToastr } from 'ngx-toastr';
 import { routes } from './app.routes';
 import { AuthInterceptorFn } from './core/interceptors/auth.interceptor';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
+import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { SessionManagerService } from './core/services/session-manager.service';
 import { AppBootstrapService } from './core/services/app-bootstrap.service';
@@ -67,6 +68,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([
         AuthInterceptorFn,
         loaderInterceptor,
+        apiErrorInterceptor,
       ]),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
     ),

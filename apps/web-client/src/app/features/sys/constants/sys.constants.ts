@@ -307,6 +307,7 @@ export const sysConstants = {
     { label: 'Forward', value: 1 },
     { label: 'Backward', value: 2 },
     { label: 'Reject', value: 3 },
+    { label: 'Final', value: 4 },
   ],
   // period_status is a SMALLINT column (DB-first numeric codes)
   periodStatuses: [

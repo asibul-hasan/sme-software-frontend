@@ -392,15 +392,25 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
             };
           }
         } else if (c.type === 'checkbox') {
-          colDef.cellRenderer = 'agCheckboxCellRenderer';
+          // Use custom cellRenderer if provided (e.g. for conditional disable),
+          // otherwise use AG Grid's built-in checkbox renderer.
+          colDef.cellRenderer = c.cellRenderer ?? 'agCheckboxCellRenderer';
           colDef.cellEditor = 'agCheckboxCellEditor';
+          colDef.singleClickEdit = true;
+          colDef.cellRendererParams = {
+            readOnly: (params: any) => {
+              const isEditable = typeof colDef.editable === 'function' ? colDef.editable(params) : (colDef.editable ?? true);
+              return !isEditable;
+            },
+          };
           // Convert 1/0 to true/false for the AG Grid components
-          colDef.valueGetter = (params) => params.data?.[c.field as string] === 1;
+          colDef.valueGetter = (params) => params.data?.[c.field as string] === 1 || params.data?.[c.field as string] === true;
           colDef.valueSetter = (params) => {
             if (params.data) {
               params.data[c.field as string] = params.newValue ? 1 : 0;
+              return true;
             }
-            return true;
+            return false;
           };
         }
 

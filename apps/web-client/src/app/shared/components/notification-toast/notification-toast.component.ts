@@ -12,6 +12,10 @@ import { NotificationModalComponent } from '../notification-modal/notification-m
   imports: [CommonModule, MatIconModule],
   template: `
     @if (notification(); as item) {
+      <!-- z-1080 clears the CDK overlay (z-1000) so the toast sits above Material dialogs.
+           This only holds while the component is mounted at the layout ROOT — nesting it inside
+           any element that creates a stacking context (a flex item with a z-index, a transform,
+           a filter) scopes this value to that context and the dialog wins again. -->
       <div class="notification-toast-container fixed right-4 top-4 z-[1080]">
         <div
           class="w-[360px] overflow-hidden rounded-xl border border-line bg-surface text-content shadow-[0_10px_30px_rgba(0,0,0,0.18)]"

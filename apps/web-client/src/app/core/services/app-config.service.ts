@@ -4,6 +4,7 @@ interface RuntimeEnv {
   apiUrl?:       string;
   production?:   boolean;
   version?:      string;
+  hostname?:     string;
   enableDebug?:  boolean;
 }
 
@@ -15,9 +16,7 @@ declare global {
 
 /**
  * Reads runtime configuration injected by `assets/config/env.js` BEFORE
- * the Angular bundle boots. Using runtime config (instead of build-time
- * `environment.ts`) lets us ship one bundle and switch APIs per
- * environment without rebuilding.
+ * the Angular bundle boots.
  */
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -26,15 +25,19 @@ export class AppConfigService {
   }
 
   get apiUrl(): string {
-    return this.env.apiUrl ?? 'http://localhost:8080/api/v1';
+    return this.env.apiUrl ?? '';
   }
 
   get production(): boolean {
-    return this.env.production ?? window.location.hostname !== 'localhost';
+    return !!this.env.production;
   }
 
   get version(): string {
-    return this.env.version ?? '1.0.0';
+    return this.env.version ?? '';
+  }
+
+  get hostname(): string {
+    return this.env.hostname ?? '';
   }
 
   get enableDebug(): boolean {

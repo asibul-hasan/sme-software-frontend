@@ -31,6 +31,8 @@ export interface LeaveApplication extends BaseEntity {
   /** Server-authoritative: the applicant may still edit until an approver acts. */
   can_edit?: boolean | null;
   decision_remarks?: string | null;
+  approval_state?: string | null;
+  status_name?: string | null;
 }
 
 export interface LeaveBalance {
@@ -65,7 +67,7 @@ export class Hrm1301ModelService {
   isSaving      = signal(false);
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
-  status        = signal<number>(1);
+  status        = signal<number>(0);
   activeTab     = signal<'application' | 'balance'>('application');
   balanceLeaveType = signal<number | null>(null);
   balanceLeaveYear = signal<number | null>(new Date().getFullYear());
@@ -131,7 +133,7 @@ export class Hrm1301ModelService {
    */
   readonly canEdit = signal(true);
   readonly isEditable = computed(
-    () => (this.status() === 1 || this.status() === 2) && this.canEdit(),
+    () => this.status() === 0
   );
 
   selectedEmployeeNo = signal<number | null>(null);
@@ -292,10 +294,7 @@ export class Hrm1301ModelService {
     this.refreshBalance();
   }
 
-  private isSelectingRow = false;
-
   refreshBalance(): void {
-    if (this.isSelectingRow) return;
     this.refreshBalance$.next();
   }
 
@@ -333,10 +332,11 @@ export class Hrm1301ModelService {
               return;
             }
           }
-          const currentEmpNo = this.selectedEmployeeNo() ?? this.authCtx.user()?.employee_no;
-          const myLeaves = currentEmpNo ? res.data.filter((l) => l.employee_no === currentEmpNo) : [];
-          if (myLeaves.length > 0) {
-            this.selectLeave(myLeaves[0]);
+          if (res.data.length > 0) {
+            const currentEmpNo = this.selectedEmployeeNo() ?? this.authCtx.user()?.employee_no;
+            const myLeaves = currentEmpNo ? res.data.filter((l) => l.employee_no === currentEmpNo) : [];
+            const defaultTarget = myLeaves.length > 0 ? myLeaves[0] : res.data[0];
+            this.selectLeave(defaultTarget);
           } else {
             this.onNew();
           }
@@ -347,63 +347,33 @@ export class Hrm1301ModelService {
   }
 
   selectLeave(item: LeaveApplication): void {
-    this.isSelectingRow = true;
+    if (!item) return;
     this.selectedNo.set(item.leave_application_no);
     this.status.set(item.status);
-    this.isLoading.set(true);
-    this.data.loadLeaveDetail(item.leave_application_no).pipe(
-      finalize(() => {
-        this.isLoading.set(false);
-        setTimeout(() => { this.isSelectingRow = false; }, 200);
-      })
-    ).subscribe({
-      next: (res) => {
-        if (isSuccess(res) && res.data) {
-          const d = res.data;
-          this.status.set(d.status);
-          // Server decides: editable only while pending AND no approver has acted.
-          this.canEdit.set(d.can_edit !== false);
-          if (d.employee_no) {
-            this.selectedEmployeeNo.set(d.employee_no);
-          }
-          this.form.patchValue({
-            leave_application_no: d.leave_application_no,
-            employee_no:          d.employee_no,
-            leave_type_no:        d.leave_type_no,
-            from_date:            (d.from_date ?? '').slice(0, 10),
-            to_date:              (d.to_date ?? '').slice(0, 10),
-            is_half_day:          d.is_half_day ?? 0,
-            reason:               d.reason,
-            need_reliever:        d.reliever_employee_no ? 1 : 0,
-            reliever_employee_no: d.reliever_employee_no,
-            attachment_path:      d.attachment_path,
-            is_active:            d.is_active,
-          }, { emitEvent: false });
+    this.canEdit.set(item.status === 0 ? true : (item.can_edit !== false));
+    if (item.employee_no) {
+      this.selectedEmployeeNo.set(item.employee_no);
+    }
+    this.form.patchValue({
+      leave_application_no: item.leave_application_no,
+      employee_no:          item.employee_no,
+      leave_type_no:        item.leave_type_no,
+      from_date:            (item.from_date ?? '').slice(0, 10),
+      to_date:              (item.to_date ?? '').slice(0, 10),
+      is_half_day:          item.is_half_day ?? 0,
+      reason:               item.reason,
+      need_reliever:        item.reliever_employee_no ? 1 : 0,
+      reliever_employee_no: item.reliever_employee_no,
+      attachment_path:      item.attachment_path,
+      is_active:            item.is_active,
+    }, { emitEvent: false });
 
-          if (d.leave_type_no) {
-            this.balanceLeaveType.set(d.leave_type_no);
-          }
-          if (d.leave_year) {
-            this.balanceLeaveYear.set(d.leave_year);
-          }
-
-          const emp = d.employee_no;
-          const type = d.leave_type_no;
-          const yr = d.leave_year ?? (d.from_date ? new Date(d.from_date).getFullYear() : new Date().getFullYear());
-          if (emp && type) {
-            this.data.loadBalance(emp, type, yr).subscribe({
-              next: (bRes) => {
-                if (isSuccess(bRes) && bRes.data) {
-                  const bItem = Array.isArray(bRes.data) ? bRes.data[0] : bRes.data;
-                  this.balance.set(bItem ?? null);
-                }
-              }
-            });
-          }
-        }
-      },
-      error: () => this.toastr.error('Failed to load leave details'),
-    });
+    if (item.leave_type_no) {
+      this.balanceLeaveType.set(item.leave_type_no);
+    }
+    if (item.leave_year) {
+      this.balanceLeaveYear.set(item.leave_year);
+    }
   }
 
   onSave(): void {
@@ -429,6 +399,7 @@ export class Hrm1301ModelService {
       reliever_employee_no: val.need_reliever ? val.reliever_employee_no : null,
       attachment_path:      val.attachment_path,
       branch_no:            this.currentBranchNo,
+      status:               val.status ?? 0,
       is_active:            val.is_active,
     };
 
@@ -485,7 +456,7 @@ export class Hrm1301ModelService {
   onNew(): void {
     const today = new Date().toISOString().split('T')[0];
     this.selectedNo.set(null);
-    this.status.set(1);
+    this.status.set(0);
     this.canEdit.set(true);       // a brand-new application is always editable
     this.balance.set(null);
     const defaultEmpNo = this.authCtx.user()?.employee_no ?? null;

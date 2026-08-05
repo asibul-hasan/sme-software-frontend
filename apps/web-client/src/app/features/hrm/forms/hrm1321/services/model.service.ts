@@ -13,7 +13,9 @@ export interface LeaveRequest {
   employee_no: number;
   employee_id?: string | null;
   employee_name?: string | null;
+  department_no?: number | null;
   department_name?: string | null;
+  designation_no?: number | null;
   designation_name?: string | null;
   leave_type_no: number;
   leave_type_name?: string | null;
@@ -37,7 +39,7 @@ export interface LeaveRequest {
   /** True only when this approver may approve/reject this leave right now. */
   can_act?: boolean | null;
   /** Client-side only — bulk-approval checkbox. */
-  selected?: boolean;
+  selected?: number | boolean;
 }
 
 /** Balance snapshot shown beside the decision panel. */
@@ -86,13 +88,13 @@ export class Hrm1321ModelService {
    * merged over the current ones, so any single filter change re-queries with all of them. Called
    * with no argument (e.g. after an approval) to reload with the same filters.
    */
-  loadApprovalList(patch?: Partial<typeof this.filters>): void {
-    if (patch) this.filters = { ...this.filters, ...patch };
+  loadApprovalList(filters?: Partial<typeof this.filters>): void {
+    if (filters !== undefined) this.filters = { ...filters };
     this.isLoading.set(true);
     this.data.loadApprovalList(this.filters).subscribe({
       next: (res) => {
         const rows = isSuccess(res) && res.data ? res.data : [];
-        this.requests.set(rows.map((r) => ({ ...r, selected: false })));
+        this.requests.set(rows.map((r) => ({ ...r, selected: 0 })));
         // Keep the current selection if it survived the reload, else clear it.
         const keep = this.selectedRequest()
           ? rows.find((r) => r.leave_application_no === this.selectedRequest()!.leave_application_no)
@@ -144,18 +146,21 @@ export class Hrm1321ModelService {
     if (!checked.length) return;
     this.isSaving.set(true);
     let done = 0;
+    let succeeded = 0;
     checked.forEach((r) => {
       this.data.approve(r.leave_application_no, remarks).subscribe({
-        next: () => this.afterBulk(++done, checked.length),
-        error: () => this.afterBulk(++done, checked.length),
+        next: () => { succeeded++; this.afterBulk(++done, checked.length, succeeded); },
+        error: () => this.afterBulk(++done, checked.length, succeeded),
       });
     });
   }
 
-  private afterBulk(done: number, total: number): void {
+  private afterBulk(done: number, total: number, succeeded: number): void {
     if (done < total) return;
     this.isSaving.set(false);
-    this.toastr.success(`${total} leave request(s) processed`);
+    if (succeeded > 0) {
+      this.toastr.success(`${succeeded} leave request(s) approved`);
+    }
     this.loadApprovalList();
   }
 
@@ -167,22 +172,17 @@ export class Hrm1321ModelService {
         if (isSuccess(res)) {
           this.toastr.success(message);
           this.loadApprovalList();
-        } else {
-          this.toastr.error(res.message || 'Action failed');
         }
+        // Non-success responses (4xx wrapped in body) — the global interceptor handles the toast.
       },
-      // The backend rejects invalid decisions (e.g. reject without a reason,
-      // insufficient balance on approve) — surface that message to the approver.
-      error: (err) =>
-
-        {
-          this.isSaving.set(false);
-          this.toastr.error(err?.error?.message || 'Server error while processing the decision');
-        },
+      // HTTP errors (400/500) — the global apiErrorInterceptor already shows the toast.
+      error: () => {
+        this.isSaving.set(false);
+      },
     });
   }
 
-  toggleRowSelection(no: number, checked: boolean): void {
+  toggleRowSelection(no: number, checked: boolean | number): void {
     this.requests.update((rows) =>
       rows.map((r) => (r.leave_application_no === no ? { ...r, selected: checked } : r)),
     );

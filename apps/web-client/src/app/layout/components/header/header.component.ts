@@ -16,7 +16,6 @@ import { MenuService } from '../sidebar/services/menu-builder.service';
 import { MenuItem } from '../sidebar/models/menu.model';
 import { SharedModule } from '../../../shared';
 import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
-import { NotificationToastComponent } from '../../../shared/components/notification-toast/notification-toast.component';
 import { NotificationModalComponent } from '../../../shared/components/notification-modal/notification-modal.component';
 import { DialogService } from '../../../core/services/dialog.service';
 
@@ -29,7 +28,7 @@ export interface BreadcrumbItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   standalone: true,
-  imports: [SharedModule, NotificationToastComponent],
+  imports: [SharedModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

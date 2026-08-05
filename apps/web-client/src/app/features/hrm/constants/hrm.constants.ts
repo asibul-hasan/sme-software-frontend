@@ -203,13 +203,7 @@ export const hrmConstants = {
   ],
 
   // ── Leave (HRM_1301) ────────────────────────────────────────────────────────
-  leaveStatuses: [
-    { value: 1, label: 'Draft' },
-    { value: 2, label: 'Applied' },
-    { value: 3, label: 'Approved' },
-    { value: 4, label: 'Rejected' },
-    { value: 5, label: 'Cancelled' },
-  ],
+  leaveStatuses: [],
   relieverStatuses: [
     { value: 0, label: 'Pending' },
     { value: 1, label: 'Rejected' },

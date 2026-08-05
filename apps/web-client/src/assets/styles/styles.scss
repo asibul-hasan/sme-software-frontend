@@ -705,3 +705,9 @@ input[type='number'] {
     box-shadow: none !important;
   }
 }
+
+/* Fix Toastr and Loader stacking context under Dialogs */
+.toast-container { z-index: 999999 !important; }
+.loader-overlay { z-index: 999999 !important; }
+.global-loader { z-index: 999999 !important; }
+

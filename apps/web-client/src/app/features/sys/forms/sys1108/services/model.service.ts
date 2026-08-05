@@ -499,7 +499,7 @@ export class Sys1108ModelService {
         step_type: s.step_type,
         next_step_no: s.next_step_no,
         step_name: s.step_name || `Step ${s.step_number}`,
-        is_final: s.is_final ? 1 : 0,
+        is_final: s.step_type === 4 || s.is_final ? 1 : 0,
         is_active: s.is_active,
         approvers: this.stepApprovers().filter(a => a.step_uid === s.__uid).map(a => ({
           approver_no: a.approver_no,

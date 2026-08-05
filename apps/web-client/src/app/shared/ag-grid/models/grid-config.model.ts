@@ -39,6 +39,8 @@ export interface GridColumnConfig<T = any> {
   validation?: GridValidationRule<T>;
   valueFormatter?: (value: any, row: T) => string;
   valueParser?: (value: any, row: T) => any;
+  /** Custom AG Grid cell renderer function. Used for columns that need DOM-level control (e.g. checkbox with conditional disable). */
+  cellRenderer?: (params: any) => HTMLElement | string;
   onChange?: (newValue: any, oldValue: any, row: T) => void;
   cellClassRules?: Record<string, (params: any) => boolean>;
 

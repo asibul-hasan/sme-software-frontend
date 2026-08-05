@@ -33,7 +33,7 @@
         </button>
       </div>
 
-      <div class="col-span-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="col-span-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Department -->
         <div class="field-group">
           <label class="field-label" for="filter_dept">Department</label>
@@ -57,7 +57,7 @@
           <ng-select
             id="filter_desig"
             labelForId="filter_desig"
-            [items]="designations()"
+            [items]="filteredDesignations()"
             bindLabel="designation_name"
             bindValue="designation_no"
             [ngModel]="filterDesig()"
@@ -74,7 +74,7 @@
           <ng-select
             id="filter_emp"
             labelForId="filter_emp"
-            [items]="employees()"
+            [items]="filteredEmployees()"
             bindLabel="full_name_with_id"
             bindValue="employee_no"
             [ngModel]="filterEmp()"
@@ -98,23 +98,6 @@
             (ngModelChange)="onLeaveTypeChange($event)"
             [clearable]="true"
             placeholder="All Leave Types"
-          >
-          </ng-select>
-        </div>
-
-        <!-- Status -->
-        <div class="field-group">
-          <label class="field-label" for="filter_status">Status</label>
-          <ng-select
-            id="filter_status"
-            labelForId="filter_status"
-            [items]="statusFilterOptions"
-            bindLabel="label"
-            bindValue="value"
-            [ngModel]="filterStatus()"
-            (ngModelChange)="onStatusChange($event)"
-            [clearable]="true"
-            placeholder="All Statuses"
           >
           </ng-select>
         </div>
@@ -165,7 +148,7 @@
     </app-form-section>
 
     <!-- ── Balance + decision ───────────────────────────────────────── -->
-    <app-form-section title="Leave Balance & Approval Decision" icon="rule">
+    <app-form-section title="Leave Balance & Approval Decision" icon="rule" [hidden]="true">
       @if (selected(); as req) {
         <span sectionActions class="list-item-tag">
           {{ req.employee_id }} · {{ req.employee_name }}

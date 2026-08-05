@@ -169,6 +169,9 @@ export class Sys1108Component implements OnInit {
         .flex(1)
         .minWidth(140)
         .build(),
+      GridColumns.number<ApprovalStep>('next_step_no', 'Next Step')
+        .width(110)
+        .build(),
       GridColumns.action<ApprovalStep>().build(),
     ],
   };

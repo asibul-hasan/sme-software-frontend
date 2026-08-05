@@ -1,9 +1,18 @@
+/**
+ * Viewport-fixed, NOT absolute.
+ *
+ * The component sits inside `<main class="… relative overflow-hidden">`, so `position: absolute`
+ * sized it to the content area and `overflow-hidden` clipped it there. It could never cover the
+ * sidebar, the header, or a Material dialog — dialogs are appended to `.cdk-overlay-container` on
+ * `<body>`, outside the app root entirely.
+ *
+ * `fixed` attaches it to the viewport instead. No ancestor here uses transform / filter /
+ * will-change, so nothing re-establishes a containing block and traps it again. z-index 9999 then
+ * competes at the root stacking context, above the CDK overlay's 1000.
+ */
 .loader-overlay {
-  position: absolute; /* Relative to main-content area */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   background: rgba(var(--indigo-rgb), 0.04);
   backdrop-filter: blur(3px);
   z-index: 9999;

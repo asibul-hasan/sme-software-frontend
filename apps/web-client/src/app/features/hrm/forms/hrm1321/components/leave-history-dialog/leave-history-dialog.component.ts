@@ -92,24 +92,7 @@ export class LeaveHistoryDialogComponent implements OnInit {
   historyToDate = signal(`${new Date().getFullYear()}-12-31`);
   historySelectedLeaveType = signal<number | null>(null);
 
-  readonly filteredHistoryList = computed(() => {
-    let list = this.historyList();
-    const from = this.historyFromDate();
-    const to = this.historyToDate();
-    const lt = this.historySelectedLeaveType();
-
-    if (lt != null) {
-      list = list.filter((item) => item.leave_type_no === lt);
-    }
-    if (from) {
-      list = list.filter((item) => item.from_date >= from);
-    }
-    if (to) {
-      list = list.filter((item) => item.to_date <= to);
-    }
-
-    return list;
-  });
+  readonly filteredHistoryList = computed(() => this.historyList());
 
   readonly effectiveBalances = computed(() => {
     const balances = this.historyBalances();
@@ -276,14 +259,14 @@ export class LeaveHistoryDialogComponent implements OnInit {
       .pipe(finalize(() => this.isHistoryLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (isSuccess(res) && res.data && res.data.length > 0) {
+          if (isSuccess(res) && res.data) {
             this.historyList.set(res.data);
           } else {
-            this.applyMockHistoryFallback(empNo, fromDate, toDate, ltNo);
+            this.historyList.set([]);
           }
         },
         error: () => {
-          this.applyMockHistoryFallback(empNo, fromDate, toDate, ltNo);
+          this.historyList.set([]);
         },
       });
   }
@@ -339,7 +322,7 @@ export class LeaveHistoryDialogComponent implements OnInit {
   }
 
   statusLabel(value: number): string {
-    return this.statusOptions.find((s) => s.value === value)?.label ?? String(value ?? '');
+    return String(value ?? '');
   }
 
   close(): void {

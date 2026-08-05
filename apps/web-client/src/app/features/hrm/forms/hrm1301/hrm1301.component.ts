@@ -172,10 +172,7 @@ export class Hrm1301Component implements OnInit {
         .align('right')
         .build(),
       GridColumns.text<LeaveApplication>('reason', 'Reason').build(),
-      GridColumns.text<LeaveApplication>('reliever_employee_no', 'Reliever')
-        .valueFormatter((_, r) =>
-          this.model.employeeName(r.reliever_employee_no),
-        )
+      GridColumns.text<LeaveApplication>('reliever_name', 'Reliever')
         .build(),
       GridColumns.text<LeaveApplication>('reliever_status', 'Reliever Status')
         .width(130)
@@ -218,6 +215,8 @@ export class Hrm1301Component implements OnInit {
    */
   leaveStatusBadge(value: unknown): BadgeConfig {
     switch (Number(value)) {
+      case 0:
+        return { label: this.statusLabel(0), variant: 'warning' };
       case 1:
         return { label: 'Draft', variant: 'neutral' };
       case 2:
@@ -262,21 +261,27 @@ export class Hrm1301Component implements OnInit {
   }
 
   onDelete(): void {
-    if (!this.model.selectedNo() || !this.editable) return;
+    debugger;
+    if (!this.model.selectedNo()) {
+      this.toastr.warning('Please select a leave application to delete.');
+      return;
+    }
+    if (!this.editable) {
+      this.toastr.warning('Only new leave applications (status 0) can be deleted.');
+      return;
+    }
     this.alertService.deleteConfirm().subscribe((confirmed) => {
       if (confirmed) this.model.onDelete();
     });
   }
 
   onGridDelete(item: LeaveApplication | Record<string, unknown>): void {
+    debugger;
     const leaveItem = item as unknown as LeaveApplication;
-    if (leaveItem.status !== 1 && leaveItem.status !== 2) {
-       this.toastr.warning('Only Draft or Applied leave applications can be deleted.');
-       return;
+    if (leaveItem.status !== 0) {
+      this.toastr.warning('Only new leave applications (status 0) can be deleted.');
+      return;
     }
-    
-    // We cannot immediately check `this.editable` as selectLeave is async and loads from server.
-    // However, the backend delete API will reject if it's already under approval.
     this.model.selectedNo.set(leaveItem.leave_application_no);
     this.alertService.deleteConfirm().subscribe((confirmed) => {
       if (confirmed) this.model.onDelete();
@@ -314,9 +319,11 @@ export class Hrm1301Component implements OnInit {
   }
 
   statusLabel(value: number): string {
-    return (
-      this.statusOptions.find((s) => s.value === value)?.label ?? String(value)
-    );
+    const sel = this.selected();
+    if (sel && sel.approval_state) {
+      return sel.approval_state;
+    }
+    return String(value ?? '');
   }
   statusClass(value: number): string {
     return value === 3

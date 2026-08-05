@@ -78,38 +78,65 @@ export class Hrm1321Component implements OnInit {
   filterDesig = signal<number | null>(null);
   filterEmp = signal<number | null>(null);
   filterLeaveType = signal<number | null>(null);
-  filterStatus = signal<number | null>(null);
 
-  readonly statusFilterOptions = [
-    { label: 'All Statuses', value: null },
-    { label: 'Pending / Waiting', value: 1 },
-    { label: 'Approved', value: 2 },
-    { label: 'Rejected', value: 3 },
-  ];
-
-  // All filtering is server-side — the table binds directly to what the API returned.
   readonly filteredRequests = computed(() => this.model.requests());
 
-  /** Any filter change re-queries the server with the full filter set. No client-side filtering. */
+  readonly filteredDesignations = computed(() => {
+    const dept = this.filterDept();
+    const list = this.designations();
+    if (dept == null) return list;
+    return list.filter((d) => d.department_no === dept);
+  });
+
+  readonly filteredEmployees = computed(() => {
+    const dept = this.filterDept();
+    const desig = this.filterDesig();
+    let list = this.employees();
+    if (dept != null) {
+      list = list.filter((e) => e.department_no === dept);
+    }
+    if (desig != null) {
+      list = list.filter((e) => e.designation_no === desig);
+    }
+    return list;
+  });
+
+  private getActiveFilters() {
+    return {
+      department_no: this.filterDept(),
+      designation_no: this.filterDesig(),
+      employee_no: this.filterEmp(),
+      leave_type_no: this.filterLeaveType(),
+      status: null,
+    };
+  }
+
+  /** Any filter change re-queries the server with the full active filter set. */
   onDeptChange(value: number | null): void {
     this.filterDept.set(value);
-    this.model.loadApprovalList({ department_no: value });
+    if (value != null) {
+      const validDesig = this.filteredDesignations().some((d) => d.designation_no === this.filterDesig());
+      if (!validDesig) this.filterDesig.set(null);
+      const validEmp = this.filteredEmployees().some((e) => e.employee_no === this.filterEmp());
+      if (!validEmp) this.filterEmp.set(null);
+    }
+    this.model.loadApprovalList(this.getActiveFilters());
   }
   onDesigChange(value: number | null): void {
     this.filterDesig.set(value);
-    this.model.loadApprovalList({ designation_no: value });
+    if (value != null) {
+      const validEmp = this.filteredEmployees().some((e) => e.employee_no === this.filterEmp());
+      if (!validEmp) this.filterEmp.set(null);
+    }
+    this.model.loadApprovalList(this.getActiveFilters());
   }
   onEmpChange(value: number | null): void {
     this.filterEmp.set(value);
-    this.model.loadApprovalList({ employee_no: value });
+    this.model.loadApprovalList(this.getActiveFilters());
   }
   onLeaveTypeChange(value: number | null): void {
     this.filterLeaveType.set(value);
-    this.model.loadApprovalList({ leave_type_no: value });
-  }
-  onStatusChange(value: number | null): void {
-    this.filterStatus.set(value);
-    this.model.loadApprovalList({ status: value });
+    this.model.loadApprovalList(this.getActiveFilters());
   }
 
   clearFilters(): void {
@@ -117,11 +144,7 @@ export class Hrm1321Component implements OnInit {
     this.filterDesig.set(null);
     this.filterEmp.set(null);
     this.filterLeaveType.set(null);
-    this.filterStatus.set(null);
-    this.model.loadApprovalList({
-      department_no: null, designation_no: null, employee_no: null,
-      leave_type_no: null, status: null,
-    });
+    this.model.loadApprovalList(this.getActiveFilters());
   }
 
   openHistoryModal(): void {
@@ -198,23 +221,67 @@ export class Hrm1321Component implements OnInit {
       searchPlaceholder: 'Search pending requests...',
     },
     columns: [
-      GridColumns.text<LeaveRequest>('employee_id', 'Emp ID').width(110).pinned('left').build(),
-      GridColumns.text<LeaveRequest>('employee_name', 'Employee').minWidth(170).build(),
-      GridColumns.text<LeaveRequest>('designation_name', 'Designation').minWidth(150).build(),
-      GridColumns.text<LeaveRequest>('department_name', 'Department').minWidth(150).build(),
-      GridColumns.text<LeaveRequest>('leave_type_name', 'Leave Type').width(140).build(),
-      GridColumns.text<LeaveRequest>('from_date', 'Dates').width(200)
+      GridColumns.text<LeaveRequest>('employee_id', 'Emp ID').readOnly().width(110).pinned('left').build(),
+      GridColumns.text<LeaveRequest>('employee_name', 'Employee').readOnly().minWidth(170).build(),
+      GridColumns.text<LeaveRequest>('designation_name', 'Designation').readOnly().minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('department_name', 'Department').readOnly().minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('leave_type_name', 'Leave Type').readOnly().width(140).build(),
+      GridColumns.text<LeaveRequest>('from_date', 'Dates').readOnly().width(200)
         .valueFormatter((_, r) => `${r.from_date} → ${r.to_date}`).build(),
-      GridColumns.number<LeaveRequest>('total_days', 'Days').precision(1).width(90).build(),
-      GridColumns.text<LeaveRequest>('reason', 'Reason').minWidth(180).build(),
-      GridColumns.text<LeaveRequest>('reliever_name', 'Reliever').minWidth(150).build(),
-      GridColumns.text<LeaveRequest>('reliever_status', 'Reliever Status').width(130).valueFormatter((v, _) => {
+      GridColumns.number<LeaveRequest>('total_days', 'Days').readOnly().precision(1).width(90).build(),
+      GridColumns.text<LeaveRequest>('reason', 'Reason').readOnly().minWidth(180).build(),
+      GridColumns.text<LeaveRequest>('reliever_name', 'Reliever').readOnly().minWidth(150).build(),
+      GridColumns.text<LeaveRequest>('reliever_status', 'Reliever Status').readOnly().width(130).valueFormatter((v, _) => {
         const opt = this.relieverStatusOptions.find(o => o.value === Number(v));
         return opt ? opt.label : 'Pending';
       }).build(),
-      GridColumns.text<LeaveRequest>('attachment_path', 'Attachment').width(150).valueFormatter((v) => v ? v : '—').build(),
-      GridColumns.text<LeaveRequest>('approval_state', 'Status').width(130).valueFormatter((v, _) => this.approvalStateLabel(v)).build(),
-      GridColumns.checkbox<LeaveRequest>('selected', '').width(60).pinned('right').build(),
+      GridColumns.text<LeaveRequest>('attachment_path', 'Attachment').readOnly().width(150).valueFormatter((v) => v ? v : '—').build(),
+      GridColumns.text<LeaveRequest>('approval_state', 'Status').readOnly().width(130).valueFormatter((v, _) => this.approvalStateLabel(v)).build(),
+      (() => {
+        const col = GridColumns.checkbox<LeaveRequest>('selected', '')
+          .width(60)
+          .pinned('right')
+          .editable((row) => row.can_act === true)
+          .build();
+        col.cellRenderer = (params: any) => {
+          if (!params.data) return '';
+          const isChecked = params.data.selected === 1 || params.data.selected === true;
+          const isDisabled = params.data.can_act !== true;
+
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = isChecked;
+          input.disabled = isDisabled;
+          input.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
+          input.style.width = '18px';
+          input.style.height = '18px';
+
+          input.addEventListener('change', (e: Event) => {
+            e.stopPropagation();
+            if (params.data && params.data.can_act === true) {
+              const newVal = input.checked ? 1 : 0;
+              params.data.selected = newVal;
+              if (params.node) {
+                params.node.setDataValue('selected', newVal);
+              }
+              this.onRowChange({ ...params.data, selected: newVal });
+            }
+          });
+
+          input.addEventListener('click', (e: Event) => {
+            e.stopPropagation();
+          });
+
+          const wrapper = document.createElement('div');
+          wrapper.style.display = 'flex';
+          wrapper.style.justifyContent = 'center';
+          wrapper.style.alignItems = 'center';
+          wrapper.style.height = '100%';
+          wrapper.appendChild(input);
+          return wrapper;
+        };
+        return col;
+      })(),
     ],
   };
 
@@ -248,16 +315,19 @@ export class Hrm1321Component implements OnInit {
   }
 
   statusLabel(value: number): string {
-    return this.statusOptions.find((s) => s.value === value)?.label ?? String(value ?? '');
+    return String(value ?? '');
   }
 
   /** Label shown for the per-approver workflow state. */
   approvalStateLabel(value: unknown): string {
-    switch (value) {
+    if (!value) return '';
+    const str = String(value);
+    switch (str.toUpperCase()) {
       case 'PENDING':  return 'Pending';
       case 'WAITING':  return 'Waiting';
       case 'APPROVED': return 'Approved';
-      default:         return String(value ?? '');
+      case 'REJECTED': return 'Rejected';
+      default:         return str;
     }
   }
 
@@ -291,7 +361,7 @@ export class Hrm1321Component implements OnInit {
   onRowChange(row: LeaveRequest): void {
     // When the checkbox in the grid is clicked, it updates row.selected directly (1 or 0).
     // We synchronize this with the model service.
-    this.model.toggleRowSelection(row.leave_application_no, !!row.selected);
+    this.model.toggleRowSelection(row.leave_application_no, row.selected ?? 0);
   }
 
   /** Apply the decision to the selected request. */

@@ -7,6 +7,7 @@ import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { GlobalLoaderComponent } from '../../shared/components/global-loader/global-loader.component';
 import { ErpCommandPaletteComponent } from '../../shared/erp-ui/command/erp-command-palette.component';
+import { NotificationToastComponent } from '../../shared/components/notification-toast/notification-toast.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,7 @@ import { ErpCommandPaletteComponent } from '../../shared/erp-ui/command/erp-comm
     FooterComponent,
     GlobalLoaderComponent,
     ErpCommandPaletteComponent,
+    NotificationToastComponent,
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],

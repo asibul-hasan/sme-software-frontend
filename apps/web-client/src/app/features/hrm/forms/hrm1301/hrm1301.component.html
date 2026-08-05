@@ -244,20 +244,42 @@
             </div>
 
             <div
-              class="col-span-6 sm:col-span-3 lg:col-span-3 flex items-center"
+              class="col-span-12 sm:col-span-6 lg:col-span-6 flex items-center"
             >
               <div class="field-group">
-                <div class="custom--checkbox">
-                  <mat-checkbox
-                    [checked]="formdata.get('is_half_day')?.value === 1"
-                    [disabled]="!editable"
-                    (change)="toggleFlag('is_half_day', $event)"
-                    color="primary"
+                <label class="field-label mb-1">Leave Duration</label>
+                <div class="flex items-center gap-6 pt-1">
+                  <label
+                    class="flex items-center gap-2 cursor-pointer text-[13px] font-medium text-content"
+                    [class.opacity-50]="!editable"
+                    [class.cursor-not-allowed]="!editable"
                   >
-                    <span class="field-label mb-0 cursor-pointer"
-                      >Half day</span
-                    >
-                  </mat-checkbox>
+                    <input
+                      type="radio"
+                      name="is_half_day"
+                      [value]="0"
+                      formControlName="is_half_day"
+                      [attr.disabled]="!editable ? true : null"
+                      class="h-4 w-4 text-primary focus:ring-primary border-line"
+                    />
+                    <span>Full Day</span>
+                  </label>
+
+                  <label
+                    class="flex items-center gap-2 cursor-pointer text-[13px] font-medium text-content"
+                    [class.opacity-50]="!editable"
+                    [class.cursor-not-allowed]="!editable"
+                  >
+                    <input
+                      type="radio"
+                      name="is_half_day"
+                      [value]="1"
+                      formControlName="is_half_day"
+                      [attr.disabled]="!editable ? true : null"
+                      class="h-4 w-4 text-primary focus:ring-primary border-line"
+                    />
+                    <span>Half Day</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -282,7 +304,7 @@
             </div>
 
             @if (formdata.get('need_reliever')?.value === 1) {
-              <div class="col-span-12 sm:col-span-6 lg:col-span-6">
+              <div class="col-span-6 sm:col-span-3 lg:col-span-3">
                 <div class="field-group">
                   <label class="field-label required" for="reliever_employee_no"
                     >Reliever Employee</label
@@ -331,6 +353,7 @@
           class="block h-full"
           [config]="leaveGrid"
           [data]="$any(model.displayLeaves())"
+          [selectedId]="model.selectedNo()"
           (rowClick)="selectLeave($event)"
           (rowRemove)="onGridDelete($event)"
           height="100%"
