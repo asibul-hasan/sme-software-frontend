@@ -37,6 +37,7 @@ export interface VoucherLine {
   voucher_dtl_no?: number | null;
   account_no: number | null;
   dr_cr?: DebitCreditValue;
+  tax_type?: number | null;
   debit_fc?: number;
   credit_fc?: number;
   debit: number;
@@ -240,6 +241,7 @@ export class Fin1101ModelService {
               ...l,
               ...next,
               dr_cr: side,
+              tax_type: next.tax_type ?? null,
               debit_fc: debitFc,
               credit_fc: creditFc,
               debit,
@@ -278,6 +280,7 @@ export class Fin1101ModelService {
       {
         account_no: accountNo,
         dr_cr: dr > 0 ? 'dr' : 'cr',
+        tax_type: null,
         debit_fc: dr,
         credit_fc: cr,
         debit: this.roundMoney(dr * this.fxRate()),
@@ -345,6 +348,7 @@ export class Fin1101ModelService {
               (d.lines ?? []).map((l) => ({
                 ...l,
                 dr_cr: l.dr_cr ?? ((Number(l.debit) || 0) > 0 ? 'dr' : 'cr'),
+                tax_type: l.tax_type ?? null,
                 debit_fc: Number(l.debit_fc ?? l.debit) || 0,
                 credit_fc: Number(l.credit_fc ?? l.credit) || 0,
                 __uid: this.uidSeq++,
@@ -399,6 +403,7 @@ export class Fin1101ModelService {
         credit_fc: Number(l.credit_fc) || 0,
         debit: Number(l.debit) || 0,
         credit: Number(l.credit) || 0,
+        tax_type: l.tax_type ?? null,
         cost_center_no: l.cost_center_no ?? null,
         line_narration: l.line_narration ?? null,
       })),

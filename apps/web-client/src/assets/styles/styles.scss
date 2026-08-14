@@ -706,8 +706,37 @@ input[type='number'] {
   }
 }
 
-/* Fix Toastr and Loader stacking context under Dialogs */
-.toast-container { z-index: 999999 !important; }
-.loader-overlay { z-index: 999999 !important; }
-.global-loader { z-index: 999999 !important; }
+/* ------------------------------------------------------------------
+   Overlay stacking hierarchy (single source of truth)
+   ------------------------------------------------------------------
+   MatDialog / CDK overlay ..... 1000-1050  (framework default)
+   Alert dialog (over modals) .. 1200       (MatDialog + .alert-dialog-panel)
+   Loader (full-screen block) .. 99999
+   Toasts (top of everything) .. 999999999
+   Toasts must not block clicks: pointer-events flow through the container,
+   individual toasts re-enable pointer events.
+   ------------------------------------------------------------------ */
+
+/* Loader */
+.loader-overlay { z-index: 99999 !important; }
+
+/* Alert dialog: bump the MatDialog pane above other open dialogs (1050) so
+   an alert opened from within a modal still floats on top. The CDK overlay
+   host receives the panelClass, so target both host and container. */
+.cdk-overlay-pane.alert-dialog-panel { z-index: 99999 !important; }
+.alert-dialog-panel .mat-mdc-dialog-container,
+.alert-dialog-panel .mat-mdc-dialog-surface,
+.alert-dialog-panel .mdc-dialog__surface {
+  z-index: 99999 !important;
+}
+
+/* Toasts: always on top; container must not block underlying UI */
+.overlay-container .toast-container,
+.toast-container {
+  z-index: 999999999 !important;
+  pointer-events: none;
+}
+.toast-container > * {
+  pointer-events: auto;
+}
 

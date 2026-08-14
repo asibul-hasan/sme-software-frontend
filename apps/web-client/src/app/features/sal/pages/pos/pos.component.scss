@@ -1,0 +1,329 @@
+/* SAL_1001 till.
+   Deliberately self-contained rather than built on the form components: this is a
+   full-screen, touch-and-scanner surface, not a data-entry form, and it needs the
+   whole viewport with no sidebar. */
+
+.pos {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-ground, #f4f5f7);
+  color: var(--text-color, #1f2430);
+  font-size: 14px;
+}
+
+/* ── top bar ─────────────────────────────────────────────────────────────── */
+
+.pos__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface-card, #fff);
+  border-bottom: 1px solid var(--surface-border, #dfe3e8);
+}
+
+.pos__bar-left,
+.pos__bar-right { display: flex; align-items: center; gap: 10px; }
+
+.pos__brand { font-weight: 700; letter-spacing: .08em; }
+
+.pos__chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.pos__chip--ok   { background: #e6f4ea; color: #1b7f3b; }
+.pos__chip--warn { background: #fdecea; color: #b3261e; }
+
+.pos__badge {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--primary-color, #2563eb);
+  color: #fff;
+  font-size: 12px;
+}
+
+/* ── gate ────────────────────────────────────────────────────────────────── */
+
+.pos__gate {
+  margin: auto;
+  max-width: 520px;
+  padding: 32px;
+  text-align: center;
+
+  h2 { margin: 0 0 8px; font-size: 20px; }
+  p  { margin: 0 0 20px; color: var(--text-color-secondary, #6b7280); }
+}
+
+.pos__gate-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── body ────────────────────────────────────────────────────────────────── */
+
+.pos__body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
+}
+
+.pos__cart {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pos__scan {
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--surface-border, #dfe3e8);
+  font-size: 16px;
+  outline: none;
+  &:focus { background: #f8fbff; }
+}
+
+.pos__lines { flex: 1; overflow: auto; min-height: 0; }
+
+.pos__table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td { padding: 9px 10px; border-bottom: 1px solid var(--surface-border, #eef1f4); }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--surface-section, #fafbfc);
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-color-secondary, #6b7280);
+  }
+  .num { text-align: right; }
+  .w-8 { width: 40px; }
+  .w-24 { width: 96px; }
+}
+
+.pos__empty {
+  text-align: center;
+  color: var(--text-color-secondary, #9aa1ab);
+  padding: 22px 0;
+}
+
+.pos__qty, .pos__disc {
+  width: 78px;
+  padding: 5px 7px;
+  text-align: right;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 6px;
+}
+
+/* ── totals ──────────────────────────────────────────────────────────────── */
+
+.pos__totals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+}
+
+.pos__pricing { font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+
+.pos__sums {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  dt { color: var(--text-color-secondary, #6b7280); }
+  dd { margin: 0; font-variant-numeric: tabular-nums; }
+}
+
+.pos__grand {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 10px;
+  border-top: 2px solid var(--surface-border, #dfe3e8);
+
+  strong { font-size: 26px; font-variant-numeric: tabular-nums; }
+}
+
+.pos__change dd { font-weight: 700; color: #1b7f3b; }
+
+.pos__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+
+/* ── controls ────────────────────────────────────────────────────────────── */
+
+.pos__btn {
+  padding: 9px 14px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  background: var(--surface-card, #fff);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: var(--surface-hover, #f2f4f7); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.pos__btn--primary {
+  background: var(--primary-color, #2563eb);
+  border-color: var(--primary-color, #2563eb);
+  color: #fff;
+  &:hover:not(:disabled) { filter: brightness(1.06); }
+}
+
+.pos__btn--wide { width: 100%; padding: 13px; font-size: 15px; }
+
+.pos__select, .pos__input {
+  padding: 7px 10px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  background: var(--surface-card, #fff);
+}
+.pos__input { width: 120px; text-align: right; }
+
+.pos__x {
+  border: 0;
+  background: transparent;
+  color: var(--text-color-secondary, #9aa1ab);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  &:hover { color: #b3261e; }
+}
+
+/* ── overlays ────────────────────────────────────────────────────────────── */
+
+.pos__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 35%);
+  z-index: 20;
+}
+
+.pos__drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 92vw);
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  background: var(--surface-card, #fff);
+  box-shadow: -8px 0 24px rgb(0 0 0 / 12%);
+}
+
+.pos__modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 21;
+  width: min(460px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface-card, #fff);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 22%);
+}
+.pos__modal--narrow { width: min(320px, 92vw); }
+
+.pos__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+
+  h3 { margin: 0; font-size: 16px; }
+}
+
+.pos__note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.pos__held { list-style: none; margin: 0; padding: 0; overflow: auto; }
+
+.pos__held-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--surface-border, #eef1f4);
+}
+
+.pos__held-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  padding: 10px 4px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  &:hover { background: var(--surface-hover, #f7f9fc); }
+}
+
+.pos__held-label { font-weight: 600; }
+.pos__held-meta  { grid-column: 1; font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+.pos__held-time  { grid-row: 1 / span 2; align-self: center; font-size: 12px; color: var(--text-color-secondary, #9aa1ab); }
+
+.pos__pay-grand {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--surface-border, #dfe3e8);
+
+  strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+}
+
+.pos__pay-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.pos__tenders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 2px;
+    border-bottom: 1px solid var(--surface-border, #eef1f4);
+  }
+  .num { font-variant-numeric: tabular-nums; }
+}
+
+/* Tablet: the totals panel drops under the cart rather than squeezing it. */
+@media (max-width: 900px) {
+  .pos__body { grid-template-columns: 1fr; }
+  .pos__totals { order: -1; }
+}

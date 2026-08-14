@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1302DataService, AccountLite, LedgerResult } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -15,14 +15,10 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1302',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1302DataService],
   templateUrl: './fin1302.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1302Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -36,21 +32,21 @@ export class Fin1302Component implements OnInit {
   from = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
   to   = new Date().toISOString().split('T')[0];
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Date',      field: 'voucher_date', sort: true, cellType: 'text', width: '120px' },
-    { title: 'Voucher',   field: 'voucher_id',   sort: true, cellType: 'text', width: '150px' },
-    { title: 'Type',      field: 'voucher_type_name', cellType: 'text', width: '140px' },
-    { title: 'Narration', field: 'narration',    cellType: 'text' },
-    { title: 'Debit',     field: 'debit',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Credit',    field: 'credit', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Balance',   field: 'running_balance', cellType: 'decimal', align: 'right', precision: 2 },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: true, pagination: true, defaultPageSize: 25, dense: true, striped: true,
-    showActions: false, showColumnToggle: true, showExport: true,
-    exportFormats: ['excel', 'pdf', 'csv', 'print'], showTitle: false, maxHeight: '100%',
+  readonly gridConfig: GridConfig<any> = {
+    gridKey: 'FIN_1302_ACCOUNT_LEDGER_GRID',
+    showPagination: true,
+    pageSize: 25,
+    toolbar: { showSearch: true, showExport: true },
+    columns: [
+      GridColumns.date<any>('voucher_date', 'Date').width(120).build(),
+      GridColumns.text<any>('voucher_id', 'Voucher').width(150).build(),
+      GridColumns.text<any>('voucher_type_name', 'Type').width(140).build(),
+      GridColumns.text<any>('narration', 'Narration').flex(1).build(),
+      GridColumns.decimal<any>('debit', 'Debit').sum().build(),
+      GridColumns.decimal<any>('credit', 'Credit').sum().build(),
+      GridColumns.decimal<any>('running_balance', 'Balance').build(),
+    ]
   };
-  readonly tableData = computed(() => (this.result()?.rows ?? []) as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => {

@@ -18,6 +18,20 @@ export const FIN_ROUTES: Routes = [
   { path: 'form/posting-monitor',   loadComponent: () => import('./forms/fin1201/fin1201.component').then((m) => m.Fin1201Component) },
   { path: 'form/period-close',      loadComponent: () => import('./forms/fin1401/fin1401.component').then((m) => m.Fin1401Component) },
 
+  // ── Sub-ledgers ────────────────────────────────────────────────────────────
+  // FIN_1202 and FIN_1203 share one component — same reconciliation, opposite sign.
+  // The routes stay separate so each keeps its own menu entry and permission.
+  {
+    path: 'form/accounts-payable',
+    data: { formId: 'FIN_1202', partyType: 2 },
+    loadComponent: () => import('./forms/subledger/subledger.component').then((m) => m.SubLedgerComponent),
+  },
+  {
+    path: 'form/accounts-receivable',
+    data: { formId: 'FIN_1203', partyType: 1 },
+    loadComponent: () => import('./forms/subledger/subledger.component').then((m) => m.SubLedgerComponent),
+  },
+
   // ── Reports ────────────────────────────────────────────────────────────────
   { path: 'report/trial-balance',   loadComponent: () => import('./forms/fin1301/fin1301.component').then((m) => m.Fin1301Component) },
   { path: 'report/account-ledger',  loadComponent: () => import('./forms/fin1302/fin1302.component').then((m) => m.Fin1302Component) },

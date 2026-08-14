@@ -33,6 +33,7 @@
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">description</mat-icon> {{ selectedNo() ? 'Sale · ' + statusLabel(status()) : 'New Sale' }}</h4>
         <div class="ms-auto d-flex gap-2">
+          @if (glVoucherNo()) { <a class="btn-action btn-new" [routerLink]="['/fin/form/voucher-entry']" [queryParams]="{ voucher_id: glVoucherNo() }"><mat-icon>receipt_long</mat-icon> GL {{ glVoucherNo() }}</a> }
           @if (editable() && selectedNo()) { <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button> }
           @if (status() === 3) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
         </div>

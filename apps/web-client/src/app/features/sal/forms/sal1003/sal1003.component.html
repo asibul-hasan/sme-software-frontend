@@ -1,0 +1,182 @@
+<div class="close">
+
+  <!-- ── session picker ──────────────────────────────────────────────────── -->
+  <aside class="close__list no-print">
+    <header class="close__list-head">
+      <h2>Sessions</h2>
+      <button type="button" class="close__btn close__btn--sm" (click)="m.loadSessions()">Refresh</button>
+    </header>
+
+    <ul class="close__sessions">
+      @for (s of m.sessions(); track s.session_no) {
+        <li>
+          <button type="button" class="close__session"
+                  [class.is-active]="m.selectedNo() === s.session_no"
+                  (click)="m.select(s.session_no)">
+            <span class="close__session-id">{{ s.session_id }}</span>
+            <span class="close__session-meta">
+              {{ s.terminal_name }} · {{ s.opened_at | date: 'dd MMM, HH:mm' }}
+            </span>
+            <span class="close__pill" [class.is-open]="s.status === 1">{{ statusLabel(s.status) }}</span>
+          </button>
+        </li>
+      } @empty {
+        <li class="close__empty">No sessions yet</li>
+      }
+    </ul>
+  </aside>
+
+  <!-- ── the report ──────────────────────────────────────────────────────── -->
+  @if (m.summary(); as sum) {
+    <section class="close__main">
+
+      <header class="close__head">
+        <div>
+          <h1>Z-Report</h1>
+          <p class="close__sub">
+            {{ sum.session?.session_id }} · {{ sum.session?.terminal_name }}
+            · opened {{ sum.session?.opened_at | date: 'dd MMM yyyy, HH:mm' }}
+            @if (sum.session?.closed_at) {
+              · closed {{ sum.session?.closed_at | date: 'dd MMM yyyy, HH:mm' }}
+            }
+          </p>
+        </div>
+        <button type="button" class="close__btn no-print" (click)="print()">Print</button>
+      </header>
+
+      <div class="close__grid">
+
+        <!-- takings -->
+        <section class="close__card">
+          <h3>Takings</h3>
+          <dl class="close__rows">
+            @for (t of sum.tenders; track t.payment_method) {
+              <div><dt>{{ t.method_name }}</dt><dd>{{ t.amount | number: '1.2-2' }}</dd></div>
+            } @empty {
+              <div class="close__empty"><dt>No tenders recorded</dt><dd></dd></div>
+            }
+          </dl>
+
+          <dl class="close__rows close__rows--total">
+            <div><dt>Sales</dt><dd>{{ sum.total_sales | number: '1.2-2' }}</dd></div>
+            <div><dt>Returns</dt><dd>{{ sum.total_returns | number: '1.2-2' }}</dd></div>
+            <div><dt>On credit (unpaid)</dt><dd>{{ sum.due_total | number: '1.2-2' }}</dd></div>
+            <div><dt>Invoices</dt><dd>{{ sum.invoice_count }}</dd></div>
+          </dl>
+        </section>
+
+        <!-- drawer -->
+        <section class="close__card">
+          <h3>Drawer</h3>
+          <dl class="close__rows">
+            <div><dt>Opening float</dt><dd>{{ sum.session?.opening_float | number: '1.2-2' }}</dd></div>
+            <div><dt>Cash taken</dt><dd>{{ sum.expected_cash | number: '1.2-2' }}</dd></div>
+            <div class="close__expected">
+              <dt>Expected in drawer</dt><dd>{{ sum.expected_drawer | number: '1.2-2' }}</dd>
+            </div>
+            <div><dt>Counted</dt><dd>{{ m.countedCash() | number: '1.2-2' }}</dd></div>
+          </dl>
+
+          <div class="close__variance"
+               [class.is-short]="m.variance() < 0"
+               [class.is-over]="m.variance() > 0">
+            <span>{{ m.variance() < 0 ? 'Short by' : m.variance() > 0 ? 'Over by' : 'Balanced' }}</span>
+            <strong>{{ (m.variance() < 0 ? -m.variance() : m.variance()) | number: '1.2-2' }}</strong>
+          </div>
+        </section>
+
+        <!-- cash count -->
+        <section class="close__card no-print">
+          <div class="close__card-head">
+            <h3>Cash count</h3>
+            <label class="close__toggle">
+              <input type="checkbox" [ngModel]="m.useDenominations()"
+                     (ngModelChange)="m.useDenominations.set($event)" [disabled]="m.isClosed()" />
+              Count by note
+            </label>
+          </div>
+
+          @if (m.useDenominations()) {
+            <table class="close__denoms">
+              <tbody>
+                @for (d of m.denominations(); track d.value; let i = $index) {
+                  <tr>
+                    <td>{{ d.label }}</td>
+                    <td>
+                      <input type="number" min="0" class="close__input close__input--sm"
+                             [ngModel]="d.count" (ngModelChange)="m.setDenomCount(i, $event)"
+                             [disabled]="m.isClosed()" />
+                    </td>
+                    <td class="num">{{ (d.value * (d.count ?? 0)) | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <label class="close__field">
+              Counted total
+              <input type="number" min="0" class="close__input"
+                     [ngModel]="m.manualCount()" (ngModelChange)="m.manualCount.set($event)"
+                     [disabled]="m.isClosed()" />
+            </label>
+          }
+
+          <div class="close__counted">
+            <span>Counted</span><strong>{{ m.countedCash() | number: '1.2-2' }}</strong>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── sign-off ──────────────────────────────────────────────────────── -->
+      @if (!m.isClosed()) {
+        <section class="close__signoff no-print">
+          @if (m.hasVariance()) {
+            <p class="close__warn">
+              This drawer does not reconcile. Explain the difference and get a supervisor to approve it
+              before closing.
+            </p>
+
+            <label class="close__field">
+              What happened?
+              <textarea rows="2" class="close__input" [ngModel]="m.remarks()"
+                        (ngModelChange)="m.remarks.set($event)"
+                        placeholder="e.g. change given from own float, note miscount at handover"></textarea>
+            </label>
+
+            <label class="close__check">
+              <input type="checkbox" [ngModel]="m.varianceApproved()"
+                     (ngModelChange)="m.varianceApproved.set($event)" />
+              A supervisor has checked this drawer and approves the difference
+            </label>
+          } @else {
+            <label class="close__field">
+              Notes (optional)
+              <textarea rows="2" class="close__input" [ngModel]="m.remarks()"
+                        (ngModelChange)="m.remarks.set($event)"></textarea>
+            </label>
+          }
+
+          <button type="button" class="close__btn close__btn--primary"
+                  [disabled]="!m.canClose()" (click)="close()">
+            {{ m.isClosing() ? 'Closing…' : 'Close session' }}
+          </button>
+        </section>
+      } @else {
+        <section class="close__closed">
+          <p>
+            Closed {{ sum.session?.closed_at | date: 'dd MMM yyyy, HH:mm' }} ·
+            counted {{ sum.session?.counted_cash | number: '1.2-2' }} ·
+            variance {{ sum.session?.cash_variance | number: '1.2-2' }}
+          </p>
+          @if (sum.session?.variance_remarks) {
+            <p class="close__sub">{{ sum.session?.variance_remarks }}</p>
+          }
+        </section>
+      }
+    </section>
+  } @else {
+    <section class="close__main close__placeholder">
+      <p>Select a session to see its Z-report.</p>
+    </section>
+  }
+</div>

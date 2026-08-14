@@ -46,6 +46,7 @@ export interface Sale {
   total_cost?: number;
   due_date?: string | null;
   remarks?: string | null;
+  gl_voucher_no?: string | null;
   lines: SaleLine[];
 }
 

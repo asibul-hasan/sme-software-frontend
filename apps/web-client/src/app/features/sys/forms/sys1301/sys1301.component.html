@@ -1,0 +1,115 @@
+<app-page-form-layout
+  [title]="'ID Generator'"
+  [icon]="'confirmation_number'"
+  [recordsCount]="rows().length"
+  [hasSidebar]="false"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-100 d-flex flex-column">
+    <!-- ── Filter Card ─────────────────────────────────────────────────────── -->
+    <app-form-section title="Filter Patterns" icon="filter_alt" dense>
+      <div sectionActions>
+        <button
+          type="button"
+          class="btn-action btn-reset"
+          [disabled]="!model.hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          <mat-icon>filter_alt_off</mat-icon>
+          <span class="btn-action-label">Clear Filters</span>
+        </button>
+      </div>
+
+      <div class="col-span-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="field-group">
+          <label class="field-label" for="filter_module">Module</label>
+          <ng-select
+            id="filter_module"
+            labelForId="filter_module"
+            [items]="model.moduleOptions()"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="model.filterModuleNo()"
+            (ngModelChange)="onFilterModule($event)"
+            [clearable]="true"
+            placeholder="All Modules"
+          ></ng-select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter_submodule">Submodule</label>
+          <ng-select
+            id="filter_submodule"
+            labelForId="filter_submodule"
+            [items]="model.submoduleOptions()"
+            bindLabel="label"
+            bindValue="value"
+            [ngModel]="model.filterSubmoduleNo()"
+            (ngModelChange)="onFilterSubmodule($event)"
+            [clearable]="true"
+            placeholder="All Submodules"
+          ></ng-select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter_form">Form</label>
+          <ng-select
+            id="filter_form"
+            labelForId="filter_form"
+            [items]="model.filteredMenuOptions()"
+            bindLabel="form_name"
+            bindValue="menu_no"
+            [ngModel]="model.filterMenuNo()"
+            (ngModelChange)="onFilterMenu($event)"
+            [clearable]="true"
+            placeholder="All Forms"
+          >
+            <ng-template ng-label-tmp let-item="item">
+              {{ item.form_name }} ({{ item.form_id }})
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.form_name }} ({{ item.form_id }})
+            </ng-template>
+          </ng-select>
+        </div>
+      </div>
+    </app-form-section>
+
+    <!-- ── Pattern Grid ────────────────────────────────────────────────────── -->
+    <div class="form-section-card card fill-card">
+      <div class="card-body p-0">
+        <app-erp-grid
+          [config]="grid"
+          [data]="rows()"
+          (rowChange)="onRowChange($event)"
+          (rowRemove)="onRowRemove($event)"
+          (addRow)="onAddRow()"
+        ></app-erp-grid>
+      </div>
+    </div>
+
+    <!-- ── Token Reference ────────────────────────────────────────────────── -->
+    <app-form-section title="Supported Tokens" icon="code" dense>
+      <div class="col-span-12 flex flex-wrap gap-2">
+        @for (t of supportedTokens; track t.token) {
+          <span
+            class="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700"
+            [title]="t.hint"
+          >
+            <mat-icon class="!text-[14px] !leading-[14px] text-indigo-600">code</mat-icon>
+            {{ t.token }}
+          </span>
+        }
+      </div>
+    </app-form-section>
+  </div>
+</app-page-form-layout>

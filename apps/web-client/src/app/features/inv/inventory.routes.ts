@@ -81,4 +81,9 @@ export const INVENTORY_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/inv2005/inv2005.component').then((m) => m.Inv2005Component),
   },
+  {
+    path: 'form/physical-count',
+    loadComponent: () =>
+      import('./forms/inv2006/inv2006.component').then((m) => m.Inv2006Component),
+  },
 ];

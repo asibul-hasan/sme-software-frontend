@@ -345,4 +345,27 @@ export const sysConstants = {
     { value: 2, label: 'Department' },
     { value: 3, label: 'Employee' },
   ],
+
+  /** SYS_1301 ID Generator — counter reset policies. Numeric to match the DB column. */
+  docResetPolicies: [
+    { value: 1, label: 'Never' },
+    { value: 2, label: 'Per Fiscal Year' },
+    { value: 3, label: 'Per Month' },
+    { value: 4, label: 'Per Branch + FY' },
+  ],
+
+  /** SYS_1301 ID Generator — tokens the pattern grammar supports.
+      Kept in sync with core.shared.numbering.IdPatternResolver.supportedTokens(). */
+  docPatternTokens: [
+    { token: '{DOC_TYPE}',   hint: 'Sub-type code (voucher type, leave type, ...)' },
+    { token: '{BRANCH}',     hint: 'Session branch code' },
+    { token: '{COMPANY}',    hint: 'Session company code' },
+    { token: '{FY_YY}',      hint: 'Fiscal year start, 2-digit (e.g. 26)' },
+    { token: '{FY_YY_YY}',   hint: 'Fiscal year range (e.g. 26-27)' },
+    { token: '{FY_YYYY}',    hint: 'Fiscal year start, 4-digit (e.g. 2026)' },
+    { token: '{YY}',         hint: 'Calendar year of the document date, 2-digit' },
+    { token: '{YYYY}',       hint: 'Calendar year of the document date, 4-digit' },
+    { token: '{MM}',         hint: 'Calendar month of the document date, 2-digit' },
+    { token: '{SEQ:n}',      hint: 'Zero-padded counter, n = digits. Required, exactly one.' },
+  ],
 };

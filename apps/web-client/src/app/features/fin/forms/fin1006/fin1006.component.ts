@@ -1,19 +1,21 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 
-import { Fin1006ModelService } from './services/model.service';
+import { Fin1006ModelService, GlMap } from './services/model.service';
 import { Fin1006DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { finConstants } from '../../constants/fin.constants';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1006',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Fin1006ModelService, Fin1006DataService],
   templateUrl: './fin1006.component.html',
   styles: [`:host { display: block; height: 100%; }`],
@@ -23,34 +25,29 @@ export class Fin1006Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
 
-  readonly eventTypes = ['PayrollPosted', 'PurchaseInvoicePosted', 'SupplierPaymentPosted', 'SalesInvoicePosted', 'CustomerReceiptPosted', 'StockAdjustmentPosted'];
-  readonly legKeys    = ['EXPENSE', 'PAYABLE', 'RECEIVABLE', 'CASH', 'BANK', 'INVENTORY', 'COGS', 'REVENUE', 'VAT_INPUT', 'VAT_OUTPUT', 'STATUTORY', 'ROUNDING', 'FX_GAIN', 'FX_LOSS'];
+  readonly glEventTypes = finConstants.glEventTypes;
 
-  readonly eventTypeOptions = this.eventTypes.map(e => ({
-    value: e,
-    label: e.replace(/([A-Z])/g, ' $1').trim()
-  }));
 
-  readonly legKeyOptions = this.legKeys.map(k => ({ value: k, label: k }));
-
-  tableColumns = computed<ColumnDef[]>(() => [
-    { title: 'Event Type', field: 'event_type', cellType: 'select', sort: true, editable: true, options: this.eventTypeOptions, minWidth: '240px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Leg Key', field: 'leg_key', cellType: 'select', sort: true, editable: true, options: this.legKeyOptions, minWidth: '150px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Sub Key', field: 'sub_key', cellType: 'text', sort: true, editable: true, minWidth: '120px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'GL Account', field: 'account_no', cellType: 'select', sort: true, editable: true, options: this.model.accountOptions(), minWidth: '350px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Active', field: 'is_active', cellType: 'checkbox', sort: true, editable: true, width: '80px', align: 'center', onChange: (_, row) => (row as any).__dirty = true },
-  ]);
-
-  tableData = computed(() => this.model.filtered() as unknown as Record<string, unknown>[]);
-
-  tableConfig: Partial<TableConfig> = {
-    showSearch: true,
-    searchPlaceholder: 'Search mappings...',
-    pagination: true,
-    defaultPageSize: 25,
-    showActions: true,
-    actions: [
-      { type: 'delete', icon: 'delete', label: 'Delete', tooltip: 'Delete', variant: 'danger', onClick: (row) => this.alertService.deleteConfirm().subscribe(ok => { if (ok) this.model.deleteRow(row as any); }) }
+  readonly gridConfig: GridConfig<GlMap> = {
+    gridKey: 'FIN_1006_GL_MAP_GRID',
+    rowIdField: 'gl_map_no',
+    showPagination: true,
+    pageSize: 25,
+    canAdd: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
+    canEdit: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
+    canDeleteRow: () => this.permissionService.canDelete(),
+    toolbar: {
+      showSearch: true,
+      searchPlaceholder: 'Search mappings...',
+      showAdd: false,
+    },
+    columns: [
+      GridColumns.select<GlMap>('event_type', 'Event Type', finConstants.glEventTypes as any[]).minWidth(240).build(),
+      GridColumns.select<GlMap>('leg_key', 'Leg Key', finConstants.glLegKeys as any[]).minWidth(150).build(),
+      GridColumns.text<GlMap>('sub_key', 'Sub Key').minWidth(120).build(),
+      GridColumns.lookup<GlMap>('account_no', 'GL Account', () => this.model.accountOptions()).minWidth(350).build(),
+      GridColumns.checkbox<GlMap>('is_active', 'Active').width(80).align('center').build(),
+      GridColumns.action<GlMap>().build()
     ]
   };
 
@@ -74,5 +71,15 @@ export class Fin1006Component implements OnInit {
 
   onSave(): void {
     this.model.saveAll();
+  }
+
+  onRowChange(row: GlMap): void {
+    (row as any).__dirty = true;
+  }
+
+  onRowRemove(row: GlMap): void {
+    this.alertService.deleteConfirm().subscribe(ok => {
+      if (ok) this.model.deleteRow(row);
+    });
   }
 }

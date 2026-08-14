@@ -1,0 +1,88 @@
+<app-page-form-layout
+  [title]="'POS Terminal Setup'"
+  [subtitle]="'Registers each till, the warehouse it sells from, and where its drawer cash lands'"
+  [icon]="'devices'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Terminals'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="model.searchTerm.set($event)"
+  (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.filtered(); track item.terminal_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+              [class.active]="model.selectedNo() === item.terminal_no"
+              (click)="model.select(item)">
+        <span class="status-dot status-dot--corner"
+              [class.status-dot--active]="item.is_active === 1"
+              [class.status-dot--inactive]="item.is_active !== 1"
+              [title]="item.is_active === 1 ? 'Active' : 'Inactive'"></span>
+        <div class="flex items-baseline gap-1" style="min-width: 0; padding-right: 16px">
+          <h6 class="list-item-title mb-0 truncate">{{ item.terminal_name }}</h6>
+          <span class="text-subtle">&middot;</span>
+          <span class="list-item-id">{{ item.terminal_id }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>devices</mat-icon>
+        <p>No terminals yet</p>
+      </div>
+    }
+  </div>
+
+  <div formContent class="p-4 md:p-5">
+    <form [formGroup]="model.form" autocomplete="off" class="w-full">
+
+      <app-form-section title="Terminal" icon="devices">
+        <app-form-field label="Terminal Code" [span]="3" [required]="true">
+          <input type="text" id="terminal_id" formControlName="terminal_id"
+                 class="form-control uppercase" placeholder="e.g. TILL-01" />
+        </app-form-field>
+
+        <app-form-field label="Terminal Name" [span]="5" [required]="true">
+          <input type="text" id="terminal_name" formControlName="terminal_name"
+                 class="form-control" placeholder="e.g. Front counter" />
+        </app-form-field>
+
+        <app-form-field label="Sells From (Warehouse)" [span]="4" [required]="true"
+                        info="Sales on this till relieve stock from this warehouse.">
+          <ng-select id="warehouse_no" formControlName="warehouse_no" bindValue="no" bindLabel="name"
+                     [items]="model.warehouses()" placeholder="Select warehouse" />
+        </app-form-field>
+      </app-form-section>
+
+      <app-form-section title="Receipts &amp; Cash" icon="receipt_long">
+        <app-form-field label="Receipt Prefix" [span]="3"
+                        info="Prefixes the printed receipt number, e.g. POS-.">
+          <input type="text" id="receipt_prefix" formControlName="receipt_prefix"
+                 class="form-control" placeholder="POS-" />
+        </app-form-field>
+
+        <app-form-field label="Drawer GL Account" [span]="5"
+                        info="Where this till's cash sits until the session is closed and banked.">
+          <input type="number" id="cash_gl_account_no" formControlName="cash_gl_account_no"
+                 class="form-control" placeholder="fin_account no." />
+        </app-form-field>
+
+        <app-form-field label="Device ID" [span]="4"
+                        info="Optional. Binds the till to one machine for offline sync.">
+          <input type="text" id="device_uuid" formControlName="device_uuid" class="form-control" />
+        </app-form-field>
+      </app-form-section>
+
+      <app-form-section title="Other" icon="notes">
+        <app-form-field label="Remarks" [span]="9">
+          <input type="text" id="remarks" formControlName="remarks" class="form-control" />
+        </app-form-field>
+
+        <app-check-field label="Active" [span]="3" formControlName="is_active" />
+      </app-form-section>
+    </form>
+  </div>
+</app-page-form-layout>

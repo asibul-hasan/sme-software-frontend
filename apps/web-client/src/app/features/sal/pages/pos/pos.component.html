@@ -1,1 +1,236 @@
-<p>pos works!</p>
+<div class="pos">
+
+  <!-- ── top bar ─────────────────────────────────────────────────────────── -->
+  <header class="pos__bar">
+    <div class="pos__bar-left">
+      <span class="pos__brand">POS</span>
+
+      <select class="pos__select" [ngModel]="m.terminalNo()"
+              (ngModelChange)="m.selectTerminal($event)"
+              [disabled]="m.lineCount() > 0">
+        @for (t of m.terminals(); track t.terminal_no) {
+          <option [ngValue]="t.terminal_no">{{ t.terminal_name }}</option>
+        }
+      </select>
+
+      @if (m.session(); as s) {
+        <span class="pos__chip pos__chip--ok">{{ s.session_id }}</span>
+      } @else {
+        <span class="pos__chip pos__chip--warn">No open session</span>
+      }
+    </div>
+
+    <div class="pos__bar-right">
+      <select class="pos__select" [ngModel]="m.customerNo()" (ngModelChange)="m.customerNo.set($event)">
+        @for (c of m.customers(); track c.no) {
+          <option [ngValue]="c.no">{{ c.name }}</option>
+        }
+      </select>
+
+      <button type="button" class="pos__btn" (click)="m.showHolds.set(!m.showHolds())">
+        Held
+        @if (holdCount()) { <span class="pos__badge">{{ holdCount() }}</span> }
+      </button>
+
+      <button type="button" class="pos__btn" (click)="showHelp.set(!showHelp())" title="Keyboard shortcuts">?</button>
+    </div>
+  </header>
+
+  <!-- ── no session: the till refuses to sell and says why ───────────────── -->
+  @if (!m.hasSession()) {
+    <div class="pos__gate">
+      <h2>Open a session to start selling</h2>
+      <p>Sales are recorded against a cashier's drawer, so this terminal needs an open session first.</p>
+      <div class="pos__gate-row">
+        <label for="float">Opening float</label>
+        <input id="float" type="number" class="pos__input" [(ngModel)]="openingFloat" min="0" />
+        <button type="button" class="pos__btn pos__btn--primary" (click)="m.openSession(openingFloat)">
+          Open session
+        </button>
+      </div>
+    </div>
+  } @else {
+
+    <!-- ── selling ───────────────────────────────────────────────────────── -->
+    <div class="pos__body">
+
+      <section class="pos__cart">
+        <input #scanBox type="text" class="pos__scan" autofocus
+               placeholder="Scan barcode or search…  (F1)"
+               [(ngModel)]="scanValue" (keyup.enter)="onScan()" />
+
+        <div class="pos__lines">
+          <table class="pos__table">
+            <thead>
+              <tr>
+                <th class="w-8">#</th>
+                <th>Item</th>
+                <th class="num w-24">Qty</th>
+                <th class="num">Price</th>
+                <th class="num">Disc</th>
+                <th class="num">Total</th>
+                <th class="w-8"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of m.cart(); track $index; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ m.quote()?.lines?.[i]?.product_name ?? line.product_name }}</td>
+                  <td class="num">
+                    <input type="number" class="pos__qty" [ngModel]="line.qty"
+                           (ngModelChange)="m.setQty(i, $event)" min="0" step="1" />
+                  </td>
+                  <td class="num">{{ m.quote()?.lines?.[i]?.unit_price | number: '1.2-2' }}</td>
+                  <td class="num">
+                    <input type="number" class="pos__disc" [ngModel]="line.line_discount_value ?? 0"
+                           (ngModelChange)="m.setLineDiscount(i, $event)" min="0" />
+                  </td>
+                  <td class="num">{{ m.quote()?.lines?.[i]?.line_total | number: '1.2-2' }}</td>
+                  <td><button type="button" class="pos__x" (click)="m.removeLine(i)">×</button></td>
+                </tr>
+              } @empty {
+                <tr class="pos__empty">
+                  <td colspan="7">Scan an item to begin</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── totals + actions ────────────────────────────────────────────── -->
+      <aside class="pos__totals">
+        @if (m.isPricing()) { <div class="pos__pricing">pricing…</div> }
+
+        <dl class="pos__sums">
+          <div><dt>Subtotal</dt><dd>{{ m.quote()?.sub_total | number: '1.2-2' }}</dd></div>
+          <div><dt>Line discount</dt><dd>{{ m.quote()?.line_discount_total | number: '1.2-2' }}</dd></div>
+          <div>
+            <dt>Bill discount</dt>
+            <dd>
+              <input type="number" class="pos__disc" [ngModel]="m.billDiscountValue()"
+                     (ngModelChange)="m.setBillDiscount($event)" min="0" />
+            </dd>
+          </div>
+          <div><dt>Tax</dt><dd>{{ m.quote()?.tax_amount | number: '1.2-2' }}</dd></div>
+          <div><dt>Round off</dt><dd>{{ m.quote()?.round_off | number: '1.2-2' }}</dd></div>
+        </dl>
+
+        <div class="pos__grand">
+          <span>Total</span>
+          <strong>{{ m.grandTotal() | number: '1.2-2' }}</strong>
+        </div>
+
+        <div class="pos__actions">
+          <button type="button" class="pos__btn" [disabled]="!m.lineCount()" (click)="m.holdCart()">Hold (F8)</button>
+          <button type="button" class="pos__btn pos__btn--primary" [disabled]="!m.lineCount()"
+                  (click)="openTender()">Pay (F9)</button>
+        </div>
+      </aside>
+    </div>
+  }
+
+  <!-- ── hold drawer ─────────────────────────────────────────────────────── -->
+  @if (m.showHolds()) {
+    <div class="pos__scrim" (click)="m.showHolds.set(false)"></div>
+    <aside class="pos__drawer" role="dialog" aria-label="Held carts">
+      <header class="pos__drawer-head">
+        <h3>Held carts</h3>
+        <button type="button" class="pos__x" (click)="m.showHolds.set(false)">×</button>
+      </header>
+
+      <p class="pos__note">Held carts are kept on this device only, and do not reserve stock.</p>
+
+      <ul class="pos__held">
+        @for (cart of m.holds.carts(); track cart.id) {
+          <li class="pos__held-item">
+            <button type="button" class="pos__held-main" (click)="m.resumeCart(cart.id)">
+              <span class="pos__held-label">{{ cart.label }}</span>
+              <span class="pos__held-meta">
+                {{ cart.lines.length }} item(s) · {{ cart.approx_total | number: '1.2-2' }}
+              </span>
+              <span class="pos__held-time">{{ cart.created_at | date: 'shortTime' }}</span>
+            </button>
+            <button type="button" class="pos__x" title="Discard"
+                    (click)="m.holds.discard(cart.id)">×</button>
+          </li>
+        } @empty {
+          <li class="pos__empty">Nothing held</li>
+        }
+      </ul>
+    </aside>
+  }
+
+  <!-- ── tender ──────────────────────────────────────────────────────────── -->
+  @if (m.showTender()) {
+    <div class="pos__scrim" (click)="m.showTender.set(false)"></div>
+    <section class="pos__modal" role="dialog" aria-label="Take payment">
+      <header class="pos__drawer-head">
+        <h3>Payment</h3>
+        <button type="button" class="pos__x" (click)="m.showTender.set(false)">×</button>
+      </header>
+
+      <div class="pos__pay-grand">
+        <span>Total due</span><strong>{{ m.grandTotal() | number: '1.2-2' }}</strong>
+      </div>
+
+      <div class="pos__pay-row">
+        <select class="pos__select" [(ngModel)]="tenderMethod">
+          @for (opt of methods; track opt.value) {
+            <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+
+        <input type="number" class="pos__input" placeholder="Amount" [(ngModel)]="tenderAmount" min="0" />
+
+        @if (tenderMethod === 1) {
+          <input type="number" class="pos__input" placeholder="Cash given" [(ngModel)]="tenderCash" min="0" />
+        }
+
+        <button type="button" class="pos__btn" (click)="addTender()">Add</button>
+      </div>
+
+      <ul class="pos__tenders">
+        @for (t of m.tenders(); track $index; let i = $index) {
+          <li>
+            <span>{{ methodName(t.payment_method) }}</span>
+            <span class="num">{{ t.amount | number: '1.2-2' }}</span>
+            <button type="button" class="pos__x" (click)="m.removeTender(i)">×</button>
+          </li>
+        } @empty {
+          <li class="pos__empty">No payment added</li>
+        }
+      </ul>
+
+      <dl class="pos__sums">
+        <div><dt>Tendered</dt><dd>{{ m.tenderedTotal() | number: '1.2-2' }}</dd></div>
+        <div><dt>Balance</dt><dd>{{ m.balanceDue() | number: '1.2-2' }}</dd></div>
+        <div class="pos__change"><dt>Change</dt><dd>{{ m.changeDue() | number: '1.2-2' }}</dd></div>
+      </dl>
+
+      <button type="button" class="pos__btn pos__btn--primary pos__btn--wide"
+              [disabled]="!m.canConfirm()" (click)="confirm()">
+        {{ m.isConfirming() ? 'Completing…' : 'Complete sale (F10)' }}
+      </button>
+    </section>
+  }
+
+  <!-- ── shortcuts ───────────────────────────────────────────────────────── -->
+  @if (showHelp()) {
+    <div class="pos__scrim" (click)="showHelp.set(false)"></div>
+    <section class="pos__modal pos__modal--narrow" role="dialog" aria-label="Keyboard shortcuts">
+      <header class="pos__drawer-head">
+        <h3>Shortcuts</h3>
+        <button type="button" class="pos__x" (click)="showHelp.set(false)">×</button>
+      </header>
+      <dl class="pos__sums">
+        <div><dt>F1</dt><dd>Focus scan box</dd></div>
+        <div><dt>F8</dt><dd>Hold cart</dd></div>
+        <div><dt>F9</dt><dd>Open payment</dd></div>
+        <div><dt>F10</dt><dd>Complete sale</dd></div>
+        <div><dt>Esc</dt><dd>Close panel</dd></div>
+      </dl>
+    </section>
+  }
+</div>

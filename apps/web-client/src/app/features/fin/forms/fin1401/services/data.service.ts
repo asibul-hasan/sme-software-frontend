@@ -55,7 +55,7 @@ export class Fin1401DataService {
   getAccounts(): Observable<ApiResponse<CloseAccount[]>> {
     return this.fin.getList<CloseAccount[]>('forms/fin1004/accounts');
   }
-  yearEndClose(payload: { fin_year_no: number; retained_earnings_account_no: number }): Observable<ApiResponse<CloseResult>> {
+  yearEndClose(payload: { fin_year_no: number; retained_earnings_account_no: number; income_summary_account_no: number }): Observable<ApiResponse<CloseResult>> {
     return this.fin.insert<CloseResult>('forms/fin1401/year-end-close', payload);
   }
 }

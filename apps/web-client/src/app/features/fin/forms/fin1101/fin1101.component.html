@@ -125,120 +125,32 @@
       autocomplete="off"
       class="h-full flex flex-col"
     >
-      <div class="form-section-card card shrink-0">
-        <div class="card-body">
-          <div class="row row-group align-items-end">
-            <div class="col-md-2">
-              <div class="field-group">
-                <label class="field-label required" for="voucher_type_no"
-                  >Voucher Type</label
-                >
-                <ng-select
-                  id="voucher_type_no"
-                  formControlName="voucher_type_no"
-                  [readonly]="!editable"
-                  [clearable]="false"
-                  bindLabel="type_name"
-                  bindValue="voucher_type_no"
-                  [items]="model.activeVoucherTypes()"
-                  placeholder="Select type"
-                ></ng-select>
-              </div>
-            </div>
+      <app-form-section title="Voucher Details" icon="receipt">
+        <app-form-field label="Voucher Type" for="voucher_type_no" required [span]="2">
+          <ng-select id="voucher_type_no" formControlName="voucher_type_no" [readonly]="!editable" [clearable]="false" bindLabel="type_name" bindValue="voucher_type_no" [items]="model.activeVoucherTypes()" placeholder="Select type"></ng-select>
+        </app-form-field>
+        <app-form-field label="Date" for="voucher_date" required [span]="2">
+          <app-date-picker formControlName="voucher_date" placeholder="Select date" [disabled]="!editable" />
+        </app-form-field>
+        <app-form-field label="Currency" for="currency_no" required [span]="3">
+          <ng-select id="currency_no" formControlName="currency_no" [readonly]="!editable" [clearable]="false" (change)="model.onCurrencyChange($event)" placeholder="Currency">
+            @for (c of model.currencies(); track c.currency_no) {
+              <ng-option [value]="c.currency_no">{{ model.currencyLabel(c) }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+        <app-form-field label="Exchange Rate" for="fx_rate" required [span]="2">
+          <input type="number" id="fx_rate" formControlName="fx_rate" class="form-control text-right" min="0" step="0.000001" [readonly]="!editable" (input)="model.recalculateLines()" />
+        </app-form-field>
+        <app-form-field label="Reference" for="reference_no" [span]="3">
+          <input type="text" id="reference_no" formControlName="reference_no" class="form-control" [readonly]="!editable" placeholder="cheque / external ref" />
+        </app-form-field>
+        <app-form-field label="Narration" for="narration" [span]="12">
+          <input type="text" id="narration" formControlName="narration" class="form-control" [readonly]="!editable" placeholder="Voucher narration" />
+        </app-form-field>
+      </app-form-section>
 
-            <div class="col-md-2">
-              <div class="field-group">
-                <label class="field-label required" for="voucher_date"
-                  >Date</label
-                >
-                <app-date-picker
-                  formControlName="voucher_date"
-                  placeholder="Select date"
-                  [disabled]="!editable"
-                />
-              </div>
-            </div>
-
-            <div class="col-md-3">
-              <div class="field-group">
-                <label class="field-label required" for="currency_no"
-                  >Currency</label
-                >
-                <ng-select
-                  id="currency_no"
-                  formControlName="currency_no"
-                  [readonly]="!editable"
-                  [clearable]="false"
-                  (change)="model.onCurrencyChange($event)"
-                  placeholder="Currency"
-                >
-                  @for (c of model.currencies(); track c.currency_no) {
-                    <ng-option [value]="c.currency_no">{{
-                      model.currencyLabel(c)
-                    }}</ng-option>
-                  }
-                </ng-select>
-              </div>
-            </div>
-
-            <div class="col-md-2">
-              <div class="field-group">
-                <label class="field-label required" for="fx_rate"
-                  >Exchange Rate</label
-                >
-                <input
-                  type="number"
-                  id="fx_rate"
-                  formControlName="fx_rate"
-                  class="form-control text-right"
-                  min="0"
-                  step="0.000001"
-                  [readonly]="!editable"
-                  (input)="model.recalculateLines()"
-                />
-              </div>
-            </div>
-
-            <div class="col-md-3">
-              <div class="field-group">
-                <label class="field-label" for="reference_no">Reference</label>
-                <input
-                  type="text"
-                  id="reference_no"
-                  formControlName="reference_no"
-                  class="form-control"
-                  [readonly]="!editable"
-                  placeholder="cheque / external ref"
-                />
-              </div>
-            </div>
-
-            <div class="col-12">
-              <div class="field-group">
-                <label class="field-label" for="narration">Narration</label>
-                <input
-                  type="text"
-                  id="narration"
-                  formControlName="narration"
-                  class="form-control"
-                  [readonly]="!editable"
-                  placeholder="Voucher narration"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="form-section-card card fill-card mt-1"
-        style="
-          flex: 1 1 auto;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-        "
-      >
+      <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
         <div class="card-header flex flex-wrap items-center gap-2">
           <h4 class="card-header__title mb-0 font-bold">
             <mat-icon class="mr-2 align-middle">format_list_numbered</mat-icon>
@@ -262,40 +174,16 @@
           }
         </div>
 
-        <div
-          class="card-body p-0"
-          style="
-            flex: 1 1 auto;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-          "
-        >
-          <app-common-table
-            [columns]="lineColumns()"
-            [data]="lineData()"
-            [config]="lineConfig"
-          />
+        <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+          <app-erp-grid [config]="gridConfig" [data]="model.lines()" [selectedId]="model.selectedNo()" (rowChange)="onRowChange($event)" (rowRemove)="onRowRemove($event)" (addRow)="addLine()"></app-erp-grid>
         </div>
 
-        <div
-          class="px-3 py-2 flex items-center gap-3 shrink-0"
-          style="
-            border-top: 1px solid var(--border-color);
-            background: var(--table-header-bg, var(--bg-secondary));
-            min-height: 42px;
-          "
-        >
+        <div class="px-3 py-2 flex items-center gap-3 shrink-0 border-t border-[var(--border-color)] bg-[var(--table-header-bg,var(--bg-secondary))] min-h-[42px]">
           @if (
             !model.balanced() && model.validLines(model.lines()).length > 0
           ) {
-            <div
-              class="flex items-center gap-2"
-              style="color: var(--danger)"
-            >
-              <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-                >error</mat-icon
-              >
+            <div class="flex items-center gap-2 text-[var(--danger)]">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">error</mat-icon>
               <span class="font-semibold"
                 >Total debit and total credit must be equal before
                 posting.</span
@@ -304,23 +192,13 @@
           }
           @if (status === 2) {
             <div class="flex items-center gap-2 text-success">
-              <mat-icon style="font-size: 18px; width: 18px; height: 18px"
-                >check_circle</mat-icon
-              >
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">check_circle</mat-icon>
               <span class="font-semibold">Posted to the ledger.</span>
             </div>
           }
           <div class="ml-auto flex items-center gap-3">
-            <span
-              class="font-bold"
-              style="font-size: 12px; color: var(--text-secondary)"
-              >Difference</span
-            >
-            <strong
-              [class.text-success]="model.balanced()"
-              [class.text-danger]="!model.balanced()"
-              style="min-width: 130px; text-align: right"
-            >
+            <span class="font-bold text-[12px] text-[var(--text-secondary)]">Difference</span>
+            <strong [class.text-success]="model.balanced()" [class.text-danger]="!model.balanced()" class="min-w-[130px] text-right">
               {{ model.totalDebit() - model.totalCredit() | number: '1.' + (model.baseCurrency().decimal_places ?? 2) + '-' + (model.baseCurrency().decimal_places ?? 2) }}
             </strong>
           </div>

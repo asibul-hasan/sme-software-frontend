@@ -1,0 +1,209 @@
+/* INV_2006 Physical Count. Wide count grid with the sheet list beside it. */
+
+.cnt {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 14px;
+  padding: 14px;
+  align-items: start;
+}
+
+/* ── sheet list ──────────────────────────────────────────────────────────── */
+
+.cnt__list {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cnt__list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--surface-border, #eef1f4);
+
+  h2 { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
+}
+
+.cnt__new {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--surface-border, #eef1f4);
+  background: var(--surface-section, #fafbfc);
+}
+
+.cnt__sheets { list-style: none; margin: 0; padding: 0; max-height: 55vh; overflow: auto; }
+
+.cnt__sheet {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--surface-border, #f2f4f7);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-hover, #f7f9fc); }
+  &.is-active { background: #eef4ff; box-shadow: inset 3px 0 0 var(--primary-color, #2563eb); }
+}
+
+.cnt__sheet-id { font-weight: 600; }
+.cnt__sheet-meta { grid-column: 1; font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+
+.cnt__pill {
+  grid-row: 1 / span 2;
+  align-self: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eceff3;
+  color: #5b6472;
+  font-size: 11px;
+  font-weight: 600;
+
+  &.is-open { background: #fff6e5; color: #92610a; }
+  &.is-posted { background: #e6f4ea; color: #1b7f3b; }
+}
+
+/* ── sheet ───────────────────────────────────────────────────────────────── */
+
+.cnt__main {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.cnt__placeholder { color: var(--text-color-secondary, #6b7280); }
+
+.cnt__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--surface-border, #eef1f4);
+
+  h1 { margin: 0; font-size: 18px; }
+}
+
+.cnt__sub { margin: 4px 0 0; font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+.cnt__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── summary ─────────────────────────────────────────────────────────────── */
+
+.cnt__summary {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff6e5;
+
+  /* A clean count should look calm, not alarming. */
+  &.is-clean { background: #eef7f0; }
+
+  > div { display: flex; flex-direction: column; }
+  span { font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+  strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+
+  .is-loss { color: #b3261e; }
+}
+
+.cnt__toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cnt__warn {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #fdecea;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+/* ── grid ────────────────────────────────────────────────────────────────── */
+
+.cnt__table-wrap { overflow: auto; max-height: 60vh; }
+
+.cnt__table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--surface-border, #eef1f4); }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--surface-section, #fafbfc);
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-color-secondary, #6b7280);
+    z-index: 1;
+  }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .w-10 { width: 48px; }
+
+  /* The rows that matter are the ones that disagree. */
+  tr.has-variance { background: #fffaf2; }
+  .is-loss { color: #b3261e; font-weight: 600; }
+}
+
+.cnt__qty, .cnt__note {
+  padding: 4px 7px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 6px;
+  font: inherit;
+}
+.cnt__qty { width: 90px; text-align: right; }
+.cnt__note { width: 100%; min-width: 120px; }
+
+.cnt__empty { padding: 20px; text-align: center; color: var(--text-color-secondary, #9aa1ab); }
+
+/* ── controls ────────────────────────────────────────────────────────────── */
+
+.cnt__btn {
+  padding: 8px 14px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  background: var(--surface-card, #fff);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: var(--surface-hover, #f2f4f7); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.cnt__btn--sm { padding: 4px 9px; font-size: 12px; }
+.cnt__btn--primary {
+  background: var(--primary-color, #2563eb);
+  border-color: var(--primary-color, #2563eb);
+  color: #fff;
+}
+
+.cnt__input {
+  padding: 7px 9px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  font: inherit;
+}
+
+@media (max-width: 1000px) {
+  .cnt { grid-template-columns: 1fr; }
+}

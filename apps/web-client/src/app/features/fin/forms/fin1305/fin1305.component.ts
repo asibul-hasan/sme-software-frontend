@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1305DataService, BalanceSheet, StatementRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -15,14 +15,10 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1305',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1305DataService],
   templateUrl: './fin1305.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1305Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -43,19 +39,16 @@ export class Fin1305Component implements OnInit {
   totalLiabEquity = computed(() => Number(this.bs()?.total_liabilities_equity ?? 0));
   balanced        = computed(() => this.bs()?.balanced ?? false);
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Code',    field: 'account_code', sort: true, cellType: 'text', width: '140px', pin: 'left' },
-    { title: 'Account', field: 'account_name', sort: true, cellType: 'text' },
-    { title: 'Amount',  field: 'amount', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: false, pagination: false, dense: true, striped: true,
-    showActions: false, showColumnToggle: false, showExport: true,
-    exportFormats: ['excel', 'pdf', 'csv', 'print'], showTitle: false, maxHeight: '100%',
+  readonly gridConfig: GridConfig<StatementRow> = {
+    gridKey: 'FIN_1305_BALANCE_SHEET_GRID',
+    showPagination: false,
+    toolbar: { showExport: true },
+    columns: [
+      GridColumns.text<StatementRow>('account_code', 'Code').width(140).build(),
+      GridColumns.text<StatementRow>('account_name', 'Account').flex(1).build(),
+      GridColumns.decimal<StatementRow>('amount', 'Amount').sum().build(),
+    ]
   };
-  readonly assetsData = computed(() => this.assets() as unknown as Record<string, unknown>[]);
-  readonly liabData   = computed(() => this.liabilities() as unknown as Record<string, unknown>[]);
-  readonly equityData = computed(() => this.equity() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1305'); this.load(); });

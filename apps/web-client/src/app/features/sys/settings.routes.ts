@@ -129,4 +129,9 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () =>
       import('./forms/sys1203/sys1203.component').then((m) => m.Sys1203Component),
   },
+  {
+    path: 'form/id-generator',
+    loadComponent: () =>
+      import('./forms/sys1301/sys1301.component').then((m) => m.Sys1301Component),
+  },
 ];

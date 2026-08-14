@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1306DataService, CashFlow, CashFlowRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -15,14 +15,10 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1306',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1306DataService],
   templateUrl: './fin1306.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1306Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -43,20 +39,19 @@ export class Fin1306Component implements OnInit {
   netCashFlow   = computed(() => Number(this.cf()?.net_cash_flow ?? 0));
   closingCash   = computed(() => Number(this.cf()?.closing_cash ?? 0));
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Code',     field: 'account_code', sort: true, cellType: 'text', width: '140px', pin: 'left' },
-    { title: 'Account',  field: 'account_name', sort: true, cellType: 'text' },
-    { title: 'Opening',  field: 'opening',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Receipts', field: 'receipts', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Payments', field: 'payments', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Closing',  field: 'closing',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: true, pagination: false, dense: true, striped: true,
-    showActions: false, showColumnToggle: false, showExport: true,
-    exportFormats: ['excel', 'pdf', 'csv', 'print'], showTitle: false, maxHeight: '100%',
+  readonly gridConfig: GridConfig<CashFlowRow> = {
+    gridKey: 'FIN_1306_CASH_FLOW_GRID',
+    showPagination: false,
+    toolbar: { showSearch: true, showExport: true },
+    columns: [
+      GridColumns.text<CashFlowRow>('account_code', 'Code').width(140).build(),
+      GridColumns.text<CashFlowRow>('account_name', 'Account').flex(1).build(),
+      GridColumns.decimal<CashFlowRow>('opening', 'Opening').sum().build(),
+      GridColumns.decimal<CashFlowRow>('receipts', 'Receipts').sum().build(),
+      GridColumns.decimal<CashFlowRow>('payments', 'Payments').sum().build(),
+      GridColumns.decimal<CashFlowRow>('closing', 'Closing').sum().build(),
+    ]
   };
-  readonly tableData = computed(() => this.rows() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1306'); this.load(); });

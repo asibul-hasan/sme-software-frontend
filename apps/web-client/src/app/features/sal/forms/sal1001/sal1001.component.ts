@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } 
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
@@ -26,7 +27,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1001',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Sal1001DataService],
   templateUrl: './sal1001.component.html',
   styles: [`:host { display: block; height: 100%; }`],
@@ -48,6 +49,7 @@ export class Sal1001Component implements OnInit {
   lines     = signal<WorkLine[]>([]);
   selectedNo = signal<number | null>(null);
   status     = signal<number>(1);
+  glVoucherNo = signal<string | null>(null);
   searchTerm = signal('');
   isLoading  = signal(false);
   isSaving   = signal(false);
@@ -144,6 +146,7 @@ export class Sal1001Component implements OnInit {
           const d = res.data;
           this.selectedNo.set(d.invoice_no ?? null);
           this.status.set(d.status ?? 1);
+          this.glVoucherNo.set(d.gl_voucher_no ?? null);
           this.customerNo = d.customer_no; this.warehouseNo = d.warehouse_no; this.saleType = d.sale_type;
           this.invoiceDate = d.invoice_date; this.shippingCharge = d.shipping_charge ?? null;
           this.roundOff = d.round_off ?? null; this.paidAmount = d.paid_amount ?? null;
@@ -155,7 +158,7 @@ export class Sal1001Component implements OnInit {
   }
 
   onNew(): void {
-    this.selectedNo.set(null); this.status.set(1);
+    this.selectedNo.set(null); this.status.set(1); this.glVoucherNo.set(null);
     this.customerNo = null; this.warehouseNo = null; this.saleType = 1;
     this.invoiceDate = new Date().toISOString().split('T')[0];
     this.shippingCharge = null; this.roundOff = null; this.paidAmount = null; this.dueDate = null; this.remarks = '';

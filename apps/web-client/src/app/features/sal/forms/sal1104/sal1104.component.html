@@ -1,0 +1,219 @@
+<app-page-form-layout
+  [title]="'Promotions'"
+  [subtitle]="'Rules the till applies automatically while pricing a cart'"
+  [icon]="'sell'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Promotions'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="model.searchTerm.set($event)"
+  (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [isSaving]="model.isSaving()" [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (item of model.filtered(); track item.promotion_no) {
+      <button type="button" class="list-group-item list-group-item-action"
+              [class.active]="model.selectedNo() === item.promotion_no"
+              (click)="model.select(item.promotion_no!)">
+        <span class="status-dot status-dot--corner"
+              [class.status-dot--active]="item.is_active === 1"
+              [class.status-dot--inactive]="item.is_active !== 1"></span>
+        <div class="flex items-baseline gap-1" style="min-width: 0; padding-right: 16px">
+          <h6 class="list-item-title mb-0 truncate">{{ item.promotion_name }}</h6>
+          <span class="text-subtle">&middot;</span>
+          <span class="list-item-id">{{ item.promotion_id }}</span>
+        </div>
+      </button>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>sell</mat-icon>
+        <p>No promotions yet</p>
+      </div>
+    }
+  </div>
+
+  <div formContent class="p-4 md:p-5">
+    <form [formGroup]="model.form" autocomplete="off" class="w-full">
+
+      <app-form-section title="Rule" icon="sell">
+        <app-form-field label="Code" [span]="3" [required]="true">
+          <input type="text" formControlName="promotion_id" class="form-control uppercase"
+                 placeholder="e.g. EIDSALE" />
+        </app-form-field>
+
+        <app-form-field label="Name" [span]="5" [required]="true">
+          <input type="text" formControlName="promotion_name" class="form-control"
+                 placeholder="e.g. Eid 10% off beverages" />
+        </app-form-field>
+
+        <app-form-field label="Type" [span]="4" [required]="true">
+          <select formControlName="promo_type" class="form-control">
+            @for (t of promoTypes; track t.value) {
+              <option [ngValue]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </app-form-field>
+
+        @if (!model.isSupportedType()) {
+          <app-form-field [span]="12">
+            <div class="rounded-md bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+              This type is not applied by the pricing engine yet. You can save it, but it will not
+              discount anything until the engine supports it.
+            </div>
+          </app-form-field>
+        }
+
+        <app-form-field label="Applies to" [span]="4" [required]="true">
+          <select formControlName="scope_type" class="form-control">
+            @for (s of scopeTypes; track s.value) {
+              <option [ngValue]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </app-form-field>
+
+        <app-form-field label="Priority" [span]="2"
+                        info="Higher runs first. A non-stackable rule then blocks others on that line.">
+          <input type="number" formControlName="priority" class="form-control" />
+        </app-form-field>
+
+        <app-check-field label="Can stack with others" [span]="3" formControlName="is_stackable" />
+        <app-check-field label="Active" [span]="3" formControlName="is_active" />
+      </app-form-section>
+
+      <!-- ── what it gives ─────────────────────────────────────────────────── -->
+      <app-form-section title="Discount" icon="percent">
+        @if (model.isPercent()) {
+          <app-form-field label="Percentage" [span]="3" [required]="true">
+            <input type="number" formControlName="discount_pct" class="form-control" min="0" max="100" />
+          </app-form-field>
+        }
+
+        @if (model.isAmount()) {
+          <app-form-field label="Amount" [span]="3" [required]="true">
+            <input type="number" formControlName="discount_amount" class="form-control" min="0" />
+          </app-form-field>
+        }
+
+        @if (model.isBuyXGetY()) {
+          <app-form-field label="Buy quantity" [span]="3" [required]="true">
+            <input type="number" formControlName="buy_qty" class="form-control" min="0" />
+          </app-form-field>
+          <app-form-field label="Get free" [span]="3" [required]="true">
+            <input type="number" formControlName="get_qty" class="form-control" min="0" />
+          </app-form-field>
+        }
+
+        <app-form-field label="Max discount" [span]="3"
+                        info="Caps what a percentage rule can give away on a large basket.">
+          <input type="number" formControlName="max_discount_amount" class="form-control" min="0" />
+        </app-form-field>
+
+        <app-form-field label="Minimum qty" [span]="3">
+          <input type="number" formControlName="min_qty" class="form-control" min="0" />
+        </app-form-field>
+
+        <app-form-field label="Minimum amount" [span]="3">
+          <input type="number" formControlName="min_amount" class="form-control" min="0" />
+        </app-form-field>
+      </app-form-section>
+
+      <!-- ── targets ───────────────────────────────────────────────────────── -->
+      @if (model.needsTargets()) {
+        <app-form-section title="Applies to which items" icon="inventory_2">
+          <app-form-field [label]="'Add ' + model.targetKind()" [span]="6">
+            <div class="flex gap-2">
+              <select class="form-control" [(ngModel)]="targetPick" [ngModelOptions]="{ standalone: true }">
+                <option [ngValue]="null">Select…</option>
+                @for (o of model.targetOptions(); track o.no) {
+                  <option [ngValue]="o.no">{{ o.name }}</option>
+                }
+              </select>
+              <button type="button" class="btn-action btn-new" (click)="addCondition()">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </app-form-field>
+
+          @if (model.isBuyXGetY()) {
+            <app-form-field label="Free item (optional)" [span]="6"
+                            info="Leave empty and the cheapest qualifying item goes free.">
+              <div class="flex gap-2">
+                <select class="form-control" [(ngModel)]="rewardPick" [ngModelOptions]="{ standalone: true }">
+                  <option [ngValue]="null">Select…</option>
+                  @for (o of model.targetOptions(); track o.no) {
+                    <option [ngValue]="o.no">{{ o.name }}</option>
+                  }
+                </select>
+                <button type="button" class="btn-action btn-new" (click)="addReward()">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </app-form-field>
+          }
+
+          <app-form-field [span]="12">
+            <ul class="flex flex-wrap gap-2 m-0 p-0 list-none">
+              @for (t of model.targets(); track $index; let i = $index) {
+                <li class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm">
+                  @if (t.target_role === 2) { <span class="text-emerald-700 font-semibold">FREE</span> }
+                  <span>{{ t.product_name }}</span>
+                  <button type="button" class="text-slate-400 hover:text-red-600"
+                          (click)="model.removeTarget(i)">&times;</button>
+                </li>
+              } @empty {
+                <li class="text-sm text-slate-400">Nothing selected — this rule would match nothing</li>
+              }
+            </ul>
+          </app-form-field>
+        </app-form-section>
+      }
+
+      <!-- ── when it runs ──────────────────────────────────────────────────── -->
+      <app-form-section title="When it runs" icon="schedule">
+        <app-form-field label="Start date" [span]="3" [required]="true">
+          <input type="date" formControlName="start_date" class="form-control" />
+        </app-form-field>
+
+        <app-form-field label="End date" [span]="3" [required]="true">
+          <input type="date" formControlName="end_date" class="form-control" />
+        </app-form-field>
+
+        <app-form-field label="From time" [span]="3" info="Optional happy-hour window.">
+          <input type="time" formControlName="start_time" class="form-control" />
+        </app-form-field>
+
+        <app-form-field label="To time" [span]="3">
+          <input type="time" formControlName="end_time" class="form-control" />
+        </app-form-field>
+
+        <app-form-field label="Days" [span]="8" info="None selected means every day.">
+          <div class="flex flex-wrap gap-2">
+            @for (d of weekdays; track d.bit) {
+              <button type="button"
+                      class="rounded-md border px-3 py-1 text-sm"
+                      [class.bg-blue-600]="model.isWeekdayOn(d.bit)"
+                      [class.text-white]="model.isWeekdayOn(d.bit)"
+                      (click)="model.toggleWeekday(d.bit)">
+                {{ d.label }}
+              </button>
+            }
+          </div>
+        </app-form-field>
+
+        <app-form-field label="Usage limit" [span]="4"
+                        info="Total times this rule may be used. Counted only on completed sales.">
+          <input type="number" formControlName="usage_limit" class="form-control" min="0" />
+        </app-form-field>
+      </app-form-section>
+
+      <app-form-section title="Notes" icon="notes">
+        <app-form-field label="Remarks" [span]="12">
+          <input type="text" formControlName="remarks" class="form-control" />
+        </app-form-field>
+      </app-form-section>
+    </form>
+  </div>
+</app-page-form-layout>

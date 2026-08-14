@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig, statusBadge } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { Fin1401DataService, FinYearOption, FinPeriod, CloseAccount } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -16,14 +16,10 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1401',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Fin1401DataService],
   templateUrl: './fin1401.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1401Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -41,29 +37,73 @@ export class Fin1401Component implements OnInit {
 
   selectedYearNo: number | null = null;
   retainedEarningsAccountNo: number | null = null;
+  incomeSummaryAccountNo: number | null = null;
 
   selectedYear = computed(() => this.years().find((y) => y.fin_year_no === this.selectedYearNo) ?? null);
   yearClosed   = computed(() => this.selectedYear()?.is_closed === 1);
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Period',  field: 'fin_period_name', sort: true, cellType: 'text' },
-    { title: 'Start',   field: 'start_date', cellType: 'date', dateFormat: 'dd MMM yyyy', width: '140px' },
-    { title: 'End',     field: 'end_date',   cellType: 'date', dateFormat: 'dd MMM yyyy', width: '140px' },
-    { title: 'Status',  field: 'period_status', cellType: 'badge', width: '120px',
-      value: (r) => this.statusLabel(r['period_status'] as number),
-      badgeConfig: (v) => v === 1 ? { label: 'Open', variant: 'success' } : v === 2 ? { label: 'Closed', variant: 'warning' } : { label: 'Locked', variant: 'neutral' } },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: false, pagination: false, dense: true, striped: true,
-    showColumnToggle: false, showExport: false, showTitle: false, maxHeight: '100%',
-    showActions: true,
-    actions: [
-      { type: 'custom', icon: 'lock_open', tooltip: 'Set Open',  label: 'Set Open',  disabled: () => this.yearClosed(), onClick: (r) => this.setStatus(r['fin_period_no'] as number, 1) },
-      { type: 'custom', icon: 'event_busy', tooltip: 'Set Closed', label: 'Set Closed', disabled: () => this.yearClosed(), onClick: (r) => this.setStatus(r['fin_period_no'] as number, 2) },
-      { type: 'custom', icon: 'lock', tooltip: 'Set Locked', label: 'Set Locked', disabled: () => this.yearClosed(), onClick: (r) => this.setStatus(r['fin_period_no'] as number, 3) },
-    ],
+  readonly gridConfig: GridConfig<FinPeriod> = {
+    gridKey: 'FIN_1401_PERIOD_CLOSE_GRID',
+    rowIdField: 'fin_period_no',
+    selectionMode: 'single',
+    autoSelectFirstRow: true,
+    showPagination: false,
+    canAdd: () => false,
+    canEdit: () => false,
+    canDeleteRow: () => false,
+    toolbar: { showSearch: true },
+    columns: [
+      GridColumns.text<FinPeriod>('fin_period_name', 'Period').build(),
+      GridColumns.date<FinPeriod>('start_date', 'Start').width(140).build(),
+      GridColumns.date<FinPeriod>('end_date', 'End').width(140).build(),
+      GridColumns.text<FinPeriod>('period_status', 'Status')
+        .width(120)
+        .align('center')
+        .cellRenderer((params) => {
+          const s = params.value;
+          if (s === 1) return `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Open</span>`;
+          if (s === 2) return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Closed</span>`;
+          return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Locked</span>`;
+        })
+        .build(),
+      {
+        field: '__actions',
+        headerName: 'Actions',
+        width: 240,
+        pinned: 'right',
+        sortable: false,
+        filterable: false,
+        cellRenderer: (params) => {
+          if (!params.data || this.yearClosed()) return '';
+          const container = document.createElement('div');
+          container.className = 'flex items-center gap-1';
+
+          const btnOpen = document.createElement('button');
+          btnOpen.className = 'btn-action btn-new text-xs px-2 py-1';
+          btnOpen.title = 'Set Open';
+          btnOpen.innerHTML = '<span class="material-icons text-success" style="font-size:16px;">lock_open</span> Open';
+          btnOpen.onclick = (e) => { e.stopPropagation(); this.setStatus(params.data.fin_period_no, 1); };
+
+          const btnClose = document.createElement('button');
+          btnClose.className = 'btn-action btn-new text-xs px-2 py-1';
+          btnClose.title = 'Set Closed';
+          btnClose.innerHTML = '<span class="material-icons text-warning" style="font-size:16px;">event_busy</span> Close';
+          btnClose.onclick = (e) => { e.stopPropagation(); this.setStatus(params.data.fin_period_no, 2); };
+
+          const btnLock = document.createElement('button');
+          btnLock.className = 'btn-action btn-new text-xs px-2 py-1';
+          btnLock.title = 'Set Locked';
+          btnLock.innerHTML = '<span class="material-icons text-secondary" style="font-size:16px;">lock</span> Lock';
+          btnLock.onclick = (e) => { e.stopPropagation(); this.setStatus(params.data.fin_period_no, 3); };
+
+          container.appendChild(btnOpen);
+          container.appendChild(btnClose);
+          container.appendChild(btnLock);
+          return container;
+        }
+      }
+    ]
   };
-  readonly tableData = computed(() => this.periods() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1401'); this.loadYears(); this.loadAccounts(); });
@@ -104,13 +144,18 @@ export class Fin1401Component implements OnInit {
   runYearEndClose(): void {
     if (!this.selectedYearNo) { this.toastr.warning('Select a financial year'); return; }
     if (!this.retainedEarningsAccountNo) { this.toastr.warning('Select a retained-earnings account'); return; }
+    if (!this.incomeSummaryAccountNo) { this.toastr.warning('Select an income-summary account'); return; }
     this.alert.confirm('Run the year-end close? This posts a closing voucher moving net P&L into retained earnings, then locks every period of the year. This cannot be undone.', 'Year-End Close', 'warn')
       .subscribe((ok) => { if (ok) this.doClose(); });
   }
 
   private doClose(): void {
     this.isClosing.set(true);
-    this.data.yearEndClose({ fin_year_no: this.selectedYearNo!, retained_earnings_account_no: this.retainedEarningsAccountNo! })
+    this.data.yearEndClose({
+      fin_year_no: this.selectedYearNo!,
+      retained_earnings_account_no: this.retainedEarningsAccountNo!,
+      income_summary_account_no: this.incomeSummaryAccountNo!,
+    })
       .pipe(finalize(() => this.isClosing.set(false))).subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
@@ -124,5 +169,4 @@ export class Fin1401Component implements OnInit {
   }
 
   statusLabel(v: number): string { return this.periodStatuses.find((s) => s.value === v)?.label ?? String(v); }
-  protected readonly statusBadge = statusBadge;
 }

@@ -7,22 +7,22 @@
   [isLoading]="isLoading()"
 >
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
+    <div class="form-section-card card shrink-0">
       <div class="card-body">
-        <div class="d-flex align-items-end gap-3 flex-wrap">
+        <div class="flex items-end gap-3 flex-wrap">
           <div class="field-group" style="min-width:150px"><label class="field-label" for="from">From</label>
             <app-date-picker [(ngModel)]="from" (ngModelChange)="load()" placeholder="From date" /></div>
           <div class="field-group" style="min-width:150px"><label class="field-label" for="to">To</label>
             <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" /></div>
-          <div class="ms-auto d-flex align-items-center gap-2 text-muted"><mat-icon>receipt</mat-icon><span>{{ rows().length }} line(s)</span></div>
+          <div class="ml-auto flex items-center gap-2 text-[var(--text-muted)]"><mat-icon>receipt</mat-icon><span>{{ rows().length }} line(s)</span></div>
         </div>
       </div>
     </div>
 
-    <div class="form-section-card card fill-card mt-1">
-      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">menu_book</mat-icon> Day Book</h4></div>
-      <div class="card-body p-0">
-        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+    <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+      <div class="card-header"><h4 class="card-header__title mb-0 font-bold"><mat-icon class="mr-2 align-middle">menu_book</mat-icon> Day Book</h4></div>
+      <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+        <app-erp-grid [config]="gridConfig" [data]="rows()" />
       </div>
     </div>
   </div>

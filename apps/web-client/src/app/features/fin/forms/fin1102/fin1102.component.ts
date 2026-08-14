@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1102DataService, BankAccount, ReconLine } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -16,14 +16,10 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1102',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1102DataService],
   templateUrl: './fin1102.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1102Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -53,31 +49,60 @@ export class Fin1102Component implements OnInit {
   reconciledCount = computed(() => this.lines().filter((l) => l.reconciled).length);
   difference      = computed(() => (Number(this.statementBalance) || 0) - this.bookBalance());
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Status', field: 'cleared', cellType: 'badge', width: '120px',
-      value: (r) => (r['reconciled'] ? 'Reconciled' : r['cleared'] ? 'Selected' : 'Pending'),
-      badgeConfig: (_v, r) => r['reconciled']
-        ? { label: 'Reconciled', variant: 'success' }
-        : r['cleared']
-          ? { label: 'Selected', variant: 'primary' }
-          : { label: 'Pending', variant: 'neutral' } },
-    { title: 'Voucher', field: 'voucher_id', sort: true, cellType: 'text', width: '150px' },
-    { title: 'Voucher No', field: 'voucher_no', sort: true, cellType: 'number', width: '120px' },
-    { title: 'Voucher Date', field: 'voucher_date', sort: true, cellType: 'date', dateFormat: 'dd MMM yyyy', width: '140px' },
-    { title: 'Bank Date', field: 'bank_date', sort: true, cellType: 'date', editable: (row) => !row['reconciled'], width: '140px',
-      onChange: (value, row) => this.updateBankDate(row['ledger_no'] as number, String(value || row['voucher_date'] || '')) },
-    { title: 'Reference', field: 'reference_no', cellType: 'text', width: '150px' },
-    { title: 'Narration', field: 'narration', cellType: 'text', minWidth: '240px' },
-    { title: 'Debit',   field: 'debit',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Credit',  field: 'credit', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: true, pagination: true, defaultPageSize: 25, dense: true, striped: true,
-    showColumnToggle: false, showExport: false, showTitle: false, maxHeight: '100%',
-    showActions: true,
-    actions: [{ type: 'custom', icon: 'rule', tooltip: 'Toggle cleared', label: 'Toggle Cleared', disabled: (r) => !!r['reconciled'], onClick: (r) => this.toggle(r['ledger_no'] as number) }],
+  readonly gridConfig: GridConfig<ReconLine> = {
+    gridKey: 'FIN_1102_BANK_RECON_GRID',
+    rowIdField: 'ledger_no',
+    selectionMode: 'single',
+    autoSelectFirstRow: true,
+    showPagination: true,
+    pageSize: 25,
+    canAdd: () => false,
+    canEdit: () => true,
+    canDeleteRow: () => false,
+    toolbar: { showSearch: true, showExport: true },
+    columns: [
+      GridColumns.text<ReconLine>('cleared', 'Status')
+        .width(120)
+        .align('center')
+        .cellRenderer((params) => {
+          if (params.data?.reconciled) return `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Reconciled</span>`;
+          if (params.data?.cleared) return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Selected</span>`;
+          return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Pending</span>`;
+        })
+        .build(),
+      GridColumns.text<ReconLine>('voucher_id', 'Voucher').width(150).build(),
+      GridColumns.number<ReconLine>('voucher_no', 'Voucher No').width(120).build(),
+      GridColumns.date<ReconLine>('voucher_date', 'Voucher Date').width(140).build(),
+      GridColumns.date<ReconLine>('bank_date', 'Bank Date').width(140).editable((row) => !row.reconciled).build(),
+      GridColumns.text<ReconLine>('reference_no', 'Reference').width(150).build(),
+      GridColumns.text<ReconLine>('narration', 'Narration').minWidth(240).build(),
+      GridColumns.decimal<ReconLine>('debit', 'Debit').sum().build(),
+      GridColumns.decimal<ReconLine>('credit', 'Credit').sum().build(),
+      {
+        field: '__actions',
+        headerName: '',
+        width: 60,
+        pinned: 'right',
+        sortable: false,
+        filterable: false,
+        cellRenderer: (params) => {
+          if (params.data && !params.data.reconciled) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-action btn-new';
+            btn.title = params.data.cleared ? 'Uncheck' : 'Check Cleared';
+            btn.style.padding = '4px';
+            btn.innerHTML = `<span class="material-icons text-primary" style="font-size:18px;">${params.data.cleared ? 'check_box' : 'check_box_outline_blank'}</span>`;
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              this.toggle(params.data.ledger_no);
+            };
+            return btn;
+          }
+          return '';
+        }
+      }
+    ]
   };
-  readonly tableData = computed(() => this.lines() as unknown as Record<string, unknown>[]);
 
   private formatLocalDate(date: Date): string {
     const y = date.getFullYear();
@@ -121,6 +146,12 @@ export class Fin1102Component implements OnInit {
     }));
   }
 
+  onRowChange(row: ReconLine): void {
+    if (row.ledger_no && !row.reconciled) {
+      this.updateBankDate(row.ledger_no, String(row.bank_date || row.voucher_date || ''));
+    }
+  }
+
   updateBankDate(ledgerNo: number, bankDate: string): void {
     this.lines.update((ls) => ls.map((l) => l.ledger_no === ledgerNo && !l.reconciled ? { ...l, bank_date: bankDate || l.voucher_date } : l));
   }
@@ -145,7 +176,7 @@ export class Fin1102Component implements OnInit {
       next: (res) => {
         if (isSuccess(res) && res.data) {
           this.toastr.success(`Reconciliation ${res.data.bank_recon_id} saved`);
-          this.loadWorksheet();   // refresh — cleared lines drop off
+          this.loadWorksheet();
         }
       },
       error: (e) => this.toastr.error(e?.error?.message ?? 'Failed to save reconciliation'),

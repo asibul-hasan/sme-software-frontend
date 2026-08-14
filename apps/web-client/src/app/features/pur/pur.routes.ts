@@ -38,6 +38,10 @@ export const PUR_ROUTES: Routes = [
     loadComponent: () => import('./forms/pur1103/pur1103.component').then((m) => m.Pur1103Component),
   },
   {
+    path: 'report/aging-spend',
+    loadComponent: () => import('./reports/pur1301/pur1301.component').then((m) => m.Pur1301Component),
+  },
+  {
     path: 'form/supplier-payment',
     loadComponent: () => import('./forms/pur1104/pur1104.component').then((m) => m.Pur1104Component),
   },

@@ -1,0 +1,175 @@
+/* SAL_1301 Sales Reports. Controls carry .no-print so the printed sheet is the
+   figures only. */
+
+.rpt {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rpt__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1 { margin: 0; font-size: 20px; }
+}
+
+.rpt__sub,
+.rpt__muted {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.rpt__controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ── headline tiles ──────────────────────────────────────────────────────── */
+
+.rpt__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.rpt__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+
+  span { font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+  strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+  small { font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+
+  &--warn { border-color: #f3c9c5; background: #fdf6f5; }
+}
+
+/* ── tabs ────────────────────────────────────────────────────────────────── */
+
+.rpt__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--surface-border, #dfe3e8);
+
+  button {
+    padding: 8px 14px;
+    border: 0;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-color-secondary, #6b7280);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+
+    &.is-active {
+      color: var(--primary-color, #2563eb);
+      border-bottom-color: var(--primary-color, #2563eb);
+    }
+  }
+}
+
+/* ── table ───────────────────────────────────────────────────────────────── */
+
+.rpt__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  overflow: hidden;
+
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--surface-border, #eef1f4); }
+  th {
+    background: var(--surface-section, #fafbfc);
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-color-secondary, #6b7280);
+  }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* A negative margin is the thing worth spotting on a crowded sheet. */
+  .is-loss { color: #b3261e; font-weight: 600; }
+}
+
+.rpt__empty {
+  text-align: center;
+  padding: 22px;
+  color: var(--text-color-secondary, #9aa1ab);
+}
+
+/* ── hourly bars ─────────────────────────────────────────────────────────── */
+
+.rpt__hours {
+  list-style: none;
+  margin: 0;
+  padding: 12px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+
+  li {
+    display: grid;
+    grid-template-columns: 56px 1fr 90px 70px;
+    gap: 10px;
+    align-items: center;
+    padding: 3px 0;
+  }
+}
+
+.rpt__hour-label { font-variant-numeric: tabular-nums; color: var(--text-color-secondary, #6b7280); }
+
+.rpt__bar {
+  display: block;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--surface-section, #eef1f4);
+  overflow: hidden;
+}
+
+.rpt__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--primary-color, #2563eb);
+}
+
+.rpt__hour-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.rpt__hour-count { text-align: right; font-size: 12px; color: var(--text-color-secondary, #9aa1ab); }
+
+/* ── controls ────────────────────────────────────────────────────────────── */
+
+.rpt__btn {
+  padding: 7px 13px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  background: var(--surface-card, #fff);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-hover, #f2f4f7); }
+}
+
+.rpt__btn--primary {
+  background: var(--primary-color, #2563eb);
+  border-color: var(--primary-color, #2563eb);
+  color: #fff;
+}
+
+.rpt__input {
+  padding: 6px 9px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .rpt { padding: 0; }
+  .rpt__table, .rpt__tile, .rpt__hours { border-color: #000; break-inside: avoid; }
+}

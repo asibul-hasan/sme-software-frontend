@@ -1,0 +1,162 @@
+<div class="rpt">
+
+  <!-- ── controls ────────────────────────────────────────────────────────── -->
+  <header class="rpt__head">
+    <div>
+      <h1>Sales Reports</h1>
+      <p class="rpt__sub">Confirmed sales only. Margin uses the cost recorded when each sale posted.</p>
+    </div>
+
+    <div class="rpt__controls no-print">
+      <button type="button" class="rpt__btn" (click)="setRange(1)">Today</button>
+      <button type="button" class="rpt__btn" (click)="setRange(7)">7 days</button>
+      <button type="button" class="rpt__btn" (click)="setRange(30)">30 days</button>
+      <input type="date" class="rpt__input" [(ngModel)]="fromDate" />
+      <input type="date" class="rpt__input" [(ngModel)]="toDate" />
+      <button type="button" class="rpt__btn rpt__btn--primary" (click)="load()">Run</button>
+      <button type="button" class="rpt__btn" (click)="print()">Print</button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <p class="rpt__muted">Loading…</p>
+  } @else if (report(); as r) {
+
+    <!-- ── headline numbers ──────────────────────────────────────────────── -->
+    <section class="rpt__tiles">
+      <div class="rpt__tile">
+        <span>Net sales</span>
+        <strong>{{ r.totals.net_sales | number: '1.2-2' }}</strong>
+      </div>
+      <div class="rpt__tile">
+        <span>Margin</span>
+        <strong>{{ r.totals.margin | number: '1.2-2' }}</strong>
+        <small>{{ r.totals.margin_pct | number: '1.1-1' }}%</small>
+      </div>
+      <div class="rpt__tile">
+        <span>Invoices</span>
+        <strong>{{ r.totals.invoice_count }}</strong>
+      </div>
+      <div class="rpt__tile">
+        <span>Average basket</span>
+        <strong>{{ r.totals.average_basket | number: '1.2-2' }}</strong>
+      </div>
+      <div class="rpt__tile">
+        <span>Discount given</span>
+        <strong>{{ r.totals.discount_total | number: '1.2-2' }}</strong>
+      </div>
+      <div class="rpt__tile" [class.rpt__tile--warn]="r.totals.due_total > 0">
+        <span>Still owed</span>
+        <strong>{{ r.totals.due_total | number: '1.2-2' }}</strong>
+      </div>
+    </section>
+
+    <!-- ── tabs ──────────────────────────────────────────────────────────── -->
+    <nav class="rpt__tabs no-print">
+      <button type="button" [class.is-active]="tab() === 'daily'" (click)="tab.set('daily')">By day</button>
+      <button type="button" [class.is-active]="tab() === 'product'" (click)="tab.set('product')">By product</button>
+      <button type="button" [class.is-active]="tab() === 'cashier'" (click)="tab.set('cashier')">By cashier</button>
+      <button type="button" [class.is-active]="tab() === 'hour'" (click)="tab.set('hour')">By hour</button>
+    </nav>
+
+    @if (tab() === 'daily') {
+      <table class="rpt__table">
+        <thead>
+          <tr>
+            <th>Date</th><th class="num">Invoices</th><th class="num">Net sales</th>
+            <th class="num">Discount</th><th class="num">Tax</th>
+            <th class="num">Cost</th><th class="num">Margin</th><th class="num">Margin %</th>
+            <th class="num">Avg basket</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of r.daily; track d.sale_date) {
+            <tr>
+              <td>{{ d.sale_date | date: 'dd MMM yyyy' }}</td>
+              <td class="num">{{ d.invoice_count }}</td>
+              <td class="num">{{ d.net_sales | number: '1.2-2' }}</td>
+              <td class="num">{{ d.discount_total | number: '1.2-2' }}</td>
+              <td class="num">{{ d.tax_amount | number: '1.2-2' }}</td>
+              <td class="num">{{ d.cost_total | number: '1.2-2' }}</td>
+              <td class="num" [class.is-loss]="d.margin < 0">{{ d.margin | number: '1.2-2' }}</td>
+              <td class="num">{{ d.margin_pct | number: '1.1-1' }}%</td>
+              <td class="num">{{ d.average_basket | number: '1.2-2' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="rpt__empty">No sales in this period</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if (tab() === 'product') {
+      <table class="rpt__table">
+        <thead>
+          <tr>
+            <th>Product</th><th class="num">Qty sold</th><th class="num">Net sales</th>
+            <th class="num">Cost</th><th class="num">Margin</th><th class="num">Margin %</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of r.by_product; track p.product_no) {
+            <tr>
+              <td>{{ p.product_name }}</td>
+              <td class="num">{{ p.qty_sold | number: '1.0-3' }}</td>
+              <td class="num">{{ p.net_sales | number: '1.2-2' }}</td>
+              <td class="num">{{ p.cost_total | number: '1.2-2' }}</td>
+              <td class="num" [class.is-loss]="p.margin < 0">{{ p.margin | number: '1.2-2' }}</td>
+              <td class="num">{{ p.margin_pct | number: '1.1-1' }}%</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="rpt__empty">No sales in this period</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if (tab() === 'cashier') {
+      <p class="rpt__muted">
+        Attributed through the POS session. Back-office credit invoices have no session and are not listed here.
+      </p>
+      <table class="rpt__table">
+        <thead>
+          <tr>
+            <th>Cashier</th><th class="num">Invoices</th><th class="num">Net sales</th>
+            <th class="num">Avg basket</th><th class="num">Drawer variance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of r.by_cashier; track c.cashier_user_no) {
+            <tr>
+              <td>{{ c.cashier_name || ('User #' + c.cashier_user_no) }}</td>
+              <td class="num">{{ c.invoice_count }}</td>
+              <td class="num">{{ c.net_sales | number: '1.2-2' }}</td>
+              <td class="num">{{ c.average_basket | number: '1.2-2' }}</td>
+              <td class="num" [class.is-loss]="c.variance_total < 0">
+                {{ c.variance_total | number: '1.2-2' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="rpt__empty">No till sales in this period</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if (tab() === 'hour') {
+      <p class="rpt__muted">Takings by hour of day — the shape staffing decisions are made from.</p>
+      <ul class="rpt__hours">
+        @for (h of r.by_hour; track h.hour) {
+          <li>
+            <span class="rpt__hour-label">{{ hourLabel(h.hour) }}</span>
+            <span class="rpt__bar"><span class="rpt__bar-fill" [style.width]="barWidth(h.net_sales)"></span></span>
+            <span class="rpt__hour-value">{{ h.net_sales | number: '1.0-0' }}</span>
+            <span class="rpt__hour-count">{{ h.invoice_count }} inv</span>
+          </li>
+        } @empty {
+          <li class="rpt__empty">No sales in this period</li>
+        }
+      </ul>
+    }
+  }
+</div>

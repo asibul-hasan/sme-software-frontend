@@ -8,49 +8,53 @@
 >
   <div formContent class="h-full flex flex-col">
     <!-- Year selector + year-end close -->
-    <div class="form-section-card card flex-shrink-0">
+    <div class="form-section-card card shrink-0">
       <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-md-4">
-            <div class="field-group">
-              <label class="field-label" for="year">Financial Year</label>
-              <ng-select id="year" [(ngModel)]="selectedYearNo" (ngModelChange)="loadPeriods()" [clearable]="false">
-                @for (y of years(); track y.fin_year_no) {
-                  <ng-option [value]="y.fin_year_no">{{ y.fin_year_name }}{{ y.is_closed === 1 ? ' (Closed)' : '' }}</ng-option>
-                }
-              </ng-select>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="field-group">
-              <label class="field-label" for="re">Retained-Earnings Account</label>
-              <ng-select id="re" [(ngModel)]="retainedEarningsAccountNo" [clearable]="true" [disabled]="yearClosed()" placeholder="For year-end close">
-                @for (a of accounts(); track a.account_no) {
-                  <ng-option [value]="a.account_no">{{ a.account_code }} — {{ a.account_name }}</ng-option>
-                }
-              </ng-select>
-            </div>
-          </div>
-          <div class="col-md-4 d-flex align-items-end">
+        <app-form-section title="Financial Year Selection">
+          <app-form-field label="Financial Year" [span]="4">
+            <ng-select id="year" [(ngModel)]="selectedYearNo" (ngModelChange)="loadPeriods()" [clearable]="false">
+              @for (y of years(); track y.fin_year_no) {
+                <ng-option [value]="y.fin_year_no">{{ y.fin_year_name }}{{ y.is_closed === 1 ? ' (Closed)' : '' }}</ng-option>
+              }
+            </ng-select>
+          </app-form-field>
+
+          <app-form-field label="Retained-Earnings Account" [span]="3">
+            <ng-select id="re" [(ngModel)]="retainedEarningsAccountNo" [clearable]="true" [disabled]="yearClosed()" placeholder="For year-end close">
+              @for (a of accounts(); track a.account_no) {
+                <ng-option [value]="a.account_no">{{ a.account_code }} {{ a.account_name }}</ng-option>
+              }
+            </ng-select>
+          </app-form-field>
+
+          <app-form-field label="Income Summary Account" [span]="3">
+            <ng-select id="is" [(ngModel)]="incomeSummaryAccountNo" [clearable]="true" [disabled]="yearClosed()" placeholder="Income/expense clearing">
+              @for (a of accounts(); track a.account_no) {
+                <ng-option [value]="a.account_no">{{ a.account_code }} {{ a.account_name }}</ng-option>
+              }
+            </ng-select>
+          </app-form-field>
+
+          <div class="col-span-12 md:col-span-2 flex items-end">
             @if (yearClosed()) {
-              <span class="list-item-tag list-item-tag--warning" style="height:42px;display:inline-flex;align-items:center;padding:0 14px">
-                <mat-icon class="me-1" style="font-size:18px;width:18px;height:18px">lock</mat-icon> Year closed & locked
+              <span class="list-item-tag list-item-tag--warning h-[42px] inline-flex items-center px-3 font-semibold">
+                <mat-icon class="mr-1 text-[18px] w-[18px] h-[18px]">lock</mat-icon> Year closed & locked
               </span>
             } @else {
-              <button type="button" class="btn-action btn-save w-100" style="height:42px" [disabled]="isClosing()" (click)="runYearEndClose()">
+              <button type="button" class="btn-action btn-save w-full h-[42px]" [disabled]="isClosing()" (click)="runYearEndClose()">
                 <mat-icon>event_available</mat-icon> Run Year-End Close
               </button>
             }
           </div>
-        </div>
+        </app-form-section>
       </div>
     </div>
 
     <!-- Periods -->
-    <div class="form-section-card card fill-card mt-1">
-      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">calendar_month</mat-icon> Financial Periods</h4></div>
-      <div class="card-body p-0">
-        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+    <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+      <div class="card-header"><h4 class="card-header__title mb-0 font-bold"><mat-icon class="mr-2 align-middle">calendar_month</mat-icon> Financial Periods</h4></div>
+      <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+        <app-erp-grid [config]="gridConfig" [data]="periods()" />
       </div>
     </div>
   </div>

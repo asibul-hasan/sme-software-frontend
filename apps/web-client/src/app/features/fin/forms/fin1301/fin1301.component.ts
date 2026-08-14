@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1301DataService, TrialBalanceRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -15,7 +15,7 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1301',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1301DataService],
   templateUrl: './fin1301.component.html',
   styles: [`
@@ -37,18 +37,18 @@ export class Fin1301Component implements OnInit {
   totalCredit = computed(() => this.rows().reduce((s, r) => s + (Number(r.credit) || 0), 0));
   balanced    = computed(() => Math.abs(this.totalDebit() - this.totalCredit()) < 0.005);
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Code',    field: 'account_code', sort: true, cellType: 'text', width: '140px', pin: 'left' },
-    { title: 'Account', field: 'account_name', sort: true, cellType: 'text' },
-    { title: 'Debit',   field: 'debit',  cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Credit',  field: 'credit', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: true, pagination: true, defaultPageSize: 25, dense: true, striped: true,
-    showActions: false, showColumnToggle: false, showExport: true,
-    exportFormats: ['excel', 'pdf', 'csv', 'print'], showTitle: false, maxHeight: '100%',
+  readonly gridConfig: GridConfig<TrialBalanceRow> = {
+    gridKey: 'FIN_1301_TRIAL_BALANCE_GRID',
+    showPagination: true,
+    pageSize: 25,
+    toolbar: { showSearch: true, showExport: true },
+    columns: [
+      GridColumns.text('account_code', 'Code').width(140).build(),
+      GridColumns.text('account_name', 'Account').flex(1).build(),
+      GridColumns.decimal('debit', 'Debit').sum().build(),
+      GridColumns.decimal('credit', 'Credit').sum().build(),
+    ]
   };
-  readonly tableData = computed(() => this.rows() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1301'); this.load(); });

@@ -1,1 +1,10 @@
-<p>loader works!</p>
+@if (loader.isLoading()) {
+  <div
+    class="loader-overlay fixed inset-0 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px]"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading"
+  >
+    <div class="loader-spinner h-16 w-16 rounded-full border-[6px] border-white/25 border-t-white"></div>
+  </div>
+}

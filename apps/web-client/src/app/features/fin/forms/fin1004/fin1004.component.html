@@ -13,82 +13,70 @@
   </button>
 
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
+    <div class="form-section-card card shrink-0">
       <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-md-2">
-            <div class="field-group">
-              <label class="field-label" for="vdate">Voucher Date <span class="text-danger">*</span></label>
-              <app-date-picker [(ngModel)]="voucherDate" placeholder="Select date" />
-            </div>
-          </div>
+        <app-form-section title="Opening Setup">
+          <app-form-field label="Voucher Date" [required]="true" [span]="2">
+            <app-date-picker [(ngModel)]="voucherDate" placeholder="Select date" />
+          </app-form-field>
 
-          <div class="col-md-3">
-            <div class="field-group">
-              <label class="field-label" for="currency">Currency <span class="text-danger">*</span></label>
-              <ng-select
-                id="currency"
-                [(ngModel)]="currencyNo"
-                [clearable]="false"
-                (change)="onCurrencyChange($event)"
-                placeholder="Currency"
-              >
-                @for (c of currencies(); track c.currency_no) {
-                  <ng-option [value]="c.currency_no">{{ currencyLabel(c) }}</ng-option>
-                }
-              </ng-select>
-            </div>
-          </div>
+          <app-form-field label="Currency" [required]="true" [span]="3">
+            <ng-select
+              id="currency"
+              [(ngModel)]="currencyNo"
+              [clearable]="false"
+              (change)="onCurrencyChange($event)"
+              placeholder="Currency"
+            >
+              @for (c of currencies(); track c.currency_no) {
+                <ng-option [value]="c.currency_no">{{ currencyLabel(c) }}</ng-option>
+              }
+            </ng-select>
+          </app-form-field>
 
-          <div class="col-md-2">
-            <div class="field-group">
-              <label class="field-label" for="rate">Exchange Rate <span class="text-danger">*</span></label>
-              <input
-                type="number"
-                id="rate"
-                class="form-control text-end"
-                min="0"
-                step="0.000001"
-                [(ngModel)]="exchangeRate"
-                (ngModelChange)="recalculateLines()"
-              />
-            </div>
-          </div>
+          <app-form-field label="Exchange Rate" [required]="true" [span]="2">
+            <input
+              type="number"
+              id="rate"
+              class="form-control text-end"
+              min="0"
+              step="0.000001"
+              [(ngModel)]="exchangeRate"
+              (ngModelChange)="recalculateLines()"
+            />
+          </app-form-field>
 
-          <div class="col-md-5">
-            <div class="field-group">
-              <label class="field-label" for="narr">Narration</label>
-              <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Opening balances" />
-            </div>
-          </div>
-        </div>
+          <app-form-field label="Narration" [span]="5">
+            <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Opening balances" />
+          </app-form-field>
+        </app-form-section>
       </div>
     </div>
 
-    <div class="form-section-card card fill-card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
-      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-        <h4 class="card-header__title mb-0 fw-bold">
-          <mat-icon class="me-2 align-middle">list_alt</mat-icon>
+    <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+      <div class="card-header flex items-center gap-2 flex-wrap">
+        <h4 class="card-header__title mb-0 font-bold">
+          <mat-icon class="mr-2 align-middle">list_alt</mat-icon>
           Opening Lines
         </h4>
-        <button type="button" class="btn-action btn-new btn-row-add ms-2" uiTooltip="Add Row" (click)="addLine()">
+        <button type="button" class="btn-action btn-new btn-row-add ml-2" uiTooltip="Add Row" (click)="addLine()">
           <mat-icon>add</mat-icon>
         </button>
       </div>
 
-      <div class="card-body p-0" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
-        <app-common-table [columns]="lineColumns()" [data]="lineData()" [config]="lineConfig" />
+      <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+        <app-erp-grid [config]="gridConfig" [data]="lines()" [selectedId]="selectedLineId()" (rowChange)="onRowChange($event)" (rowRemove)="onRowRemove($event)" (addRow)="addLine()" />
       </div>
 
-      <div class="px-3 py-2 d-flex align-items-center gap-3 flex-shrink-0 opening-balance-difference-bar" style="border-top:1px solid var(--border-color);background:var(--table-header-bg, var(--bg-secondary));min-height:42px">
+      <div class="px-3 py-2 flex items-center gap-3 shrink-0 opening-balance-difference-bar border-t border-[var(--border-color)] bg-[var(--table-header-bg,var(--bg-secondary))] min-h-[42px]">
         @if (!isBalanced() && validLines().length > 0) {
-          <div class="d-flex align-items-center gap-2" style="color:var(--danger)">
+          <div class="flex items-center gap-2 text-danger">
             <mat-icon style="font-size:18px;width:18px;height:18px">error</mat-icon>
-            <span class="fw-semibold">Total debit and total credit must be equal before posting.</span>
+            <span class="font-semibold">Total debit and total credit must be equal before posting.</span>
           </div>
         }
-        <div class="ms-auto d-flex align-items-center gap-3">
-          <span class="fw-bold" style="font-size:12px;color:var(--text-secondary)">Difference</span>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="font-bold text-xs text-[var(--text-secondary)]">Difference</span>
           <strong [class.text-success]="isBalanced()" [class.text-danger]="!isBalanced()" style="min-width:130px;text-align:right">
             {{ absoluteBaseDifference() | number: '1.2-2' }} {{ baseCurrencyCode() }}
           </strong>

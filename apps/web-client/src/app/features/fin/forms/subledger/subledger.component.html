@@ -1,0 +1,88 @@
+<app-page-form-layout
+  [title]="title"
+  [subtitle]="subtitle"
+  [icon]="'account_balance'"
+  [hasSidebar]="false"
+  [showSave]="false" [showNew]="false" [showDelete]="false"
+  [isLoading]="isLoading()"
+>
+  <div formContent class="h-full flex flex-col">
+
+    <!-- ── Controls + the reconciliation itself ───────────────────────────── -->
+    <div class="form-section-card card shrink-0">
+      <div class="card-body">
+        <div class="flex items-end gap-3 flex-wrap">
+          <div class="field-group" style="min-width: 180px">
+            <label class="field-label" for="asOf">As of Date</label>
+            <app-date-picker [(ngModel)]="asOf" (ngModelChange)="load()" placeholder="Select date" />
+          </div>
+
+          <div class="ml-auto flex items-center gap-4 flex-wrap">
+            <div class="text-end">
+              <span class="field-label mb-0 block">Sub-ledger</span>
+              <div class="font-bold">{{ subLedgerTotal() | number: '1.2-2' }}</div>
+            </div>
+            <div class="text-end">
+              <span class="field-label mb-0 block">GL control</span>
+              <div class="font-bold">{{ glControlTotal() | number: '1.2-2' }}</div>
+            </div>
+            <div class="text-end">
+              <span class="field-label mb-0 block">Difference</span>
+              <div class="font-bold" [class.text-danger]="!isReconciled()" [class.text-success]="isReconciled()">
+                {{ difference() | number: '1.2-2' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verdict. The number above is only meaningful with the reason beside it. -->
+        @if (noControl()) {
+          <div class="mt-3 p-2 rounded border border-warning bg-warning-subtle text-sm">
+            <mat-icon class="align-middle mr-1 text-warning">warning</mat-icon>
+            No account is flagged as the {{ isAr ? 'receivable' : 'payable' }} control account, so the
+            general ledger has nothing to compare against. Set <strong>Control Type</strong> on the
+            control account in FIN_1001 Chart of Accounts.
+          </div>
+        } @else if (isReconciled()) {
+          <div class="mt-3 p-2 rounded border border-success bg-success-subtle text-sm">
+            <mat-icon class="align-middle mr-1 text-success">check_circle</mat-icon>
+            Sub-ledger and general ledger agree.
+          </div>
+        } @else {
+          <div class="mt-3 p-2 rounded border border-danger bg-danger-subtle text-sm">
+            <mat-icon class="align-middle mr-1 text-danger">error</mat-icon>
+            Out by <strong>{{ difference() | number: '1.2-2' }}</strong>
+            across {{ mismatchCount() }} {{ mismatchCount() === 1 ? 'party' : 'parties' }}.
+            @if (unattributed() !== 0) {
+              <span>
+                <strong>{{ unattributed() | number: '1.2-2' }}</strong> of the control account names no
+                {{ partyLabel.toLowerCase() }} — usually a journal posted straight to the control
+                account, which no party statement can ever show.
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Per-party breakdown ─────────────────────────────────────────────── -->
+    <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+      <div class="card-header flex items-center justify-between">
+        <h4 class="card-header__title mb-0 font-bold">
+          <mat-icon class="mr-2 align-middle">account_balance</mat-icon>
+          Balances by {{ partyLabel }}
+        </h4>
+        <span class="field-label mb-0">Click a row for the statement</span>
+      </div>
+      <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+        <app-erp-grid
+          [config]="gridConfig"
+          [data]="rows()"
+          height="100%"
+          (rowClick)="openStatement($event)"
+        />
+      </div>
+    </div>
+
+  </div>
+</app-page-form-layout>

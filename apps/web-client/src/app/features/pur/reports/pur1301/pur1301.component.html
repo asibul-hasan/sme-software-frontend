@@ -1,0 +1,127 @@
+<div class="prpt">
+
+  <header class="prpt__head">
+    <div>
+      <h1>Supplier Aging &amp; Spend</h1>
+      <p class="prpt__sub">Posted purchase bills only. Spend is measured before tax.</p>
+    </div>
+    <button type="button" class="prpt__btn no-print" (click)="print()">Print</button>
+  </header>
+
+  <nav class="prpt__tabs no-print">
+    <button type="button" [class.is-active]="tab() === 'aging'" (click)="switchTo('aging')">Aging</button>
+    <button type="button" [class.is-active]="tab() === 'spend'" (click)="switchTo('spend')">Spend</button>
+  </nav>
+
+  <!-- ── aging ───────────────────────────────────────────────────────────── -->
+  @if (tab() === 'aging') {
+    <div class="prpt__controls no-print">
+      <label>As of <input type="date" class="prpt__input" [(ngModel)]="asOf" /></label>
+      <button type="button" class="prpt__btn prpt__btn--primary" (click)="loadAging()">Run</button>
+    </div>
+
+    @if (isLoading()) {
+      <p class="prpt__muted">Loading…</p>
+    } @else if (aging(); as a) {
+      <div class="prpt__tile">
+        <span>Total owed</span>
+        <strong>{{ a.total_due | number: '1.2-2' }}</strong>
+      </div>
+
+      <table class="prpt__table">
+        <thead>
+          <tr>
+            <th>Supplier</th>
+            <th class="num">Bills</th>
+            <th class="num">Not due</th>
+            <th class="num">1–30</th>
+            <th class="num">31–60</th>
+            <th class="num">61–90</th>
+            <th class="num">90+</th>
+            <th class="num">Total</th>
+            <th class="num">Oldest</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of a.rows; track r.supplier_no) {
+            <tr [class.is-critical]="r.oldest_days > 90">
+              <td>{{ r.supplier_name }}</td>
+              <td class="num">{{ r.invoice_count }}</td>
+              <td class="num">{{ r.current_amount | number: '1.2-2' }}</td>
+              <td class="num">{{ r.days_1_30 | number: '1.2-2' }}</td>
+              <td class="num">{{ r.days_31_60 | number: '1.2-2' }}</td>
+              <td class="num">{{ r.days_61_90 | number: '1.2-2' }}</td>
+              <td class="num is-old">{{ r.days_over_90 | number: '1.2-2' }}</td>
+              <td class="num"><strong>{{ r.total_due | number: '1.2-2' }}</strong></td>
+              <td class="num">{{ r.oldest_days > 0 ? r.oldest_days + 'd' : '—' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="prpt__empty">Nothing outstanding</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+
+  <!-- ── spend ───────────────────────────────────────────────────────────── -->
+  @if (tab() === 'spend') {
+    <div class="prpt__controls no-print">
+      <label>From <input type="date" class="prpt__input" [(ngModel)]="fromDate" [max]="toDate" /></label>
+      <label>To <input type="date" class="prpt__input" [(ngModel)]="toDate" [min]="fromDate" /></label>
+      <button type="button" class="prpt__btn prpt__btn--primary" (click)="loadSpend()">Run</button>
+    </div>
+
+    @if (isLoading()) {
+      <p class="prpt__muted">Loading…</p>
+    } @else if (spend(); as s) {
+      <div class="prpt__tile">
+        <span>Total spend</span>
+        <strong>{{ s.total_spend | number: '1.2-2' }}</strong>
+      </div>
+
+      <div class="prpt__split">
+        <section>
+          <h3>By supplier</h3>
+          <table class="prpt__table">
+            <thead>
+              <tr><th>Supplier</th><th class="num">Bills</th><th class="num">Spend</th><th class="num">Share</th></tr>
+            </thead>
+            <tbody>
+              @for (r of s.by_supplier; track r.key_no) {
+                <tr>
+                  <td>{{ r.label }}</td>
+                  <td class="num">{{ r.invoice_count }}</td>
+                  <td class="num">{{ r.spend | number: '1.2-2' }}</td>
+                  <td class="num">{{ r.share_pct | number: '1.1-1' }}%</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="prpt__empty">No purchases in this period</td></tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h3>By category</h3>
+          <table class="prpt__table">
+            <thead>
+              <tr><th>Category</th><th class="num">Lines</th><th class="num">Spend</th><th class="num">Share</th></tr>
+            </thead>
+            <tbody>
+              @for (r of s.by_category; track r.key_no) {
+                <tr>
+                  <td>{{ r.label }}</td>
+                  <td class="num">{{ r.invoice_count }}</td>
+                  <td class="num">{{ r.spend | number: '1.2-2' }}</td>
+                  <td class="num">{{ r.share_pct | number: '1.1-1' }}%</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="prpt__empty">No purchases in this period</td></tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      </div>
+    }
+  }
+</div>

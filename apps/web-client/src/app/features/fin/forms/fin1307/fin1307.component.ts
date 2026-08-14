@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { Fin1307DataService, Aging, AgingRow } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -16,21 +16,16 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1307',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1307DataService],
   templateUrl: './fin1307.component.html',
-  styles: [`
-    :host { display: block; height: 100%; }
-    .fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  `],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1307Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private data   = inject(Fin1307DataService);
   private toastr = inject(ToastrService);
 
-  // AR (Customer) / AP (Supplier) only
   readonly partyTypeOptions = finConstants.partyTypes.filter((o) => o.value === 1 || o.value === 2);
 
   aging     = signal<Aging | null>(null);
@@ -38,27 +33,33 @@ export class Fin1307Component implements OnInit {
   partyType = 1;
   asOf      = new Date().toISOString().split('T')[0];
 
-  rows         = computed<AgingRow[]>(() => this.aging()?.rows ?? []);
-  totalCurrent = computed(() => Number(this.aging()?.total_current ?? 0));
-  totalB1      = computed(() => Number(this.aging()?.total_b1 ?? 0));
-  totalB2      = computed(() => Number(this.aging()?.total_b2 ?? 0));
-  totalB3      = computed(() => Number(this.aging()?.total_b3 ?? 0));
-  totalOut     = computed(() => Number(this.aging()?.total_outstanding ?? 0));
+  rows = computed<AgingRow[]>(() => this.aging()?.rows ?? []);
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Party #',  field: 'party_no', sort: true, cellType: 'text', width: '120px', pin: 'left' },
-    { title: '0–30',     field: 'current', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: '31–60',    field: 'bucket1', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: '61–90',    field: 'bucket2', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: '90+',      field: 'bucket3', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Outstanding', field: 'outstanding', sort: true, cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly config: Partial<TableConfig> = {
-    showSearch: true, pagination: true, defaultPageSize: 25, dense: true, striped: true,
-    showActions: false, showColumnToggle: false, showExport: true,
-    exportFormats: ['excel', 'pdf', 'csv', 'print'], showTitle: false, maxHeight: '100%',
+  // The backend sends rows plus a grand total, not per-bucket totals. Summing the rows here keeps
+  // the header tiles and the grid's own footer totals derived from one set of numbers.
+  private sum = (pick: (r: AgingRow) => number) =>
+    this.rows().reduce((acc, r) => acc + Number(pick(r) ?? 0), 0);
+
+  totalCurrent = computed(() => this.sum((r) => r.current_amount));
+  totalB1      = computed(() => this.sum((r) => r.days_31_60));
+  totalB2      = computed(() => this.sum((r) => r.days_61_90));
+  totalB3      = computed(() => this.sum((r) => r.days_over_90));
+  totalOut     = computed(() => Number(this.aging()?.grand_total ?? 0));
+
+  readonly gridConfig: GridConfig<AgingRow> = {
+    gridKey: 'FIN_1307_AGING_GRID',
+    showPagination: true,
+    pageSize: 25,
+    toolbar: { showSearch: true, showExport: true },
+    columns: [
+      GridColumns.text<AgingRow>('party_name', 'Party').flex(1).minWidth(180).build(),
+      GridColumns.decimal<AgingRow>('current_amount', '0–30').sum().build(),
+      GridColumns.decimal<AgingRow>('days_31_60', '31–60').sum().build(),
+      GridColumns.decimal<AgingRow>('days_61_90', '61–90').sum().build(),
+      GridColumns.decimal<AgingRow>('days_over_90', '90+').sum().build(),
+      GridColumns.decimal<AgingRow>('total_outstanding', 'Outstanding').sum().build(),
+    ]
   };
-  readonly tableData = computed(() => this.rows() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1307'); this.load(); });

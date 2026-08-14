@@ -10,12 +10,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import {
-  CommonTableComponent,
-  ColumnDef,
-  SelectOption,
-  TableConfig,
-} from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns, GridLookupOption } from '../../../../shared/ag-grid';
+import { sysConstants } from '../../../sys/constants/sys.constants';
 import {
   Fin1101ModelService,
   Voucher,
@@ -25,7 +21,7 @@ import { Fin1101DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { AuthContextService } from '../../../../core/services/auth-context.service';
-import { finConstants } from '../../constants/fin.constants';
+import { finConstants, SelectOption } from '../../constants/fin.constants';
 import { debitCreditOptions } from '../../../../core/constants/common-options.constants';
 
 import { PdfTemplateService } from '../../../../shared/pdf-templates';
@@ -47,7 +43,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
     FormsModule,
     SharedModule,
     PageFormLayoutComponent,
-    CommonTableComponent,
+    ErpGridComponent,
     AppDatePickerComponent,
   ],
   providers: [Fin1101ModelService, Fin1101DataService],
@@ -67,7 +63,6 @@ export class Fin1101Component implements OnInit {
   private alertService = inject(AlertService);
   private pdfService = inject(PdfTemplateService);
   private authContext = inject(AuthContextService);
-  readonly lineTable = viewChild(CommonTableComponent);
 
   readonly statusOptions = finConstants.voucherStatuses;
   readonly drCrOptions: SelectOption[] = debitCreditOptions.map((o) => ({
@@ -82,99 +77,59 @@ export class Fin1101Component implements OnInit {
     })),
   );
 
-  readonly lineColumns = computed<ColumnDef[]>(() => [
-    {
-      title: 'Type',
-      field: 'dr_cr',
-      cellType: 'select',
-      editable: this.editable,
-      options: this.drCrOptions,
-      width: '100px',
-      onChange: (_value, row) => this.updateLine(row),
+  readonly gridConfig: GridConfig<VoucherLine> = {
+    gridKey: 'FIN_1101_VOUCHER_LINE_GRID',
+    rowIdField: '__uid',
+    selectionMode: 'single',
+    autoSelectFirstRow: true,
+    externalRowState: true,
+    showPagination: false,
+    canAdd: () => this.editable && this.permissionService.canInsert(),
+    canEdit: () => this.editable && this.permissionService.canUpdate(),
+    canDeleteRow: () => this.editable && this.permissionService.canDelete(),
+    toolbar: {
+      title: 'Voucher Lines',
+      showAdd: false,
+      showSearch: true,
+      showExport: true,
+      showColumnChooser: true,
+      searchPlaceholder: 'Search voucher lines...',
     },
-    {
-      title: 'Account',
-      field: 'account_no',
-      cellType: 'select',
-      editable: this.editable,
-      options: () => this.accountOptions(),
-      minWidth: '260px',
-      footerLabel: 'Total',
-      onChange: (_value, row) => this.updateLine(row),
-    },
-    {
-      title: 'Narration',
-      field: 'line_narration',
-      cellType: 'text',
-      editable: this.editable,
-      minWidth: '220px',
-      onChange: (_value, row) => this.updateLine(row),
-    },
-    {
-      title: `Debit (${this.model.currencySymbol()})`,
-      field: 'debit_fc',
-      cellType: 'decimal',
-      editable: (row) => this.editable && row['dr_cr'] === 'dr',
-      align: 'right',
-      precision: this.model.selectedCurrency()?.decimal_places ?? 2,
-      bottomTotal: true,
-      onChange: (_value, row) => this.updateLine(row),
-    },
-    {
-      title: `Credit (${this.model.currencySymbol()})`,
-      field: 'credit_fc',
-      cellType: 'decimal',
-      editable: (row) => this.editable && row['dr_cr'] === 'cr',
-      align: 'right',
-      precision: this.model.selectedCurrency()?.decimal_places ?? 2,
-      bottomTotal: true,
-      onChange: (_value, row) => this.updateLine(row),
-    },
-    {
-      title: 'Debit Base',
-      field: 'debit',
-      cellType: 'decimal',
-      align: 'right',
-      precision: this.model.baseCurrency()?.decimal_places ?? 2,
-      bottomTotal: true,
-      minWidth: '130px',
-    },
-    {
-      title: 'Credit Base',
-      field: 'credit',
-      cellType: 'decimal',
-      align: 'right',
-      precision: this.model.baseCurrency()?.decimal_places ?? 2,
-      bottomTotal: true,
-      minWidth: '130px',
-    },
-  ]);
-  readonly lineConfig: Partial<TableConfig> = {
-    showSearch: true,
-    searchPlaceholder: 'Search voucher lines...',
-    pagination: false,
-    dense: true,
-    striped: true,
-    showColumnToggle: true,
-    showExport: true,
-    showTitle: false,
-    minHeight: '20vh',
-    maxHeight: '100%',
-    showActions: true,
-    actions: [
-      {
-        type: 'delete',
-        icon: 'delete',
-        tooltip: 'Remove',
-        variant: 'danger',
-        disabled: () => !this.editable,
-        onClick: (row) => this.model.removeLine(row['__uid'] as number),
-      },
+    columns: [
+      GridColumns.select<VoucherLine>('dr_cr', 'Type', this.drCrOptions)
+        .width(100)
+        .build(),
+      GridColumns.lookup<VoucherLine>('account_no', 'Account', () => this.accountOptions())
+        .flex(1)
+        .minWidth(260)
+        .footer('Total')
+        .build(),
+      GridColumns.select<VoucherLine>('tax_type', 'VAT/Tax', sysConstants.taxTypes as GridLookupOption[])
+        .width(150)
+        .build(),
+      GridColumns.text<VoucherLine>('line_narration', 'Narration')
+        .flex(1)
+        .minWidth(220)
+        .build(),
+      GridColumns.decimal<VoucherLine>('debit_fc', `Debit (${this.model.currencySymbol()})`)
+        .editable((row) => this.editable && row['dr_cr'] === 'dr')
+        .sum()
+        .build(),
+      GridColumns.decimal<VoucherLine>('credit_fc', `Credit (${this.model.currencySymbol()})`)
+        .editable((row) => this.editable && row['dr_cr'] === 'cr')
+        .sum()
+        .build(),
+      GridColumns.decimal<VoucherLine>('debit', 'Debit Base')
+        .sum()
+        .width(130)
+        .build(),
+      GridColumns.decimal<VoucherLine>('credit', 'Credit Base')
+        .sum()
+        .width(130)
+        .build(),
+      GridColumns.action<VoucherLine>().build(),
     ],
   };
-  readonly lineData = computed(
-    () => this.model.lines() as unknown as Record<string, unknown>[],
-  );
 
   ngOnInit(): void {
     this.model.initForm();
@@ -222,15 +177,13 @@ export class Fin1101Component implements OnInit {
   }
 
   addLine(): void {
-    const uid = this.model.addBlankLine();
-    if (uid == null) return;
-    setTimeout(() => {
-      const index = this.model.lines().findIndex((line) => line.__uid === uid);
-      const line = this.model.lines()[index];
-      const table = this.lineTable();
-      if (index >= 0 && line && table)
-        table.startRowEdit(line as unknown as Record<string, unknown>, index);
-    });
+    this.model.addBlankLine();
+  }
+  onRowChange(row: VoucherLine): void {
+    this.updateLine(row as any);
+  }
+  onRowRemove(row: VoucherLine): void {
+    this.model.removeLine(row.__uid);
   }
   updateLine(row: Record<string, unknown>): void {
     this.model.updateLine(row as unknown as VoucherLine);

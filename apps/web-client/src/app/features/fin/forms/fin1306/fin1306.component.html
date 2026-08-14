@@ -7,9 +7,9 @@
   [isLoading]="isLoading()"
 >
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
+    <div class="form-section-card card shrink-0">
       <div class="card-body">
-        <div class="d-flex align-items-end gap-3 flex-wrap">
+        <div class="flex items-end gap-3 flex-wrap">
           <div class="field-group" style="min-width: 170px">
             <label class="field-label" for="from">From Date</label>
             <app-date-picker [(ngModel)]="from" (ngModelChange)="load()" placeholder="From date" />
@@ -18,21 +18,21 @@
             <label class="field-label" for="to">To Date</label>
             <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" />
           </div>
-          <div class="ms-auto d-flex align-items-center gap-4 flex-wrap">
-            <div class="text-end"><span class="field-label mb-0">Opening Cash</span><div class="fw-bold">{{ openingCash() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0">Receipts</span><div class="fw-bold text-success">{{ totalReceipts() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0">Payments</span><div class="fw-bold text-danger">{{ totalPayments() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0">Net</span><div class="fw-bold" [class.text-success]="netCashFlow() >= 0" [class.text-danger]="netCashFlow() < 0">{{ netCashFlow() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0">Closing Cash</span><div class="fw-bold">{{ closingCash() | number: '1.2-2' }}</div></div>
+          <div class="ml-auto flex items-center gap-4 flex-wrap">
+            <div class="text-end"><span class="field-label mb-0 block">Opening Cash</span><div class="font-bold">{{ openingCash() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Receipts</span><div class="font-bold text-success">{{ totalReceipts() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Payments</span><div class="font-bold text-danger">{{ totalPayments() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Net</span><div class="font-bold" [class.text-success]="netCashFlow() >= 0" [class.text-danger]="netCashFlow() < 0">{{ netCashFlow() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Closing Cash</span><div class="font-bold">{{ closingCash() | number: '1.2-2' }}</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="form-section-card card fill-card mt-1">
-      <div class="card-header"><h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">account_balance_wallet</mat-icon> Cash & Bank Accounts</h4></div>
-      <div class="card-body p-0">
-        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+    <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+      <div class="card-header"><h4 class="card-header__title mb-0 font-bold"><mat-icon class="mr-2 align-middle">account_balance_wallet</mat-icon> Cash & Bank Accounts</h4></div>
+      <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+        <app-erp-grid [config]="gridConfig" [data]="rows()" />
       </div>
     </div>
   </div>

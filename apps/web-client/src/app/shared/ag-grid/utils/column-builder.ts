@@ -105,6 +105,11 @@ export class ColumnBuilder<T = any> {
     return this;
   }
 
+  cellRenderer(fn: (params: any) => HTMLElement | string): this {
+    this.config.cellRenderer = fn;
+    return this;
+  }
+
   /** Sum this column into the pinned bottom row (respects the active filter). */
   sum(): this {
     this.config.bottomTotal = true;

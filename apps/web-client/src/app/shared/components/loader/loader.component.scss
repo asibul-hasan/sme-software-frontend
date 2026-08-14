@@ -1,0 +1,15 @@
+/* Overlay z-index is enforced globally in styles.scss (.loader-overlay = 99999)
+   so it sits above MatDialogs (1050) and any hand-rolled overlay. */
+:host {
+  display: contents;
+}
+
+.loader-spinner {
+  animation: loader-spin 0.9s linear infinite;
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

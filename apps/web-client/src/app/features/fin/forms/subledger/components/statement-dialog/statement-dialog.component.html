@@ -1,0 +1,45 @@
+<div class="form-section-card card shadow-lg border-0 m-0 overflow-hidden">
+
+  <div class="modal-header card-header flex justify-between items-center py-2.5 px-4 bg-surface border-bottom">
+    <h4 class="card-header__title mb-0 font-bold flex items-center gap-2 text-content">
+      <mat-icon class="text-primary">receipt_long</mat-icon>
+      {{ dlg?.partyLabel }} Statement — {{ dlg?.partyName }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+  </div>
+
+  <div class="modal-body p-4 bg-body overflow-y-auto" style="max-height: 78vh;">
+
+    <div class="flex items-end gap-3 flex-wrap mb-3">
+      <div class="field-group" style="min-width: 170px">
+        <label class="field-label" for="stmtFrom">From</label>
+        <app-date-picker [(ngModel)]="fromDate" [max]="toDate" (ngModelChange)="load()" placeholder="Start date" />
+      </div>
+      <div class="field-group" style="min-width: 170px">
+        <label class="field-label" for="stmtTo">To</label>
+        <app-date-picker [(ngModel)]="toDate" [min]="fromDate" (ngModelChange)="load()" placeholder="End date" />
+      </div>
+
+      <div class="ml-auto flex items-center gap-4 flex-wrap">
+        <div class="text-end">
+          <span class="field-label mb-0 block">Opening</span>
+          <div class="font-bold">{{ opening() | number: '1.2-2' }}</div>
+        </div>
+        <div class="text-end">
+          <span class="field-label mb-0 block">Closing</span>
+          <div class="font-bold">{{ closing() | number: '1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <p class="field-label">Loading…</p>
+    } @else {
+      <app-erp-grid [config]="gridConfig" [data]="rows()" />
+    }
+  </div>
+
+  <div class="modal-footer py-2.5 px-4 border-top bg-surface flex justify-end">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="close()">Close</button>
+  </div>
+</div>

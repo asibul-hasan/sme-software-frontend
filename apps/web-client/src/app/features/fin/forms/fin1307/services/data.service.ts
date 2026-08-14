@@ -3,25 +3,22 @@ import { Observable } from 'rxjs';
 import { FinDataService } from '../../../services/data.service';
 import { ApiResponse } from '../../../../../core/models/response.model';
 
+/** Field names mirror `Fin1307AgingRowDto` exactly — the backend DTO is the contract. */
 export interface AgingRow {
-  party_type: number;
   party_no: number;
-  current: number;
-  bucket1: number;
-  bucket2: number;
-  bucket3: number;
-  outstanding: number;
+  party_name?: string | null;
+  current_amount: number;
+  days_31_60: number;
+  days_61_90: number;
+  days_over_90: number;
+  total_outstanding: number;
 }
 
 export interface Aging {
-  as_of: string;
+  as_of_date: string;
   party_type: number;
   rows: AgingRow[];
-  total_current: number;
-  total_b1: number;
-  total_b2: number;
-  total_b3: number;
-  total_outstanding: number;
+  grand_total: number;
 }
 
 /** Form-level HTTP service for FIN_1307 – AR/AP Aging. */

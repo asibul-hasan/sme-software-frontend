@@ -12,21 +12,202 @@ Broader architecture & business docs live in `../aidly-business-doc/frontend/` (
 
 ---
 
+## Tailwind Migration Rule (CRITICAL)
+
+This project is created using Tailwind CSS. Whenever you work on any form, first migrate the form's Bootstrap classes to Tailwind CSS before adding new styling or making layout changes.
+
+- Prefer Tailwind utility classes over Bootstrap classes.
+- If a form still uses Bootstrap styling, update that form to Tailwind as part of the current task.
+- Do not introduce new Bootstrap-based styling in forms.
+
+---
+
+## Master Form Action Rule (CRITICAL)
+
+For any master form action such as save, delete, or reset (excluding grid-based forms), perform the action only after validation is checked and use the shared AlertService confirmation flow for destructive or confirmatory actions.
+
+- Use `AlertService` for confirmation prompts on master save/delete actions.
+- Keep the Save, New, Delete, and Reset buttons visible on master forms.
+- If a button is not currently applicable, disable it instead of hiding it.
+- Do not hide action buttons just because the form is empty or validation is incomplete.
+
+## Action Result Handling Rule (CRITICAL)
+
+For every save/delete/action API call, handle success and error explicitly:
+
+- Show a toaster message for every action result.
+- For success, use the backend message when available, otherwise fall back to a meaningful hardcoded message such as `result.body.message || 'Save successful'`.
+- For error, show the error message from the response and do not call any success-side master refresh logic.
+- Backend success status codes are `200`, `201`, `202`, etc. Treat those as success and proceed with the success flow.
+- After a successful save or delete, always reselect the relevant node/item in the master list so the selected row stays valid and visible.
+- For grid data actions, after a successful save/delete, also select the affected row when appropriate so the selection remains true and visible.
+- On error, do not trigger any master refresh, selection change, or success callback flow.
+
+```typescript
+// ✅ CORRECT
+const success = response.status === 200;
+if (success) {
+  this.toaster.success(result.body?.message || 'Save successful');
+  this.loadItems(selectedNo);
+} else {
+  this.toaster.error(result.body?.message || 'Action failed');
+}
+```
+
+---
+
+## Alerts, Toasts & Loader (CRITICAL)
+
+This app has ONE way to do each: `AlertService` for blocking confirmations/alerts,
+`ToastrService` (ngx-toastr) for non-blocking result banners, and `LoaderService`
+(auto-driven by `loaderInterceptor`) for the full-screen spinner. Do NOT hand-roll
+modal overlays, `window.confirm()`, `alert()`, or per-form spinner markup.
+
+**Stack — all Tailwind, no Bootstrap:**
+
+- `AlertService` → opens the shared **`ConfirmDialogComponent`** (Tailwind card) via
+  MatDialog. Returns `Observable<boolean>` (`true` = confirmed / OK, `false` = cancelled).
+- `LoaderComponent` → rendered ONCE in `app.component.html`, bound to
+  `LoaderService.isLoading()` (signal). Every HTTP call drives it through
+  `loaderInterceptor` unless the request opts out with `SKIP_LOADER`.
+- `ToastrService` → provided in `app.config.ts` (`positionClass: 'toast-bottom-right'`,
+  `preventDuplicates: true`). Every save/delete/action result MUST fire a toast (see
+  "Action Result Handling Rule" above).
+
+**Z-index hierarchy (single source of truth in `styles.scss` — do not override
+in a form):**
+
+| Layer                                    | z-index         |
+| ---------------------------------------- | --------------- |
+| MatDialog / CDK overlay (default)        | ~1050           |
+| Alert dialog (`.alert-dialog-panel`)     | 99999           |
+| Full-screen loader (`.loader-overlay`)   | 99999           |
+| Toasts (`.toast-container`)              | 999999999       |
+
+Toasts sit above **everything** and the container is `pointer-events: none` so
+they never block clicks on the underlying UI (individual toasts re-enable pointer
+events for their own buttons). Alert dialogs are boosted above other open
+MatDialogs so an alert opened from within a modal still floats on top.
+
+### `AlertService` — confirmation & alerts
+
+Import from `core/services/alert.service`. All methods return `Observable<boolean>`.
+
+```ts
+import { AlertService } from '@app/core/services/alert.service';
+private alertService = inject(AlertService);
+
+// Confirmation (Yes/No)
+this.alertService.confirm('Submit this voucher for approval?')
+  .subscribe(ok => ok && this.submit());
+
+// Destructive confirmation — red icon + red confirm button + "Delete" label
+this.alertService.deleteConfirm()
+  .subscribe(ok => ok && this.remove());
+
+// Single-button alerts (OK-only)
+this.alertService.success('Invoice saved successfully.');
+this.alertService.danger('Save failed — please check the highlighted fields.');
+this.alertService.warning('Selected period is closed.');
+this.alertService.info('This action requires an active fiscal year.', { title: 'Heads up' });
+
+// Full escape hatch — pass a complete ConfirmDialogData
+this.alertService.create({
+  title: 'Post to ledger',
+  message: 'This will finalise the voucher and cannot be undone.',
+  type: 'warn',
+  confirmText: 'Post',
+  showCancel: true,
+});
+```
+
+**Rules:**
+
+- **Never** call `window.confirm()`, `alert()`, or open a bespoke modal for a
+  confirmation. Always route through `AlertService`.
+- **Never** hand-roll a `<div class="modal fade show...">` overlay controlled by a
+  boolean signal. For a full custom dialog use `DialogService.open(Component, ...)`
+  (see the Modals & Dialogs section below).
+- `<app-action-button>` already confirms destructive/consequential actions
+  automatically via `AlertService` — do NOT wrap `.confirm()` around a
+  `(run)` handler that came from `<app-action-button kind="delete">`.
+- The dialog is opened with `disableClose: true` — the user must click a button
+  or the top-right close (which resolves to `false`).
+
+### `LoaderService` — global spinner
+
+Import from `core/services/loader.service`. It exposes a signal, not an observable.
+
+```ts
+import { LoaderService } from '@app/core/services/loader.service';
+private loader = inject(LoaderService);
+
+// Manual (rare — only when you're not going through HttpClient)
+this.loader.show();
+try { await heavyWork(); } finally { this.loader.hide(); }
+```
+
+**Rules:**
+
+- The `loaderInterceptor` calls `show/hide` for every HTTP request. Do NOT wrap a
+  normal `this.http.get(...)` in manual `show/hide` — it will double-count and the
+  overlay will linger.
+- To make a request **silent** (background polling, autocomplete, notification
+  bell), opt out with the `SKIP_LOADER` context token:
+
+  ```ts
+  import { HttpContext } from '@angular/common/http';
+  import { SKIP_LOADER } from '@app/core/interceptors/loader.interceptor';
+
+  this.http.get(url, { context: new HttpContext().set(SKIP_LOADER, true) });
+  ```
+
+- `LoaderService.show()` uses reference counting, so overlapping HTTP calls don't
+  flicker the spinner off early. Never reset the counter manually inside a form.
+
+### `ToastrService` — result banners
+
+Injected everywhere as `private toastr = inject(ToastrService)` (some legacy files
+call it `toaster`). Backed by `ngx-toastr`, styled globally.
+
+```ts
+this.toastr.success(res.body?.message || 'Save successful');
+this.toastr.error(err?.error?.message || 'Save failed');
+this.toastr.warning('Nothing to submit.');
+this.toastr.info('Loading latest exchange rates…');
+```
+
+**Rules:**
+
+- Every save/delete/action result MUST fire a toast — success or error (see the
+  Action Result Handling Rule above).
+- Prefer the backend message; fall back to a meaningful hardcoded string.
+- Do NOT use toasts for confirmations — they are non-blocking and can be missed.
+  Use `AlertService.confirm()` when the user must decide before the flow continues.
+- Never override the toast position or z-index in a form; the global config in
+  `app.config.ts` + `styles.scss` is the single source of truth.
+
+**Reference implementations:** any `fin1001/1002/1003` model service shows the
+toast + `AlertService` flow; `LoaderComponent` is wired in `app.component.html`;
+the interceptor lives at `core/interceptors/loader.interceptor.ts`.
+
+---
+
 ## Post-Save Selection Rule (CRITICAL)
 
 After every save in a master-detail form with a sidebar list:
 
-| Action | What to select after reload |
-|--------|----------------------------|
-| **Create new record** | The newly created record — pass its PK (from `res.data`) to the reload method |
-| **Update existing record** | Keep the current selection — pass `selectedXxxNo()` to the reload method |
-| **Delete record** | Clear the form / select nothing — pass `null` |
+| Action                     | What to select after reload                                                   |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| **Create new record**      | The newly created record — pass its PK (from `res.data`) to the reload method |
+| **Update existing record** | Keep the current selection — pass `selectedXxxNo()` to the reload method      |
+| **Delete record**          | Clear the form / select nothing — pass `null`                                 |
 
 ```typescript
 // ✅ CORRECT
 const savedNo = isUpdate
-  ? this.selectedItemNo()           // update → keep selection
-  : res.data?.item_no ?? null;      // create → select new record by PK from response
+  ? this.selectedItemNo() // update → keep selection
+  : (res.data?.item_no ?? null); // create → select new record by PK from response
 this.loadItems(savedNo);
 
 // ❌ WRONG — always selects index 0 (oldest), never the newly created record
@@ -78,7 +259,7 @@ filteredItems = computed(() =>
 filteredItems = computed(() => this.items().filter(...));
 ```
 
-Apply this rule to every `filteredXxx = computed(...)` signal that feeds a sidebar list or a `@for` loop in `sidebarList`.  Backend APIs already return rows ascending by PK; the sort is applied on the frontend computed signal, not in the HTTP call.
+Apply this rule to every `filteredXxx = computed(...)` signal that feeds a sidebar list or a `@for` loop in `sidebarList`. Backend APIs already return rows ascending by PK; the sort is applied on the frontend computed signal, not in the HTTP call.
 
 ---
 
@@ -96,7 +277,8 @@ markup in new/touched forms. Reference implementation: **FIN_1001** (Chart of
 Accounts). Full standard: `../aidly-business-doc/form-design-standard.md`.
 
 ```html
-<app-form-section title="Account" icon="menu_book">        <!-- card + 12-col grid body -->
+<app-form-section title="Account" icon="menu_book">
+  <!-- card + 12-col grid body -->
   <app-form-field label="Account Code" for="account_code" required [span]="3">
     <input id="account_code" formControlName="account_code" class="form-control" />
   </app-form-field>
@@ -141,14 +323,12 @@ pager = makePaginator(this.filteredItems);   // from core/utils/paginator
 ```
 
 ```html
-<div sidebarList>
-  @for (row of model.pager.paged(); track row.id) { … }
-</div>
+<div sidebarList>@for (row of model.pager.paged(); track row.id) { … }</div>
 <app-sidebar-pagination sidebarFooter [pager]="model.pager" />
 ```
 
 **Sort toggle (asc/desc).** The layout shows the sort button by default
-(`showSort=true`), but it only *works* when wired. The standard way: give the
+(`showSort=true`), but it only _works_ when wired. The standard way: give the
 paginator a `sortKey` and bind the pager to the layout — **no per-form
 `sortDirection` signal needed**:
 
@@ -156,6 +336,7 @@ paginator a `sortKey` and bind the pager to the layout — **no per-form
 pager = makePaginator(this.filteredItems, { sortKey: (x) => x.item_no });
 // default direction is 'desc' (newest first); the toggle flips it
 ```
+
 ```html
 <app-page-form-layout … [pager]="model.pager"> … </app-page-form-layout>
 ```
@@ -187,7 +368,7 @@ table wrapper, split-table layout, Bootstrap table, or custom `mat-table`.
 
 **Why two styles exist:** master-detail (browse many records, edit one) and
 data-grid (operate on rows in place) are genuinely different jobs. The mistake is
-*within* an archetype — paginating one sidebar but not another, or hand-rolling a
+_within_ an archetype — paginating one sidebar but not another, or hand-rolling a
 `<table>` where the common table belongs. Always copy the reference form.
 
 ### Sidebar Master List — `[sidebarList]` rows (CRITICAL)
@@ -204,19 +385,9 @@ use `.list-item-tag`, never the status colours.
 **Standard row template:**
 
 ```html
-<button
-  type="button"
-  class="list-group-item list-group-item-action"
-  [class.active]="model.selectedNo() === row.id"
-  (click)="model.select(row)"
->
+<button type="button" class="list-group-item list-group-item-action" [class.active]="model.selectedNo() === row.id" (click)="model.select(row)">
   <!-- status light, top-right corner -->
-  <span
-    class="status-dot status-dot--corner"
-    [class.status-dot--active]="row.is_active === 1"
-    [class.status-dot--inactive]="row.is_active !== 1"
-    [title]="row.is_active === 1 ? 'Active' : 'Inactive'"
-  ></span>
+  <span class="status-dot status-dot--corner" [class.status-dot--active]="row.is_active === 1" [class.status-dot--inactive]="row.is_active !== 1" [title]="row.is_active === 1 ? 'Active' : 'Inactive'"></span>
 
   <!-- title (reserve right padding so it never runs under the dot) -->
   <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ row.code }}</h6>
@@ -233,28 +404,29 @@ use `.list-item-tag`, never the status colours.
 </button>
 
 @if (model.filtered().length === 0) {
-  <div class="list-empty-state">
-    <mat-icon>inbox</mat-icon>
-    <p>No records found</p>
-  </div>
+<div class="list-empty-state">
+  <mat-icon>inbox</mat-icon>
+  <p>No records found</p>
+</div>
 }
 ```
 
 **Global class vocabulary** (all in `_form-page.scss`):
 
-| Class | Use |
-|-------|-----|
-| `.status-dot.status-dot--corner` + `--active` / `--inactive` | Active/inactive status light, top-right |
-| `.list-item-title` | Bold primary line (`text-truncate` for long values) |
-| `.list-item-subtitle` | Muted second line |
-| `.list-item-id` | Muted business id shown INLINE next to the title (e.g. name · EMP-1001) |
-| `.list-item-meta` | Flex-wrap row holding the chips / tags / value |
-| `.list-item-chip` | `<mat-icon>` + inner `<span>` label (the span truncates) |
-| `.list-item-tag` (+ `--primary` / `--warning`) | Type/category pill (NOT status) |
-| `.list-item-value` | Strong right-aligned value (e.g. a percentage) |
-| `.list-empty-state` | Centered empty state (icon + text) |
+| Class                                                        | Use                                                                     |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `.status-dot.status-dot--corner` + `--active` / `--inactive` | Active/inactive status light, top-right                                 |
+| `.list-item-title`                                           | Bold primary line (`text-truncate` for long values)                     |
+| `.list-item-subtitle`                                        | Muted second line                                                       |
+| `.list-item-id`                                              | Muted business id shown INLINE next to the title (e.g. name · EMP-1001) |
+| `.list-item-meta`                                            | Flex-wrap row holding the chips / tags / value                          |
+| `.list-item-chip`                                            | `<mat-icon>` + inner `<span>` label (the span truncates)                |
+| `.list-item-tag` (+ `--primary` / `--warning`)               | Type/category pill (NOT status)                                         |
+| `.list-item-value`                                           | Strong right-aligned value (e.g. a percentage)                          |
+| `.list-empty-state`                                          | Centered empty state (icon + text)                                      |
 
 **Rules:**
+
 - Active/inactive → **dot**, never a text badge. Type labels → `.list-item-tag`.
 - The `[sidebarList]` wrapper is a flex column (gap handled globally) — do NOT add `p-3`,
   `mb-1`, dividers, or `border` to the items; the global `.list-group-item` owns
@@ -275,28 +447,21 @@ theme. Styles: `assets/styles/_form-page.scss` (`.form-tab-bar`,
 
 ```html
 <div class="form-tab-bar d-flex gap-1 mb-3">
-  <button
-    type="button"
-    class="form-tab-btn"
-    [class.active]="activeTab() === 'first'"
-    (click)="activeTab.set('first')"
-  >
+  <button type="button" class="form-tab-btn" [class.active]="activeTab() === 'first'" (click)="activeTab.set('first')">
     <mat-icon class="tab-icon">icon_name</mat-icon>
     First Tab
   </button>
-  <button
-    type="button"
-    class="form-tab-btn"
-    [class.active]="activeTab() === 'second'"
-    (click)="activeTab.set('second')"
-  >
+  <button type="button" class="form-tab-btn" [class.active]="activeTab() === 'second'" (click)="activeTab.set('second')">
     <mat-icon class="tab-icon">icon_name</mat-icon>
     Second Tab
   </button>
 </div>
 
-@if (activeTab() === 'first') { <!-- first panel --> }
-@if (activeTab() === 'second') { <!-- second panel --> }
+@if (activeTab() === 'first') {
+<!-- first panel -->
+} @if (activeTab() === 'second') {
+<!-- second panel -->
+}
 ```
 
 **Component:** track the active tab in a `signal`:
@@ -384,9 +549,7 @@ Do NOT include `<div class="modal fade...">` or `<div class="modal-dialog">` or 
 
   <!-- Dialog Footer -->
   <div class="modal-footer py-2.5 px-4 border-top bg-surface d-flex justify-content-end">
-    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="close()">
-      Close
-    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="close()">Close</button>
   </div>
 </div>
 ```
@@ -438,10 +601,12 @@ Whenever a form contains a dropdown, search box, or table column that displays a
   ```
 - For `GridColumns.select` / `GridColumns.lookup` columns, ensure the `label` property of your `GridLookupOption` matches this exact format:
   ```ts
-  accountOptions = computed(() => this.accounts().map(a => ({ 
-    label: `${a.account_code} ${a.account_name}`, 
-    value: a.account_no 
-  })));
+  accountOptions = computed(() =>
+    this.accounts().map((a) => ({
+      label: `${a.account_code} ${a.account_name}`,
+      value: a.account_no,
+    })),
+  );
   ```
 
 ### Select Options & Enums — centralize in `{module}.constants.ts` (NO inline option arrays) (CRITICAL)
@@ -457,18 +622,40 @@ module (`sysConstants`, `hrmConstants`, `invConstants`, `finConstants`, …) hol
 `core/constants/global.constants.ts`. Shape (already in `features/sys/constants/sys.constants.ts`):
 
 ```ts
-export interface SelectOption { label: string; value: unknown; }
+export interface SelectOption {
+  label: string;
+  value: unknown;
+}
 export const hrmConstants = {
-  movementTypes:    [ { value: 1, label: 'Promotion' }, { value: 2, label: 'Transfer' }, { value: 3, label: 'Demotion' } ],
-  movementStatuses: [ { value: 1, label: 'Draft' }, { value: 2, label: 'Submitted' }, { value: 3, label: 'Approved' }, { value: 4, label: 'Cancelled' } ],
-  genderList:       [ { value: 'M', label: 'Male' }, { value: 'F', label: 'Female' }, { value: 'O', label: 'Other' } ],
-  approvalStatus:   [ { value: 'A', label: 'Approved' }, { value: 'W', label: 'Waiting' }, { value: 'R', label: 'Rejected' }, { value: 'P', label: 'Processing' } ],
+  movementTypes: [
+    { value: 1, label: 'Promotion' },
+    { value: 2, label: 'Transfer' },
+    { value: 3, label: 'Demotion' },
+  ],
+  movementStatuses: [
+    { value: 1, label: 'Draft' },
+    { value: 2, label: 'Submitted' },
+    { value: 3, label: 'Approved' },
+    { value: 4, label: 'Cancelled' },
+  ],
+  genderList: [
+    { value: 'M', label: 'Male' },
+    { value: 'F', label: 'Female' },
+    { value: 'O', label: 'Other' },
+  ],
+  approvalStatus: [
+    { value: 'A', label: 'Approved' },
+    { value: 'W', label: 'Waiting' },
+    { value: 'R', label: 'Rejected' },
+    { value: 'P', label: 'Processing' },
+  ],
 };
 ```
 
 **The value contract — DB-first (CRITICAL):** the option `value` MUST be exactly what
 the backend persists for that column, so it binds straight to the reactive control and
 posts back with **zero mapping**.
+
 - **Number** for `SMALLINT` enum columns — the majority of this codebase (status, type,
   movement_type, separation_type, loan_type, run_type…). Use `1, 2, 3…` matching the
   backend's `CHECK (col IN (…))` codes.
@@ -497,6 +684,7 @@ statusLabel = (v: unknown) => this.statusOptions.find(o => o.value === v)?.label
 ```
 
 **Rules:**
+
 - Status pills/labels resolve via the constant list (`statusLabel(v)`), never a duplicated inline map.
 - When you touch a form that still hard-codes options, **migrate them** into the module constants file.
 - Lookups loaded from the API (employees, branches, accounts) stay in `CommonDataService` /
@@ -523,10 +711,26 @@ must fill that space with **flex/`height:100%`**, not by guessing the viewport.
 ```
 
 ```scss
-:host { height: 100%; }
-.fill-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.fill-card > .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.scroll-area { flex: 1 1 auto; min-height: 0; overflow: auto; }   /* no max-height */
+:host {
+  height: 100%;
+}
+.fill-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fill-card > .card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.scroll-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+} /* no max-height */
 ```
 
 - `min-height: 0` on every flex child is required, or the child grows to its content
@@ -540,14 +744,14 @@ must fill that space with **flex/`height:100%`**, not by guessing the viewport.
 
 Cards within a form column stack vertically. The spacing system is:
 
-| Layer | Value | Source |
-|-------|-------|--------|
-| Between cards in same column | `4px` | `.form-section-card { margin-bottom: 4px }` |
-| Between rows (`row-group`) | `8px` | `.row-group { --bs-gutter-y: 0.5rem }` |
-| Page card body children gap | `4px` | `.page-card-body { gap: 4px }` |
-| Card header padding | `8px 12px` | `.form-section-card .card-header { padding: 0.5rem 0.75rem }` |
-| Card body padding | `8px 12px` | `.form-section-card .card-body { padding: 0.5rem 0.75rem }` |
-| Field group gap | `5px` | `.field-group { gap: 5px }` |
+| Layer                        | Value      | Source                                                        |
+| ---------------------------- | ---------- | ------------------------------------------------------------- |
+| Between cards in same column | `4px`      | `.form-section-card { margin-bottom: 4px }`                   |
+| Between rows (`row-group`)   | `8px`      | `.row-group { --bs-gutter-y: 0.5rem }`                        |
+| Page card body children gap  | `4px`      | `.page-card-body { gap: 4px }`                                |
+| Card header padding          | `8px 12px` | `.form-section-card .card-header { padding: 0.5rem 0.75rem }` |
+| Card body padding            | `8px 12px` | `.form-section-card .card-body { padding: 0.5rem 0.75rem }`   |
+| Field group gap              | `5px`      | `.field-group { gap: 5px }`                                   |
 
 **Layout pattern (reference: `SYS1001`):**
 
@@ -621,16 +825,7 @@ export, pagination, totals, layout persistence and density come from the framewo
 
 ```html
 <div class="card-body p-0">
-  <app-erp-grid
-    [config]="stepGrid"
-    [data]="steps()"
-    [selectedId]="model.selectedStepUid()"
-    (ready)="onStepGridReady($event)"
-    (rowClick)="onStepRowClick($event)"
-    (rowChange)="onStepChange($event)"
-    (rowRemove)="onStepRemove($event)"
-    (addRow)="addStepRow()"
-  ></app-erp-grid>
+  <app-erp-grid [config]="stepGrid" [data]="steps()" [selectedId]="model.selectedStepUid()" (ready)="onStepGridReady($event)" (rowClick)="onStepRowClick($event)" (rowChange)="onStepChange($event)" (rowRemove)="onStepRemove($event)" (addRow)="addStepRow()"></app-erp-grid>
 </div>
 ```
 
@@ -673,14 +868,14 @@ persist under `gridKey`. Renaming it silently discards every user's layout.
 
 #### Who owns the rows — pick one
 
-|  | Grid-owned (default) | Form-owned (`externalRowState: true`) |
-|---|---|---|
-| Rows live in | the grid's `GridApiService` | your model service |
-| Add / delete | grid mutates its own list | grid **emits**, you apply |
-| Saving | `getDirtyRows()` → `{inserted, updated, deleted}` | your own payload |
-| Use when | one self-contained grid | chained grids, or rows shared with anything the grid cannot see |
+|              | Grid-owned (default)                              | Form-owned (`externalRowState: true`)                           |
+| ------------ | ------------------------------------------------- | --------------------------------------------------------------- |
+| Rows live in | the grid's `GridApiService`                       | your model service                                              |
+| Add / delete | grid mutates its own list                         | grid **emits**, you apply                                       |
+| Saving       | `getDirtyRows()` → `{inserted, updated, deleted}` | your own payload                                                |
+| Use when     | one self-contained grid                           | chained grids, or rows shared with anything the grid cannot see |
 
-**`externalRowState` is required whenever a grid shows a *slice* of a bigger list.**
+**`externalRowState` is required whenever a grid shows a _slice_ of a bigger list.**
 In SYS1108 the model holds every step and approver; changing workflow replaces the
 child grid's `[data]`, and grid-owned state would be thrown away with it. With it on,
 the grid reports intent and your model stays authoritative:
@@ -707,10 +902,11 @@ imperative access (refresh, dirty rows); selection and data do not require it.
   server-loaded lookups are passed as a **function** so they stay reactive as they load,
   without rebuilding columns:
   ```ts
-  GridColumns.lookup<ApprovalScope>('branch_no', 'Branch',
-      () => this.opts(this.model.branchOptions())).flex(1).build()
+  GridColumns.lookup<ApprovalScope>('branch_no', 'Branch', () => this.opts(this.model.branchOptions()))
+    .flex(1)
+    .build();
   ```
-- Any *other* column whose display differs from `row[field]` must set
+- Any _other_ column whose display differs from `row[field]` must set
   `.valueFormatter(...)`, so search, sort and export use the text on screen.
 - `.sum()` / `.footer('Total')` / `.footerValue(rows => ...)` drive the pinned totals
   row, which reflects the **current filter**, not the raw input.
@@ -805,8 +1001,8 @@ assuming the code is wrong. Specifically:
 - **Never `appendTo="body"` on a cell editor.** `stopEditingWhenCellsLoseFocus` makes
   editors modal popups that AG Grid destroys on any mousedown outside the popup — with
   the panel on `body`, clicking an option kills the editor before its click handler runs
-  and the selection is silently dropped. *The tell: keyboard Enter commits, mouse click
-  does not.* The select editor overrides the app-wide `NgSelectConfig.appendTo = 'body'`
+  and the selection is silently dropped. _The tell: keyboard Enter commits, mouse click
+  does not._ The select editor overrides the app-wide `NgSelectConfig.appendTo = 'body'`
   with a component-scoped config; the `appendTo` **input cannot** do this, because
   ng-select resolves `appendTo() || config.appendTo`.
 - **Full-row editing needs INLINE editors**, not popups — a modal popup is dismissed by
@@ -831,8 +1027,8 @@ Reject, Post, Print, Export, Import, Refresh, Search, Filter, Reset, Download,
 Duplicate, Close) is defined ONCE in `shared/actions/erp-actions.ts`.
 
 ```html
-<app-action-button kind="save"   (run)="save()" [loading]="saving()" />
-<app-action-button kind="delete" (run)="remove()" />        <!-- confirms automatically -->
+<app-action-button kind="save" (run)="save()" [loading]="saving()" /> <app-action-button kind="delete" (run)="remove()" />
+<!-- confirms automatically -->
 ```
 
 - Naming the `kind` is enough — icon, label, tooltip and colour come from the catalog.
@@ -847,7 +1043,7 @@ Duplicate, Close) is defined ONCE in `shared/actions/erp-actions.ts`.
 `serialNumber()`, `formatDocumentNumber()`, `parseDocumentNumber()`, `padNumber()`.
 
 ```ts
-formatDocumentNumber(123, { prefix: 'PO', year: 2026 })   // PO-2026-000123
+formatDocumentNumber(123, { prefix: 'PO', year: 2026 }); // PO-2026-000123
 ```
 
 **Authority rule:** persisted document/transaction numbers are ALWAYS generated by
@@ -868,12 +1064,13 @@ UI hint only; never save its result.
 **Never manually create a jsPDF document or draw headers/footers in your component.** Every PDF export MUST use the shared `PdfTemplateService` to ensure a consistent company header, page footer, and signature block across the entire ERP.
 
 **How to use:**
+
 1. Inject `PdfTemplateService` from `shared/pdf-templates/pdf-template.service`.
 2. Call `pdfTemplateService.render()` with a `PdfTemplate` configuration.
 
 Example:
 
-```ts
+````ts
 import { PdfTemplateService } from '@app/shared/pdf-templates/pdf-template.service';
 
 private readonly pdfTemplateService = inject(PdfTemplateService);
@@ -910,7 +1107,7 @@ async exportToPdf() {
     ]
   }, {});
 }
-```
+````
 
 If your PDF requires a heavily custom-drawn layout, use a `custom` section type, which gives you access to the `jsPDF` instance and `helpers` (`{ drawHeader, drawPageFooter }`) for adding headers/footers on new pages.
 
@@ -918,6 +1115,77 @@ If your PDF requires a heavily custom-drawn layout, use a `custom` section type,
 
 ## Database Schema Changes (CRITICAL)
 
-**Never add or delete database columns dynamically from middleware or Java services** (e.g., using `jdbcTemplate` in a `@PostConstruct` block). 
+**Never add or delete database columns dynamically from middleware or Java services** (e.g., using `jdbcTemplate` in a `@PostConstruct` block).
 
 All database structure modifications must be done via explicit SQL migration scripts provided to the developer, placed in the `../sme-software-backend/db-migration/` or equivalent backend migration directories. Always output the script for the user to run manually or manage via the database migration tool.
+
+# CLAUDE.md
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

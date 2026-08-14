@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 
 import { Fin1003ModelService, VoucherType } from './services/model.service';
 import { Fin1003DataService } from './services/data.service';
@@ -14,7 +14,7 @@ import { finConstants } from '../../constants/fin.constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1003',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, ErpGridComponent],
   providers: [Fin1003ModelService, Fin1003DataService],
   templateUrl: './fin1003.component.html',
   styles: [`:host { display: block; height: 100%; }`],
@@ -26,30 +26,23 @@ export class Fin1003Component implements OnInit {
 
   readonly baseKinds = finConstants.voucherBaseKinds;
 
-  tableColumns = computed<ColumnDef[]>(() => [
-    { title: 'Order', field: 'order_sl', cellType: 'number', precision: 0, sort: true, editable: true, width: '90px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Type ID', field: 'voucher_type_id', cellType: 'text', sort: true, editable: true, minWidth: '120px', visible: false, onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Type Name', field: 'type_name', cellType: 'text', sort: true, editable: true, minWidth: '200px', onChange: (value, row) => {
-        (row as any).__dirty = true;
-        if (!row['voucher_type_id'] && value) {
-            row['voucher_type_id'] = String(value).toUpperCase().replace(/[^A-Z0-9_]/g, '_').substring(0, 20);
-        }
-    } },
-    { title: 'Base Kind', field: 'base_kind', cellType: 'select', sort: true, editable: true, options: this.baseKinds, minWidth: '180px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Prefix', field: 'number_prefix', cellType: 'text', sort: false, editable: true, width: '100px', onChange: (_, row) => (row as any).__dirty = true },
-    { title: 'Active', field: 'is_active', cellType: 'checkbox', sort: true, editable: true, width: '80px', align: 'center', onChange: (_, row) => (row as any).__dirty = true },
-  ]);
-
-  tableData = computed(() => this.model.filtered() as unknown as Record<string, unknown>[]);
-
-  tableConfig: Partial<TableConfig> = {
-    showSearch: true,
-    searchPlaceholder: 'Search voucher types...',
-    pagination: true,
-    defaultPageSize: 25,
-    showActions: true,
-    actions: [
-      { type: 'delete', icon: 'delete', label: 'Delete', tooltip: 'Delete', variant: 'danger', onClick: (row) => this.alertService.deleteConfirm().subscribe(ok => { if (ok) this.model.deleteRow(row as any); }) }
+  readonly gridConfig: GridConfig<VoucherType> = {
+    gridKey: 'FIN_1003_VOUCHER_TYPE_GRID',
+    rowIdField: 'voucher_type_no',
+    showPagination: true,
+    pageSize: 25,
+    canAdd: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
+    canEdit: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
+    canDeleteRow: () => this.permissionService.canDelete(),
+    toolbar: { showSearch: true, searchPlaceholder: 'Search voucher types...', showAdd: false },
+    columns: [
+      GridColumns.number<VoucherType>('order_sl', 'Order').width(90).precision(0).build(),
+      GridColumns.text<VoucherType>('voucher_type_id', 'Type ID').minWidth(120).hidden(true).build(),
+      GridColumns.text<VoucherType>('type_name', 'Type Name').minWidth(200).build(),
+      GridColumns.select<VoucherType>('base_kind', 'Base Kind', this.baseKinds).minWidth(180).build(),
+      GridColumns.text<VoucherType>('number_prefix', 'Prefix').width(100).build(),
+      GridColumns.checkbox<VoucherType>('is_active', 'Active').width(80).align('center').build(),
+      GridColumns.action<VoucherType>().build()
     ]
   };
 
@@ -61,5 +54,18 @@ export class Fin1003Component implements OnInit {
 
   onSave(): void {
     this.model.saveAll();
+  }
+
+  onRowChange(row: VoucherType): void {
+    (row as any).__dirty = true;
+    if (!row.voucher_type_id && row.type_name) {
+      row.voucher_type_id = String(row.type_name).toUpperCase().replace(/[^A-Z0-9_]/g, '_').substring(0, 20);
+    }
+  }
+
+  onRowRemove(row: VoucherType): void {
+    this.alertService.deleteConfirm().subscribe(ok => { 
+      if (ok) this.model.deleteRow(row); 
+    });
   }
 }

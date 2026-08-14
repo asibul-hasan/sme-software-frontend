@@ -1,0 +1,144 @@
+/* PUR_1301 Supplier Aging & Spend. Controls carry .no-print so the printed
+   sheet is figures only. */
+
+.prpt {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prpt__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1 { margin: 0; font-size: 20px; }
+}
+
+.prpt__sub,
+.prpt__muted {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.prpt__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--surface-border, #dfe3e8);
+
+  button {
+    padding: 8px 14px;
+    border: 0;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-color-secondary, #6b7280);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+
+    &.is-active {
+      color: var(--primary-color, #2563eb);
+      border-bottom-color: var(--primary-color, #2563eb);
+    }
+  }
+}
+
+.prpt__controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+}
+
+.prpt__tile {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  align-self: flex-start;
+
+  span { font-size: 12px; color: var(--text-color-secondary, #6b7280); }
+  strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+}
+
+.prpt__split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-color-secondary, #6b7280);
+  }
+}
+
+.prpt__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 10px;
+  overflow: hidden;
+
+  th, td { padding: 8px 11px; border-bottom: 1px solid var(--surface-border, #eef1f4); }
+  th {
+    background: var(--surface-section, #fafbfc);
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-color-secondary, #6b7280);
+  }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Anything past 90 days is the column that gets a supplier to stop delivering. */
+  .is-old { color: #b3261e; font-weight: 600; }
+  tr.is-critical { background: #fdf6f5; }
+}
+
+.prpt__empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-color-secondary, #9aa1ab);
+}
+
+.prpt__btn {
+  padding: 7px 13px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+  background: var(--surface-card, #fff);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-hover, #f2f4f7); }
+}
+
+.prpt__btn--primary {
+  background: var(--primary-color, #2563eb);
+  border-color: var(--primary-color, #2563eb);
+  color: #fff;
+}
+
+.prpt__input {
+  padding: 6px 9px;
+  border: 1px solid var(--surface-border, #dfe3e8);
+  border-radius: 8px;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .prpt { padding: 0; }
+  .prpt__split { display: block; }
+  .prpt__table, .prpt__tile { border-color: #000; break-inside: avoid; }
+}

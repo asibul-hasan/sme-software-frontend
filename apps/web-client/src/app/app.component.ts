@@ -2,12 +2,13 @@ import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/cor
 import { RouterModule } from '@angular/router';
 import { NgSelectConfig } from '@ng-select/ng-select';
 import { SessionManagerService } from './core/services/session-manager.service';
+import { LoaderComponent } from './shared/components/loader/loader.component';
 // import { ShowDatepickerDirective } from './shared/directives/show-datepicker.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, LoaderComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

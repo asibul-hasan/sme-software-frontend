@@ -9,127 +9,108 @@
   [isLoading]="isLoading()"
 >
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
+    <div class="form-section-card card shrink-0">
       <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-xl-3 col-lg-4 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="acc">Bank Account</label>
-              <ng-select id="acc" [(ngModel)]="accountNo" [clearable]="false" placeholder="Select bank account">
-                @for (a of bankAccounts(); track a.account_no) {
-                  <ng-option [value]="a.account_no">{{ a.account_code }} - {{ a.account_name }}</ng-option>
-                }
-              </ng-select>
-            </div>
-          </div>
+        <app-form-section title="Reconciliation Filter">
+          <app-form-field label="Bank Account" [span]="3">
+            <ng-select id="acc" [(ngModel)]="accountNo" [clearable]="false" placeholder="Select bank account">
+              @for (a of bankAccounts(); track a.account_no) {
+                <ng-option [value]="a.account_no">{{ a.account_code }} - {{ a.account_name }}</ng-option>
+              }
+            </ng-select>
+          </app-form-field>
 
-          <div class="col-xl-2 col-lg-2 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="sdate">Statement Date</label>
-              <app-date-picker [(ngModel)]="statementDate" placeholder="Select date" />
-            </div>
-          </div>
+          <app-form-field label="Statement Date" [span]="2">
+            <app-date-picker [(ngModel)]="statementDate" placeholder="Select date" />
+          </app-form-field>
 
-          <div class="col-xl-2 col-lg-2 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="sbal">Statement Balance</label>
-              <input type="number" id="sbal" class="form-control text-end" [(ngModel)]="statementBalance" placeholder="0.00" />
-            </div>
-          </div>
+          <app-form-field label="Statement Balance" [span]="2">
+            <input type="number" id="sbal" class="form-control text-end" [(ngModel)]="statementBalance" placeholder="0.00" />
+          </app-form-field>
 
-          <div class="col-xl-2 col-lg-2 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="fromDate">Voucher From</label>
-              <app-date-picker [(ngModel)]="fromDate" placeholder="From date" />
-            </div>
-          </div>
+          <app-form-field label="Voucher From" [span]="2">
+            <app-date-picker [(ngModel)]="fromDate" placeholder="From date" />
+          </app-form-field>
 
-          <div class="col-xl-2 col-lg-2 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="toDate">Voucher To</label>
-              <app-date-picker [(ngModel)]="toDate" placeholder="To date" />
-            </div>
-          </div>
+          <app-form-field label="Voucher To" [span]="2">
+            <app-date-picker [(ngModel)]="toDate" placeholder="To date" />
+          </app-form-field>
 
-          <div class="col-xl-1 col-lg-2 col-md-6">
-            <div class="field-group">
-              <label class="field-label" for="lineStatus">Status</label>
-              <select id="lineStatus" class="form-control" [(ngModel)]="lineStatus">
-                <option value="pending">Pending</option>
-                <option value="reconciled">Reconciled</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-          </div>
+          <app-form-field label="Status" [span]="1">
+            <select id="lineStatus" class="form-control" [(ngModel)]="lineStatus">
+              <option value="pending">Pending</option>
+              <option value="reconciled">Reconciled</option>
+              <option value="all">All</option>
+            </select>
+          </app-form-field>
 
-          <div class="col-12 d-flex justify-content-end">
-            <button type="button" class="btn-action btn-save" style="height: 42px; min-width: 180px" (click)="loadWorksheet()">
+          <div class="col-span-12 flex justify-end mt-2">
+            <button type="button" class="btn-action btn-save h-[42px] min-w-[180px]" (click)="loadWorksheet()">
               <mat-icon>search</mat-icon>
               Load Worksheet
             </button>
           </div>
-        </div>
+        </app-form-section>
       </div>
     </div>
 
     @if (loaded()) {
-      <div class="form-section-card card flex-shrink-0">
+      <div class="form-section-card card shrink-0 mt-1">
         <div class="card-body">
-          <div class="row row-group align-items-end">
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Book Balance</span>
-              <div class="fw-bold text-end">{{ bookBalance() | number: '1.2-2' }}</div>
+          <div class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
+            <div>
+              <span class="field-label mb-1 block">Book Balance</span>
+              <div class="font-bold text-end">{{ bookBalance() | number: '1.2-2' }}</div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Statement Balance</span>
-              <div class="fw-bold text-end">{{ (statementBalance || 0) | number: '1.2-2' }}</div>
+            <div>
+              <span class="field-label mb-1 block">Statement Balance</span>
+              <div class="font-bold text-end">{{ (statementBalance || 0) | number: '1.2-2' }}</div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Difference</span>
-              <div class="fw-bold text-end" [class.text-success]="difference() === 0" [class.text-danger]="difference() !== 0">
+            <div>
+              <span class="field-label mb-1 block">Difference</span>
+              <div class="font-bold text-end" [class.text-success]="difference() === 0" [class.text-danger]="difference() !== 0">
                 {{ difference() | number: '1.2-2' }}
               </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Selected</span>
-              <div class="fw-bold text-end">{{ newlyClearedLines().length }} / {{ clearedBalance() | number: '1.2-2' }}</div>
+            <div>
+              <span class="field-label mb-1 block">Selected</span>
+              <div class="font-bold text-end">{{ newlyClearedLines().length }} / {{ clearedBalance() | number: '1.2-2' }}</div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Pending</span>
-              <div class="fw-bold text-end">{{ pendingCount() }}</div>
+            <div>
+              <span class="field-label mb-1 block">Pending</span>
+              <div class="font-bold text-end">{{ pendingCount() }}</div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <span class="field-label mb-1">Reconciled</span>
-              <div class="fw-bold text-end">{{ reconciledCount() }}</div>
+            <div>
+              <span class="field-label mb-1 block">Reconciled</span>
+              <div class="font-bold text-end">{{ reconciledCount() }}</div>
             </div>
-            <div class="col-12">
-              <div class="field-group">
-                <label class="field-label" for="narr">Narration</label>
+            <div class="col-span-2 md:col-span-6">
+              <app-form-field label="Narration">
                 <input type="text" id="narr" class="form-control" [(ngModel)]="narration" placeholder="Optional reconciliation note" />
-              </div>
+              </app-form-field>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="form-section-card card fill-card mt-1">
-        <div class="card-header d-flex align-items-center gap-2">
-          <h4 class="card-header__title mb-0 fw-bold">
-            <mat-icon class="me-2 align-middle">fact_check</mat-icon>
+      <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+        <div class="card-header flex items-center gap-2">
+          <h4 class="card-header__title mb-0 font-bold">
+            <mat-icon class="mr-2 align-middle">fact_check</mat-icon>
             Bank Ledger Lines
           </h4>
-          <button type="button" class="btn-action btn-save ms-auto" [disabled]="isSaving()" (click)="save()">
+          <button type="button" class="btn-action btn-save ml-auto" [disabled]="isSaving()" (click)="save()">
             <mat-icon>save</mat-icon>
             Save Reconciliation
           </button>
         </div>
-        <div class="card-body p-0">
-          <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+        <div class="card-body p-0 flex-1 flex flex-col min-h-0">
+          <app-erp-grid [config]="gridConfig" [data]="lines()" (rowChange)="onRowChange($event)" />
         </div>
       </div>
     } @else {
-      <div class="form-section-card card fill-card mt-1">
-        <div class="card-body d-flex align-items-center justify-content-center text-muted">
+      <div class="form-section-card card fill-card mt-1 flex-1 flex flex-col min-h-0">
+        <div class="card-body flex items-center justify-center text-muted flex-1">
           <div class="text-center">
             <mat-icon style="font-size: 42px; width: 42px; height: 42px; opacity: .4">fact_check</mat-icon>
             <p class="mt-2 mb-0">Select a bank account, date range, and status to load reconciliation lines.</p>

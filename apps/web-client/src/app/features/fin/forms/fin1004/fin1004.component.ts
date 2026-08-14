@@ -1,11 +1,12 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, SelectOption, TableConfig } from '../../../../shared/components/common-table';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
+import { SelectOption } from '../../constants/fin.constants';
 import { Fin1004DataService, OpeningAccount } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -30,7 +31,7 @@ interface WorkingLine {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1004',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Fin1004DataService],
   templateUrl: './fin1004.component.html',
   styles: [`:host { display: block; height: 100%; }`],
@@ -44,10 +45,10 @@ export class Fin1004Component implements OnInit {
   accounts   = signal<OpeningAccount[]>([]);
   currencies = signal<CurrencyLookup[]>([]);
   lines      = signal<WorkingLine[]>([]);
+  selectedLineId = signal<string | number | null>(null);
   isLoading  = signal(false);
   isSaving   = signal(false);
   currencyRevision = signal(0);
-  readonly lineTable = viewChild(CommonTableComponent);
   private uid = 0;
 
   voucherDate            = new Date().toISOString().split('T')[0];
@@ -56,9 +57,7 @@ export class Fin1004Component implements OnInit {
   narration              = '';
 
   readonly drCrOptions: SelectOption[] = debitCreditOptions.map((o) => ({ label: o.label, value: o.value }));
-  readonly accountOptions = computed<SelectOption[]>(() =>
-    this.accounts().map((a) => ({ value: a.account_no, label: `${a.account_code} ${a.account_name}` })),
-  );
+  
   readonly selectedCurrency = computed(() => {
     this.currencyRevision();
     return this.currencies().find((c) => c.currency_no === this.currencyNo) ?? null;
@@ -81,92 +80,62 @@ export class Fin1004Component implements OnInit {
   canPost     = computed(() => this.validLines().length > 0 && this.isBalanced() && !this.isSaving());
   absoluteBaseDifference = computed(() => Math.abs(this.difference()));
 
-  readonly lineColumns = computed<ColumnDef[]>(() => {
-    this.currencyRevision();
-    return [
-      {
-      title: 'Type',
-      field: 'dr_cr',
-      cellType: 'select',
-      editable: (row) => Number(row['__uid']) !== this.firstLineUid(),
-      options: this.drCrOptions,
-      width: '120px',
-      onChange: (_value, row) => this.normalizeRow(row),
+  readonly gridConfig: GridConfig<WorkingLine> = {
+    gridKey: 'FIN_1004_OPENING_BALANCE_GRID',
+    rowIdField: '__uid',
+    selectionMode: 'single',
+    autoSelectFirstRow: true,
+    externalRowState: true,
+    showPagination: false,
+    canAdd: () => this.permissionService.canInsert(),
+    canEdit: () => this.permissionService.canUpdate() || this.permissionService.canInsert(),
+    canDeleteRow: () => this.permissionService.canDelete(),
+    toolbar: {
+      title: 'Opening Lines',
+      showAdd: false,
+      showSearch: true,
+      showExport: true,
+      showColumnChooser: true,
+      searchPlaceholder: 'Search opening lines...',
     },
-    {
-      title: 'Account',
-      field: 'account_no',
-      cellType: 'select',
-      editable: true,
-      options: (row) => {
-        const side = row['dr_cr'] === 'cr' ? 'cr' : 'dr';
+    columns: [
+      GridColumns.select<WorkingLine>('dr_cr', 'Type', this.drCrOptions)
+        .width(120)
+        .editable((row) => row.__uid !== this.firstLineUid())
+        .build(),
+      GridColumns.lookup<WorkingLine>('account_no', 'Account', (row) => {
+        const side = row.dr_cr === 'cr' ? 'cr' : 'dr';
         return this.accounts()
           .filter((a) => a.normal_balance === side)
           .map((a) => ({ value: a.account_no, label: `${a.account_code} ${a.account_name}` }));
-      },
-      minWidth: '280px',
-      footerLabel: 'Total',
-      onChange: (_value, row) => this.normalizeRow(row),
-    },
-    {
-      title: this.enteredColumnTitle('Debit'),
-      field: 'dr_amount',
-      cellType: 'decimal',
-      editable: (row) => row['dr_cr'] === 'dr',
-      align: 'right',
-      precision: 2,
-      bottomTotal: true,
-      minWidth: '140px',
-      onChange: (_value, row) => this.normalizeRow(row),
-    },
-    {
-      title: this.enteredColumnTitle('Credit'),
-      field: 'cr_amount',
-      cellType: 'decimal',
-      editable: (row) => row['dr_cr'] === 'cr',
-      align: 'right',
-      precision: 2,
-      bottomTotal: true,
-      minWidth: '140px',
-      onChange: (_value, row) => this.normalizeRow(row),
-    },
-    {
-      title: this.baseColumnTitle('Debit Base'),
-      field: 'debit',
-      cellType: 'decimal',
-      align: 'right',
-      precision: 2,
-      bottomTotal: true,
-      minWidth: '150px',
-    },
-    {
-      title: this.baseColumnTitle('Credit Base'),
-      field: 'credit',
-      cellType: 'decimal',
-      align: 'right',
-      precision: 2,
-      bottomTotal: true,
-      minWidth: '150px',
-    },
-    ];
-  });
-  readonly lineConfig: Partial<TableConfig> = {
-    showSearch: true,
-    searchPlaceholder: 'Search opening lines...',
-    pagination: false,
-    defaultPageSize: 12,
-    pageSizeOptions: [12, 25, 50, 100],
-    dense: true,
-    striped: true,
-    showColumnToggle: true,
-    showExport: true,
-    showTitle: false,
-    minHeight: '16vh',
-    maxHeight: '100%',
-    showActions: true,
-    actions: [{ type: 'delete', icon: 'delete', tooltip: 'Remove', variant: 'danger', onClick: (row) => this.removeLine(row['__uid'] as number) }],
+      })
+        .flex(1)
+        .minWidth(280)
+        .footer('Total')
+        .build(),
+      GridColumns.decimal<WorkingLine>('dr_amount', `Debit (${this.currencySymbol()})`)
+        .editable((row) => row.dr_cr === 'dr')
+        .sum()
+        .minWidth(140)
+        .build(),
+      GridColumns.decimal<WorkingLine>('cr_amount', `Credit (${this.currencySymbol()})`)
+        .editable((row) => row.dr_cr === 'cr')
+        .sum()
+        .minWidth(140)
+        .build(),
+      GridColumns.decimal<WorkingLine>('debit', `Debit Base`)
+        .sum()
+        .minWidth(150)
+        .readOnly()
+        .build(),
+      GridColumns.decimal<WorkingLine>('credit', `Credit Base`)
+        .sum()
+        .minWidth(150)
+        .readOnly()
+        .build(),
+      GridColumns.action<WorkingLine>().build(),
+    ],
   };
-  readonly lineData = computed(() => this.lines() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('FIN_1004'); this.loadMasterData(); });
@@ -222,7 +191,15 @@ export class Fin1004Component implements OnInit {
     const amount = this.nextLineAmount(side);
     const line = this.createLine(side, amount);
     this.lines.update((ls) => [...ls, line]);
-    this.focusLine(line.__uid);
+    this.selectedLineId.set(line.__uid);
+  }
+
+  onRowChange(row: WorkingLine): void {
+    this.normalizeRow(row as any);
+  }
+
+  onRowRemove(row: WorkingLine): void {
+    this.removeLine(row.__uid);
   }
 
   removeLine(uid: number): void {
@@ -369,7 +346,7 @@ export class Fin1004Component implements OnInit {
     };
   }
 
-  private firstLineUid(): number | null {
+  public firstLineUid(): number | null {
     return this.lines()[0]?.__uid ?? null;
   }
 
@@ -393,31 +370,12 @@ export class Fin1004Component implements OnInit {
     return Math.round((Number(value) || 0) * 100) / 100;
   }
 
-  private focusLine(uid: number): void {
-    setTimeout(() => {
-      const index = this.lines().findIndex((line) => line.__uid === uid);
-      const line = this.lines()[index];
-      const table = this.lineTable();
-      if (index >= 0 && line && table) {
-        table.startRowEdit(line as unknown as Record<string, unknown>, index);
-      }
-    });
-  }
-
-  private enteredColumnTitle(label: string): string {
-    return `${label} (${this.currencySymbol()})`;
-  }
-
-  private baseColumnTitle(label: string): string {
-    return label;
-  }
-
   currencyLabel(currency: CurrencyLookup): string {
     const symbol = currency.currency_symbol ? ` (${currency.currency_symbol})` : '';
     return `${currency.currency_code}${symbol}`;
   }
 
-  private currencySymbol(): string {
+  public currencySymbol(): string {
     return this.selectedCurrency()?.currency_symbol || this.currencyCode();
   }
 
