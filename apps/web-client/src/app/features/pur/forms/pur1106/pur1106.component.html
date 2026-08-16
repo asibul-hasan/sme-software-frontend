@@ -66,7 +66,11 @@
         </div>
       </div>
       <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
-        <app-common-table [columns]="allocColumns" [data]="allocTableData()" [config]="allocConfig" />
+        <app-erp-grid
+          [config]="allocGrid"
+          [data]="allocTableData()"
+          height="100%"
+        ></app-erp-grid>
       </div>
     </div>
   </div>

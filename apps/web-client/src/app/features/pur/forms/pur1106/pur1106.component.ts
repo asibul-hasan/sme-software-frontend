@@ -7,7 +7,9 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
 
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -26,7 +28,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1106',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1106DataService],
   templateUrl: './pur1106.component.html',
   styles: [':host { display: block; height: 100%; }'],
@@ -68,26 +70,34 @@ export class Pur1106Component implements OnInit {
 
   selectedInvoice = computed(() => this.postedInvoices().find((i) => i.invoice_no === this.invoiceNo) ?? null);
   totalAllocated = computed(() => this.allocations().reduce((s, r) => s + (Number(r.allocated_amount) || 0), 0));
-  readonly allocTableData = computed(() => this.allocations() as unknown as Record<string, unknown>[]);
+  readonly allocTableData = computed<LandedCostAlloc[]>(() => this.allocations());
 
-  readonly allocColumns: ColumnDef[] = [
-    { title: 'Line', field: 'line_no', cellType: 'number', width: '70px' },
-    { title: 'Product', field: 'product_name', cellType: 'text', width: '240px', pin: 'left' },
-    { title: 'Qty Base', field: 'qty_base', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Value', field: 'taxable_amount', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Prev Landed', field: 'previous_alloc', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'This Cost', field: 'allocated_amount', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Final Unit Cost', field: 'final_unit_cost', cellType: 'decimal', align: 'right', precision: 4 },
-  ];
-  readonly allocConfig: Partial<TableConfig> = {
-    showSearch: false,
-    pagination: false,
-    dense: true,
-    striped: true,
-    showColumnToggle: false,
-    showExport: false,
-    showTitle: false,
-    maxHeight: '380px',
+  readonly allocGrid: GridConfig<LandedCostAlloc> = {
+    gridKey: 'PUR_1106_LANDED_COST_ALLOC_GRID',
+    rowIdField: 'line_no',
+    height: '100%',
+    selectionMode: 'none',
+    showPagination: true,
+    pageSize: 50,
+    pageSizeOptions: [25, 50, 100, 500],
+    // Every figure here is computed by the allocation engine from the chosen basis — the whole
+    // grid is a preview, so nothing is addable, editable or removable.
+    canAdd: () => false,
+    canEdit: () => false,
+    canDeleteRow: () => false,
+    toolbar: {
+      title: 'Cost Allocation', showAdd: false, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true, searchPlaceholder: 'Search lines...',
+    },
+    columns: [
+      GridColumns.number<LandedCostAlloc>('line_no', 'Line').width(80).readOnly().build(),
+      GridColumns.text<LandedCostAlloc>('product_name', 'Product').flex(1).minWidth(220).readOnly().pinned('left').build(),
+      GridColumns.decimal<LandedCostAlloc>('qty_base', 'Qty Base').width(120).readOnly().build(),
+      GridColumns.decimal<LandedCostAlloc>('taxable_amount', 'Value').width(130).readOnly().sum().footer('Total').build(),
+      GridColumns.decimal<LandedCostAlloc>('previous_alloc', 'Prev Landed').width(130).readOnly().sum().build(),
+      GridColumns.decimal<LandedCostAlloc>('allocated_amount', 'This Cost').width(130).readOnly().sum().build(),
+      GridColumns.decimal<LandedCostAlloc>('final_unit_cost', 'Final Unit Cost').width(150).readOnly().build(),
+    ],
   };
 
   ngOnInit(): void {

@@ -14,6 +14,19 @@ export class GridApiService<T = any> {
     this.gridApi = api;
   }
 
+  /**
+   * Commit any row still open in the editor.
+   *
+   * A row being edited holds its changes in AG Grid until the edit ends, so `(rowChange)` has not
+   * fired yet and the form's own row state is one edit behind. A form that builds its save payload
+   * while a cell is open therefore posts stale data — on PUR_1105 that meant typing a batch code
+   * and hitting Save was rejected as if the field were still empty. Call this FIRST in any save,
+   * submit or post handler that reads rows the grid can edit.
+   */
+  stopEditing(): void {
+    this.gridApi?.stopEditing();
+  }
+
   setRows(dataList: T[], rowIdField?: string): void {
     this.rowIdField = rowIdField;
     const wrappers: ErpGridRowWrapper<T>[] = dataList.map((item, index) => {

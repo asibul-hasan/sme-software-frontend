@@ -7,7 +7,11 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
+import { GridApiService } from '../../../../shared/ag-grid/services/grid-api.service';
+import { toGridOptions } from '../../utils/grid-options';
 
 import { Pur1101DataService, PurchaseOrder, OrderLine } from './services/data.service';
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
@@ -20,7 +24,7 @@ import { purConstants } from '../../constants/pur.constants';
 
 import { ToastrService } from 'ngx-toastr';
 
-interface WorkLine extends OrderLine { __uid: number; }
+interface WorkLine extends OrderLine { __uid: number; __total?: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
@@ -28,7 +32,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1101',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1101DataService],
   templateUrl: './pur1101.component.html',
   styles: [`:host { display: block; height: 100%; } /* trigger rebuild */`],
@@ -63,13 +67,6 @@ export class Pur1101Component implements OnInit {
   termsNote = '';
   remarks = '';
 
-  newProduct: number | null = null;
-  newUom: number | null = null;
-  newQty: number | null = null;
-  newPrice: number | null = null;
-  newDiscPct: number | null = null;
-  newTaxPct: number | null = null;
-
   editable = computed(() => this.selectedNo() === null || this.status() === 1);
 
   filtered = computed(() => {
@@ -83,21 +80,53 @@ export class Pur1101Component implements OnInit {
   taxTotal = computed(() => this.lines().reduce((s, l) => s + this.lineTax(l), 0));
   grandTotal = computed(() => this.subTotal() + this.taxTotal() + (Number(this.shippingEstimate) || 0));
 
-  readonly lineColumns: ColumnDef[] = [
-    { title: 'Product', field: 'product_name', cellType: 'text' },
-    { title: 'Order Qty', field: 'order_qty', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Received', field: 'received_qty_base', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Unit Price', field: 'unit_price', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Disc %', field: 'discount_pct', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Tax %', field: 'tax_rate_pct', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Line Total', field: '__total', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true, value: (r) => this.rowTotal(r as unknown as WorkLine) },
-  ];
-  readonly lineConfig: Partial<TableConfig> = {
-    showSearch: false, pagination: false, dense: true, striped: true, showColumnToggle: false,
-    showExport: false, showTitle: false, maxHeight: '320px', showActions: true,
-    actions: [{ type: 'delete', icon: 'delete', tooltip: 'Remove', variant: 'danger', visible: () => this.editable(), onClick: (r) => this.removeLine(r['__uid'] as number) }],
+  /**
+   * `__total` is derived, so it is injected here rather than stored on the line — the grid sums
+   * and exports the field, and a stored copy would go stale the moment qty or price changed.
+   */
+  readonly lineData = computed<WorkLine[]>(() =>
+    this.lines().map((l) => ({ ...l, __total: this.rowTotal(l) })),
+  );
+
+  readonly lineGrid: GridConfig<WorkLine> = {
+    gridKey: 'PUR_1101_ORDER_LINE_GRID',
+    rowIdField: '__uid',
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: true,
+    showPagination: true,
+    pageSize: 50,
+    pageSizeOptions: [25, 50, 100, 500],
+    // A submitted order is history — editable() is false once it leaves draft, which turns the
+    // whole grid read-only without a second set of flags to keep in step.
+    canAdd: () => this.editable() && this.permissionService.canInsert(),
+    canEdit: () => this.editable() && this.permissionService.canUpdate(),
+    canDeleteRow: () => this.editable() && this.permissionService.canDelete(),
+    newRowDefaults: () => ({ __uid: ++this.uid, order_qty: 1, unit_price: 0, discount_pct: 0, tax_rate_pct: 0 }) as Partial<WorkLine>,
+    toolbar: {
+      title: 'Order Lines', showAdd: true, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true, searchPlaceholder: 'Search lines...',
+    },
+    columns: [
+      GridColumns.lookup<WorkLine>('product_no', 'Product', () => toGridOptions(this.products()))
+        .flex(1).minWidth(200).required('Product is required').build(),
+      GridColumns.lookup<WorkLine>('uom_no', 'UOM', () => toGridOptions(this.uoms()))
+        .width(110).required('UOM is required').build(),
+      GridColumns.decimal<WorkLine>('order_qty', 'Order Qty').width(110).min(0).required().build(),
+      // Filled by goods receipts, never typed — an editable copy would be overwritten on reload.
+      GridColumns.decimal<WorkLine>('received_qty_base', 'Received').width(110).readOnly().build(),
+      GridColumns.decimal<WorkLine>('unit_price', 'Unit Price').width(120).min(0).build(),
+      GridColumns.decimal<WorkLine>('discount_pct', 'Disc %').width(90).min(0).build(),
+      GridColumns.decimal<WorkLine>('tax_rate_pct', 'Tax %').width(90).min(0).build(),
+      GridColumns.decimal<WorkLine>('__total', 'Line Total')
+        .width(130).readOnly().sum().footer('Total').build(),
+      GridColumns.action<WorkLine>().build(),
+    ],
   };
-  readonly lineData = computed(() => this.lines().map((l) => ({ ...l, __total: this.rowTotal(l) })) as unknown as Record<string, unknown>[]);
+
+  /** Kept only to flush an in-progress row edit before building a payload. */
+  private gridApi?: GridApiService<any>;
+  onGridReady(api: GridApiService<any>): void { this.gridApi = api; }
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('PUR_1101'); this.loadLookups(); this.load(); });
@@ -147,18 +176,41 @@ export class Pur1101Component implements OnInit {
     this.selectedNo.set(null); this.status.set(1);
     this.supplierNo = null; this.warehouseNo = null; this.orderDate = new Date().toISOString().split('T')[0];
     this.expectedDate = null; this.shippingEstimate = null; this.termsNote = ''; this.remarks = '';
-    this.lines.set([]); this.resetLine();
+    this.lines.set([]);
   }
 
+  // ── Grid row state — the form owns the rows (externalRowState) ─────────────
   addLine(): void {
-    if (!this.editable()) return;
-    if (!this.newProduct || !this.newUom) { this.toastr.warning('Select product and UOM'); return; }
-    if (!this.newQty || this.newQty <= 0) { this.toastr.warning('Enter a quantity'); return; }
-    this.lines.update((ls) => [...ls, { __uid: ++this.uid, product_no: this.newProduct, product_name: this.productName(this.newProduct), uom_no: this.newUom, uom_name: this.uomName(this.newUom), order_qty: Number(this.newQty), unit_price: Number(this.newPrice) || 0, discount_pct: Number(this.newDiscPct) || 0, tax_rate_pct: Number(this.newTaxPct) || 0 }]);
-    this.resetLine();
+    this.lines.update((ls) => [...ls, {
+      __uid: ++this.uid, product_no: null, uom_no: null,
+      order_qty: 1, unit_price: 0, discount_pct: 0, tax_rate_pct: 0,
+    } as WorkLine]);
   }
-  private resetLine(): void { this.newProduct = null; this.newUom = null; this.newQty = null; this.newPrice = null; this.newDiscPct = null; this.newTaxPct = null; }
-  removeLine(uid: number): void { this.lines.update((ls) => ls.filter((l) => l.__uid !== uid)); }
+
+  onLineChange(row: WorkLine): void {
+    // Names ride along for the payload and the sidebar; the grid edits the *_no codes.
+    this.lines.update((ls) => ls.map((l) => (l.__uid === row.__uid
+      ? { ...l, ...row, product_name: this.productName(row.product_no), uom_name: this.uomName(row.uom_no) }
+      : l)));
+  }
+
+  onLineRemove(row: WorkLine): void {
+    this.lines.update((ls) => ls.filter((l) => l.__uid !== row.__uid));
+  }
+
+  /**
+   * The backend keeps only lines with a product and a positive qty and silently DROPS the rest,
+   * so an unfinished row would vanish on save and the document would come back with fewer lines
+   * than the operator entered — no error, no explanation. Refuse the save instead.
+   */
+  private linesAreComplete(): boolean {
+    const bad = this.lines().findIndex((l) => !l.product_no || !l.uom_no || !(Number(l.order_qty) > 0));
+    if (bad >= 0) {
+      this.toastr.warning(`Line ${bad + 1} needs a product, a UOM and a quantity`);
+      return false;
+    }
+    return true;
+  }
 
   private buildPayload(): PurchaseOrder {
     return {
@@ -170,8 +222,10 @@ export class Pur1101Component implements OnInit {
   }
 
   onSave(): void {
+    this.gridApi?.stopEditing();   // commit the open row before reading it
     if (!this.supplierNo || !this.warehouseNo) { this.toastr.warning('Supplier and warehouse are required'); return; }
     if (this.lines().length === 0) { this.toastr.warning('Add at least one line'); return; }
+    if (!this.linesAreComplete()) return;
     this.isSaving.set(true);
     const isUpdate = !!this.selectedNo();
     const payload = this.buildPayload();
@@ -183,6 +237,7 @@ export class Pur1101Component implements OnInit {
   }
 
   submit(): void {
+    this.gridApi?.stopEditing();   // commit the open row before reading it
     const no = this.selectedNo(); if (!no) { this.toastr.warning('Save the PO first'); return; }
     this.alert.confirm('Submit this PO for approval? Once approved it can be received against.', 'Submit PO', 'primary')
       .subscribe((ok) => { if (ok) this.data.submit(no).subscribe({ next: (r) => { if (isSuccess(r)) { this.toastr.success('PO submitted'); this.load(no); } }, error: (e) => this.toastr.error(e?.error?.message ?? 'Submit failed') }); });

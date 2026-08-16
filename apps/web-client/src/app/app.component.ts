@@ -2,13 +2,15 @@ import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/cor
 import { RouterModule } from '@angular/router';
 import { NgSelectConfig } from '@ng-select/ng-select';
 import { SessionManagerService } from './core/services/session-manager.service';
-import { LoaderComponent } from './shared/components/loader/loader.component';
 // import { ShowDatepickerDirective } from './shared/directives/show-datepicker.directive';
 
+// The full-screen spinner is <app-global-loader>, rendered by MainLayoutComponent. <app-loader>
+// used to render here as well — both watch the same LoaderService, so every request drew the
+// white ring on a dark overlay on top of the subtler bar sweep.
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [RouterModule, LoaderComponent],
+  imports: [RouterModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

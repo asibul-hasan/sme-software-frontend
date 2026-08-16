@@ -65,7 +65,12 @@
         </div>
       </div>
       <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
-        <app-common-table [columns]="allocColumns" [data]="allocData()" [config]="allocConfig" />
+        <app-erp-grid
+          [config]="allocGrid"
+          [data]="allocData()"
+          height="100%"
+          (rowChange)="onAllocChange($event)"
+        ></app-erp-grid>
       </div>
       <div class="card-body py-2 text-muted">
         <small><mat-icon style="font-size:15px;width:15px;height:15px;vertical-align:middle">info</mat-icon> Enter the amount, then Auto-allocate applies it to the oldest dues first. Any unallocated amount is recorded as a supplier advance.</small>

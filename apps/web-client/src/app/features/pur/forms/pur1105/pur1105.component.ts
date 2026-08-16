@@ -7,7 +7,11 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
+import { GridApiService } from '../../../../shared/ag-grid/services/grid-api.service';
+import { toGridOptions } from '../../utils/grid-options';
 
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -21,7 +25,7 @@ import { purConstants } from '../../constants/pur.constants';
 import { ToastrService } from 'ngx-toastr';
 import { Pur1105DataService, Receipt, ReceiptLine } from './services/data.service';
 
-interface WorkLine extends ReceiptLine { __uid: number; }
+interface WorkLine extends ReceiptLine { __uid: number; __total?: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 
@@ -29,7 +33,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1105',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1105DataService],
   templateUrl: './pur1105.component.html',
   styles: [':host { display: block; height: 100%; }'],
@@ -62,15 +66,6 @@ export class Pur1105Component implements OnInit {
   receiptDate = new Date().toISOString().split('T')[0];
   remarks = '';
 
-  newProduct: number | null = null;
-  newUom: number | null = null;
-  newQty: number | null = null;
-  newCost: number | null = null;
-  newTaxPct: number | null = null;
-  newBatch = '';
-  newMfgDate: string | null = null;
-  newExpiryDate: string | null = null;
-
   editable = computed(() => this.selectedNo() === null || this.status() === 1);
 
   filtered = computed(() => {
@@ -85,31 +80,52 @@ export class Pur1105Component implements OnInit {
   taxTotal = computed(() => this.lines().reduce((s, l) => s + this.lineTax(l), 0));
   grandTotal = computed(() => this.subTotal() + this.taxTotal());
 
-  readonly lineColumns: ColumnDef[] = [
-    { title: 'Product', field: 'product_name', cellType: 'text', width: '220px', pin: 'left' },
-    { title: 'Qty', field: 'qty', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'UOM', field: 'uom_name', cellType: 'text', width: '90px' },
-    { title: 'Unit Cost', field: 'unit_cost', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Tax %', field: 'tax_rate_pct', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Batch', field: 'batch_code', cellType: 'text', width: '120px' },
-    { title: 'Expiry', field: 'expiry_date', cellType: 'date', width: '120px' },
-    { title: 'Line Total', field: '__total', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true, value: (r) => this.rowTotal(r as unknown as WorkLine) },
-  ];
-  readonly lineConfig: Partial<TableConfig> = {
-    showSearch: false,
-    pagination: false,
-    dense: true,
-    striped: true,
-    showColumnToggle: false,
-    showExport: false,
-    showTitle: false,
-    maxHeight: '340px',
-    showActions: true,
-    actions: [
-      { type: 'delete', icon: 'delete', tooltip: 'Remove', variant: 'danger', visible: () => this.editable(), onClick: (r) => this.removeLine(r['__uid'] as number) },
+  /**
+   * `__total` is derived, so it is injected here rather than stored on the line — the grid sums
+   * and exports the field, and a stored copy would go stale the moment qty or cost changed.
+   */
+  readonly lineData = computed<WorkLine[]>(() =>
+    this.lines().map((l) => ({ ...l, __total: this.rowTotal(l) })),
+  );
+
+  readonly lineGrid: GridConfig<WorkLine> = {
+    gridKey: 'PUR_1105_RECEIPT_LINE_GRID',
+    rowIdField: '__uid',
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: true,
+    showPagination: true,
+    pageSize: 50,
+    pageSizeOptions: [25, 50, 100, 500],
+    // A posted GRN is history — editable() is false once it leaves draft, which turns the whole
+    // grid read-only without a second set of flags to keep in step.
+    canAdd: () => this.editable() && this.permissionService.canInsert(),
+    canEdit: () => this.editable() && this.permissionService.canUpdate(),
+    canDeleteRow: () => this.editable() && this.permissionService.canDelete(),
+    newRowDefaults: () => ({ __uid: ++this.uid, qty: 1, unit_cost: 0, tax_rate_pct: 0 }) as Partial<WorkLine>,
+    toolbar: {
+      title: 'Received Lines', showAdd: true, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true, searchPlaceholder: 'Search lines...',
+    },
+    columns: [
+      GridColumns.lookup<WorkLine>('product_no', 'Product', () => toGridOptions(this.products()))
+        .flex(1).minWidth(200).required('Product is required').build(),
+      GridColumns.lookup<WorkLine>('uom_no', 'UOM', () => toGridOptions(this.uoms()))
+        .width(110).required('UOM is required').build(),
+      GridColumns.decimal<WorkLine>('qty', 'Qty').width(100).min(0).required().build(),
+      GridColumns.decimal<WorkLine>('unit_cost', 'Unit Cost').width(120).min(0).build(),
+      GridColumns.decimal<WorkLine>('tax_rate_pct', 'Tax %').width(90).min(0).build(),
+      GridColumns.text<WorkLine>('batch_code', 'Batch').width(120).build(),
+      GridColumns.date<WorkLine>('expiry_date', 'Expiry').width(130).build(),
+      GridColumns.decimal<WorkLine>('__total', 'Line Total')
+        .width(130).readOnly().sum().footer('Total').build(),
+      GridColumns.action<WorkLine>().build(),
     ],
   };
-  readonly lineData = computed(() => this.lines().map((l) => ({ ...l, __total: this.rowTotal(l) })) as unknown as Record<string, unknown>[]);
+
+  /** Kept only to flush an in-progress row edit before building a payload. */
+  private gridApi?: GridApiService<any>;
+  onGridReady(api: GridApiService<any>): void { this.gridApi = api; }
 
   ngOnInit(): void {
     this.permissionService.useLocalPermissions('PUR_1105');
@@ -192,43 +208,43 @@ export class Pur1105Component implements OnInit {
     this.receiptDate = new Date().toISOString().split('T')[0];
     this.remarks = '';
     this.lines.set([]);
-    this.resetLine();
   }
 
+  // ── Grid row state — the form owns the rows (externalRowState) ─────────────
   addLine(): void {
-    if (!this.editable()) return;
-    if (!this.newProduct || !this.newUom) { this.toastr.warning('Select product and UOM'); return; }
-    if (!this.newQty || this.newQty <= 0) { this.toastr.warning('Enter a quantity'); return; }
-    if (this.newCost == null || this.newCost < 0) { this.toastr.warning('Enter unit cost'); return; }
     this.lines.update((ls) => [...ls, {
       __uid: ++this.uid,
-      product_no: this.newProduct,
-      product_name: this.productName(this.newProduct),
-      uom_no: this.newUom,
-      uom_name: this.uomName(this.newUom),
-      qty: Number(this.newQty),
-      unit_cost: Number(this.newCost) || 0,
-      tax_rate_pct: Number(this.newTaxPct) || 0,
-      batch_code: this.newBatch || null,
-      mfg_date: this.newMfgDate,
-      expiry_date: this.newExpiryDate,
-    }]);
-    this.resetLine();
+      product_no: null,
+      uom_no: null,
+      qty: 1,
+      unit_cost: 0,
+      tax_rate_pct: 0,
+    } as WorkLine]);
   }
 
-  removeLine(uid: number): void {
-    this.lines.update((ls) => ls.filter((l) => l.__uid !== uid));
+  onLineChange(row: WorkLine): void {
+    // Names ride along for the payload and the sidebar; the grid edits the *_no codes.
+    this.lines.update((ls) => ls.map((l) => (l.__uid === row.__uid
+      ? { ...l, ...row, product_name: this.productName(row.product_no), uom_name: this.uomName(row.uom_no) }
+      : l)));
   }
 
-  private resetLine(): void {
-    this.newProduct = null;
-    this.newUom = null;
-    this.newQty = null;
-    this.newCost = null;
-    this.newTaxPct = null;
-    this.newBatch = '';
-    this.newMfgDate = null;
-    this.newExpiryDate = null;
+  onLineRemove(row: WorkLine): void {
+    this.lines.update((ls) => ls.filter((l) => l.__uid !== row.__uid));
+  }
+
+  /**
+   * The backend keeps only lines with a product and a positive qty and silently DROPS the rest,
+   * so an unfinished row would vanish on save and the GRN would come back with fewer lines than
+   * the operator entered — no error, no explanation. Refuse the save instead.
+   */
+  private linesAreComplete(): boolean {
+    const bad = this.lines().findIndex((l) => !l.product_no || !l.uom_no || !(Number(l.qty) > 0));
+    if (bad >= 0) {
+      this.toastr.warning(`Line ${bad + 1} needs a product, a UOM and a quantity`);
+      return false;
+    }
+    return true;
   }
 
   private buildPayload(): Receipt {
@@ -257,8 +273,10 @@ export class Pur1105Component implements OnInit {
   }
 
   onSave(): void {
+    this.gridApi?.stopEditing();   // commit the open row before reading it
     if (!this.supplierNo || !this.warehouseNo) { this.toastr.warning('Supplier and warehouse are required'); return; }
     if (this.lines().length === 0) { this.toastr.warning('Add at least one line'); return; }
+    if (!this.linesAreComplete()) return;
     this.isSaving.set(true);
     const isUpdate = !!this.selectedNo();
     const payload = this.buildPayload();
@@ -275,6 +293,7 @@ export class Pur1105Component implements OnInit {
   }
 
   post(): void {
+    this.gridApi?.stopEditing();   // commit the open row before reading it
     const no = this.selectedNo();
     if (!no) { this.toastr.warning('Save the GRN first'); return; }
     this.alert.confirm('Post this GRN? Stock will increase and GRN clearing will be credited.', 'Post GRN', 'primary')

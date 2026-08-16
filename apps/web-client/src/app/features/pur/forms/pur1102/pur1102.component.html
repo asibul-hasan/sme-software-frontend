@@ -56,31 +56,6 @@
       </div>
     </div>
 
-    <!-- Add line -->
-    @if (editable()) {
-      <div class="form-section-card card flex-shrink-0">
-        <div class="card-body">
-          <div class="row row-group align-items-end">
-            <div class="col-md-3"><div class="field-group"><label class="field-label">Product</label>
-              <ng-select [(ngModel)]="newProduct" [items]="products()" bindValue="no" bindLabel="name" placeholder="Product" /></div></div>
-            <div class="col-md-2"><div class="field-group"><label class="field-label">UOM</label>
-              <ng-select [(ngModel)]="newUom" [items]="uoms()" bindValue="no" bindLabel="name" placeholder="UOM" /></div></div>
-            <div class="col-md-1"><div class="field-group"><label class="field-label">Qty</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newQty" /></div></div>
-            <div class="col-md-2"><div class="field-group"><label class="field-label">Unit Price</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newPrice" step="0.01" inputmode="decimal" /></div></div>
-            <div class="col-md-1"><div class="field-group"><label class="field-label">Disc %</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newDiscPct" /></div></div>
-            <div class="col-md-1"><div class="field-group"><label class="field-label">Tax %</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="newTaxPct" /></div></div>
-            <div class="col-md-1"><div class="field-group"><label class="field-label">Batch</label>
-              <input type="text" class="form-control" [(ngModel)]="newBatch" /></div></div>
-            <div class="col-md-1"><button type="button" class="btn-action btn-save w-100" style="height:42px" (click)="addLine()"><mat-icon>add</mat-icon></button></div>
-          </div>
-        </div>
-      </div>
-    }
-
     <!-- Lines -->
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
       <div class="card-header d-flex align-items-center">
@@ -93,7 +68,15 @@
         </div>
       </div>
       <div class="card-body p-0" style="flex:1 1 auto; min-height:0">
-        <app-common-table [columns]="lineColumns" [data]="lineData()" [config]="lineConfig" />
+        <app-erp-grid
+          [config]="lineGrid"
+          [data]="lineData()"
+          height="100%"
+          (ready)="onGridReady($event)"
+          (addRow)="addLine()"
+          (rowChange)="onLineChange($event)"
+          (rowRemove)="onLineRemove($event)"
+        ></app-erp-grid>
       </div>
       <div class="card-body">
         <div class="row row-group align-items-end">

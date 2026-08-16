@@ -4,7 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
+import { GridApiService } from '../../../../shared/ag-grid/services/grid-api.service';
+import { toGridOptions } from '../../utils/grid-options';
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
@@ -19,7 +23,7 @@ interface WorkRow extends SupplierPriceRow { __uid: number; }
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1002',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Pur1002DataService],
   templateUrl: './pur1002.component.html',
   styles: [':host { display: block; height: 100%; }'],
@@ -41,15 +45,6 @@ export class Pur1002Component implements OnInit {
   isSaving = signal(false);
   private uid = 0;
 
-  newProductNo: number | null = null;
-  newUomNo: number | null = null;
-  newSku = '';
-  newPrice: number | null = null;
-  newDiscountPct: number | null = null;
-  newMoq: number | null = null;
-  newLeadTimeDays: number | null = null;
-  newPreferred = false;
-
   filteredSuppliers = computed(() => {
     const t = this.searchTerm().toLowerCase().trim();
     return this.suppliers()
@@ -58,39 +53,46 @@ export class Pur1002Component implements OnInit {
   });
   pager = makePaginator(this.filteredSuppliers, { sortKey: (x: LookupOption) => x.no });
 
-  readonly tableColumns: ColumnDef[] = [
-    { title: 'Product', field: 'product_name', cellType: 'text', width: '220px', pin: 'left' },
-    { title: 'Supplier SKU', field: 'supplier_sku', cellType: 'text', width: '140px' },
-    { title: 'UOM', field: 'uom_name', cellType: 'text', width: '90px' },
-    { title: 'Last Price', field: 'last_price', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Disc %', field: 'discount_pct', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'MOQ', field: 'moq', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Lead Days', field: 'lead_time_days', cellType: 'number', align: 'right' },
-    {
-      title: 'Preferred',
-      field: 'is_preferred',
-      cellType: 'badge',
-      width: '110px',
-      badgeConfig: (v) => Number(v) === 1 ? { label: 'Preferred', variant: 'success' } : { label: 'Standard', variant: 'neutral' },
-    },
-  ];
+  readonly tableData = computed<WorkRow[]>(() => this.rows());
 
-  readonly tableConfig: Partial<TableConfig> = {
-    showSearch: true,
-    pagination: true,
-    defaultPageSize: 10,
-    dense: true,
-    striped: true,
-    showColumnToggle: true,
-    showExport: true,
-    showTitle: false,
-    showActions: true,
-    actions: [
-      { type: 'delete', icon: 'delete', tooltip: 'Remove', variant: 'danger', visible: () => this.canEdit(), onClick: (r) => this.removeRow(r['__uid'] as number) },
+  readonly priceGrid: GridConfig<WorkRow> = {
+    gridKey: 'PUR_1002_SUPPLIER_PRICE_GRID',
+    rowIdField: '__uid',
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: true,
+    showPagination: true,
+    pageSize: 50,
+    pageSizeOptions: [25, 50, 100, 500],
+    // Adding a price without a supplier selected would create an orphan row.
+    canAdd: () => this.canEdit() && this.selectedSupplierNo() !== null,
+    canEdit: () => this.canEdit(),
+    canDeleteRow: () => this.canEdit(),
+    newRowDefaults: () => ({
+      __uid: ++this.uid, last_price: 0, discount_pct: 0, moq: 0, is_preferred: 0, is_active: 1,
+    }) as Partial<WorkRow>,
+    toolbar: {
+      title: 'Price List', showAdd: true, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true, searchPlaceholder: 'Search products...',
+    },
+    columns: [
+      GridColumns.lookup<WorkRow>('product_no', 'Product', () => toGridOptions(this.products()))
+        .flex(1).minWidth(220).pinned('left').required('Product is required').build(),
+      GridColumns.text<WorkRow>('supplier_sku', 'Supplier SKU').width(150).build(),
+      GridColumns.lookup<WorkRow>('uom_no', 'UOM', () => toGridOptions(this.uoms()))
+        .width(110).required('UOM is required').build(),
+      GridColumns.decimal<WorkRow>('last_price', 'Last Price').width(130).min(0).sum().footer('Total').build(),
+      GridColumns.decimal<WorkRow>('discount_pct', 'Disc %').width(100).min(0).build(),
+      GridColumns.decimal<WorkRow>('moq', 'MOQ').width(100).min(0).build(),
+      GridColumns.number<WorkRow>('lead_time_days', 'Lead Days').width(110).min(0).build(),
+      GridColumns.checkbox<WorkRow>('is_preferred', 'Preferred').width(120).build(),
+      GridColumns.action<WorkRow>().build(),
     ],
   };
 
-  readonly tableData = computed(() => this.rows() as unknown as Record<string, unknown>[]);
+  /** Kept only to flush an in-progress row edit before building a payload. */
+  private gridApi?: GridApiService<any>;
+  onGridReady(api: GridApiService<any>): void { this.gridApi = api; }
 
   ngOnInit(): void {
     this.permissionService.useLocalPermissions('PUR_1002');
@@ -142,37 +144,45 @@ export class Pur1002Component implements OnInit {
     return this.uoms().find((u) => u.no === no)?.name ?? '';
   }
 
+  // ── Grid row state — the form owns the rows (externalRowState) ─────────────
   addRow(): void {
-    if (!this.canEdit()) return;
     const supplierNo = this.selectedSupplierNo();
     if (!supplierNo) { this.toastr.warning('Select a supplier first'); return; }
-    if (!this.newProductNo || !this.newUomNo) { this.toastr.warning('Select product and UOM'); return; }
-    if (this.newPrice == null || this.newPrice < 0) { this.toastr.warning('Enter a valid last price'); return; }
-    const duplicate = this.rows().some((r) => r.product_no === this.newProductNo && (r.variant_no ?? null) === null && r.uom_no === this.newUomNo);
-    if (duplicate) { this.toastr.warning('This product/UOM is already in the price list'); return; }
     this.rows.update((rows) => [...rows, {
       __uid: ++this.uid,
       supplier_no: supplierNo,
-      product_no: this.newProductNo,
-      product_name: this.productName(this.newProductNo),
-      uom_no: this.newUomNo,
-      uom_name: this.uomName(this.newUomNo),
-      supplier_sku: this.newSku || null,
-      last_price: Number(this.newPrice),
-      discount_pct: Number(this.newDiscountPct) || 0,
-      moq: Number(this.newMoq) || 0,
-      lead_time_days: this.newLeadTimeDays,
-      is_preferred: this.newPreferred ? 1 : 0,
+      product_no: null,
+      uom_no: null,
+      supplier_sku: null,
+      last_price: 0,
+      discount_pct: 0,
+      moq: 0,
+      lead_time_days: null,
+      is_preferred: 0,
       is_active: 1,
-    }]);
-    this.resetEntry();
+    } as unknown as WorkRow]);
   }
 
-  removeRow(uid: number): void {
-    this.rows.update((rows) => rows.filter((r) => r.__uid !== uid));
+  onRowChange(row: WorkRow): void {
+    // The backend keys a price on product + variant + UOM, so two rows sharing that triple would
+    // collapse into one on save. Refuse the edit rather than silently lose a price.
+    const clash = this.rows().some((r) => r.__uid !== row.__uid
+      && r.product_no === row.product_no
+      && (r.variant_no ?? null) === (row.variant_no ?? null)
+      && r.uom_no === row.uom_no);
+    if (clash) { this.toastr.warning('This product/UOM is already in the price list'); return; }
+
+    this.rows.update((rows) => rows.map((r) => (r.__uid === row.__uid
+      ? { ...r, ...row, product_name: this.productName(row.product_no), uom_name: this.uomName(row.uom_no) }
+      : r)));
+  }
+
+  onRowRemove(row: WorkRow): void {
+    this.rows.update((rows) => rows.filter((r) => r.__uid !== row.__uid));
   }
 
   save(): void {
+    this.gridApi?.stopEditing();   // commit the open row before reading it
     const supplierNo = this.selectedSupplierNo();
     if (!supplierNo) { this.toastr.warning('Select a supplier first'); return; }
     this.isSaving.set(true);
@@ -208,14 +218,4 @@ export class Pur1002Component implements OnInit {
       .subscribe((ok) => { if (ok) this.rows.set([]); });
   }
 
-  private resetEntry(): void {
-    this.newProductNo = null;
-    this.newUomNo = null;
-    this.newSku = '';
-    this.newPrice = null;
-    this.newDiscountPct = null;
-    this.newMoq = null;
-    this.newLeadTimeDays = null;
-    this.newPreferred = false;
-  }
 }

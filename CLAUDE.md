@@ -67,9 +67,12 @@ modal overlays, `window.confirm()`, `alert()`, or per-form spinner markup.
 
 - `AlertService` → opens the shared **`ConfirmDialogComponent`** (Tailwind card) via
   MatDialog. Returns `Observable<boolean>` (`true` = confirmed / OK, `false` = cancelled).
-- `LoaderComponent` → rendered ONCE in `app.component.html`, bound to
-  `LoaderService.isLoading()` (signal). Every HTTP call drives it through
-  `loaderInterceptor` unless the request opts out with `SKIP_LOADER`.
+- `GlobalLoaderComponent` (`<app-global-loader>`) → rendered ONCE in
+  `main-layout.component.html`, bound to `LoaderService.isLoading()` (signal). Every
+  HTTP call drives it through `loaderInterceptor` unless the request opts out with
+  `SKIP_LOADER`. `LoaderComponent` still exists but is **not rendered** — it watched
+  the same signal, so both fired on every request and its white ring on a dark
+  overlay covered the global loader. Do not re-add it to `app.component.html`.
 - `ToastrService` → provided in `app.config.ts` (`positionClass: 'toast-bottom-right'`,
   `preventDuplicates: true`). Every save/delete/action result MUST fire a toast (see
   "Action Result Handling Rule" above).

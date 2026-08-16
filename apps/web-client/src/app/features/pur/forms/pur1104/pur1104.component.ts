@@ -7,7 +7,9 @@ import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
 
 import { Pur1104DataService, Payment, OpenInvoice, PurOption } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
@@ -26,7 +28,7 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1104',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1104DataService],
   templateUrl: './pur1104.component.html',
   styles: [`:host { display: block; height: 100%; }`],
@@ -70,18 +72,36 @@ export class Pur1104Component implements OnInit {
   allocatedTotal = computed(() => this.openRows().reduce((s, r) => s + (Number(r.alloc) || 0), 0));
   unallocated    = computed(() => (Number(this.amount) || 0) - this.allocatedTotal());
 
-  readonly allocColumns: ColumnDef[] = [
-    { title: 'Invoice', field: 'invoice_id', cellType: 'text', width: '150px' },
-    { title: 'Date', field: 'invoice_date', cellType: 'date', dateFormat: 'dd MMM yyyy', width: '130px' },
-    { title: 'Grand Total', field: 'grand_total', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Due', field: 'due_amount', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Allocate', field: 'alloc', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-  readonly allocConfig: Partial<TableConfig> = {
-    showSearch: false, pagination: false, dense: true, striped: true, showColumnToggle: false,
-    showExport: false, showTitle: false, maxHeight: '300px', showActions: false,
+  readonly allocData = computed<AllocRow[]>(() => this.openRows());
+
+  readonly allocGrid: GridConfig<AllocRow> = {
+    gridKey: 'PUR_1104_PAYMENT_ALLOC_GRID',
+    rowIdField: 'invoice_no',
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: true,
+    showPagination: true,
+    pageSize: 50,
+    pageSizeOptions: [25, 50, 100, 500],
+    // Open bills come from the server — the operator allocates against them, never adds or
+    // removes a row. Only the Allocate column is editable, and only while the payment is a draft.
+    canAdd: () => false,
+    canEdit: () => this.status() === 1 && this.permissionService.canInsert(),
+    canDeleteRow: () => false,
+    toolbar: {
+      title: 'Open Bills', showAdd: false, showDelete: false, showSearch: true,
+      showExport: true, showColumnChooser: true, searchPlaceholder: 'Search bills...',
+    },
+    columns: [
+      GridColumns.text<AllocRow>('invoice_id', 'Invoice').width(160).readOnly().build(),
+      GridColumns.text<AllocRow>('supplier_invoice_no', 'Supplier Bill').width(160).readOnly().build(),
+      GridColumns.date<AllocRow>('invoice_date', 'Date').width(130).readOnly().build(),
+      GridColumns.decimal<AllocRow>('grand_total', 'Grand Total').width(140).readOnly().build(),
+      GridColumns.decimal<AllocRow>('due_amount', 'Due').width(130).readOnly().sum().footer('Total').build(),
+      // Editable so a bill can be settled by hand; Auto-allocate just fills the same column.
+      GridColumns.decimal<AllocRow>('alloc', 'Allocate').width(140).min(0).sum().build(),
+    ],
   };
-  readonly allocData = computed(() => this.openRows() as unknown as Record<string, unknown>[]);
 
   ngOnInit(): void {
     setTimeout(() => { this.permissionService.useLocalPermissions('PUR_1104'); this.loadSuppliers(); this.load(); });
@@ -112,6 +132,11 @@ export class Pur1104Component implements OnInit {
     this.data.openInvoices(this.supplierNo).subscribe({
       next: (r) => { if (isSuccess(r) && r.data) this.openRows.set(r.data.map((i) => ({ ...i, alloc: 0 }))); },
     });
+  }
+
+  /** Manual allocation typed into the grid — the form owns the rows (externalRowState). */
+  onAllocChange(row: AllocRow): void {
+    this.openRows.update((rows) => rows.map((r) => (r.invoice_no === row.invoice_no ? { ...r, ...row } : r)));
   }
 
   autoAllocate(): void {
