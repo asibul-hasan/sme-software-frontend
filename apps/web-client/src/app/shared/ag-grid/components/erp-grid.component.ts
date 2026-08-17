@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, input, output, effect, inject, computed, OnInit, OnDestroy, ViewChild
+  Component, ChangeDetectionStrategy, input, output, effect, inject, computed, OnInit, OnDestroy, ViewChild, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -62,6 +62,7 @@ import { GridStatusBarComponent } from './grid-status-bar.component';
 })
 export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
   public gridApiService = inject(GridApiService<T>);
+  private host = inject(ElementRef<HTMLElement>);
   private gridStateService = inject(GridStateService);
   private validationService = inject(GridValidationService);
   private gridExportService = inject(GridExportService);
@@ -297,7 +298,35 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
     this.rowClick.emit(this.domainRow(node.data));
   }
 
+  /**
+   * Commit an open row editor as soon as the pointer goes down outside the grid.
+   *
+   * `stopEditingWhenCellsLoseFocus` only tears the editor down once focus has already moved, which
+   * is after mousedown. Clicking a toolbar button while a cell was open therefore rebuilt the row
+   * between mousedown and mouseup, and the browser fires no `click` when the element under the
+   * pointer changes in between — so the first press on Save was swallowed and the user had to
+   * click it twice.
+   *
+   * Capture phase, so this runs before the editor teardown the browser would otherwise trigger:
+   * the row is committed and the DOM has settled by the time the click resolves.
+   */
+  private readonly commitOnOutsidePointerDown = (ev: Event): void => {
+    if (!this.gridApi) return;
+    if (this.gridApi.getEditingCells().length === 0) return;
+
+    const target = ev.target as Node | null;
+    if (target && this.host.nativeElement.contains(target)) return;   // inside the grid: leave it
+
+    // Editors render in a CDK/ng-select overlay outside the host — clicking an option must not
+    // count as leaving the grid, or picking from a dropdown would end the edit before it applied.
+    if (target instanceof Element && target.closest('.ng-dropdown-panel, .cdk-overlay-container')) return;
+
+    this.gridApi.stopEditing();
+  };
+
   ngOnDestroy(): void {
+    document.removeEventListener('pointerdown', this.commitOnOutsidePointerDown, true);
+
     if (this.gridApi && this.config().gridKey) {
       this.gridStateService.saveState(this.config().gridKey, this.gridApi);
     }
@@ -440,6 +469,8 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
     this.gridApi = event.api;
     this.gridApiService.setApi(event.api);
     this.gridOptions.context = { gridApiService: this.gridApiService };
+
+    document.addEventListener('pointerdown', this.commitOnOutsidePointerDown, true);
 
     if (this.config().gridKey) {
       this.gridStateService.restoreState(this.config().gridKey, event.api);

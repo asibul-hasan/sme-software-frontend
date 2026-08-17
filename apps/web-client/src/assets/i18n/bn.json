@@ -276,7 +276,6 @@
   "manageCurrencySettings": "গ্লোবাল কারেন্সি, বিনিময় হার এবং আঞ্চলিক বিন্যাস পরিচালনা করুন",
   "manageTaxSettings": "ট্যাক্স নিয়ম, ভ্যাট হার এবং যৌগিক ট্যাক্স কাঠামো কনফিগার করুন",
   "addComponentTax": "উপাদান ট্যাক্স যোগ করুন",
-
   "mobile": "মোবাইল",
   "postCode": "পোস্ট কোড",
   "isMainBranch": "মূল শাখা",
@@ -288,7 +287,6 @@
   "regional": "আঞ্চলিক",
   "retailStore": "খুচরা দোকান",
   "serviceCenter": "সার্ভিস সেন্টার",
-
   "branchCodePlaceholder": "যেমন: BR-001",
   "branchNamePlaceholder": "যেমন: ডাউনটাউন মেইন শাখা",
   "mobilePlaceholder": "যেমন: +৮৮০ ১XXX-XXXXXX",
@@ -296,7 +294,6 @@
   "emailPlaceholder": "branch@company.com",
   "cityPlaceholder": "শহর",
   "postCodePlaceholder": "জিপ / পোস্ট কোড",
-
   "branchUpdated": "শাখা সফলভাবে আপডেট হয়েছে",
   "branchCreated": "শাখা সফলভাবে তৈরি হয়েছে",
   "branchDeleted": "শাখা সফলভাবে মুছে ফেলা হয়েছে",
@@ -452,5 +449,9 @@
     "updateFail": "আপডেট করা যায়নি",
     "deleteFail": "মুছে ফেলা যায়নি",
     "required": "{0} আবশ্যক"
-  }
+  },
+  "goodsReceiptNote": "পণ্য প্রাপ্তি নোট",
+  "landedCost": "ল্যান্ডেড কস্ট",
+  "supplierPriceList": "সরবরাহকারী মূল্য তালিকা",
+  "supplierAgingAndSpend": "সরবরাহকারী বকেয়া ও ব্যয়"
 }

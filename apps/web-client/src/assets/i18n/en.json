@@ -287,7 +287,6 @@
   "manageCurrencySettings": "Manage global currencies, exchange rates, and regional formats",
   "manageTaxSettings": "Configure tax rules, VAT rates, and composite tax structures",
   "addComponentTax": "Add Component Tax",
-
   "mobile": "Mobile",
   "postCode": "Post Code",
   "isMainBranch": "Is Main Branch",
@@ -299,7 +298,6 @@
   "regional": "Regional",
   "retailStore": "Retail Store",
   "serviceCenter": "Service Center",
-
   "branchCodePlaceholder": "e.g. BR-001",
   "branchNamePlaceholder": "e.g. Downtown Main Branch",
   "mobilePlaceholder": "e.g. +880 1XXX-XXXXXX",
@@ -307,7 +305,6 @@
   "emailPlaceholder": "branch@company.com",
   "cityPlaceholder": "City",
   "postCodePlaceholder": "ZIP / Post Code",
-
   "branchUpdated": "Branch updated successfully",
   "branchCreated": "Branch created successfully",
   "branchDeleted": "Branch deleted successfully",
@@ -496,5 +493,9 @@
   "approvalWorkflowSetup": "Approval Workflow Setup",
   "sessionLoginMonitor": "Session / Login Monitor",
   "costCenterSetup": "Cost Center Setup",
-  "customerReceipt": "Customer Receipt"
+  "customerReceipt": "Customer Receipt",
+  "goodsReceiptNote": "Goods Receipt Note",
+  "landedCost": "Landed Cost",
+  "supplierPriceList": "Supplier Price List",
+  "supplierAgingAndSpend": "Supplier Aging & Spend"
 }

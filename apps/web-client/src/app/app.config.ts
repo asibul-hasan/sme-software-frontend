@@ -11,7 +11,8 @@ import {
   withInterceptors,
   withXsrfConfiguration,
 } from '@angular/common/http';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
+import { HumanisingMissingTranslationHandler } from './core/i18n/humanising-missing-translation.handler';
 import {
   TranslateHttpLoader,
   TRANSLATE_HTTP_LOADER_CONFIG,
@@ -90,6 +91,11 @@ export const appConfig: ApplicationConfig = {
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,
+        },
+        // A key with no entry renders as a readable label instead of the raw identifier.
+        missingTranslationHandler: {
+          provide: MissingTranslationHandler,
+          useClass: HumanisingMissingTranslationHandler,
         },
       }),
     ),
