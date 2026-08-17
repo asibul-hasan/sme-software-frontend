@@ -5,7 +5,8 @@
   [recordsCount]="filtered().length"
   [sidebarTitle]="'Payments'"
   [searchTerm]="searchTerm()"
-  (searchTermChange)="searchTerm.set($event)"
+  (searchTermChange)="searchTerm.set($event); pager.reset()"
+  [pager]="pager"
   [showSort]="false"
   (new)="onNew()"
   [showSave]="false"
@@ -14,7 +15,7 @@
   [isLoading]="isLoading()"
 >
   <div sidebarList>
-    @for (item of filtered(); track item.payment_no) {
+    @for (item of pager.paged(); track item.payment_no) {
       <button type="button" class="list-group-item list-group-item-action"
         [class.active]="selectedNo() === item.payment_no" (click)="select(item)">
         <h6 class="list-item-title mb-0 text-truncate">{{ item.payment_id }}</h6>
@@ -77,4 +78,6 @@
       </div>
     </div>
   </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="pager"></app-sidebar-pagination>
 </app-page-form-layout>

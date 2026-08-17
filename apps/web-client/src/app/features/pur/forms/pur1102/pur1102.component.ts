@@ -18,6 +18,7 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 
 import { AlertService } from '../../../../core/services/alert.service';
 import { isSuccess } from '../../../../core/models/response.model';
+import { makePaginator } from '../../../../core/utils/paginator';
 
 import { purConstants } from '../../constants/pur.constants';
 import { ToastrService } from 'ngx-toastr';
@@ -76,6 +77,8 @@ export class Pur1102Component implements OnInit {
       .filter((i) => (i.invoice_id || '').toLowerCase().includes(t) || (i.supplier_invoice_no || '').toLowerCase().includes(t) || (i.supplier_name || '').toLowerCase().includes(t))
       .sort((a, b) => (b.invoice_no ?? 0) - (a.invoice_no ?? 0));
   });
+
+  pager = makePaginator(this.filtered, { sortKey: (x: Invoice) => x.invoice_no ?? 0 });
 
   subTotal  = computed(() => this.lines().reduce((s, l) => s + this.lineTaxable(l), 0));
   taxTotal  = computed(() => this.lines().reduce((s, l) => s + this.lineTax(l), 0));

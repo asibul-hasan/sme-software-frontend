@@ -6,6 +6,7 @@
   [sidebarTitle]="'Landed Costs'"
   [searchTerm]="searchTerm()"
   (searchTermChange)="searchTerm.set($event); pager.reset()"
+  [pager]="pager"
   [showSort]="false"
   (save)="onSave()" (new)="onNew()" (delete)="onDelete()"
   [showSave]="editable() && (permissionService.canInsert() || permissionService.canUpdate())"
@@ -74,4 +75,6 @@
       </div>
     </div>
   </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="pager"></app-sidebar-pagination>
 </app-page-form-layout>

@@ -20,6 +20,7 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 import { AlertService } from '../../../../core/services/alert.service';
 
 import { isSuccess } from '../../../../core/models/response.model';
+import { makePaginator } from '../../../../core/utils/paginator';
 import { purConstants } from '../../constants/pur.constants';
 
 import { ToastrService } from 'ngx-toastr';
@@ -75,6 +76,8 @@ export class Pur1101Component implements OnInit {
       .filter((i) => (i.order_id || '').toLowerCase().includes(t) || (i.supplier_name || '').toLowerCase().includes(t))
       .sort((a, b) => (b.order_no ?? 0) - (a.order_no ?? 0));
   });
+
+  pager = makePaginator(this.filtered, { sortKey: (x: PurchaseOrder) => x.order_no ?? 0 });
 
   subTotal = computed(() => this.lines().reduce((s, l) => s + this.lineTaxable(l), 0));
   taxTotal = computed(() => this.lines().reduce((s, l) => s + this.lineTax(l), 0));
