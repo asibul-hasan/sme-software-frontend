@@ -30,29 +30,29 @@
   </div>
 
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">shopping_cart</mat-icon> {{ selectedNo() ? 'PO · ' + statusLabel(status()) : 'New PO' }}</h4>
-        <div class="ms-auto d-flex gap-2">
-          @if (editable() && selectedNo()) { <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button> }
-          @if (status() !== 1 && status() !== 7 && status() !== 5) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>cancel</mat-icon> Cancel</button> }
-        </div>
+    <app-form-section class="flex-shrink-0" icon="shopping_cart"
+      [title]="selectedNo() ? 'PO · ' + statusLabel(status()) : 'New PO'">
+      <div sectionActions class="flex gap-2">
+        @if (editable() && selectedNo()) { <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button> }
+        @if (status() !== 1 && status() !== 7 && status() !== 5) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>cancel</mat-icon> Cancel</button> }
       </div>
-      <div class="card-body">
-        <div class="row row-group">
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
-            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Receive Warehouse</label>
-            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Intended warehouse" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Order Date</label>
-            <app-date-picker [(ngModel)]="orderDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Expected</label>
-            <app-date-picker [(ngModel)]="expectedDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Shipping Est.</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="shippingEstimate" [disabled]="!editable()" /></div></div>
-        </div>
-      </div>
-    </div>
+
+      <app-form-field label="Supplier" [span]="3">
+        <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" />
+      </app-form-field>
+      <app-form-field label="Receive Warehouse" [span]="3">
+        <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Intended warehouse" />
+      </app-form-field>
+      <app-form-field label="Order Date" [span]="2">
+        <app-date-picker [(ngModel)]="orderDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Expected" [span]="2">
+        <app-date-picker [(ngModel)]="expectedDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Shipping Est." [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="shippingEstimate" [disabled]="!editable()" />
+      </app-form-field>
+    </app-form-section>
 
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
       <div class="card-header d-flex align-items-center">
@@ -79,12 +79,11 @@
     <!-- Its own card: anything sharing the lines card competes with the grid for height, and
          `height="100%"` then resolves against whatever is left — on a short viewport that was
          about 120px, almost all of it status bar. -->
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-body">
-        <div class="field-group"><label class="field-label">Terms / Notes</label>
-          <input type="text" class="form-control" [(ngModel)]="termsNote" [disabled]="!editable()" placeholder="Payment terms, delivery notes…" /></div>
-      </div>
-    </div>
+    <app-form-section class="flex-shrink-0" title="Terms" icon="notes" dense>
+      <app-form-field label="Terms / Notes" [span]="12">
+        <input type="text" class="form-control" [(ngModel)]="termsNote" [disabled]="!editable()" placeholder="Payment terms, delivery notes…" />
+      </app-form-field>
+    </app-form-section>
   </div>
 
   <app-sidebar-pagination sidebarFooter [pager]="pager"></app-sidebar-pagination>

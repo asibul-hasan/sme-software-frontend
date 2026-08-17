@@ -30,29 +30,29 @@
   </div>
 
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">assignment_return</mat-icon> {{ selectedNo() ? ('Return · ' + statusLabel(status())) : 'New Return' }}</h4>
-        <div class="ms-auto d-flex gap-2">
-          @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="post()"><mat-icon>check</mat-icon> Post Return</button> }
-          @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
-        </div>
+    <app-form-section class="flex-shrink-0" icon="assignment_return"
+      [title]="selectedNo() ? 'Return · ' + statusLabel(status()) : 'New Return'">
+      <div sectionActions class="flex gap-2">
+        @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="post()"><mat-icon>check</mat-icon> Post Return</button> }
+        @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
       </div>
-      <div class="card-body">
-        <div class="row row-group">
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
-            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
-            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Return from" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
-            <app-date-picker [(ngModel)]="returnDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Reason</label>
-            <ng-select [(ngModel)]="reason" [items]="reasons" bindValue="value" bindLabel="label" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Settlement</label>
-            <ng-select [(ngModel)]="settlementMode" [items]="settlementModes" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" /></div></div>
-        </div>
-      </div>
-    </div>
+
+      <app-form-field label="Supplier" [span]="3">
+        <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" />
+      </app-form-field>
+      <app-form-field label="Warehouse" [span]="3">
+        <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Return from" />
+      </app-form-field>
+      <app-form-field label="Date" [span]="2">
+        <app-date-picker [(ngModel)]="returnDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Reason" [span]="2">
+        <ng-select [(ngModel)]="reason" [items]="reasons" bindValue="value" bindLabel="label" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Settlement" [span]="2">
+        <ng-select [(ngModel)]="settlementMode" [items]="settlementModes" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" />
+      </app-form-field>
+    </app-form-section>
 
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
       <div class="card-header d-flex align-items-center">

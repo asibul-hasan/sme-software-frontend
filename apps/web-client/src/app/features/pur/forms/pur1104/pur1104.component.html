@@ -31,29 +31,29 @@
 
   <div formContent class="h-full flex flex-col">
     <!-- Header -->
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">payments</mat-icon> {{ selectedNo() ? ('Payment · ' + statusLabel(status())) : 'New Payment' }}</h4>
-        <div class="ms-auto d-flex gap-2">
-          @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="onSave()"><mat-icon>check</mat-icon> Post Payment</button> }
-          @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
-        </div>
+    <app-form-section class="flex-shrink-0" icon="payments"
+      [title]="selectedNo() ? 'Payment · ' + statusLabel(status()) : 'New Payment'">
+      <div sectionActions class="flex gap-2">
+        @if (editable()) { <button type="button" class="btn-action btn-save" [disabled]="isSaving()" (click)="onSave()"><mat-icon>check</mat-icon> Post Payment</button> }
+        @if (status() === 2) { <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button> }
       </div>
-      <div class="card-body">
-        <div class="row row-group">
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
-            <ng-select [(ngModel)]="supplierNo" (ngModelChange)="onSupplierChange()" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Method</label>
-            <ng-select [(ngModel)]="paymentMethod" [items]="methods" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Date</label>
-            <app-date-picker [(ngModel)]="paymentDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Amount</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Txn / Cheque Ref</label>
-            <input type="text" class="form-control" [(ngModel)]="txnRef" [disabled]="!editable()" /></div></div>
-        </div>
-      </div>
-    </div>
+
+      <app-form-field label="Supplier" [span]="3">
+        <ng-select [(ngModel)]="supplierNo" (ngModelChange)="onSupplierChange()" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" />
+      </app-form-field>
+      <app-form-field label="Method" [span]="2">
+        <ng-select [(ngModel)]="paymentMethod" [items]="methods" bindValue="value" bindLabel="label" [disabled]="!editable()" [clearable]="false" />
+      </app-form-field>
+      <app-form-field label="Date" [span]="2">
+        <app-date-picker [(ngModel)]="paymentDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Amount" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Txn / Cheque Ref" [span]="3">
+        <input type="text" class="form-control" [(ngModel)]="txnRef" [disabled]="!editable()" />
+      </app-form-field>
+    </app-form-section>
 
     <!-- Allocation -->
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">

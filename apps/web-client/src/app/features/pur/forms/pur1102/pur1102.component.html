@@ -31,31 +31,30 @@
 
   <div formContent class="h-full flex flex-col">
     <!-- Header -->
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">description</mat-icon> {{ selectedNo() ? 'Invoice ' + (statusLabel(status())) : 'New Invoice' }}</h4>
-        <div class="ms-auto d-flex gap-2">
-          @if (editable() && selectedNo()) {
-            <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button>
-          }
-          @if (status() === 2) {
-            <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button>
-          }
-        </div>
+    <app-form-section class="flex-shrink-0" icon="description"
+      [title]="selectedNo() ? 'Invoice ' + statusLabel(status()) : 'New Invoice'">
+      <div sectionActions class="flex gap-2">
+        @if (editable() && selectedNo()) {
+          <button type="button" class="btn-action btn-save" (click)="submit()"><mat-icon>send</mat-icon> Submit</button>
+        }
+        @if (status() === 2) {
+          <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button>
+        }
       </div>
-      <div class="card-body">
-        <div class="row row-group">
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
-            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
-            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier Bill No</label>
-            <input type="text" class="form-control" [(ngModel)]="supplierInvoiceNo" [disabled]="!editable()" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Invoice Date</label>
-            <app-date-picker [(ngModel)]="invoiceDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-        </div>
-      </div>
-    </div>
+
+      <app-form-field label="Supplier" [span]="3">
+        <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" />
+      </app-form-field>
+      <app-form-field label="Warehouse" [span]="3">
+        <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" />
+      </app-form-field>
+      <app-form-field label="Supplier Bill No" [span]="3">
+        <input type="text" class="form-control" [(ngModel)]="supplierInvoiceNo" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Invoice Date" [span]="3">
+        <app-date-picker [(ngModel)]="invoiceDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+    </app-form-section>
 
     <!-- Lines -->
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
@@ -84,24 +83,26 @@
     <!-- Its own card: anything sharing the lines card competes with the grid for height, and
          `height="100%"` then resolves against whatever is left — on a short viewport that was
          about 120px, almost all of it status bar. -->
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Shipping</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Other Charges</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Round Off</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="roundOff" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Paid Now</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" step="0.01" inputmode="decimal" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Due Date</label>
-            <app-date-picker [(ngModel)]="dueDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
-            <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" /></div></div>
-        </div>
-      </div>
-    </div>
+    <app-form-section class="flex-shrink-0" title="Charges &amp; Settlement" icon="request_quote" dense>
+      <app-form-field label="Shipping" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Other Charges" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Round Off" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="roundOff" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Paid Now" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Due Date" [span]="2">
+        <app-date-picker [(ngModel)]="dueDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Remarks" [span]="2">
+        <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" />
+      </app-form-field>
+    </app-form-section>
   </div>
 
   <app-sidebar-pagination sidebarFooter [pager]="pager"></app-sidebar-pagination>

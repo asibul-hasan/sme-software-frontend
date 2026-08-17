@@ -30,33 +30,33 @@
   </div>
 
   <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">inventory</mat-icon> {{ selectedNo() ? 'GRN ' + statusLabel(status()) : 'New GRN' }}</h4>
-        <div class="ms-auto d-flex gap-2">
-          @if (editable() && selectedNo()) {
-            <button type="button" class="btn-action btn-save" (click)="post()"><mat-icon>task_alt</mat-icon> Post</button>
-          }
-          @if (status() === 2) {
-            <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button>
-          }
-        </div>
+    <app-form-section class="flex-shrink-0" icon="inventory"
+      [title]="selectedNo() ? 'GRN ' + statusLabel(status()) : 'New GRN'">
+      <div sectionActions class="flex gap-2">
+        @if (editable() && selectedNo()) {
+          <button type="button" class="btn-action btn-save" (click)="post()"><mat-icon>task_alt</mat-icon> Post</button>
+        }
+        @if (status() === 2) {
+          <button type="button" class="btn-action btn-delete" (click)="cancel()"><mat-icon>undo</mat-icon> Cancel</button>
+        }
       </div>
-      <div class="card-body">
-        <div class="row row-group">
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Supplier</label>
-            <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" /></div></div>
-          <div class="col-md-3"><div class="field-group"><label class="field-label">Warehouse</label>
-            <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Receipt Date</label>
-            <app-date-picker [(ngModel)]="receiptDate" placeholder="Select date" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">PO No</label>
-            <input type="number" class="form-control text-end" [(ngModel)]="orderNo" [disabled]="!editable()" /></div></div>
-          <div class="col-md-2"><div class="field-group"><label class="field-label">Remarks</label>
-            <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" /></div></div>
-        </div>
-      </div>
-    </div>
+
+      <app-form-field label="Supplier" [span]="3">
+        <ng-select [(ngModel)]="supplierNo" [items]="suppliers()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Select supplier" />
+      </app-form-field>
+      <app-form-field label="Warehouse" [span]="3">
+        <ng-select [(ngModel)]="warehouseNo" [items]="warehouses()" bindValue="no" bindLabel="name" [disabled]="!editable()" placeholder="Receive into" />
+      </app-form-field>
+      <app-form-field label="Receipt Date" [span]="2">
+        <app-date-picker [(ngModel)]="receiptDate" placeholder="Select date" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="PO No" [span]="2">
+        <input type="number" class="form-control text-end" [(ngModel)]="orderNo" [disabled]="!editable()" />
+      </app-form-field>
+      <app-form-field label="Remarks" [span]="2">
+        <input type="text" class="form-control" [(ngModel)]="remarks" [disabled]="!editable()" />
+      </app-form-field>
+    </app-form-section>
 
     <div class="form-section-card card mt-1" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column">
       <div class="card-header d-flex align-items-center">
