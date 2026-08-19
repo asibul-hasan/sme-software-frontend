@@ -46,6 +46,7 @@ import { ColumnDef } from '@app/shared/components/common-table';
 import { TableExportService } from '@app/shared/components/common-table/table-export.service';
 import { GridStatusBarComponent } from './grid-status-bar.component';
 import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
+import { AppSettingsService } from '@app/core/services/app-settings.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,6 +65,7 @@ import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
 export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
   public gridApiService = inject(GridApiService<T>);
   private decimalPipe = inject(AppDecimalPipe);
+  private settings = inject(AppSettingsService);
   private host = inject(ElementRef<HTMLElement>);
   private gridStateService = inject(GridStateService);
   private validationService = inject(GridValidationService);
@@ -126,6 +128,14 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
   public totalPages = 1;
 
   constructor() {
+    // Repaint when the active currency's precision or grouping changes. Cells format
+    // through AppDecimalPipe at render time, so a grid already on screen would keep
+    // the old decimals until something else happened to refresh it.
+    effect(() => {
+      this.settings.current();
+      this.gridApi?.refreshCells({ force: true });
+    });
+
     effect(() => {
       const list = this.data();
       const cfg = this.config();
