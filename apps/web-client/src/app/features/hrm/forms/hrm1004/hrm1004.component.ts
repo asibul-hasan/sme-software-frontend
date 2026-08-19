@@ -10,6 +10,7 @@ import { Hrm1004DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
+import { formatDecimal } from '../../../../core/utils/format-number';
 
 type SalarySetupTab = 'elements' | 'grades';
 type SalaryElementCategory = 'earning' | 'deduction' | 'employer';
@@ -970,10 +971,7 @@ export class Hrm1004Component implements OnInit {
   }
 
   stepAmountLabel(amount: number | null | undefined): string {
-    return this.roundTo2(this.toNumber(amount)).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return formatDecimal(this.toNumber(amount));
   }
 
   selectedStepName(): string {

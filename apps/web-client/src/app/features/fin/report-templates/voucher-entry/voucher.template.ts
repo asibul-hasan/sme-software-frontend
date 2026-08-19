@@ -4,6 +4,7 @@ import {
   PdfTemplateSection,
   PdfReportContext,
 } from '../../../../shared/pdf-templates';
+import { formatDecimal } from '../../../../core/utils/format-number';
 
 // ─── Context Shape ──────────────────────────────────────────────────────────────
 export interface VoucherReportContext {
@@ -121,7 +122,7 @@ export function buildVoucherReportContext(context: VoucherReportContext): PdfRep
       // Total amount (right aligned)
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(15, 23, 42);
-      doc.text(totalAmount.toFixed(2), pageWidth - marginX, y2, { align: 'right' });
+      doc.text(formatDecimal(totalAmount), pageWidth - marginX, y2, { align: 'right' });
 
       // Second separator line
       const y3 = startY + 9;

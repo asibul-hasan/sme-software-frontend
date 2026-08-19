@@ -11,6 +11,7 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { isSuccess } from '../../../../core/models/response.model';
 import { finConstants } from '../../constants/fin.constants';
 import { ToastrService } from 'ngx-toastr';
+import { formatDecimal } from '../../../../core/utils/format-number';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -160,7 +161,7 @@ export class Fin1401Component implements OnInit {
         next: (res) => {
           if (isSuccess(res) && res.data) {
             const v = res.data.voucher_id ? ` (voucher ${res.data.voucher_id})` : '';
-            this.toastr.success(`Year closed — net profit ${res.data.net_profit.toFixed(2)}${v}`);
+            this.toastr.success(`Year closed — net profit ${formatDecimal(res.data.net_profit)}${v}`);
             this.loadYears(); this.loadPeriods();
           }
         },

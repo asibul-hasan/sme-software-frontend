@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { formatNumber } from '../../core/utils/format-number';
 
 /**
  * Formats a numeric value using the configured number style and precision.
@@ -23,18 +24,6 @@ export class NumberFormatPipe implements PipeTransform {
     value:     number | string | null | undefined,
     precision?: number,
   ): string {
-    if (value == null || value === '') return '';
-
-    const num = Number(value);
-    if (isNaN(num)) return String(value);
-
-    const s        = this.settings.current();
-    const decimals = precision ?? s.precision;
-    const locale   = s.numberStyle === 'indian' ? 'en-IN' : 'en-US';
-
-    return num.toLocaleString(locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+    return formatNumber(value, this.settings.current(), precision);
   }
 }

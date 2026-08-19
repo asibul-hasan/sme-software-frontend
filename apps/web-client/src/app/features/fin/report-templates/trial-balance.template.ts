@@ -2,6 +2,7 @@ import { ColumnDef } from '../../../shared/components/common-table';
 import {
   PdfSummaryRow, PdfTemplateSection, PdfReportContext,
 } from '../../../shared/pdf-templates';
+import { formatDecimal } from '../../../core/utils/format-number';
 
 // ─── Context Shape ──────────────────────────────────────────────────────────────
 export interface TrialBalanceReportContext {
@@ -41,12 +42,12 @@ function buildTotals(context: TrialBalanceReportContext): PdfSummaryRow[] {
   const r = context.rows;
   const sum = (f: keyof TrialBalanceRow) => r.reduce((acc, row) => acc + (Number(row[f]) || 0), 0);
   return [
-    { label: 'Total Opening Dr', value: sum('opening_debit').toFixed(2) },
-    { label: 'Total Opening Cr', value: sum('opening_credit').toFixed(2) },
-    { label: 'Total Period Dr', value: sum('period_debit').toFixed(2) },
-    { label: 'Total Period Cr', value: sum('period_credit').toFixed(2) },
-    { label: 'Total Closing Dr', value: sum('closing_debit').toFixed(2) },
-    { label: 'Total Closing Cr', value: sum('closing_credit').toFixed(2) },
+    { label: 'Total Opening Dr', value: formatDecimal(sum('opening_debit')) },
+    { label: 'Total Opening Cr', value: formatDecimal(sum('opening_credit')) },
+    { label: 'Total Period Dr', value: formatDecimal(sum('period_debit')) },
+    { label: 'Total Period Cr', value: formatDecimal(sum('period_credit')) },
+    { label: 'Total Closing Dr', value: formatDecimal(sum('closing_debit')) },
+    { label: 'Total Closing Cr', value: formatDecimal(sum('closing_credit')) },
   ];
 }
 
