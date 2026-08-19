@@ -1,7 +1,8 @@
 import {
-  ChangeDetectionStrategy, Component, computed, effect, input, output, signal,
+  ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal,
 } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
 import { UiModalComponent } from '@app/shared/ui/modal/ui-modal.component';
 import { UiBadgeComponent } from '@app/shared/ui/badge/ui-badge.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,6 +21,7 @@ interface FieldGroup {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [UiModalComponent, UiBadgeComponent, MatIconModule],
+  providers: [AppDecimalPipe],
   template: `
     <ui-modal [(open)]="isOpen" [title]="title()" [maxWidth]="640">
       <div class="d-flex flex-column">
@@ -60,7 +62,7 @@ export class TableViewModalComponent {
   readonly openChange = output<boolean>();
 
   private readonly datePipe = new DatePipe('en-US');
-  private readonly decimalPipe = new DecimalPipe('en-US');
+  private readonly appDecimalPipe = inject(AppDecimalPipe);
   readonly isOpen = signal(false);
 
   constructor() {
@@ -93,7 +95,9 @@ export class TableViewModalComponent {
         return this.datePipe.transform(value as string | number | Date, col.dateFormat || 'mediumDate') || String(value);
       case 'number': case 'decimal': case 'currency': {
         const n = Number(value); if (isNaN(n)) return String(value);
-        const f = this.decimalPipe.transform(n, `1.${col.precision ?? 2}-${col.precision ?? 2}`);
+        // Same precision the parent table uses — a locked 'en-US' with a `?? 2` fallback
+        // meant this modal could disagree with the very row it was opened from.
+        const f = this.appDecimalPipe.transform(n, col.cellType === 'number' ? (col.precision ?? 0) : col.precision);
         return col.cellType === 'currency' ? `${col.currencyCode || ''} ${f}`.trim() : (f || String(value));
       }
       case 'select': {
