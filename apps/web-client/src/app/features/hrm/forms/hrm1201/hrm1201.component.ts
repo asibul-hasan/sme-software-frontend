@@ -11,11 +11,12 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 import { AlertService } from '../../../../core/services/alert.service';
 
 import { hrmConstants } from '../../constants/hrm.constants';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1201',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Hrm1201ModelService, Hrm1201DataService],
   templateUrl: './hrm1201.component.html',
   styles: [`:host { display: block; height: 100%; }`],

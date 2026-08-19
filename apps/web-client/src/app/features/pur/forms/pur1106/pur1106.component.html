@@ -48,7 +48,7 @@
         <ng-select [(ngModel)]="costType" [items]="costTypes" bindValue="value" bindLabel="label" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Amount" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" (blur)="preview()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="amount" appDecimalInput inputmode="decimal" [disabled]="!editable()" (blur)="preview()" />
       </app-form-field>
       <app-form-field label="Basis" [span]="1">
         <ng-select [(ngModel)]="allocBasis" [items]="allocBases" bindValue="value" bindLabel="label" [disabled]="!editable()" (change)="preview()" />

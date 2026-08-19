@@ -22,12 +22,13 @@ import { ToastrService } from 'ngx-toastr';
 interface WorkLine extends SaleLine { __uid: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1001',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, RouterLink, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
   providers: [Sal1001DataService],
   templateUrl: './sal1001.component.html',
   styles: [`:host { display: block; height: 100%; }`],

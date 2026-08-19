@@ -11,12 +11,13 @@ import { hrmConstants } from '../../constants/hrm.constants';
 import { employeeProfileReportTemplate } from '../../report-templates';
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1001',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, SharedModule, CommonModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Hrm1001ModelService, Hrm1001DataService],
   templateUrl: './hrm1001.component.html',
   styleUrls: ['./hrm1001.component.scss'],

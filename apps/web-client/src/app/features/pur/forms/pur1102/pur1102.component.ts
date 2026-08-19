@@ -26,12 +26,13 @@ import { ToastrService } from 'ngx-toastr';
 interface WorkLine extends InvoiceLine { __uid: number; __total?: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1102',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1102DataService],
   templateUrl: './pur1102.component.html',
   styles: [`:host { display: block; height: 100%; }`],

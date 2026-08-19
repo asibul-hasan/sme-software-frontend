@@ -377,7 +377,7 @@
                           id="min_salary"
                           formControlName="min_salary"
                           class="form-control"
-                          step="0.01"
+ appDecimalInput
                         />
                       </div>
                     </div>
@@ -389,7 +389,7 @@
                           id="max_salary"
                           formControlName="max_salary"
                           class="form-control"
-                          step="0.01"
+ appDecimalInput
                         />
                       </div>
                     </div>
@@ -465,7 +465,7 @@
                                 class="form-control"
                                 [value]="step.amount"
                                 (input)="model.updateStep($index, 'amount', $any($event.target).value)"
-                                step="0.01"
+ appDecimalInput
                               />
                             </td>
                             <td>
@@ -530,7 +530,7 @@
                         class="form-control"
                         [value]="selectedStepConfig().basic_percent_of_gross"
                         (input)="updateSelectedStepConfig('basic_percent_of_gross', +$any($event.target).value || 0)"
-                        step="0.01"
+ appDecimalInput
                       />
                     </div>
                     <div class="field-group">
@@ -552,7 +552,7 @@
                         [readOnly]="selectedStepConfig().entry_mode !== 'gross'"
                         [value]="selectedStepConfig().reference_gross"
                         (input)="updateSelectedStepConfig('reference_gross', $any($event.target).value === '' ? null : +$any($event.target).value)"
-                        step="0.01"
+ appDecimalInput
                       />
                     </div>
                     <div class="field-group">
@@ -564,7 +564,7 @@
                         [readOnly]="selectedStepConfig().entry_mode !== 'basic'"
                         [value]="selectedStepConfig().reference_basic"
                         (input)="updateSelectedStepConfig('reference_basic', $any($event.target).value === '' ? null : +$any($event.target).value)"
-                        step="0.01"
+ appDecimalInput
                       />
                     </div>
                     <div class="field-group">

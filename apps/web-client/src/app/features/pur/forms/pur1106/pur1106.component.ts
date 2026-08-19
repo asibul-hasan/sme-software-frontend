@@ -23,12 +23,13 @@ import { ToastrService } from 'ngx-toastr';
 import { LandedCost, LandedCostAlloc, Pur1106DataService } from './services/data.service';
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1106',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1106DataService],
   templateUrl: './pur1106.component.html',
   styles: [':host { display: block; height: 100%; }'],

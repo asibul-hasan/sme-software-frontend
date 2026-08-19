@@ -1061,6 +1061,15 @@ UI hint only; never save its result.
 - **In templates:** Use `{{ amount | appDecimal }}` or `{{ amount | appDecimal:2 }}` if an override is explicitly needed. Do not use the standard Angular `number` pipe for monetary values.
 - **In a grid:** Use `GridColumns.currency(...)` or `GridColumns.decimal(...)`. The column automatically applies the correct pipe and precision using the global service — never call `.precision(2)` to hard-code it.
 - **Alignment:** Decimal, Currency, and Number fields must ALWAYS be right-aligned. The grid does this automatically from the column type, but ensure any form input follows this rule so that digits align cleanly.
+- **In a number input:** add `appDecimalInput` (`shared/directives/decimal-input.directive`) instead of writing `step="0.01"`. The directive sets `step` from the same global precision, so a company on 0 or 3 decimal places is not fighting HTML5 step validation. A field with its own natural scale — a percentage, a six-place exchange rate, a leave day in quarters — keeps its explicit `step`, exactly as a grid column keeps an explicit `.precision(n)`.
+
+**Where the number actually comes from:** `/api/v1/app/bootstrap` returns
+`base_currency_settings.decimal_places` and `number_format`; `CurrencySettingsService`
+patches them into `AppSettingsService`, which backs both `AppDecimalPipe` and
+`AppGlobals.settings`. `number_format` picks the grouping — International
+(`12,345,678.50`) or Indian (`1,23,45,678.50`). Read precision from there and nowhere
+else: a literal `2`, a `toFixed(2)`, or a `toLocaleString('en-US', …)` in a component
+is the bug this rule exists to prevent.
 
 ### PDF Reports — `PdfTemplateService` (CRITICAL)
 

@@ -15,12 +15,13 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { salConstants } from '../../constants/sal.constants';
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1101',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Sal1101ModelService, Sal1101DataService],
   templateUrl: './sal1101.component.html',
   styles: [`:host { display: block; height: 100%; }`],

@@ -110,13 +110,13 @@
                 <div class="col-md-4">
                   <div class="field-group">
                     <label class="field-label" for="budget_min">Budget Min</label>
-                    <input type="number" id="budget_min" formControlName="budget_min" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" />
+                    <input type="number" id="budget_min" formControlName="budget_min" class="form-control" appDecimalInput inputmode="decimal" [readonly]="!editable" />
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="field-group">
                     <label class="field-label" for="budget_max">Budget Max</label>
-                    <input type="number" id="budget_max" formControlName="budget_max" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" />
+                    <input type="number" id="budget_max" formControlName="budget_max" class="form-control" appDecimalInput inputmode="decimal" [readonly]="!editable" />
                   </div>
                 </div>
                 <div class="col-md-4">

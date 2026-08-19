@@ -6,12 +6,13 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 import { AlertService } from '../../../../core/services/alert.service';
 import { Hrm1002ModelService } from './services/model.service';
 import { Hrm1002DataService } from './services/data.service';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1002',
   standalone: true,
-  imports: [SharedModule, CommonModule, PageFormLayoutComponent],
+  imports: [DecimalInputDirective, SharedModule, CommonModule, PageFormLayoutComponent],
   providers: [Hrm1002ModelService, Hrm1002DataService],
   templateUrl: './hrm1002.component.html',
   styles: [],

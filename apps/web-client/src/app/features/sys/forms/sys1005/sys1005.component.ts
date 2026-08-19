@@ -16,12 +16,13 @@ import { FormPermissionService } from '../../../../core/services/form-permission
 import { AlertService } from '../../../../core/services/alert.service';
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sys1005',
   standalone: true,
-  imports: [
+  imports: [DecimalInputDirective, 
     CommonModule,
     ReactiveFormsModule,
     FormsModule,

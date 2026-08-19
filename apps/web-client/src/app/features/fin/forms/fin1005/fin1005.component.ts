@@ -7,12 +7,13 @@ import { Fin1005ModelService, BankAccount } from './services/model.service';
 import { Fin1005DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1005',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
+  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent],
   providers: [Fin1005ModelService, Fin1005DataService],
   templateUrl: './fin1005.component.html',
   styles: [`:host { display: block; height: 100%; }`],

@@ -9,12 +9,13 @@ import { SharedModule } from '../../../../shared/shared.module';
 import { hrmConstants } from '../../constants/hrm.constants';
 import { Hrm1009DataService } from './services/data.service';
 import { Hrm1009ModelService, TaxSlabProfile } from './services/model.service';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1009',
   standalone: true,
-  imports: [
+  imports: [DecimalInputDirective, 
     CommonModule,
     ReactiveFormsModule,
     FormsModule,

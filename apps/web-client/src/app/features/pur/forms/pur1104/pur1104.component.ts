@@ -24,12 +24,13 @@ import { ToastrService } from 'ngx-toastr';
 interface AllocRow extends OpenInvoice { alloc: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1104',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
   providers: [Pur1104DataService],
   templateUrl: './pur1104.component.html',
   styles: [`:host { display: block; height: 100%; }`],

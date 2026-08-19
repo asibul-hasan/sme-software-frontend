@@ -48,7 +48,7 @@
         <app-date-picker [(ngModel)]="paymentDate" placeholder="Select date" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Amount" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="amount" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="amount" appDecimalInput inputmode="decimal" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Txn / Cheque Ref" [span]="3">
         <input type="text" class="form-control" [(ngModel)]="txnRef" [disabled]="!editable()" />

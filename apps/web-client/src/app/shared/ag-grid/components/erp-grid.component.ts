@@ -45,6 +45,7 @@ import { GridToolbarComponent, GridToolbarColumn, GridExportFormat } from './gri
 import { ColumnDef } from '@app/shared/components/common-table';
 import { TableExportService } from '@app/shared/components/common-table/table-export.service';
 import { GridStatusBarComponent } from './grid-status-bar.component';
+import { AppDecimalPipe } from '@app/shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,12 +57,13 @@ import { GridStatusBarComponent } from './grid-status-bar.component';
     GridToolbarComponent,
     GridStatusBarComponent,
   ],
-  providers: [GridApiService],
+  providers: [GridApiService, AppDecimalPipe],
   templateUrl: './erp-grid.component.html',
   styleUrls: ['./erp-grid.component.scss'],
 })
 export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
   public gridApiService = inject(GridApiService<T>);
+  private decimalPipe = inject(AppDecimalPipe);
   private host = inject(ElementRef<HTMLElement>);
   private gridStateService = inject(GridStateService);
   private validationService = inject(GridValidationService);
@@ -409,8 +411,24 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
         } else if (c.type === 'number' || c.type === 'decimal' || c.type === 'currency') {
           colDef.cellEditor = 'agNumberCellEditor';
           colDef.valueParser = (params) => (params.newValue != null && params.newValue !== '' ? Number(params.newValue) : null);
-          if (c.type === 'currency' && !c.valueFormatter) {
-            colDef.valueFormatter = (params) => (params.value != null ? Number(params.value).toLocaleString('en-US', { minimumFractionDigits: c.precision ?? 2, maximumFractionDigits: c.precision ?? 2 }) : '');
+
+          // Numbers format through AppDecimalPipe, which reads the ACTIVE CURRENCY loaded at
+          // bootstrap — its decimal_places and its International/Indian grouping.
+          //
+          // Two things were wrong before. Only 'currency' got a formatter at all, so 'decimal' and
+          // 'number' columns rendered the raw value: a unit price of 1500 showed as "1500", not
+          // "1,500.00". And the currency formatter hard-coded 'en-US' with a '?? 2' fallback, so a
+          // company on 0 or 3 decimal places, or on Indian grouping (12,34,567 rather than
+          // 1,234,567), was formatted wrongly no matter what SYS_1004 said.
+          //
+          // Precision stays UNSET here on purpose: passing undefined lets the pipe fall back to
+          // the global setting, which is the whole point. A column only overrides it when the
+          // figure is genuinely not money — a quantity or a rate at its own scale. 'number' keeps
+          // common-table's 0-decimal default so counts do not sprout decimals.
+          if (!c.valueFormatter) {
+            const fixed = c.type === 'number' ? (c.precision ?? 0) : c.precision;
+            colDef.valueFormatter = (params) =>
+              params.value == null || params.value === '' ? '' : this.decimalPipe.transform(params.value, fixed);
           }
         } else if (c.type === 'date') {
           if (!c.valueFormatter) {

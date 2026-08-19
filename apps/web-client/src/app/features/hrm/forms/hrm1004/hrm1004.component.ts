@@ -9,6 +9,7 @@ import { Hrm1004ModelService, Grade, GradeStep } from './services/model.service'
 import { Hrm1004DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 type SalarySetupTab = 'elements' | 'grades';
 type SalaryElementCategory = 'earning' | 'deduction' | 'employer';
@@ -159,7 +160,7 @@ function cloneSalaryElements(rows: SalaryElementDraft[]): SalaryElementDraft[] {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1004',
   standalone: true,
-  imports: [
+  imports: [DecimalInputDirective, 
     CommonModule,
     ReactiveFormsModule,
     FormsModule,

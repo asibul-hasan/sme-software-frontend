@@ -115,9 +115,9 @@
                 <div class="col-md-6"><div class="field-group"><label class="field-label" for="credit_days">Credit Days</label>
                   <input type="number" id="credit_days" formControlName="credit_days" class="form-control" /></div></div>
                 <div class="col-md-12"><div class="field-group"><label class="field-label" for="credit_limit">Credit Limit</label>
-                  <input type="number" id="credit_limit" formControlName="credit_limit" class="form-control" step="0.01" /></div></div>
+                  <input type="number" id="credit_limit" formControlName="credit_limit" class="form-control" appDecimalInput /></div></div>
                 <div class="col-md-6"><div class="field-group"><label class="field-label" for="opening_balance">Opening Payable</label>
-                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" step="0.01" /></div></div>
+                  <input type="number" id="opening_balance" formControlName="opening_balance" class="form-control" appDecimalInput /></div></div>
                 <div class="col-md-6"><div class="field-group"><label class="field-label" for="opening_balance_date">As of</label>
                   <app-date-picker formControlName="opening_balance_date" placeholder="Select date" /></div></div>
                 <div class="col-md-6"><div class="field-group"><label class="field-label" for="lead_time_days">Lead Time (days)</label>

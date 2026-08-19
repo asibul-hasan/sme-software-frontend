@@ -74,15 +74,15 @@
             <div class="card-body">
               <div class="row row-group">
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="last_salary">Outstanding Salary</label>
-                  <input type="number" id="last_salary" formControlName="last_salary" class="form-control" step="0.01" inputmode="decimal" readonly /></div></div>
+                  <input type="number" id="last_salary" formControlName="last_salary" class="form-control" appDecimalInput inputmode="decimal" readonly /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="leave_encashment">Leave Encashment</label>
-                  <input type="number" id="leave_encashment" formControlName="leave_encashment" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" /></div></div>
+                  <input type="number" id="leave_encashment" formControlName="leave_encashment" class="form-control" appDecimalInput inputmode="decimal" [readonly]="!editable" /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="gratuity">Gratuity</label>
-                  <input type="number" id="gratuity" formControlName="gratuity" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" /></div></div>
+                  <input type="number" id="gratuity" formControlName="gratuity" class="form-control" appDecimalInput inputmode="decimal" [readonly]="!editable" /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="bonus_payable">Outstanding Bonus</label>
-                  <input type="number" id="bonus_payable" formControlName="bonus_payable" class="form-control" step="0.01" inputmode="decimal" readonly /></div></div>
+                  <input type="number" id="bonus_payable" formControlName="bonus_payable" class="form-control" appDecimalInput inputmode="decimal" readonly /></div></div>
                 <div class="col-md-4"><div class="field-group"><label class="field-label" for="other_deduction">Other Deduction (-)</label>
-                  <input type="number" id="other_deduction" formControlName="other_deduction" class="form-control" step="0.01" inputmode="decimal" [readonly]="!editable" /></div></div>
+                  <input type="number" id="other_deduction" formControlName="other_deduction" class="form-control" appDecimalInput inputmode="decimal" [readonly]="!editable" /></div></div>
               </div>
               <div class="d-flex justify-content-end align-items-center gap-2 mt-2 pt-2" style="border-top:1px solid var(--border-color)">
                 <span class="field-label mb-0">Net Payable</span>

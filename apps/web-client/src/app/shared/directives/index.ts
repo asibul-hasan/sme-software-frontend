@@ -4,3 +4,4 @@ export * from './has-role.directive';
 export * from './permission.directive';
 export * from './collapsible-card.directive';
 export * from './show-datepicker.directive';
+export * from './decimal-input.directive';

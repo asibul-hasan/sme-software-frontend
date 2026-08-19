@@ -85,16 +85,16 @@
          about 120px, almost all of it status bar. -->
     <app-form-section class="flex-shrink-0" title="Charges &amp; Settlement" icon="request_quote" dense>
       <app-form-field label="Shipping" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="shippingCharge" appDecimalInput inputmode="decimal" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Other Charges" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="otherCharges" appDecimalInput inputmode="decimal" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Round Off" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="roundOff" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="roundOff" appDecimalInput inputmode="decimal" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Paid Now" [span]="2">
-        <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" step="0.01" inputmode="decimal" [disabled]="!editable()" />
+        <input type="number" class="form-control text-end" [(ngModel)]="paidAmount" appDecimalInput inputmode="decimal" [disabled]="!editable()" />
       </app-form-field>
       <app-form-field label="Due Date" [span]="2">
         <app-date-picker [(ngModel)]="dueDate" placeholder="Select date" [disabled]="!editable()" />

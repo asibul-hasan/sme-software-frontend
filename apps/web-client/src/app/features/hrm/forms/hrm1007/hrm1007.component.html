@@ -100,7 +100,7 @@
                     <label class="field-label" for="calc_value">
                       {{ formdata.get('calc_type')?.value === 1 ? 'Amount' : 'Percent / Value' }}
                     </label>
-                    <input type="number" id="calc_value" formControlName="calc_value" class="form-control" step="0.01" />
+                    <input type="number" id="calc_value" formControlName="calc_value" class="form-control" appDecimalInput />
                   </div>
                 </div>
                 <div class="col-md-4">

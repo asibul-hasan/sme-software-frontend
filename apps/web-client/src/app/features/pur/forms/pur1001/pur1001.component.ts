@@ -15,12 +15,13 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { purConstants } from '../../constants/pur.constants';
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1001',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
   providers: [Pur1001ModelService, Pur1001DataService],
   templateUrl: './pur1001.component.html',
   styles: [`:host { display: block; height: 100%; }`],
