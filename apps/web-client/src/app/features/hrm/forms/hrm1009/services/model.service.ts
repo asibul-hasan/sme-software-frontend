@@ -62,7 +62,7 @@ export class Hrm1009ModelService {
   initForm(): void {
     this.form = this.fb.group({
       tax_slab_no: [null],
-      country_code: ['BD', [Validators.required, Validators.maxLength(2)]],
+      country_code: ['', [Validators.maxLength(2)]],
       fiscal_year: [this.defaultFiscalYear(), [Validators.required, Validators.pattern(/^\d{4}-\d{4}$/)]],
       taxpayer_class: ['GENERAL', [Validators.required, Validators.maxLength(30)]],
       is_active: [1],
@@ -97,7 +97,7 @@ export class Hrm1009ModelService {
           const d = res.data as unknown as Record<string, unknown>;
           this.form.patchValue({
             tax_slab_no: d['tax_slab_no'],
-            country_code: d['country_code'] ?? 'BD',
+            country_code: d['country_code'] ?? '',
             fiscal_year: d['fiscal_year'] ?? this.defaultFiscalYear(),
             taxpayer_class: d['taxpayer_class'] ?? 'GENERAL',
             is_active: d['is_active'] ?? 1,
@@ -172,7 +172,7 @@ export class Hrm1009ModelService {
   onNew(): void {
     this.selectedTaxSlabNo.set(null);
     this.form?.reset({
-      country_code: 'BD',
+      country_code: '',
       fiscal_year: this.defaultFiscalYear(),
       taxpayer_class: 'GENERAL',
       is_active: 1,

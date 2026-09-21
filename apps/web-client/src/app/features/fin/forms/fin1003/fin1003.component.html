@@ -5,6 +5,8 @@
   [hasSidebar]="false"
   [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
   (save)="onSave()"
+  [showReset]="true"
+  (reset)="onReset()"
   [showNew]="false"
   [showDelete]="false"
   [isLoading]="model.isLoading()"
@@ -16,12 +18,13 @@
         <h4 class="card-header__title mb-0 font-bold">
           <mat-icon class="mr-2 align-middle">category</mat-icon> Voucher Types
         </h4>
-        <button type="button" class="btn-action btn-new btn-row-add ml-2" uiTooltip="Add Row" (click)="model.addRow()">
+        <button type="button" class="btn-action btn-new btn-row-add ml-2" uiTooltip="Add Row" (click)="onAddRow()">
           <mat-icon>add</mat-icon>
         </button>
       </div>
       <div class="card-body p-0 flex-1 flex flex-col min-h-0">
         <app-erp-grid 
+          #erpGrid
           [config]="gridConfig" 
           [data]="model.filtered()" 
           (rowChange)="onRowChange($event)" 

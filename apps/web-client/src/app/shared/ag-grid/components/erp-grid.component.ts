@@ -37,7 +37,7 @@ import { GridStateService } from '../services/grid-state.service';
 import { GridValidationService } from '../services/grid-validation.service';
 import { GridExportService } from '../services/grid-export.service';
 import { DEFAULT_ERP_GRID_OPTIONS, DEFAULT_GRID_DENSITY, GRID_DENSITY_HEIGHTS } from '../utils/grid-defaults';
-import { matchLookupOption, resolveLookupOptions } from '../utils/lookup-options';
+import { areGridValuesEqual, matchLookupOption, resolveLookupOptions } from '../utils/lookup-options';
 import { ActionCellRendererComponent } from '../renderers/action-cell-renderer.component';
 import { StatusCellRendererComponent } from '../renderers/status-cell-renderer.component';
 import { SelectCellEditorComponent } from '../editors/select-cell-editor.component';
@@ -519,6 +519,10 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
     const field = event.colDef.field;
     if (!field) return;
 
+    if (areGridValuesEqual(event.oldValue, event.newValue)) {
+      return;
+    }
+
     // 1. Update Cell Value in API Service
     this.gridApiService.updateCellValue(event.data.__uid, field, event.newValue);
 
@@ -626,12 +630,27 @@ export class ErpGridComponent<T = any> implements OnInit, OnDestroy {
   }
 
   /** Opens a row for editing, focused on its first editable column. */
-  private editRow(rowIndex: number): void {
+  public editRow(rowIndex: number): void {
     const api = this.gridApi;
     if (!api || rowIndex < 0) return;
     if (this.config().showPagination) api.paginationGoToLastPage();
+    api.ensureIndexVisible(rowIndex);
     const colKey = this.firstEditableColumn(api, rowIndex);
     if (colKey) api.startEditingCell({ rowIndex, colKey });
+  }
+
+  /** Commits any open in-flight cell/row editor. */
+  public stopEditing(cancel = false): void {
+    this.gridApi?.stopEditing(cancel);
+  }
+
+  /** Returns all live domain rows currently in the grid. */
+  public getRows(): T[] {
+    this.stopEditing();
+    return this.gridApiService
+      .rows()
+      .filter((w) => w.__sqlState !== SqlRowState.Delete)
+      .map((w) => ({ ...w.data }));
   }
 
   private firstEditableColumn(api: GridApi, rowIndex: number): string | undefined {

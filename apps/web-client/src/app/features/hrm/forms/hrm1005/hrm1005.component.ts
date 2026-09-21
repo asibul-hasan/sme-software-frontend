@@ -75,14 +75,10 @@ export class Hrm1005Component implements OnInit {
       row['is_carry_forward_allowed'] = 0;
       row['max_carry_forward_days'] = null;
       row['carry_forward_validity_months'] = null;
-      if (val === 'CASUAL' && (row['default_days_per_year'] || 0) < 10) row['default_days_per_year'] = 10;
-      if (val === 'SICK' && (row['default_days_per_year'] || 0) < 14) row['default_days_per_year'] = 14;
       if (val === 'SICK') row['documentation_required'] = 1;
       row['eligibility_service_months'] = 0;
-      this.toastr.warning('Per Bangladesh Labour Act 2006, this leave type cannot carry forward and resets non-accumulated (Sec 115/116).');
     } else if (val === 'ANNUAL') {
       row['eligibility_service_months'] = 12;
-      row['accrual_method'] = 3; // Example ID for Accrual per 18 days
     }
   }
 

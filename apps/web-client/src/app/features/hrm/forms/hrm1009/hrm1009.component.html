@@ -64,12 +64,8 @@
               <div class="row row-group">
                 <div class="col-md-3">
                   <div class="field-group">
-                    <label class="field-label required" for="country_code">Country</label>
-                    <ng-select id="country_code" labelForId="country_code" formControlName="country_code" [clearable]="false">
-                      @for (opt of countries; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
+                    <label class="field-label" for="country_code">Country Code</label>
+                    <input type="text" id="country_code" formControlName="country_code" class="form-control text-uppercase" maxlength="2" placeholder="e.g. BD, US" />
                   </div>
                 </div>
                 <div class="col-md-4">

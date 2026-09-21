@@ -2,7 +2,6 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { AppConfigService } from './app-config.service';
 import { CurrencySettingsService, IBaseCurrencySettings } from './currency-settings.service';
-import { CommonDataService } from '../../shared/services/common-data.service';
 import { ApiResponse, isSuccess } from '../models/response.model';
 import { SKIP_LOADER } from '../interceptors/loader.interceptor';
 
@@ -40,7 +39,6 @@ export class AppBootstrapService {
   private readonly http = inject(HttpClient);
   private readonly config = inject(AppConfigService);
   private readonly currency = inject(CurrencySettingsService);
-  private readonly commonData = inject(CommonDataService);
 
   private static readonly LOGO_KEY = 'sme_company_logo';
 
@@ -78,7 +76,6 @@ export class AppBootstrapService {
    */
   bootstrap(): void {
     this.fetchBootstrap();
-    this.commonData.loadCurrencies(true);
   }
 
   /**
@@ -89,7 +86,6 @@ export class AppBootstrapService {
   loadFromStorage(): void {
     const hasLogo = this.restoreLogo();
     const hasCurrency = this.currency.restoreFromCache();
-    this.commonData.loadCurrencies();
 
     if (!hasLogo || !hasCurrency) {
       this.fetchBootstrap();
@@ -126,7 +122,6 @@ export class AppBootstrapService {
     localStorage.removeItem(AppBootstrapService.LOGO_KEY);
     this.companyLogoDataUrl.set(null);
     this.currency.clearCache();
-    this.commonData.clearCurrenciesCache();
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────────

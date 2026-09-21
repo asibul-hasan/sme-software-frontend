@@ -88,7 +88,7 @@ function defaultSalaryElements(): SalaryElementDraft[] {
       basis: 'basic',
       calc_mode: 'percent',
       value: 50,
-      formula_note: 'Common Bangladesh allowance ratio',
+      formula_note: 'Standard allowance ratio',
       affects_gross: true,
       is_taxable: true,
       is_active: true,

@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
@@ -10,19 +10,34 @@ import { Inv1101DataService } from './data.service';
 export interface Lookup { value: number; label: string; }
 export interface Lookups { warehouses: Lookup[]; products: Lookup[]; uoms: Lookup[]; }
 
+export interface IOpeningLine {
+  __uid?: number;
+  adjustment_dtl_no?: number | null;
+  product_no: number | null;
+  product_name?: string | null;
+  variant_no?: number | null;
+  uom_no: number | null;
+  uom_name?: string | null;
+  qty: number;
+  unit_cost: number;
+  batch_no?: number | null;
+  batch_code?: string | null;
+  expiry_date?: string | null;
+  __total?: number;
+  row_version?: number;
+}
+
 export interface IOpening {
   adjustment_no: number;
   adjustment_id: string;
   adjustment_date: string;
   warehouse_no: number;
   warehouse_name?: string | null;
-  status: number;
   reason_text?: string | null;
-  remarks?: string | null;
+  status: number;
   total_in_value?: number | null;
-  fin_year_no?: number | null;
   row_version?: number;
-  lines?: unknown[];
+  lines?: IOpeningLine[];
 }
 
 @Injectable()
@@ -30,6 +45,7 @@ export class Inv1101ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Inv1101DataService);
   private toastr = inject(ToastrService);
+  private uid = 0;
 
   items = signal<IOpening[]>([]);
   lookups = signal<Lookups>({ warehouses: [], products: [], uoms: [] });
@@ -37,21 +53,39 @@ export class Inv1101ModelService {
   isSaving = signal(false);
   searchTerm = signal('');
   selectedNo = signal<number | null>(null);
-  status = signal<number>(1);
+  status = signal(1); // 1 = Draft, 3 = Posted
   form!: FormGroup;
 
-  isPosted = computed(() => this.status() === 3);
+  lineRows = signal<IOpeningLine[]>([]);
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter((o) => (o.adjustment_id || '').toLowerCase().includes(term));
+    const list = term
+      ? data.filter(
+          (o) =>
+            (o.adjustment_id || '').toLowerCase().includes(term) ||
+            (o.warehouse_name || '').toLowerCase().includes(term) ||
+            (o.reason_text || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.adjustment_no ?? 0) - (a.adjustment_no ?? 0));
   });
 
   pager = makePaginator<IOpening>(this.filtered);
 
-  get lines(): FormArray { return this.form.get('lines') as FormArray; }
+  readonly isPosted = computed(() => this.status() === 3);
+
+  readonly totalValue = computed(() =>
+    this.lineRows().reduce((sum, l) => sum + (Number(l.qty) || 0) * (Number(l.unit_cost) || 0), 0),
+  );
+
+  readonly lineData = computed(() =>
+    this.lineRows().map((l) => ({
+      ...l,
+      __total: (Number(l.qty) || 0) * (Number(l.unit_cost) || 0),
+    })),
+  );
 
   initForm(): void {
     this.form = this.fb.group({
@@ -61,21 +95,6 @@ export class Inv1101ModelService {
       warehouse_no: [null, [Validators.required]],
       reason_text: [''],
       remarks: [''],
-      lines: this.fb.array([]),
-    });
-  }
-
-  private lineGroup(l?: any): FormGroup {
-    return this.fb.group({
-      adjustment_dtl_no: [l?.adjustment_dtl_no ?? null],
-      product_no: [l?.product_no ?? null, [Validators.required]],
-      uom_no: [l?.uom_no ?? null, [Validators.required]],
-      qty: [l?.qty ?? null, [Validators.required, Validators.min(0.0001)]],
-      unit_cost: [l?.unit_cost ?? 0],
-      batch_code: [l?.batch_code ?? ''],
-      mfg_date: [l?.mfg_date ?? null],
-      expiry_date: [l?.expiry_date ?? null],
-      remarks: [l?.remarks ?? ''],
     });
   }
 
@@ -94,7 +113,11 @@ export class Inv1101ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (o: IOpening) => o.adjustment_no, reselectNo);
-          resolved ? this.select(resolved.item as IOpening) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as IOpening);
+          } else {
+            this.onNew();
+          }
         }
       });
   }
@@ -112,8 +135,8 @@ export class Inv1101ModelService {
 
   private patch(o: any): void {
     this.status.set(o.status ?? 1);
-    this.lines.clear();
-    (o.lines || []).forEach((l: any) => this.lines.push(this.lineGroup(l)));
+    const lines: IOpeningLine[] = (o.lines || []).map((l: any) => ({ ...l, __uid: ++this.uid }));
+    this.lineRows.set(lines);
     this.form.patchValue({
       adjustment_no: o.adjustment_no,
       adjustment_id: o.adjustment_id,
@@ -122,42 +145,84 @@ export class Inv1101ModelService {
       reason_text: o.reason_text ?? '',
       remarks: o.remarks ?? '',
     });
-    if (o.status === 3) this.form.disable({ emitEvent: false });
-    else this.form.enable({ emitEvent: false });
+    if (o.status === 3) {
+      this.form.disable({ emitEvent: false });
+    } else {
+      this.form.enable({ emitEvent: false });
+    }
     this.form.get('adjustment_id')?.disable({ emitEvent: false });
   }
 
-  addLine(): void { if (!this.isPosted()) this.lines.push(this.lineGroup()); }
-  removeLine(i: number): void { if (!this.isPosted()) this.lines.removeAt(i); }
+  addLine(): void {
+    this.lineRows.update((rows) => [
+      ...rows,
+      {
+        __uid: ++this.uid,
+        product_no: null,
+        uom_no: null,
+        qty: 1,
+        unit_cost: 0,
+        batch_code: '',
+        expiry_date: null,
+      },
+    ]);
+  }
 
-  lineValue(i: number): number {
-    const g = this.lines.at(i);
-    const qty = Number(g.get('qty')?.value) || 0;
-    const cost = Number(g.get('unit_cost')?.value) || 0;
-    return qty * cost;
+  removeLine(row: IOpeningLine): void {
+    this.lineRows.update((rows) => rows.filter((r) => r.__uid !== row.__uid));
+  }
+
+  onLineChange(row: IOpeningLine): void {
+    this.lineRows.update((rows) =>
+      rows.map((r) => {
+        if (r.__uid !== row.__uid) return r;
+        const updated = { ...r, ...row };
+        if (row.product_no && row.product_no !== r.product_no) {
+          const p = this.lookups().products.find((x) => x.value === row.product_no);
+          if (p) {
+            updated.product_name = p.label;
+            const uom = this.lookups().uoms[0];
+            if (uom && !updated.uom_no) updated.uom_no = uom.value;
+          }
+        }
+        return updated;
+      }),
+    );
   }
 
   onNew(): void {
     this.selectedNo.set(null);
     this.status.set(1);
-    this.lines.clear();
+    this.lineRows.set([]);
     this.form.enable({ emitEvent: false });
     this.form.reset({ adjustment_date: new Date().toISOString().substring(0, 10) });
     this.form.get('adjustment_id')?.disable({ emitEvent: false });
   }
 
   onSaveDraft(): void {
-    if (this.isPosted()) return;
+    if (this.isPosted()) {
+      this.toastr.warning('Posted documents cannot be modified.');
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toastr.warning('Please correct the validation errors.');
       return;
     }
+    if (this.lineRows().length === 0) {
+      this.toastr.warning('Please add at least one line item.');
+      return;
+    }
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
     this.isSaving.set(true);
+    const payload = {
+      ...val,
+      adjustment_no: this.selectedNo(),
+      lines: this.lineRows().map(({ __uid: _uid, __total: _tot, ...rest }) => rest),
+    };
     this.data
-      .save({ ...val, adjustment_no: this.selectedNo() })
+      .save(payload)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {

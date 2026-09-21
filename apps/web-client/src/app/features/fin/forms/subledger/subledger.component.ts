@@ -7,6 +7,7 @@ import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { DialogService } from '../../../../core/services/dialog.service';
 import { isSuccess } from '../../../../core/models/response.model';
@@ -23,11 +24,12 @@ import { SubLedgerStatementDialogComponent } from './components/statement-dialog
  * one was touched. The routes stay separate, so each form keeps its own menu entry
  * and its own permission: `X-Form-Id` is resolved from the URL, not from here.
  */
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin-subledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [SubLedgerDataService],
   templateUrl: './subledger.component.html',
   styles: [`:host { display: block; height: 100%; }`],

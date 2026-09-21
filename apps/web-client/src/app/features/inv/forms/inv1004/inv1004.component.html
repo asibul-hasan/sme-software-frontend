@@ -27,10 +27,10 @@
           class="status-dot status-dot--corner"
           [class.status-dot--active]="b.is_active === 1"
           [class.status-dot--inactive]="b.is_active !== 1"
-          [title]="b.is_active === 1 ? 'Active' : 'Inactive'"
+          [matTooltip]="b.is_active === 1 ? 'Active' : 'Inactive'"
         ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ b.brand_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ b.brand_name }}</p>
+        <h6 class="list-item-title mb-0 truncate" style="padding-right: 16px">{{ b.brand_id }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ b.brand_name }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
@@ -43,55 +43,47 @@
 
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">sell</mat-icon>
-                Brand
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="brand_id">Code</label>
-                    <input type="text" id="brand_id" formControlName="brand_id" class="form-control text-uppercase" placeholder="e.g. BR-001" />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="brand_name">Name</label>
-                    <input type="text" id="brand_name" formControlName="brand_name" class="form-control" placeholder="e.g. Nestlé" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="manufacturer">Manufacturer</label>
-                    <input type="text" id="manufacturer" formControlName="manufacturer" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="brand_name_nls">Name (NLS)</label>
-                    <input type="text" id="brand_name_nls" formControlName="brand_name_nls" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-form-section title="Brand" icon="sell">
+        <app-form-field label="Code" for="brand_id" required [span]="4">
+          <input
+            type="text"
+            id="brand_id"
+            formControlName="brand_id"
+            class="form-control uppercase"
+            placeholder="e.g. BR-001"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name" for="brand_name" required [span]="8">
+          <input
+            type="text"
+            id="brand_name"
+            formControlName="brand_name"
+            class="form-control"
+            placeholder="e.g. Nestlé"
+          />
+        </app-form-field>
+
+        <app-form-field label="Manufacturer" for="manufacturer" [span]="6">
+          <input
+            type="text"
+            id="manufacturer"
+            formControlName="manufacturer"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name (NLS)" for="brand_name_nls" [span]="6">
+          <input
+            type="text"
+            id="brand_name_nls"
+            formControlName="brand_name_nls"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-check-field label="Status" text="Active" [span]="6" formControlName="is_active" />
+      </app-form-section>
     </form>
   </div>
 

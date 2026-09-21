@@ -7,6 +7,7 @@ import { Inv2005DataService } from './data.service';
 export interface Option { value: number; label: string; }
 
 export interface IReorder {
+  __uid?: number;
   reorder_no?: number | null;
   product_no: number | null;
   product_name?: string | null;
@@ -26,6 +27,7 @@ export interface IReorder {
 export class Inv2005ModelService {
   private data = inject(Inv2005DataService);
   private toastr = inject(ToastrService);
+  private uid = 0;
 
   warehouses = signal<Option[]>([]);
   products = signal<Option[]>([]);
@@ -60,7 +62,7 @@ export class Inv2005ModelService {
       .getList(wh)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe((res) => {
-        if (isSuccess(res) && res.data) this.rows.set(res.data.map((r) => ({ ...r })));
+        if (isSuccess(res) && res.data) this.rows.set(res.data.map((r) => ({ ...r, __uid: ++this.uid })));
         else this.rows.set([]);
       });
   }
@@ -68,13 +70,25 @@ export class Inv2005ModelService {
   addRow(): void {
     this.rows.update((rows) => [
       ...rows,
-      { product_no: null, reorder_level: 0, reorder_qty: 0, min_stock: 0, is_active: 1 },
+      {
+        __uid: ++this.uid,
+        product_no: null,
+        reorder_level: 0,
+        reorder_qty: 0,
+        min_stock: 0,
+        max_stock: null,
+        lead_time_days: null,
+        is_active: 1,
+      },
     ]);
   }
 
-  removeRow(index: number): void {
-    const row = this.rows()[index];
-    if (row?.reorder_no) {
+  onRowChange(row: IReorder): void {
+    this.rows.update((rows) => rows.map((r) => (r.__uid === row.__uid ? { ...r, ...row } : r)));
+  }
+
+  removeRow(row: IReorder): void {
+    if (row.reorder_no) {
       this.data.delete(row.reorder_no).subscribe({
         next: (res) => {
           if (isSuccess(res)) { this.toastr.success('Reorder rule deleted'); this.loadRows(); }
@@ -83,7 +97,7 @@ export class Inv2005ModelService {
         error: (err) => this.toastr.error(err?.error?.message || 'API error during delete'),
       });
     } else {
-      this.rows.update((rows) => rows.filter((_, i) => i !== index));
+      this.rows.update((rows) => rows.filter((r) => r.__uid !== row.__uid));
     }
   }
 
@@ -101,14 +115,15 @@ export class Inv2005ModelService {
       return;
     }
     this.isSaving.set(true);
+    const payload = rows.map(({ __uid: _uid, ...rest }) => rest);
     this.data
-      .saveBulk(wh, rows)
+      .saveBulk(wh, payload)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
           if (isSuccess(res) && res.data) {
             this.toastr.success('Reorder policy saved');
-            this.rows.set(res.data.map((r) => ({ ...r })));
+            this.rows.set(res.data.map((r) => ({ ...r, __uid: ++this.uid })));
           } else {
             this.toastr.error(res.message || 'Save failed');
           }

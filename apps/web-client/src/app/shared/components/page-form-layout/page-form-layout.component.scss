@@ -241,15 +241,20 @@
 .sidebar-list-wrap {
   padding: 6px;
 
-  /* When an AG Grid is placed inside the sidebar list, it should look flush
+  /* When an AG Grid or Tree View is placed inside the sidebar list, it should look flush
      with the sidebar rather than like a floating card. */
-  ::ng-deep [sidebarList] > app-erp-grid .erp-grid-wrapper {
+  ::ng-deep [sidebarList] > app-erp-grid .erp-grid-wrapper,
+  ::ng-deep [sidebarList] app-tree-view {
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+
+  ::ng-deep [sidebarList] > app-erp-grid .erp-grid-wrapper,
+  ::ng-deep [sidebarList] > app-tree-view,
+  ::ng-deep [sidebarList] > div > app-tree-view {
     margin: -6px; /* offset the parent padding to sit flush */
     width: calc(100% + 12px);
-    height: calc(100% + 12px);
   }
 }
 

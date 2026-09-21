@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
@@ -27,16 +27,20 @@ interface WorkingLine {
   credit: number;
 }
 
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1004',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Fin1004DataService],
   templateUrl: './fin1004.component.html',
   styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1004Component implements OnInit {
+  @ViewChild('erpGrid') erpGrid?: ErpGridComponent;
+
   public permissionService = inject(FormPermissionService);
   private data    = inject(Fin1004DataService);
   private toastr  = inject(ToastrService);
@@ -212,6 +216,9 @@ export class Fin1004Component implements OnInit {
   }
 
   onReset(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing(true);
+    }
     this.voucherDate = new Date().toISOString().split('T')[0];
     const base = this.baseCurrency() ?? this.currencies()[0] ?? null;
     this.currencyNo = base?.currency_no ?? null;
@@ -223,6 +230,9 @@ export class Fin1004Component implements OnInit {
   }
 
   post(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing();
+    }
     if (!this.currencyNo) { this.toastr.warning('Select a currency'); return; }
     if (!(Number(this.exchangeRate) > 0)) { this.toastr.warning('Enter a valid exchange rate'); return; }
     const validLines = this.validLines();

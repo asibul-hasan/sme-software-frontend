@@ -1,85 +1,104 @@
-<!-- AIDLY ERP — Reusable Tree View -->
-
-@if (merged().showToolbar) {
-  <div class="tv-toolbar">
-    <span class="tv-count">{{ totalVisible() }} item{{ totalVisible() === 1 ? '' : 's' }}</span>
-    <button
-      type="button"
-      class="tv-tool-btn"
-      (click)="toggleAll()"
-      [title]="allExpanded() ? 'Collapse all' : 'Expand all'"
-    >
-      <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
-      {{ allExpanded() ? 'Collapse all' : 'Expand all' }}
-    </button>
-  </div>
-}
-
-@if (nodes().length === 0) {
-  <div class="tv-empty">
-    <mat-icon>{{ merged().emptyIcon }}</mat-icon>
-    <p>{{ merged().emptyText }}</p>
-  </div>
-} @else {
-  <div class="tv-list">
-    @for (node of nodes(); track node.id) {
+<!-- AIDLY ERP — Reusable Tree Grid View -->
+<div class="tv-wrapper">
+  @if (merged().showToolbar) {
+    <div class="tv-toolbar">
+      @if (merged().showSearch) {
+        <div class="tv-search-wrap">
+          <mat-icon class="tv-search-icon">search</mat-icon>
+          <input
+            type="text"
+            class="tv-search-input"
+            [placeholder]="merged().searchPlaceholder"
+            [value]="searchTerm()"
+            (input)="onSearchInput($event)"
+          />
+          @if (searchTerm()) {
+            <button type="button" class="tv-search-clear" (click)="clearSearch()" title="Clear search">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+      } @else {
+        <span class="tv-count">{{ totalVisible() }} item{{ totalVisible() === 1 ? '' : 's' }}</span>
+      }
       <button
         type="button"
-        class="tv-node"
-        [class.is-active]="isSelected(node.id)"
-        (click)="onClick(node.row)"
+        class="tv-tool-btn"
+        (click)="toggleAll()"
+        [title]="allExpanded() ? 'Collapse all' : 'Expand all'"
       >
-
-
-        <!-- Indentation rails / connector guide lines -->
-        @if (merged().showConnectors) {
-          <div class="tv-rails">
-            @for (rail of node.rails; track $index) {
-              <div [class]="railClass(rail)" [style.width.px]="merged().indent"></div>
-            }
-          </div>
-        } @else {
-          <div [style.width.px]="node.level * merged().indent" style="flex-shrink: 0"></div>
-        }
-
-        <!-- Expand / collapse chevron (parents) or aligned spacer (leaves) -->
-        @if (node.hasChildren) {
-          <span class="tv-toggle" [class.open]="node.expanded" (click)="toggle(node.id, $event)">
-            <mat-icon>chevron_right</mat-icon>
-          </span>
-        } @else {
-          <span style="width: 20px; flex-shrink: 0"></span>
-        }
-
-        <!-- Leading icon -->
-        <span class="tv-icon">
-          <mat-icon>{{ icon(node.row, node.hasChildren, node.expanded) }}</mat-icon>
-        </span>
-
-        <!-- Label + sublabel -->
-        <span class="tv-text" [title]="sublabel(node.row) ? label(node.row) + ' — ' + sublabel(node.row) : label(node.row)">
-          <span class="tv-label">{{ label(node.row) }}</span>
-          @if (sublabel(node.row)) {
-            <span class="tv-sub">{{ sublabel(node.row) }}</span>
-          }
-        </span>
-
-        <!-- Trailing: child count + status badge -->
-        <span class="tv-trail">
-          @if (node.hasChildren) {
-            <span class="tv-childcount" title="Direct children">{{ node.childCount }}</span>
-          }
-          @if (badge(node.row); as b) {
-            <span class="tv-pill" [ngClass]="b.variant">{{ b.label }}</span>
-          }
-          @if (statusDot(node.row) !== null) {
-            <span class="status-dot" 
-              [class.status-dot--active]="statusDot(node.row) === true" 
-              [class.status-dot--inactive]="statusDot(node.row) === false"
-              [title]="statusDot(node.row) ? 'Active' : 'Inactive'"></span>
-          }
-        </span>
+        <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+        {{ allExpanded() ? 'Collapse all' : 'Expand all' }}
       </button>
-    }
-  </div>
-}
+    </div>
+  }
+
+  @if (nodes().length === 0) {
+    <div class="tv-empty">
+      <mat-icon>{{ merged().emptyIcon }}</mat-icon>
+      <p>{{ merged().emptyText }}</p>
+    </div>
+  } @else {
+    <div class="tv-list">
+      @for (node of nodes(); track node.id) {
+        <button
+          type="button"
+          class="tv-node"
+          [class.is-active]="isSelected(node.id)"
+          [class.tv-node--parent]="node.hasChildren"
+          [class.tv-node--root]="node.level === 0"
+          (click)="onClick(node.row)"
+        >
+          <!-- Indentation rails / connector guide lines -->
+          @if (merged().showConnectors) {
+            <div class="tv-rails">
+              @for (rail of node.rails; track $index) {
+                <div [class]="railClass(rail)" [style.width.px]="merged().indent"></div>
+              }
+            </div>
+          } @else {
+            <div [style.width.px]="node.level * merged().indent" style="flex-shrink: 0"></div>
+          }
+
+          <!-- Expand / collapse chevron (parents) or aligned spacer (leaves) -->
+          @if (node.hasChildren) {
+            <span class="tv-toggle" [class.open]="node.expanded" (click)="toggle(node.id, $event)" [title]="node.expanded ? 'Collapse' : 'Expand'">
+              <mat-icon>chevron_right</mat-icon>
+            </span>
+          } @else {
+            <span class="tv-toggle-spacer"></span>
+          }
+
+          <!-- Leading icon -->
+          <span class="tv-icon" [class.tv-icon--folder]="node.hasChildren">
+            <mat-icon>{{ icon(node.row, node.hasChildren, node.expanded) }}</mat-icon>
+          </span>
+
+          <!-- Label + sublabel -->
+          <span class="tv-text" [title]="sublabel(node.row) ? label(node.row) + ' — ' + sublabel(node.row) : label(node.row)">
+            <span class="tv-label">{{ label(node.row) }}</span>
+            @if (sublabel(node.row)) {
+              <span class="tv-sub">{{ sublabel(node.row) }}</span>
+            }
+          </span>
+
+          <!-- Trailing: child count + status badge + status dot -->
+          <span class="tv-trail">
+            @if (node.hasChildren) {
+              <span class="tv-childcount" title="Direct children">{{ node.childCount }}</span>
+            }
+            @if (badge(node.row); as b) {
+              <span class="tv-pill" [ngClass]="b.variant">{{ b.label }}</span>
+            }
+            @if (statusDot(node.row) !== null) {
+              <span class="status-dot" 
+                [class.status-dot--active]="statusDot(node.row) === true" 
+                [class.status-dot--inactive]="statusDot(node.row) === false"
+                [title]="statusDot(node.row) ? 'Active' : 'Inactive'"></span>
+            }
+          </span>
+        </button>
+      }
+    </div>
+  }
+</div>

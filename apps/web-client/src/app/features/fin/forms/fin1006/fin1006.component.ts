@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
@@ -21,18 +21,21 @@ import { finConstants } from '../../constants/fin.constants';
   styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1006Component implements OnInit {
+  @ViewChild('erpGrid') erpGrid?: ErpGridComponent;
+
   public model             = inject(Fin1006ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
 
   readonly glEventTypes = finConstants.glEventTypes;
 
-
   readonly gridConfig: GridConfig<GlMap> = {
     gridKey: 'FIN_1006_GL_MAP_GRID',
     rowIdField: 'gl_map_no',
     showPagination: true,
     pageSize: 25,
+    selectionMode: 'none',
+    externalRowState: true,
     canAdd: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
     canEdit: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
     canDeleteRow: () => this.permissionService.canDelete(),
@@ -69,15 +72,45 @@ export class Fin1006Component implements OnInit {
     this.model.pager.reset();
   }
 
+  onAddRow(): void {
+    this.model.addRow();
+    setTimeout(() => {
+      const count = this.model.filtered().length;
+      if (count > 0 && this.erpGrid) {
+        this.erpGrid.editRow(count - 1);
+      }
+    }, 50);
+  }
+
   onSave(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing();
+      const currentRows = this.erpGrid.getRows() as GlMap[];
+      for (const r of currentRows) {
+        this.model.updateRow(r);
+      }
+      this.model.saveAll(currentRows);
+      return;
+    }
     this.model.saveAll();
   }
 
+  onReset(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing(true);
+    }
+    this.model.load();
+  }
+
   onRowChange(row: GlMap): void {
-    (row as any).__dirty = true;
+    this.model.updateRow(row);
   }
 
   onRowRemove(row: GlMap): void {
+    if (!row.gl_map_no) {
+      this.model.deleteRow(row);
+      return;
+    }
     this.alertService.deleteConfirm().subscribe(ok => {
       if (ok) this.model.deleteRow(row);
     });

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../../shared/shared.module';
@@ -20,6 +20,8 @@ import { finConstants } from '../../constants/fin.constants';
   styles: [`:host { display: block; height: 100%; }`],
 })
 export class Fin1003Component implements OnInit {
+  @ViewChild('erpGrid') erpGrid?: ErpGridComponent<VoucherType>;
+
   public model             = inject(Fin1003ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService     = inject(AlertService);
@@ -31,16 +33,31 @@ export class Fin1003Component implements OnInit {
     rowIdField: 'voucher_type_no',
     showPagination: true,
     pageSize: 25,
+    selectionMode: 'none',
+    externalRowState: true,
     canAdd: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
     canEdit: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
-    canDeleteRow: () => this.permissionService.canDelete(),
-    toolbar: { showSearch: true, searchPlaceholder: 'Search voucher types...', showAdd: false },
+    canDeleteRow: (row?: VoucherType) => this.permissionService.canDelete() && row?.is_system !== 1,
+    toolbar: { showSearch: true, searchPlaceholder: 'Search voucher types...', showAdd: false, showDelete: false },
     columns: [
-      GridColumns.number<VoucherType>('order_sl', 'Order').width(90).precision(0).build(),
-      GridColumns.text<VoucherType>('voucher_type_id', 'Type ID').minWidth(120).hidden(true).build(),
-      GridColumns.text<VoucherType>('type_name', 'Type Name').minWidth(200).build(),
-      GridColumns.select<VoucherType>('base_kind', 'Base Kind', this.baseKinds).minWidth(180).build(),
+      GridColumns.number<VoucherType>('order_sl', 'Order').width(80).precision(0).build(),
+      GridColumns.text<VoucherType>('voucher_type_id', 'Type ID')
+        .width(110)
+        .required()
+        .editable((row) => !(row?.is_system === 1 && !!row?.voucher_type_no))
+        .build(),
+      GridColumns.text<VoucherType>('type_name', 'Type Name').flex(1).minWidth(170).required().build(),
+      GridColumns.select<VoucherType>('base_kind', 'Base Kind', this.baseKinds).width(140).required().build(),
       GridColumns.text<VoucherType>('number_prefix', 'Prefix').width(100).build(),
+      GridColumns.select<VoucherType>('default_dr_account_no', 'Default Dr Account', () => this.model.accountOptions())
+        .minWidth(200)
+        .flex(1)
+        .build(),
+      GridColumns.select<VoucherType>('default_cr_account_no', 'Default Cr Account', () => this.model.accountOptions())
+        .minWidth(200)
+        .flex(1)
+        .build(),
+      GridColumns.checkbox<VoucherType>('is_system', 'System').readOnly().width(80).align('center').build(),
       GridColumns.checkbox<VoucherType>('is_active', 'Active').width(80).align('center').build(),
       GridColumns.action<VoucherType>().build()
     ]
@@ -52,18 +69,62 @@ export class Fin1003Component implements OnInit {
 
   onSearchTermChange(v: string): void { this.model.searchTerm.set(v); this.model.pager.reset(); }
 
+  onAddRow(): void {
+    this.model.addRow();
+    setTimeout(() => {
+      const count = this.model.filtered().length;
+      if (count > 0 && this.erpGrid) {
+        this.erpGrid.editRow(count - 1);
+      }
+    }, 50);
+  }
+
   onSave(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing();
+      const currentRows = this.erpGrid.getRows();
+      for (const r of currentRows) {
+        if (r.voucher_type_id) {
+          r.voucher_type_id = r.voucher_type_id.toUpperCase().trim();
+          r.voucher_type_code = r.voucher_type_id;
+        }
+        if (!r.number_prefix && r.voucher_type_id) {
+          r.number_prefix = r.voucher_type_id;
+          r.prefix = r.voucher_type_id;
+        }
+        this.model.updateRow(r);
+      }
+      this.model.saveAll(currentRows);
+      return;
+    }
     this.model.saveAll();
+  }
+
+  onReset(): void {
+    if (this.erpGrid) {
+      this.erpGrid.stopEditing(true);
+    }
+    this.model.load();
   }
 
   onRowChange(row: VoucherType): void {
     (row as any).__dirty = true;
-    if (!row.voucher_type_id && row.type_name) {
-      row.voucher_type_id = String(row.type_name).toUpperCase().replace(/[^A-Z0-9_]/g, '_').substring(0, 20);
+    if (row.voucher_type_id) {
+      row.voucher_type_id = row.voucher_type_id.toUpperCase().trim();
+      row.voucher_type_code = row.voucher_type_id;
     }
+    if (!row.number_prefix && row.voucher_type_id) {
+      row.number_prefix = row.voucher_type_id;
+      row.prefix = row.voucher_type_id;
+    }
+    this.model.updateRow(row);
   }
 
   onRowRemove(row: VoucherType): void {
+    if (row.is_system === 1) {
+      this.alertService.warning('System voucher types cannot be deleted');
+      return;
+    }
     this.alertService.deleteConfirm().subscribe(ok => { 
       if (ok) this.model.deleteRow(row); 
     });

@@ -31,7 +31,6 @@ export class Hrm1009Component implements OnInit {
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
 
-  readonly countries = hrmConstants.countryPacks;
   readonly taxpayerClasses = hrmConstants.taxpayerClasses;
 
   ngOnInit(): void {

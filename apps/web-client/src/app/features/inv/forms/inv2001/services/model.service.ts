@@ -47,12 +47,14 @@ export class Inv2001ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter(
-      (w) =>
-        (w.warehouse_name || '').toLowerCase().includes(term) ||
-        (w.warehouse_id || '').toLowerCase().includes(term),
-    );
+    const list = term
+      ? data.filter(
+          (w) =>
+            (w.warehouse_name || '').toLowerCase().includes(term) ||
+            (w.warehouse_id || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.warehouse_no ?? 0) - (a.warehouse_no ?? 0));
   });
 
   pager = makePaginator<IWarehouse>(this.filtered);
@@ -82,7 +84,11 @@ export class Inv2001ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (w: IWarehouse) => w.warehouse_no, reselectNo);
-          resolved ? this.select(resolved.item as IWarehouse) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as IWarehouse);
+          } else {
+            this.onNew();
+          }
         }
       });
   }

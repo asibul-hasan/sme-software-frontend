@@ -1,0 +1,89 @@
+{
+  "name": "aidlyPms",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/aidlyPms/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/aidlyPms",
+        "browser": "apps/aidlyPms/src/main.ts",
+        "tsConfig": "apps/aidlyPms/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/aidlyPms/public"
+          }
+        ],
+        "styles": [
+          "node_modules/@angular/cdk/overlay-prebuilt.css",
+          "apps/aidlyPms/src/styles.css"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "optimization": {
+            "scripts": true,
+            "styles": {
+              "minify": true,
+              "inlineCritical": false
+            },
+            "fonts": false
+          },
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "4mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "10kb",
+              "maximumError": "20kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "port": 4203,
+        "proxyConfig": "apps/aidlyPms/proxy.conf.json"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "aidlyPms:build:production"
+        },
+        "development": {
+          "buildTarget": "aidlyPms:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "aidlyPms:build",
+        "staticFilePath": "dist/apps/aidlyPms/browser",
+        "spa": true
+      }
+    }
+  }
+}

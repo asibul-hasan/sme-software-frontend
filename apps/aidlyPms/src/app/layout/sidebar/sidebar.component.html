@@ -1,0 +1,108 @@
+<aside
+  class="sidebar h-full overflow-hidden"
+  [style.width.px]="collapsed ? 64 : 315"
+  [class.collapsed]="collapsed"
+  [class.flyout-open]="collapsed && isFlyoutOpen()"
+  (mouseleave)="closeFlyout()"
+  (focusout)="onSidebarFocusOut($event)"
+>
+  <div class="sb-body flex flex-1 min-h-0">
+    <!-- Left 64px Module Rail -->
+    <div class="sb-rail flex flex-col h-full flex-shrink-0">
+      <!-- Brand Pill -->
+      <a
+        class="sb-rail-brand"
+        routerLink="/"
+        (click)="onMenuItemSelected()"
+        nz-tooltip
+        nzTooltipTitle="OS Pharmacy PMS v2.0"
+        nzTooltipPlacement="right"
+      >
+        <span class="sb-rail-initial">℞</span>
+      </a>
+
+      <!-- Module Navigation List -->
+      <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
+        @for (mod of menuModules; track mod.module_code) {
+          <button
+            type="button"
+            class="sb-module-btn"
+            [class.active]="isModuleSelected(mod)"
+            [class.route-active]="hasActiveChild(mod)"
+            (mouseenter)="openFlyout(mod)"
+            (focus)="openFlyout(mod)"
+            (click)="selectModule(mod)"
+            nz-tooltip
+            [nzTooltipTitle]="mod.module"
+            nzTooltipPlacement="right"
+          >
+            <span class="sb-module-icon">
+              <span nz-icon [nzType]="mod.icon" class="text-base"></span>
+            </span>
+            <span class="sb-module-label">{{ mod.module_code }}</span>
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- Right 251px Submenu Panel -->
+    @if (shouldShowPanel()) {
+      <section
+        class="sb-panel flex flex-col h-full min-w-0"
+        (mouseenter)="openFlyout()"
+      >
+        <!-- Panel Header -->
+        <header class="sb-panel-head flex items-center flex-shrink-0">
+          <div class="min-w-0 flex-1">
+            <h2 class="sb-module-heading truncate">{{ selectedModule()?.module }}</h2>
+            <p class="sb-company truncate">{{ activeBranchName() }}</p>
+          </div>
+        </header>
+
+        <!-- Search Bar Row -->
+        <div class="sb-search-row flex items-center gap-2 flex-shrink-0">
+          <div class="sb-search-wrap flex-1 min-w-0">
+            <span nz-icon nzType="search" class="sb-search-icon"></span>
+            <input
+              type="text"
+              class="sb-search-input"
+              placeholder="Search menu..."
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+            />
+            @if (searchTerm()) {
+              <button
+                type="button"
+                class="sb-search-clear"
+                (click)="searchTerm.set('')"
+                title="Clear search"
+              >
+                <span nz-icon nzType="close"></span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Screens List in Selected Module -->
+        <nav class="sb-menu-panel flex-1 overflow-y-auto overflow-x-hidden">
+          @for (screen of filteredScreens(); track screen.form_id) {
+            <a
+              class="sb-form-link"
+              [routerLink]="screen.route"
+              [class.active]="isRouteActive(screen.route)"
+              (click)="onMenuItemSelected()"
+            >
+              <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
+              <span class="sb-form-label truncate">{{ screen.title }}</span>
+            </a>
+          } @empty {
+            <div class="sb-empty-state">
+              <span nz-icon nzType="search" class="text-2xl text-slate-500"></span>
+              <span>No menu found</span>
+            </div>
+          }
+        </nav>
+      </section>
+    }
+  </div>
+</aside>

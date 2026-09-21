@@ -23,8 +23,14 @@
         [class.active]="model.selectedNo() === w.warehouse_no"
         (click)="model.select(w)"
       >
-        <h6 class="list-item-title mb-0 text-truncate">{{ w.warehouse_name }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ w.warehouse_id }}</p>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="w.is_active === 1"
+          [class.status-dot--inactive]="w.is_active !== 1"
+          [matTooltip]="w.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 truncate">{{ w.warehouse_name }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ w.warehouse_id }}</p>
         @if (w.is_default === 1) {
           <div class="list-item-meta">
             <span class="list-item-tag list-item-tag--primary">Default</span>
@@ -42,92 +48,64 @@
 
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-9 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">warehouse</mat-icon>
-                Warehouse
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="warehouse_id">Code</label>
-                    <input type="text" id="warehouse_id" formControlName="warehouse_id" class="form-control text-uppercase" placeholder="WH-MAIN" />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="warehouse_name">Name</label>
-                    <input type="text" id="warehouse_name" formControlName="warehouse_name" class="form-control" placeholder="Main Store" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="warehouse_type">Type</label>
-                    <ng-select id="warehouse_type" labelForId="warehouse_type" formControlName="warehouse_type" [clearable]="false">
-                      @for (t of model.warehouseTypes; track t.value) {
-                        <ng-option [value]="t.value">{{ t.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="manager_employee_no">Manager (Employee No)</label>
-                    <input type="number" id="manager_employee_no" formControlName="manager_employee_no" class="form-control" placeholder="Optional" />
-                  </div>
-                </div>
-                <div class="col-md-12">
-                  <div class="field-group">
-                    <label class="field-label" for="address">Address</label>
-                    <input type="text" id="address" formControlName="address" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="is_default">Default</label>
-                    <ng-select id="is_default" labelForId="is_default" formControlName="is_default" [clearable]="false">
-                      <ng-option [value]="1">Yes</ng-option>
-                      <ng-option [value]="0">No</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="allow_negative_stock">Allow Negative</label>
-                    <ng-select id="allow_negative_stock" labelForId="allow_negative_stock" formControlName="allow_negative_stock" [clearable]="false">
-                      <ng-option [value]="1">Yes</ng-option>
-                      <ng-option [value]="0">No</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="is_sale_point">Sale Point</label>
-                    <ng-select id="is_sale_point" labelForId="is_sale_point" formControlName="is_sale_point" [clearable]="false">
-                      <ng-option [value]="1">Yes</ng-option>
-                      <ng-option [value]="0">No</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-form-section title="Warehouse" icon="warehouse">
+        <app-form-field label="Code" for="warehouse_id" required [span]="4">
+          <input
+            type="text"
+            id="warehouse_id"
+            formControlName="warehouse_id"
+            class="form-control uppercase"
+            placeholder="WH-MAIN"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name" for="warehouse_name" required [span]="8">
+          <input
+            type="text"
+            id="warehouse_name"
+            formControlName="warehouse_name"
+            class="form-control"
+            placeholder="Main Store"
+          />
+        </app-form-field>
+
+        <app-form-field label="Type" for="warehouse_type" required [span]="6">
+          <ng-select
+            id="warehouse_type"
+            labelForId="warehouse_type"
+            formControlName="warehouse_type"
+            [clearable]="false"
+          >
+            @for (t of model.warehouseTypes; track t.value) {
+              <ng-option [value]="t.value">{{ t.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Manager (Employee No)" for="manager_employee_no" [span]="6">
+          <input
+            type="number"
+            id="manager_employee_no"
+            formControlName="manager_employee_no"
+            class="form-control"
+            placeholder="Optional"
+          />
+        </app-form-field>
+
+        <app-form-field label="Address" for="address" [span]="12">
+          <input
+            type="text"
+            id="address"
+            formControlName="address"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-check-field label="Default" text="Default Warehouse" [span]="3" formControlName="is_default" />
+        <app-check-field label="Negative Stock" text="Allow Negative" [span]="3" formControlName="allow_negative_stock" />
+        <app-check-field label="Sale Point" text="Is Sale Point" [span]="3" formControlName="is_sale_point" />
+        <app-check-field label="Status" text="Active" [span]="3" formControlName="is_active" />
+      </app-form-section>
     </form>
   </div>
 

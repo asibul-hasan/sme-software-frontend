@@ -22,12 +22,13 @@ interface WorkLine extends ReturnLine { __uid: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1103',
   standalone: true,
-  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Sal1103DataService],
   templateUrl: './sal1103.component.html',
   styles: [`:host { display: block; height: 100%; }`],

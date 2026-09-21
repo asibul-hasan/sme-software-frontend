@@ -28,8 +28,12 @@ export interface AccountLite {
 }
 export interface VoucherTypeLite {
   voucher_type_no: number;
-  type_name: string;
+  type_name?: string;
+  voucher_type_name?: string;
   base_kind: number;
+  prefix?: string | null;
+  default_dr_account_no?: number | null;
+  default_cr_account_no?: number | null;
   is_active?: number | null;
 }
 
@@ -184,6 +188,48 @@ export class Fin1101ModelService {
       fx_rate: [1, [Validators.required, Validators.min(0.000001)]],
       reference_no: [''],
       narration: [''],
+    });
+
+    this.form.get('voucher_type_no')?.valueChanges.subscribe((vTypeNo) => {
+      if (!this.form.get('voucher_no')?.value && vTypeNo) {
+        const vType = this.voucherTypes().find((t) => t.voucher_type_no === Number(vTypeNo));
+        if (vType && this.lines().length === 0) {
+          const newLines: VoucherLine[] = [];
+          if (vType.default_dr_account_no) {
+            const acc = this.accounts().find((a) => a.account_no === vType.default_dr_account_no);
+            newLines.push({
+              voucher_dtl_no: null,
+              account_no: vType.default_dr_account_no,
+              dr_cr: 'dr',
+              debit_fc: 0,
+              credit_fc: 0,
+              debit: 0,
+              credit: 0,
+              account_code: acc?.account_code ?? null,
+              account_name: acc?.account_name ?? null,
+              __uid: this.uidSeq++,
+            });
+          }
+          if (vType.default_cr_account_no) {
+            const acc = this.accounts().find((a) => a.account_no === vType.default_cr_account_no);
+            newLines.push({
+              voucher_dtl_no: null,
+              account_no: vType.default_cr_account_no,
+              dr_cr: 'cr',
+              debit_fc: 0,
+              credit_fc: 0,
+              debit: 0,
+              credit: 0,
+              account_code: acc?.account_code ?? null,
+              account_name: acc?.account_name ?? null,
+              __uid: this.uidSeq++,
+            });
+          }
+          if (newLines.length > 0) {
+            this.lines.set(newLines);
+          }
+        }
+      }
     });
   }
 

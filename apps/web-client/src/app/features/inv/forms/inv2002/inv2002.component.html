@@ -1,82 +1,108 @@
-<div class="p-3">
-  <!-- Header + warehouse selector -->
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0 fw-bold">
-      <mat-icon class="me-2 align-middle">shelves</mat-icon>
-      Rack / Shelf Setup
-    </h4>
-    <div style="min-width: 280px">
-      <ng-select
-        [items]="model.warehouses()"
-        bindValue="value"
-        bindLabel="label"
-        [clearable]="false"
-        placeholder="Select warehouse"
-        [ngModel]="model.selectedWarehouseNo()"
-        (ngModelChange)="model.selectWarehouse($event)"
-      ></ng-select>
-    </div>
-  </div>
-
-  @if (!model.selectedWarehouseNo()) {
-    <div class="p-4 text-center opacity-75">Select a warehouse to manage its racks.</div>
-  } @else {
-    <div class="row row-group">
-      <!-- Rack list -->
-      <div class="col-lg-6">
-        <div class="d-flex justify-content-end mb-1">
-          @if (permissionService.canInsert()) {
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.newRack()">New</button>
-          }
-        </div>
-        <app-common-table
-          [columns]="columns"
-          [data]="rows()"
-          [config]="tableConfig"
-          [loading]="model.isLoading()"
-          [tableId]="'inv2002-racks'"
-          (rowClick)="onRowClick($event)"
-        ></app-common-table>
+<app-page-form-layout
+  [title]="'Rack / Shelf Setup'"
+  [subtitle]="'Warehouse storage bins and physical layout'"
+  [icon]="'shelves'"
+  [hasSidebar]="false"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedRackNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-full flex flex-col gap-3">
+    <!-- Top toolbar: Warehouse selector -->
+    <div class="card p-3 flex flex-row items-center justify-between gap-4 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-muted">warehouse</mat-icon>
+        <span class="font-semibold text-sm">Active Warehouse:</span>
       </div>
+      <div style="width: 320px">
+        <ng-select
+          [items]="model.warehouses()"
+          bindValue="value"
+          bindLabel="label"
+          [clearable]="false"
+          placeholder="Select warehouse"
+          [ngModel]="model.selectedWarehouseNo()"
+          (ngModelChange)="model.selectWarehouse($event)"
+        ></ng-select>
+      </div>
+    </div>
 
-      <!-- Rack form -->
-      <div class="col-lg-6">
-        <div class="form-section-card card">
-          <div class="card-header">
-            <h4 class="card-header__title mb-0 fw-bold">{{ model.selectedRackNo() ? 'Edit' : 'New' }} Rack</h4>
-          </div>
-          <div class="card-body">
-            <form [formGroup]="model.form" autocomplete="off">
-              <div class="row row-group">
-                <div class="col-md-6"><div class="field-group"><label class="field-label required" for="rack_id">Code</label><input type="text" id="rack_id" formControlName="rack_id" class="form-control text-uppercase" placeholder="A-01-03" /></div></div>
-                <div class="col-md-6"><div class="field-group"><label class="field-label" for="rack_name">Name</label><input type="text" id="rack_name" formControlName="rack_name" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="aisle">Aisle</label><input type="text" id="aisle" formControlName="aisle" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="rack">Rack</label><input type="text" id="rack" formControlName="rack" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="shelf">Shelf</label><input type="text" id="shelf" formControlName="shelf" class="form-control" /></div></div>
-                <div class="col-md-3"><div class="field-group"><label class="field-label" for="bin">Bin</label><input type="text" id="bin" formControlName="bin" class="form-control" /></div></div>
-                <div class="col-md-6"><div class="field-group"><label class="field-label" for="is_active">Status</label>
-                  <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                    <ng-option [value]="1">Active</ng-option>
-                    <ng-option [value]="0">Inactive</ng-option>
-                  </ng-select>
-                </div></div>
-              </div>
-            </form>
-            <div class="d-flex gap-2 mt-2">
-              @if (permissionService.canInsert() || permissionService.canUpdate()) {
-                <button type="button" class="btn btn-primary" (click)="model.onSave()" [disabled]="model.isSaving()">
-                  <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">save</mat-icon> Save
-                </button>
-              }
-              @if (permissionService.canDelete() && model.selectedRackNo()) {
-                <button type="button" class="btn btn-outline-danger" (click)="onDelete()">
-                  <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon> Delete
-                </button>
-              }
+    @if (!model.selectedWarehouseNo()) {
+      <div class="card p-8 text-center opacity-75">
+        <mat-icon class="text-4xl text-muted mb-2">shelves</mat-icon>
+        <p>Please select a warehouse to view and manage its storage racks.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">
+        <!-- Left: Racks AG Grid -->
+        <div class="lg:col-span-7 h-full flex flex-col min-h-[400px]">
+          <div class="card flex-1 min-h-0 flex flex-col">
+            <div class="card-body p-0 flex-1 min-h-0">
+              <app-erp-grid
+                [config]="gridConfig"
+                [data]="model.racks()"
+                [selectedId]="model.selectedRackNo()"
+                height="100%"
+                (rowClick)="onRowSelected($event)"
+              ></app-erp-grid>
             </div>
           </div>
         </div>
+
+        <!-- Right: Rack details form -->
+        <div class="lg:col-span-5 flex flex-col">
+          <form [formGroup]="model.form" autocomplete="off" class="h-full">
+            <app-form-section
+              [title]="model.selectedRackNo() ? 'Edit Rack / Bin' : 'New Rack / Bin'"
+              icon="shelves"
+            >
+              <app-form-field label="Rack / Bin Code" for="rack_id" required [span]="6">
+                <input
+                  type="text"
+                  id="rack_id"
+                  formControlName="rack_id"
+                  class="form-control uppercase"
+                  placeholder="e.g. A-01-03"
+                />
+              </app-form-field>
+
+              <app-form-field label="Rack Name" for="rack_name" [span]="6">
+                <input
+                  type="text"
+                  id="rack_name"
+                  formControlName="rack_name"
+                  class="form-control"
+                  placeholder="e.g. Fast Movers Shelf"
+                />
+              </app-form-field>
+
+              <app-form-field label="Aisle" for="aisle" [span]="3">
+                <input type="text" id="aisle" formControlName="aisle" class="form-control uppercase" placeholder="A" />
+              </app-form-field>
+
+              <app-form-field label="Rack" for="rack" [span]="3">
+                <input type="text" id="rack" formControlName="rack" class="form-control uppercase" placeholder="01" />
+              </app-form-field>
+
+              <app-form-field label="Shelf" for="shelf" [span]="3">
+                <input type="text" id="shelf" formControlName="shelf" class="form-control uppercase" placeholder="02" />
+              </app-form-field>
+
+              <app-form-field label="Bin" for="bin" [span]="3">
+                <input type="text" id="bin" formControlName="bin" class="form-control uppercase" placeholder="03" />
+              </app-form-field>
+
+              <app-check-field label="Status" text="Active" [span]="12" formControlName="is_active" />
+            </app-form-section>
+          </form>
+        </div>
       </div>
-    </div>
-  }
-</div>
+    }
+  </div>
+</app-page-form-layout>

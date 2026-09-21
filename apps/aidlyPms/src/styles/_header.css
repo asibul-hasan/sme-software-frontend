@@ -1,0 +1,191 @@
+/* ─────────────────────────────────────────────────────────────────
+   HEADER & TOPBAR ARCHITECTURE (Aidly ERP Parity)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Header Filters Layout Enforcement */
+.header-filters,
+[filters] {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.header-filters > *,
+[filters] > * {
+  flex-shrink: 0 !important;
+}
+
+/* Page Header & Sticky Bar Helpers */
+.sticky-action-bar {
+  width: 100%;
+  border-bottom: none !important;
+}
+
+.header-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.header-icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-secondary);
+  transition: all 0.15s ease-in-out;
+}
+
+.header-icon-btn:hover {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ANT DESIGN DROPDOWN MENUS (Aidly ERP Parity)
+   ───────────────────────────────────────────────────────────────── */
+.ant-dropdown {
+  z-index: 1050 !important;
+}
+
+.ant-dropdown-menu {
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.04) !important;
+  padding: 6px !important;
+  min-width: 180px !important;
+  overflow: hidden !important;
+  list-style: none !important;
+  margin: 0 !important;
+}
+
+.ant-dropdown-menu-item {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  line-height: 1.4 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-item-active {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.ant-dropdown-menu-item .anticon,
+.ant-dropdown-menu-item span[nz-icon] {
+  font-size: 15px !important;
+  margin-right: 10px !important;
+  color: #64748b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  transition: color 0.15s ease !important;
+}
+
+.ant-dropdown-menu-item:hover .anticon,
+.ant-dropdown-menu-item:hover span[nz-icon] {
+  color: #334155 !important;
+}
+
+.ant-dropdown-menu-item.logout-item,
+.ant-dropdown-menu-item.text-red-600 {
+  color: #dc2626 !important;
+}
+
+.ant-dropdown-menu-item.logout-item .anticon,
+.ant-dropdown-menu-item.logout-item span[nz-icon],
+.ant-dropdown-menu-item.text-red-600 .anticon,
+.ant-dropdown-menu-item.text-red-600 span[nz-icon] {
+  color: #ef4444 !important;
+}
+
+.ant-dropdown-menu-item.logout-item:hover,
+.ant-dropdown-menu-item.text-red-600:hover {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+}
+
+.ant-dropdown-menu-item.logout-item:hover .anticon,
+.ant-dropdown-menu-item.logout-item:hover span[nz-icon],
+.ant-dropdown-menu-item.text-red-600:hover .anticon,
+.ant-dropdown-menu-item.text-red-600:hover span[nz-icon] {
+  color: #dc2626 !important;
+}
+
+.ant-dropdown-menu-item-divider {
+  height: 1px !important;
+  background-color: #e2e8f0 !important;
+  margin: 6px 4px !important;
+  border: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   HEADER QUICK ACTION SHORTCUT BUTTONS (Permission-Gated)
+   Sale POS, Pur POS, Cash Closer
+   ───────────────────────────────────────────────────────────────── */
+.header-quick-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 30px !important;
+  padding: 0 11px !important;
+  border-radius: 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease-in-out !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #f1f5f9 !important;
+  outline: none !important;
+}
+
+.header-quick-action-btn:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.header-quick-action-btn:active {
+  transform: translateY(0);
+}
+
+.header-quick-action-btn.active,
+.header-quick-action-btn-active {
+  background: rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(129, 140, 248, 0.6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25) !important;
+}
+
+.header-quick-action-btn .btn-icon-sale {
+  color: #34d399 !important;
+  font-size: 13px !important;
+}
+
+.header-quick-action-btn .btn-icon-pur {
+  color: #38bdf8 !important;
+  font-size: 13px !important;
+}
+
+.header-quick-action-btn .btn-icon-closer {
+  color: #fbbf24 !important;
+  font-size: 13px !important;
+}
+

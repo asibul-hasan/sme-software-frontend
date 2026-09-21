@@ -58,6 +58,8 @@ import { AppDatePickerComponent } from '../../../../shared/components/date-picke
   ],
 })
 export class Fin1101Component implements OnInit {
+  erpGrid = viewChild<ErpGridComponent>('erpGrid');
+
   public model = inject(Fin1101ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
@@ -154,12 +156,14 @@ export class Fin1101Component implements OnInit {
   }
 
   onSave(): void {
+    this.erpGrid()?.stopEditing();
     this.model.onSave();
   }
   onNew(): void {
     this.model.onNew();
   }
   onReset(): void {
+    this.erpGrid()?.stopEditing(true);
     const o = this.model
       .vouchers()
       .find((v) => v.voucher_no === this.model.selectedNo());
@@ -190,6 +194,7 @@ export class Fin1101Component implements OnInit {
   }
 
   submit(): void {
+    this.erpGrid()?.stopEditing();
     this.alertService
       .confirm(
         'Submit this voucher for posting? Auto-posts to the ledger when no approval workflow is configured.',

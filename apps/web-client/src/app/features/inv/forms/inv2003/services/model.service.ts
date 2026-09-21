@@ -1,14 +1,32 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { Inv2003DataService } from './data.service';
+import { invConstants } from '../../../constants/inv.constants';
 
 export interface Lookup { value: number; label: string; }
 export interface Lookups { warehouses: Lookup[]; products: Lookup[]; uoms: Lookup[]; }
+
+export interface ITransferLine {
+  __uid?: number;
+  transfer_dtl_no?: number | null;
+  product_no: number | null;
+  product_name?: string | null;
+  variant_no?: number | null;
+  uom_no: number | null;
+  uom_name?: string | null;
+  qty_sent: number;
+  qty_received?: number | null;
+  unit_cost?: number;
+  batch_no?: number | null;
+  batch_code?: string | null;
+  expiry_date?: string | null;
+  row_version?: number;
+}
 
 export interface ITransfer {
   transfer_no: number;
@@ -18,12 +36,9 @@ export interface ITransfer {
   from_warehouse_name?: string | null;
   to_warehouse_no: number;
   to_warehouse_name?: string | null;
-  status: number;
-  total_qty?: number | null;
-  total_value?: number | null;
-  remarks?: string | null;
+  status: number; // 1=Draft, 2=Submitted, 3=Dispatched, 4=Received, 5=Partially, 6=Cancelled
   row_version?: number;
-  lines?: unknown[];
+  lines?: ITransferLine[];
 }
 
 @Injectable()
@@ -31,6 +46,7 @@ export class Inv2003ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Inv2003DataService);
   private toastr = inject(ToastrService);
+  private uid = 0;
 
   items = signal<ITransfer[]>([]);
   lookups = signal<Lookups>({ warehouses: [], products: [], uoms: [] });
@@ -38,27 +54,43 @@ export class Inv2003ModelService {
   isSaving = signal(false);
   searchTerm = signal('');
   selectedNo = signal<number | null>(null);
-  status = signal<number>(1);
+  status = signal(1);
   form!: FormGroup;
 
-  readonly statusLabels: Record<number, string> = { 1: 'Draft', 2: 'Submitted', 3: 'Dispatched', 4: 'Received', 5: 'Short Received', 6: 'Cancelled' };
+  lineRows = signal<ITransferLine[]>([]);
 
-  isDraft = computed(() => this.status() === 1);
-  isSubmitted = computed(() => this.status() === 2);
-  isDispatched = computed(() => this.status() === 3);
-  isClosed = computed(() => this.status() >= 4);
-  statusLabel = computed(() => this.statusLabels[this.status()] || 'Draft');
+  readonly statusLabels = invConstants.stockTransferStatuses;
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter((o) => (o.transfer_id || '').toLowerCase().includes(term));
+    const list = term
+      ? data.filter(
+          (o) =>
+            (o.transfer_id || '').toLowerCase().includes(term) ||
+            (o.from_warehouse_name || '').toLowerCase().includes(term) ||
+            (o.to_warehouse_name || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.transfer_no ?? 0) - (a.transfer_no ?? 0));
   });
 
   pager = makePaginator<ITransfer>(this.filtered);
 
-  get lines(): FormArray { return this.form.get('lines') as FormArray; }
+  readonly isDraft = computed(() => this.status() === 1);
+  readonly isSubmitted = computed(() => this.status() === 2);
+  readonly isDispatched = computed(() => this.status() === 3);
+  readonly isReceived = computed(() => this.status() === 4);
+  readonly isClosed = computed(() => this.status() >= 3);
+  readonly statusLabel = computed(() => this.statusLabels[this.status()] || 'Draft');
+
+  readonly totalSentQty = computed(() =>
+    this.lineRows().reduce((sum, l) => sum + (Number(l.qty_sent) || 0), 0),
+  );
+
+  readonly totalReceivedQty = computed(() =>
+    this.lineRows().reduce((sum, l) => sum + (Number(l.qty_received) || 0), 0),
+  );
 
   initForm(): void {
     this.form = this.fb.group({
@@ -68,19 +100,6 @@ export class Inv2003ModelService {
       from_warehouse_no: [null, [Validators.required]],
       to_warehouse_no: [null, [Validators.required]],
       remarks: [''],
-      lines: this.fb.array([]),
-    });
-  }
-
-  private lineGroup(l?: any): FormGroup {
-    return this.fb.group({
-      transfer_dtl_no: [l?.transfer_dtl_no ?? null],
-      product_no: [l?.product_no ?? null, [Validators.required]],
-      uom_no: [l?.uom_no ?? null, [Validators.required]],
-      qty_sent: [l?.qty_sent ?? null, [Validators.required, Validators.min(0.0001)]],
-      qty_received: [l?.qty_received ?? null],
-      batch_code: [l?.batch_code ?? ''],
-      remarks: [l?.remarks ?? ''],
     });
   }
 
@@ -94,7 +113,11 @@ export class Inv2003ModelService {
       if (isSuccess(res) && res.data) {
         this.items.set(res.data);
         const resolved = resolvePostReloadSelection(res.data, (o: ITransfer) => o.transfer_no, reselectNo);
-        resolved ? this.select(resolved.item as ITransfer) : this.onNew();
+        if (resolved) {
+          this.select(resolved.item as ITransfer);
+        } else {
+          this.onNew();
+        }
       }
     });
   }
@@ -109,28 +132,58 @@ export class Inv2003ModelService {
 
   private patch(o: any): void {
     this.status.set(o.status ?? 1);
-    this.lines.clear();
-    (o.lines || []).forEach((l: any) => this.lines.push(this.lineGroup(l)));
+    const lines: ITransferLine[] = (o.lines || []).map((l: any) => ({ ...l, __uid: ++this.uid }));
+    this.lineRows.set(lines);
     this.form.patchValue({
       transfer_no: o.transfer_no, transfer_id: o.transfer_id, transfer_date: o.transfer_date,
       from_warehouse_no: o.from_warehouse_no, to_warehouse_no: o.to_warehouse_no, remarks: o.remarks ?? '',
     });
-    // Header editable only in Draft; lines' qty_received editable only when Dispatched.
-    if (this.isDraft()) this.form.enable({ emitEvent: false });
+    if (o.status === 1) this.form.enable({ emitEvent: false });
     else this.form.disable({ emitEvent: false });
     this.form.get('transfer_id')?.disable({ emitEvent: false });
-    if (this.isDispatched()) {
-      this.lines.controls.forEach((g) => g.get('qty_received')?.enable({ emitEvent: false }));
-    }
   }
 
-  addLine(): void { if (this.isDraft()) this.lines.push(this.lineGroup()); }
-  removeLine(i: number): void { if (this.isDraft()) this.lines.removeAt(i); }
+  addLine(): void {
+    this.lineRows.update((rows) => [
+      ...rows,
+      {
+        __uid: ++this.uid,
+        product_no: null,
+        uom_no: null,
+        qty_sent: 1,
+        qty_received: 0,
+        batch_code: '',
+        expiry_date: null,
+      },
+    ]);
+  }
+
+  onLineChange(row: ITransferLine): void {
+    this.lineRows.update((rows) =>
+      rows.map((r) => {
+        if (r.__uid !== row.__uid) return r;
+        const updated = { ...r, ...row };
+        if (row.product_no && row.product_no !== r.product_no) {
+          const p = this.lookups().products.find((x) => x.value === row.product_no);
+          if (p) {
+            updated.product_name = p.label;
+            const uom = this.lookups().uoms[0];
+            if (uom && !updated.uom_no) updated.uom_no = uom.value;
+          }
+        }
+        return updated;
+      }),
+    );
+  }
+
+  removeLine(row: ITransferLine): void {
+    this.lineRows.update((rows) => rows.filter((r) => r.__uid !== row.__uid));
+  }
 
   onNew(): void {
     this.selectedNo.set(null);
     this.status.set(1);
-    this.lines.clear();
+    this.lineRows.set([]);
     this.form.enable({ emitEvent: false });
     this.form.reset({ transfer_date: new Date().toISOString().substring(0, 10) });
     this.form.get('transfer_id')?.disable({ emitEvent: false });
@@ -139,10 +192,16 @@ export class Inv2003ModelService {
   onSaveDraft(): void {
     if (!this.isDraft()) return;
     if (this.form.invalid) { this.form.markAllAsTouched(); this.toastr.warning('Please correct the validation errors.'); return; }
+    if (this.lineRows().length === 0) { this.toastr.warning('Please add at least one line item.'); return; }
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
     this.isSaving.set(true);
-    this.data.save({ ...val, transfer_no: this.selectedNo() }).pipe(finalize(() => this.isSaving.set(false))).subscribe({
+    const payload = {
+      ...val,
+      transfer_no: this.selectedNo(),
+      lines: this.lineRows().map(({ __uid: _uid, ...rest }) => rest),
+    };
+    this.data.save(payload).pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) { this.toastr.success(isUpdate ? 'Draft updated' : 'Draft created'); this.loadList(res.data?.transfer_no ?? this.selectedNo()); }
         else this.toastr.error(res.message || 'Save failed');
@@ -169,9 +228,9 @@ export class Inv2003ModelService {
     const no = this.selectedNo();
     if (!no) return;
     const payload = {
-      lines: this.lines.getRawValue().map((l: any) => ({
+      lines: this.lineRows().map((l) => ({
         transfer_dtl_no: l.transfer_dtl_no,
-        qty_received: l.qty_received != null && l.qty_received !== '' ? l.qty_received : l.qty_sent,
+        qty_received: l.qty_received != null ? l.qty_received : l.qty_sent,
       })),
     };
     this.isSaving.set(true);
@@ -186,7 +245,7 @@ export class Inv2003ModelService {
     if (!no) return;
     this.isLoading.set(true);
     this.data.delete(no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
-      next: (res) => { if (isSuccess(res)) { this.toastr.success('Draft deleted'); this.loadList(); } else this.toastr.error(res.message || 'Delete failed'); },
+      next: (res) => { if (isSuccess(res)) { this.toastr.success('Transfer deleted'); this.loadList(); } else this.toastr.error(res.message || 'Delete failed'); },
       error: (err) => this.toastr.error(err?.error?.message || 'API error during delete'),
     });
   }

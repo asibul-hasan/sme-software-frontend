@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
@@ -37,6 +37,39 @@ export interface IProduct {
   [k: string]: unknown;
 }
 
+export interface IVariantRow {
+  __uid: number;
+  variant_no?: number | null;
+  variant_sku: string;
+  variant_name: string;
+  barcode?: string | null;
+  attr1_value_no?: number | null;
+  attr2_value_no?: number | null;
+  attr3_value_no?: number | null;
+  sale_price?: number | null;
+  mrp?: number | null;
+  is_active?: number | null;
+}
+
+export interface IBarcodeRow {
+  __uid: number;
+  barcode_no?: number | null;
+  barcode: string;
+  uom_no: number | null;
+  pack_qty: number;
+  barcode_type: number;
+  is_primary: number;
+  is_active?: number | null;
+}
+
+export interface IUomConvRow {
+  __uid: number;
+  uom_conversion_no?: number | null;
+  from_uom_no: number | null;
+  to_base_factor: number;
+  is_active?: number | null;
+}
+
 type Tab = 'general' | 'pricing' | 'inventory' | 'variants' | 'barcodes' | 'uom';
 
 @Injectable()
@@ -44,6 +77,7 @@ export class Inv1001ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Inv1001DataService);
   private toastr = inject(ToastrService);
+  private uid = 0;
 
   items = signal<IProduct[]>([]);
   lookups = signal<Lookups>({ categories: [], brands: [], uoms: [], taxes: [], attributes: [] });
@@ -54,7 +88,10 @@ export class Inv1001ModelService {
   hasMovements = signal(false);
   activeTab = signal<Tab>('general');
 
-  // variant-matrix builder selections (up to 3 attributes)
+  variantRows = signal<IVariantRow[]>([]);
+  barcodeRows = signal<IBarcodeRow[]>([]);
+  uomConvRows = signal<IUomConvRow[]>([]);
+
   genAttr1 = signal<number | null>(null);
   genAttr2 = signal<number | null>(null);
   genAttr3 = signal<number | null>(null);
@@ -67,19 +104,17 @@ export class Inv1001ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter(
-      (p) =>
-        (p.product_name || '').toLowerCase().includes(term) ||
-        (p.product_id || '').toLowerCase().includes(term),
-    );
+    const list = term
+      ? data.filter(
+          (p) =>
+            (p.product_name || '').toLowerCase().includes(term) ||
+            (p.product_id || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.product_no ?? 0) - (a.product_no ?? 0));
   });
 
   pager = makePaginator<IProduct>(this.filtered);
-
-  get variants(): FormArray { return this.form.get('variants') as FormArray; }
-  get barcodes(): FormArray { return this.form.get('barcodes') as FormArray; }
-  get uomConversions(): FormArray { return this.form.get('uom_conversions') as FormArray; }
 
   initForm(): void {
     this.form = this.fb.group({
@@ -120,9 +155,6 @@ export class Inv1001ModelService {
       allow_discount: [1],
       remarks: [''],
       is_active: [1, [Validators.required]],
-      variants: this.fb.array([]),
-      barcodes: this.fb.array([]),
-      uom_conversions: this.fb.array([]),
     });
   }
 
@@ -141,7 +173,11 @@ export class Inv1001ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (p: IProduct) => p.product_no, reselectNo);
-          resolved ? this.select(resolved.item as IProduct) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as IProduct);
+          } else {
+            this.onNew();
+          }
         }
       });
   }
@@ -160,12 +196,13 @@ export class Inv1001ModelService {
 
   private patchProduct(p: any): void {
     this.hasMovements.set(!!p.has_movements);
-    this.variants.clear();
-    this.barcodes.clear();
-    this.uomConversions.clear();
-    (p.variants || []).forEach((v: any) => this.variants.push(this.variantGroup(v)));
-    (p.barcodes || []).forEach((b: any) => this.barcodes.push(this.barcodeGroup(b)));
-    (p.uom_conversions || []).forEach((c: any) => this.uomConversions.push(this.uomConvGroup(c)));
+    const variants: IVariantRow[] = (p.variants || []).map((v: any) => ({ ...v, __uid: ++this.uid }));
+    const barcodes: IBarcodeRow[] = (p.barcodes || []).map((b: any) => ({ ...b, __uid: ++this.uid }));
+    const uomConvs: IUomConvRow[] = (p.uom_conversions || []).map((c: any) => ({ ...c, __uid: ++this.uid }));
+    this.variantRows.set(variants);
+    this.barcodeRows.set(barcodes);
+    this.uomConvRows.set(uomConvs);
+
     this.form.patchValue({
       product_no: p.product_no, product_id: p.product_id, product_name: p.product_name,
       product_name_nls: p.product_name_nls ?? '', short_name: p.short_name ?? '',
@@ -184,48 +221,45 @@ export class Inv1001ModelService {
     });
   }
 
-  private variantGroup(v?: any): FormGroup {
-    return this.fb.group({
-      variant_no: [v?.variant_no ?? null],
-      variant_sku: [v?.variant_sku ?? '', [Validators.required, Validators.maxLength(48)]],
-      variant_name: [v?.variant_name ?? '', [Validators.required, Validators.maxLength(200)]],
-      barcode: [v?.barcode ?? ''],
-      attr1_value_no: [v?.attr1_value_no ?? null],
-      attr2_value_no: [v?.attr2_value_no ?? null],
-      attr3_value_no: [v?.attr3_value_no ?? null],
-      sale_price: [v?.sale_price ?? null],
-      mrp: [v?.mrp ?? null],
-      is_active: [v?.is_active ?? 1],
-    });
+  addVariant(): void {
+    this.variantRows.update((v) => [
+      ...v,
+      { __uid: ++this.uid, variant_sku: '', variant_name: '', is_active: 1 },
+    ]);
   }
-  private barcodeGroup(b?: any): FormGroup {
-    return this.fb.group({
-      barcode_no: [b?.barcode_no ?? null],
-      barcode: [b?.barcode ?? '', [Validators.required, Validators.maxLength(64)]],
-      uom_no: [b?.uom_no ?? null, [Validators.required]],
-      pack_qty: [b?.pack_qty ?? 1],
-      barcode_type: [b?.barcode_type ?? 1],
-      is_primary: [b?.is_primary ?? 0],
-      is_active: [b?.is_active ?? 1],
-    });
+  removeVariant(row: IVariantRow): void {
+    this.variantRows.update((v) => v.filter((x) => x.__uid !== row.__uid));
   }
-  private uomConvGroup(c?: any): FormGroup {
-    return this.fb.group({
-      uom_conversion_no: [c?.uom_conversion_no ?? null],
-      from_uom_no: [c?.from_uom_no ?? null, [Validators.required]],
-      to_base_factor: [c?.to_base_factor ?? null, [Validators.required, Validators.min(0.000001)]],
-      is_active: [c?.is_active ?? 1],
-    });
+  onVariantChange(row: IVariantRow): void {
+    this.variantRows.update((v) => v.map((x) => (x.__uid === row.__uid ? { ...x, ...row } : x)));
   }
 
-  addVariant(): void { this.variants.push(this.variantGroup()); }
-  removeVariant(i: number): void { this.variants.removeAt(i); }
-  addBarcode(): void { this.barcodes.push(this.barcodeGroup()); }
-  removeBarcode(i: number): void { this.barcodes.removeAt(i); }
-  addUomConv(): void { this.uomConversions.push(this.uomConvGroup()); }
-  removeUomConv(i: number): void { this.uomConversions.removeAt(i); }
+  addBarcode(): void {
+    this.barcodeRows.update((b) => [
+      ...b,
+      { __uid: ++this.uid, barcode: '', uom_no: this.form.get('base_uom_no')?.value ?? null, pack_qty: 1, barcode_type: 1, is_primary: 0, is_active: 1 },
+    ]);
+  }
+  removeBarcode(row: IBarcodeRow): void {
+    this.barcodeRows.update((b) => b.filter((x) => x.__uid !== row.__uid));
+  }
+  onBarcodeChange(row: IBarcodeRow): void {
+    this.barcodeRows.update((b) => b.map((x) => (x.__uid === row.__uid ? { ...x, ...row } : x)));
+  }
 
-  /** Cartesian product of the chosen attributes' values → fill the variants grid. */
+  addUomConv(): void {
+    this.uomConvRows.update((c) => [
+      ...c,
+      { __uid: ++this.uid, from_uom_no: null, to_base_factor: 1, is_active: 1 },
+    ]);
+  }
+  removeUomConv(row: IUomConvRow): void {
+    this.uomConvRows.update((c) => c.filter((x) => x.__uid !== row.__uid));
+  }
+  onUomConvChange(row: IUomConvRow): void {
+    this.uomConvRows.update((c) => c.map((x) => (x.__uid === row.__uid ? { ...x, ...row } : x)));
+  }
+
   generateVariants(): void {
     const ids = [this.genAttr1(), this.genAttr2(), this.genAttr3()].filter((x): x is number => x != null);
     const chosen = ids
@@ -247,19 +281,21 @@ export class Inv1001ModelService {
       combos = next;
     }
 
-    this.variants.clear();
+    const newVariants: IVariantRow[] = [];
     for (const combo of combos) {
       const skuSuffix = combo.map((c) => c.label.replace(/\s+/g, '').toUpperCase()).join('-');
       const nameSuffix = combo.map((c) => c.label).join(' / ');
-      this.variants.push(this.variantGroup({
+      newVariants.push({
+        __uid: ++this.uid,
         variant_sku: `${baseId}-${skuSuffix}`,
         variant_name: `${baseName} / ${nameSuffix}`,
         attr1_value_no: combo[0]?.value ?? null,
         attr2_value_no: combo[1]?.value ?? null,
         attr3_value_no: combo[2]?.value ?? null,
         is_active: 1,
-      }));
+      });
     }
+    this.variantRows.set(newVariants);
     this.form.patchValue({ has_variants: 1, product_type: 2 });
     this.toastr.success(`${combos.length} variant(s) generated`);
   }
@@ -273,8 +309,15 @@ export class Inv1001ModelService {
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
     this.isSaving.set(true);
+    const payload = {
+      ...val,
+      product_no: this.selectedNo(),
+      variants: this.variantRows().map(({ __uid, ...rest }) => rest),
+      barcodes: this.barcodeRows().map(({ __uid, ...rest }) => rest),
+      uom_conversions: this.uomConvRows().map(({ __uid, ...rest }) => rest),
+    };
     this.data
-      .save({ ...val, product_no: this.selectedNo() })
+      .save(payload)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
@@ -313,9 +356,9 @@ export class Inv1001ModelService {
     this.selectedNo.set(null);
     this.hasMovements.set(false);
     this.activeTab.set('general');
-    this.variants.clear();
-    this.barcodes.clear();
-    this.uomConversions.clear();
+    this.variantRows.set([]);
+    this.barcodeRows.set([]);
+    this.uomConvRows.set([]);
     this.form.reset({
       product_type: 1, is_tax_inclusive: 0, is_stock_tracked: 1, is_batch_tracked: 0,
       is_expiry_tracked: 0, is_serial_tracked: 0, has_variants: 0,

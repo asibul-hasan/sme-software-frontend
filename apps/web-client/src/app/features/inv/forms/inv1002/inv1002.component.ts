@@ -1,7 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnInit, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { IBarcode, Inv1002ModelService } from './services/model.service';
@@ -12,67 +15,52 @@ import { Inv1002DataService } from './services/data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv1002',
   standalone: true,
-  imports: [SharedModule, CommonModule, CommonTableComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Inv1002ModelService, Inv1002DataService],
   templateUrl: './inv1002.component.html',
-  styles: [],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Inv1002Component implements OnInit {
   public model = inject(Inv1002ModelService);
   public permissionService = inject(FormPermissionService);
   private alertService = inject(AlertService);
 
-  readonly rows = computed(() => this.model.barcodes() as unknown as Record<string, unknown>[]);
-
-  readonly columns: ColumnDef[] = [
-    { title: 'Barcode', field: 'barcode', cellType: 'text', sort: true, width: '180px', pin: 'left' },
-    { title: 'UOM', field: 'uom_name', cellType: 'text', sort: true, width: '120px' },
-    { title: 'Pack', field: 'pack_qty', cellType: 'decimal', sort: true, align: 'right', precision: 4, width: '110px' },
-    {
-      title: 'Type',
-      field: 'barcode_type',
-      cellType: 'select',
-      sort: true,
-      options: [...this.model.barcodeTypes],
-      value: (row) => this.model.barcodeTypes.find((x) => x.value === row['barcode_type'])?.label ?? '',
-      width: '130px',
+  readonly gridConfig: GridConfig<IBarcode> = {
+    gridKey: 'INV_1002_BARCODES_GRID',
+    rowIdField: 'barcode_no',
+    height: '100%',
+    selectionMode: 'single',
+    externalRowState: false,
+    showPagination: true,
+    pageSize: 50,
+    canDeleteRow: () => this.permissionService.canDelete(),
+    toolbar: {
+      title: 'Barcodes',
+      showAdd: false,
+      showDelete: false,
+      showSearch: true,
+      showExport: true,
+      searchPlaceholder: 'Search barcodes...',
     },
-    {
-      title: 'Primary',
-      field: 'is_primary',
-      cellType: 'badge',
-      sort: true,
-      align: 'center',
-      width: '110px',
-      badgeConfig: (value) => Number(value) === 1
-        ? { label: 'Primary', variant: 'success' }
-        : { label: 'Secondary', variant: 'neutral' },
-    },
-  ];
-
-  readonly tableConfig: Partial<TableConfig> = {
-    rowKey: (row) => row['barcode_no'] ?? row,
-    showTitle: true,
-    title: 'Barcodes',
-    showSearch: true,
-    pagination: true,
-    defaultPageSize: 10,
-    pageSizeOptions: [10, 25, 50],
-    showExport: true,
-    showColumnToggle: true,
-    showActions: true,
-    dense: true,
-    striped: true,
-    maxHeight: '100%',
-    actions: [
-      {
-        type: 'delete',
-        icon: 'delete',
-        tooltip: 'Delete',
-        variant: 'danger',
-        visible: () => this.permissionService.canDelete(),
-        onClick: (row) => this.onDelete(Number(row['barcode_no'])),
-      },
+    columns: [
+      GridColumns.text<IBarcode>('barcode', 'Barcode')
+        .pinned('left')
+        .width(180)
+        .build(),
+      GridColumns.text<IBarcode>('uom_name', 'UOM')
+        .width(120)
+        .build(),
+      GridColumns.decimal<IBarcode>('pack_qty', 'Pack Qty')
+        .width(110)
+        .build(),
+      GridColumns.lookup<IBarcode>('barcode_type', 'Type', () => this.model.barcodeTypes.map(t => ({ value: t.value, label: t.label })))
+        .width(130)
+        .build(),
+      GridColumns.text<IBarcode>('is_primary', 'Primary')
+        .valueFormatter((val) => (Number(val) === 1 ? 'Primary' : 'Secondary'))
+        .width(110)
+        .build(),
+      GridColumns.action<IBarcode>().build(),
     ],
   };
 
@@ -82,13 +70,36 @@ export class Inv1002Component implements OnInit {
     this.model.loadLookups();
   }
 
-  onDelete(barcodeNo: number): void {
+  onSave(): void { this.model.onSave(); }
+  onNew(): void { this.model.newBarcode(); }
+  onReset(): void {
+    const no = this.model.selectedBarcodeNo();
+    const item = this.model.barcodes().find((x) => x.barcode_no === no);
+    if (item) {
+      this.model.selectBarcode(item);
+    } else {
+      this.model.newBarcode();
+    }
+  }
+  onDelete(): void {
+    const no = this.model.selectedBarcodeNo();
+    if (!no) return;
     this.alertService.deleteConfirm('Delete this barcode?').subscribe((ok) => {
-      if (ok) this.model.onDelete(barcodeNo);
+      if (ok) this.model.onDelete(no);
     });
   }
 
-  onRowClick(row: Record<string, unknown>): void {
-    this.model.selectBarcode(row as unknown as IBarcode);
+  onRowSelected(row: IBarcode): void {
+    if (row) {
+      this.model.selectBarcode(row);
+    }
+  }
+
+  onRowRemove(row: IBarcode): void {
+    if (row.barcode_no) {
+      this.alertService.deleteConfirm('Delete this barcode?').subscribe((ok) => {
+        if (ok) this.model.onDelete(row.barcode_no);
+      });
+    }
   }
 }

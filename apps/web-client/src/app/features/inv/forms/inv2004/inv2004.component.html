@@ -8,92 +8,89 @@
   [showDelete]="false"
   [isLoading]="isLoading()"
 >
-  <div formContent class="h-full flex flex-col">
-    <div class="form-section-card card flex-shrink-0">
-      <div class="card-body">
-        <div class="row row-group align-items-end">
-          <div class="col-md-3">
-            <div class="field-group">
-              <label class="field-label">Warehouse</label>
-              <ng-select
-                [(ngModel)]="warehouseNo"
-                [items]="warehouses()"
-                bindValue="no"
-                bindLabel="name"
-                placeholder="All warehouses"
-                (change)="load()"
-              />
-            </div>
+  <div formContent class="h-full flex flex-col gap-3">
+    <div class="flex-shrink-0">
+      <app-form-section title="Filter Batches" icon="filter_alt">
+        <app-form-field label="Warehouse" for="warehouse_no" [span]="3">
+          <ng-select
+            id="warehouse_no"
+            [(ngModel)]="warehouseNo"
+            [items]="warehouses()"
+            bindValue="no"
+            bindLabel="name"
+            placeholder="All warehouses"
+            (change)="load()"
+          />
+        </app-form-field>
+
+        <app-form-field label="Product" for="product_no" [span]="3">
+          <ng-select
+            id="product_no"
+            [(ngModel)]="productNo"
+            [items]="products()"
+            bindValue="no"
+            bindLabel="name"
+            placeholder="All products"
+            (change)="load()"
+          />
+        </app-form-field>
+
+        <app-form-field label="Status" for="status" [span]="2">
+          <ng-select
+            id="status"
+            [(ngModel)]="status"
+            [items]="statusOptions"
+            bindValue="value"
+            bindLabel="label"
+            [clearable]="false"
+            (change)="load()"
+          />
+        </app-form-field>
+
+        <app-form-field label="Near Days" for="nearDays" [span]="2">
+          <input id="nearDays" type="number" class="form-control text-right" [(ngModel)]="nearDays" (blur)="load()" />
+        </app-form-field>
+
+        <div class="col-span-12 md:col-span-2 flex items-center justify-end gap-4 pt-4">
+          <div class="text-right">
+            <span class="field-label mb-0">Expired</span>
+            <div class="font-bold text-danger">{{ expiredCount() }}</div>
           </div>
-          <div class="col-md-3">
-            <div class="field-group">
-              <label class="field-label">Product</label>
-              <ng-select
-                [(ngModel)]="productNo"
-                [items]="products()"
-                bindValue="no"
-                bindLabel="name"
-                placeholder="All products"
-                (change)="load()"
-              />
-            </div>
-          </div>
-          <div class="col-md-2">
-            <div class="field-group">
-              <label class="field-label">Status</label>
-              <ng-select
-                [(ngModel)]="status"
-                [items]="statusOptions"
-                bindValue="value"
-                bindLabel="label"
-                [clearable]="false"
-                (change)="load()"
-              />
-            </div>
-          </div>
-          <div class="col-md-2">
-            <div class="field-group">
-              <label class="field-label">Near Days</label>
-              <input type="number" class="form-control text-end" [(ngModel)]="nearDays" (blur)="load()" />
-            </div>
-          </div>
-          <div class="col-md-2 d-flex gap-3 justify-content-end">
-            <div class="text-end">
-              <span class="field-label mb-0">Expired</span>
-              <div class="fw-bold text-danger">{{ expiredCount() }}</div>
-            </div>
-            <div class="text-end">
-              <span class="field-label mb-0">Near</span>
-              <div class="fw-bold text-warning">{{ nearCount() }}</div>
-            </div>
+          <div class="text-right">
+            <span class="field-label mb-0">Near</span>
+            <div class="font-bold text-warning">{{ nearCount() }}</div>
           </div>
         </div>
-      </div>
+      </app-form-section>
     </div>
 
-    <div class="form-section-card card fill-card mt-1">
-      <div class="card-header d-flex align-items-center">
-        <h4 class="card-header__title mb-0 fw-bold">
-          <mat-icon class="me-2 align-middle">inventory_2</mat-icon>
+    <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 420px">
+      <div class="card-header flex items-center">
+        <h4 class="card-header__title mb-0 font-bold flex items-center">
+          <mat-icon class="mr-2">inventory_2</mat-icon>
           Batch Stock
         </h4>
-        <div class="ms-auto d-flex align-items-center gap-4">
-          <div class="text-end">
-            <span class="field-label mb-0">On Hand</span>
-            <div class="fw-bold">{{ onHand() | number: '1.2-2' }}</div>
+        <div class="ml-auto flex items-center gap-4">
+          <div class="text-right">
+            <span class="field-label mb-0">Total On Hand</span>
+            <div class="font-bold text-foreground">{{ onHand() | number: '1.2-2' }}</div>
           </div>
-          <div class="text-end">
-            <span class="field-label mb-0">Value</span>
-            <div class="fw-bold text-primary">{{ value() | number: '1.2-2' }}</div>
+          <div class="text-right">
+            <span class="field-label mb-0">Total Value</span>
+            <div class="font-bold text-primary">{{ value() | number: '1.2-2' }}</div>
           </div>
-          <button type="button" class="btn btn-primary btn-sm" (click)="load()" [disabled]="isLoading()">
-            <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">refresh</mat-icon>
-            Refresh
+          <button type="button" class="btn-action" (click)="load()" [disabled]="isLoading()">
+            <mat-icon>refresh</mat-icon>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
-      <div class="card-body p-0">
-        <app-common-table [columns]="columns" [data]="tableData()" [config]="config" />
+      <div class="card-body p-0 flex-1 min-h-0">
+        <app-erp-grid
+          [config]="gridConfig"
+          [data]="rows()"
+          height="100%"
+        ></app-erp-grid>
       </div>
     </div>
   </div>

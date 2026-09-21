@@ -27,10 +27,10 @@
           class="status-dot status-dot--corner"
           [class.status-dot--active]="u.is_active === 1"
           [class.status-dot--inactive]="u.is_active !== 1"
-          [title]="u.is_active === 1 ? 'Active' : 'Inactive'"
+          [matTooltip]="u.is_active === 1 ? 'Active' : 'Inactive'"
         ></span>
-        <h6 class="list-item-title mb-0 text-truncate" style="padding-right: 16px">{{ u.uom_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ u.uom_name }}</p>
+        <h6 class="list-item-title mb-0 truncate" style="padding-right: 16px">{{ u.uom_id }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ u.uom_name }}</p>
       </button>
     }
     @if (model.filtered().length === 0) {
@@ -43,65 +43,63 @@
 
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">straighten</mat-icon>
-                Unit of Measure
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label required" for="uom_id">Code</label>
-                    <input type="text" id="uom_id" formControlName="uom_id" class="form-control text-uppercase" placeholder="PCS" />
-                  </div>
-                </div>
-                <div class="col-md-5">
-                  <div class="field-group">
-                    <label class="field-label required" for="uom_name">Name</label>
-                    <input type="text" id="uom_name" formControlName="uom_name" class="form-control" placeholder="Pieces" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="uom_name_nls">Name (NLS)</label>
-                    <input type="text" id="uom_name_nls" formControlName="uom_name_nls" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-5">
-                  <div class="field-group">
-                    <label class="field-label required" for="uom_type">Type</label>
-                    <ng-select id="uom_type" labelForId="uom_type" formControlName="uom_type" [clearable]="false">
-                      @for (t of model.uomTypes; track t.value) {
-                        <ng-option [value]="t.value">{{ t.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label required" for="decimal_places">Decimals</label>
-                    <input type="number" id="decimal_places" formControlName="decimal_places" class="form-control" min="0" max="4" step="1" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-form-section title="Unit of Measure" icon="straighten">
+        <app-form-field label="Code" for="uom_id" required [span]="3">
+          <input
+            type="text"
+            id="uom_id"
+            formControlName="uom_id"
+            class="form-control uppercase"
+            placeholder="PCS"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name" for="uom_name" required [span]="5">
+          <input
+            type="text"
+            id="uom_name"
+            formControlName="uom_name"
+            class="form-control"
+            placeholder="Pieces"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name (NLS)" for="uom_name_nls" [span]="4">
+          <input
+            type="text"
+            id="uom_name_nls"
+            formControlName="uom_name_nls"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-form-field label="Type" for="uom_type" required [span]="5">
+          <ng-select
+            id="uom_type"
+            labelForId="uom_type"
+            formControlName="uom_type"
+            [clearable]="false"
+          >
+            @for (t of model.uomTypes; track t.value) {
+              <ng-option [value]="t.value">{{ t.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Decimals" for="decimal_places" required [span]="3">
+          <input
+            type="number"
+            id="decimal_places"
+            formControlName="decimal_places"
+            class="form-control"
+            min="0"
+            max="4"
+            step="1"
+          />
+        </app-form-field>
+
+        <app-check-field label="Status" text="Active" [span]="4" formControlName="is_active" />
+      </app-form-section>
     </form>
   </div>
 

@@ -65,7 +65,7 @@
       </div>
 
       <div class="card-body p-0 flex-1 flex flex-col min-h-0">
-        <app-erp-grid [config]="gridConfig" [data]="lines()" [selectedId]="selectedLineId()" (rowChange)="onRowChange($event)" (rowRemove)="onRowRemove($event)" (addRow)="addLine()" />
+        <app-erp-grid #erpGrid [config]="gridConfig" [data]="lines()" [selectedId]="selectedLineId()" (rowChange)="onRowChange($event)" (rowRemove)="onRowRemove($event)" (addRow)="addLine()" />
       </div>
 
       <div class="px-3 py-2 flex items-center gap-3 shrink-0 opening-balance-difference-bar border-t border-[var(--border-color)] bg-[var(--table-header-bg,var(--bg-secondary))] min-h-[42px]">
@@ -78,7 +78,7 @@
         <div class="ml-auto flex items-center gap-3">
           <span class="font-bold text-xs text-[var(--text-secondary)]">Difference</span>
           <strong [class.text-success]="isBalanced()" [class.text-danger]="!isBalanced()" style="min-width:130px;text-align:right">
-            {{ absoluteBaseDifference() | number: '1.2-2' }} {{ baseCurrencyCode() }}
+            {{ absoluteBaseDifference() | appDecimal }} {{ baseCurrencyCode() }}
           </strong>
         </div>
       </div>

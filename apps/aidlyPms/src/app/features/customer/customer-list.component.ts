@@ -1,0 +1,767 @@
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { ModalService } from '../../core/services/modal.service';
+import { CustomerService } from '../../core/services/customer.service';
+
+interface CustomerRow {
+  customer_no: number;
+  name: string;
+  phone: string;
+  type: string;
+  address: string;
+  balance: number;
+  points: number;
+  dueDate: string;
+  gender?: string;
+  discountPercent?: number;
+  email?: string;
+  note?: string;
+  isLoyalty?: boolean;
+}
+
+@Component({
+  selector: 'app-customer-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NzInputModule,
+    NzButtonModule,
+    NzModalModule,
+    NzIconModule,
+    NzCheckboxModule,
+    NzSelectModule,
+    NzTagModule,
+    NzTooltipModule,
+    PageHeaderComponent,
+  ],
+  template: `
+    <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
+      <app-page-header
+        title="Customer Directory"
+        subtitle="Manage customer profiles, credit due balances, and loyalty points"
+        formId="SALE_1402"
+        [breadcrumbs]="[{ label: 'Sales', url: '/customer/sale' }, { label: 'Customers' }]"
+      >
+        <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Name</label>
+            <nz-input-group [nzPrefix]="searchIcon" class="w-48 shrink-0 rounded-md">
+              <input
+                type="text"
+                nz-input
+                placeholder="Name or keyword..."
+                [(ngModel)]="searchName"
+                (ngModelChange)="onSearchChange()"
+                class="text-xs"
+              />
+            </nz-input-group>
+            <ng-template #searchIcon>
+              <span nz-icon nzType="search" class="text-slate-400"></span>
+            </ng-template>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Phone Number</label>
+            <input
+              type="text"
+              nz-input
+              placeholder="Phone (+880...)"
+              [(ngModel)]="searchPhone"
+              (ngModelChange)="onSearchChange()"
+              class="w-36 shrink-0 rounded-md text-xs"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Type</label>
+            <nz-select
+              [(ngModel)]="filterType"
+              (ngModelChange)="onFilterChange()"
+              class="w-36 shrink-0"
+              nzPlaceHolder="All Types"
+              nzAllowClear
+            >
+              <nz-option nzValue="" nzLabel="All Types"></nz-option>
+              @for (t of customerTypes; track t) {
+                <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+              }
+            </nz-select>
+          </div>
+          <div class="flex items-center h-8 shrink-0 pb-0.5">
+            <label nz-checkbox [(ngModel)]="dueOnly" (ngModelChange)="onFilterChange()" class="text-xs text-slate-700">
+              Due Only (F9)
+            </label>
+          </div>
+          <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+            <span nz-icon nzType="clear"></span> Reset
+          </button>
+        </div>
+        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <a nz-button nzType="default" routerLink="/customer/add" class="rounded-md">
+            <span nz-icon nzType="user-add"></span> Customer Form
+          </a>
+          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span> Add Customer (F2)
+          </button>
+        </div>
+      </app-page-header>
+
+      <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
+        <!-- Table Scroll Area -->
+        <div class="flex-1 min-h-0 overflow-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
+              <tr>
+                <th class="p-3">Details</th>
+                <th class="p-3 text-right">Balance</th>
+                <th class="p-3 text-right">Points</th>
+                <th class="p-3 text-center">Due Date</th>
+                <th class="p-3 text-center w-44">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-800">
+              @for (c of filteredCustomers(); track c.customer_no) {
+                <tr class="hover:bg-slate-50/70 transition-colors">
+                  <td class="p-3">
+                    <p class="font-semibold text-slate-900 text-sm mb-0.5">{{ c.name }}</p>
+                    <div class="flex items-center gap-2 mb-0.5">
+                      <span class="text-xs text-slate-400">{{ c.phone }}</span>
+                      <nz-tag class="text-[11px] m-0">{{ c.type }}</nz-tag>
+                    </div>
+                    @if (c.address) {
+                      <p class="text-xs text-slate-400 mb-0">{{ c.address }}</p>
+                    }
+                  </td>
+
+                  <td class="p-3 text-right font-mono text-xs">
+                    <span
+                      class="px-2 py-0.5 rounded font-bold"
+                      [ngClass]="c.balance > 0 ? 'text-rose-600 bg-rose-50' : 'text-emerald-700 bg-emerald-50'"
+                    >
+                      ৳ {{ c.balance.toLocaleString() }}
+                    </span>
+                  </td>
+
+                  <td class="p-3 text-right font-mono text-xs font-semibold theme-total-text">
+                    {{ c.points }}
+                  </td>
+
+                  <td class="p-3 text-center font-mono text-xs text-slate-600">
+                    {{ c.dueDate }}
+                  </td>
+
+                  <td class="p-3 text-center">
+                    <div class="inline-flex items-center gap-1.5">
+                      @if (c.balance > 0) {
+                        <button
+                          type="button"
+                          (click)="openCollectModal(c)"
+                          nz-tooltip
+                          nzTooltipTitle="Collect Due"
+                          class="btn-tbl-action btn-tbl-success"
+                        >
+                          <span nz-icon nzType="dollar"></span>
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="viewLedger(c)"
+                        nz-tooltip
+                        nzTooltipTitle="View Ledger"
+                        class="btn-tbl-action btn-tbl-view"
+                      >
+                        <span nz-icon nzType="eye"></span>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="openEditModal(c)"
+                        nz-tooltip
+                        nzTooltipTitle="Edit Customer"
+                        class="btn-tbl-action btn-tbl-edit"
+                      >
+                        <span nz-icon nzType="edit"></span>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="deleteCustomer(c)"
+                        nz-tooltip
+                        nzTooltipTitle="Delete Customer"
+                        class="btn-tbl-action btn-tbl-delete"
+                      >
+                        <span nz-icon nzType="delete"></span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+                    No customers match your search filters.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sticky Bottom Footer -->
+        <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
+          <div class="flex items-center gap-3">
+            <span>Customers: <strong class="text-slate-900 font-semibold font-mono">{{ filteredCustomers().length }}</strong></span>
+            <span class="text-slate-300">|</span>
+            <span class="font-semibold text-slate-700">Total Outstanding Due: <strong class="text-rose-700 font-mono text-sm">৳ {{ totalCustomerDue() | number: '1.2-2' }}</strong></span>
+            <span class="text-slate-300">|</span>
+            <span>Total Loyalty Points: <strong class="theme-total-text font-mono font-semibold">{{ totalLoyaltyPoints() }}</strong></span>
+          </div>
+          <span class="text-slate-400 font-mono text-[11px]">Customer CRM Directory</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unified Dual-Purpose Modal (Add & Modify) -->
+    <!-- Unified Dual-Purpose Modal (Add & Modify) -->
+    <nz-modal
+      [(nzVisible)]="isModalVisible"
+      [nzTitle]="modalMode === 'create' ? 'Add Customer (SCR-20)' : ('Modify Customer: ' + form.name)"
+      [nzOkText]="modalMode === 'create' ? 'Save Customer' : 'Update Customer'"
+      (nzOnCancel)="isModalVisible = false"
+      (nzOnOk)="saveCustomer()"
+      nzWidth="860px"
+      [nzStyle]="{ top: '24px' }"
+    >
+      <ng-container *nzModalContent>
+        <div class="space-y-3 py-1 text-xs">
+          <!-- Row 1: 3 Columns -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                Customer Name <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                nz-input
+                placeholder="Full name"
+                [(ngModel)]="form.name"
+                class="rounded-md"
+              />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                Phone Number <span class="text-rose-500">*</span>
+              </label>
+              <div class="flex gap-1.5">
+                <span class="h-7 px-2.5 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
+                  +880
+                </span>
+                <input
+                  type="text"
+                  nz-input
+                  placeholder="1XXXXXXXXX"
+                  [(ngModel)]="form.phoneSuffix"
+                  class="rounded-md flex-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                nz-input
+                placeholder="email@example.com"
+                [(ngModel)]="form.email"
+                class="rounded-md"
+              />
+            </div>
+          </div>
+
+          <!-- Row 2: 3 Columns -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                Gender <span class="text-rose-500">*</span>
+              </label>
+              <nz-select [(ngModel)]="form.gender" class="w-full">
+                <nz-option nzValue="Male" nzLabel="Male"></nz-option>
+                <nz-option nzValue="Female" nzLabel="Female"></nz-option>
+                <nz-option nzValue="Other" nzLabel="Other"></nz-option>
+              </nz-select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                Customer Type <span class="text-rose-500">*</span>
+              </label>
+              <div class="flex gap-1.5">
+                <nz-select [(ngModel)]="form.type" class="flex-1">
+                  @for (t of customerTypes; track t) {
+                    <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+                  }
+                </nz-select>
+                <button
+                  type="button"
+                  (click)="isAddCustomerTypeOpen = true"
+                  nz-tooltip
+                  nzTooltipTitle="Quick Add Customer Type"
+                  class="btn-quick-add"
+                >
+                  <span nz-icon nzType="plus"></span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                Discount % (Default line discount)
+              </label>
+              <input
+                type="number"
+                nz-input
+                placeholder="0"
+                [(ngModel)]="form.discountPercent"
+                class="rounded-md"
+              />
+            </div>
+          </div>
+
+          <!-- Opening Due Balance (Horizontal Strip) -->
+          <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <label nz-checkbox [(ngModel)]="form.dueEnabled"></label>
+                <div>
+                  <span class="text-xs font-semibold text-slate-700 block">Has Opening Due Balance?</span>
+                  <span class="text-[11px] text-slate-400">Record previous unpaid credit balance</span>
+                </div>
+              </div>
+
+              @if (form.dueEnabled) {
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-1.5">
+                    <label class="text-xs font-medium text-slate-600 shrink-0">Due (৳):</label>
+                    <input
+                      type="number"
+                      nz-input
+                      placeholder="0.00"
+                      [(ngModel)]="form.balance"
+                      class="rounded-md w-28"
+                    />
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <label class="text-xs font-medium text-slate-600 shrink-0">Due Date:</label>
+                    <input
+                      type="date"
+                      nz-input
+                      [(ngModel)]="form.dueDate"
+                      class="rounded-md w-36"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Address & Note: 2-Column Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Address</label>
+              <input
+                type="text"
+                nz-input
+                placeholder="Street address, area, city..."
+                [(ngModel)]="form.address"
+                class="rounded-md"
+              />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Note</label>
+              <input
+                type="text"
+                nz-input
+                placeholder="Additional notes about customer..."
+                [(ngModel)]="form.note"
+                class="rounded-md"
+              />
+            </div>
+          </div>
+
+          <!-- Loyalty Member Strip -->
+          <div class="flex items-center justify-between px-3 py-2 theme-highlight-card rounded-lg">
+            <div>
+              <span class="text-xs font-bold theme-highlight-title block">Loyalty Member</span>
+              <span class="text-[11px] theme-highlight-subtitle">Enroll in customer points & rewards scheme</span>
+            </div>
+            <label nz-checkbox [(ngModel)]="form.isLoyalty"></label>
+          </div>
+        </div>
+      </ng-container>
+    </nz-modal>
+
+    <!-- Collect Due Modal -->
+    <nz-modal
+      [(nzVisible)]="isCollectOpen"
+      [nzTitle]="'Collect Due: ' + activeCustomer?.name"
+      nzOkText="Confirm Collection"
+      (nzOnCancel)="isCollectOpen = false"
+      (nzOnOk)="submitCollect()"
+    >
+      <ng-container *nzModalContent>
+        <div class="space-y-3 py-1">
+          <div class="p-3 bg-amber-50 rounded-md border border-amber-200 text-sm">
+            <span class="text-slate-600 block">Current Outstanding Due:</span>
+            <span class="text-lg font-bold text-amber-800 font-mono">
+              ৳ {{ activeCustomer?.balance?.toLocaleString() }}
+            </span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Collection Amount (৳) *</label>
+            <input
+              type="number"
+              nz-input
+              placeholder="Enter amount collected"
+              [(ngModel)]="collectAmount"
+              class="rounded-md font-mono"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+            <nz-select [(ngModel)]="collectMethod" class="w-full">
+              <nz-option nzValue="Cash" nzLabel="Cash Counter"></nz-option>
+              <nz-option nzValue="Bank" nzLabel="Bank Deposit"></nz-option>
+              <nz-option nzValue="bKash" nzLabel="bKash"></nz-option>
+              <nz-option nzValue="Nagad" nzLabel="Nagad"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+      </ng-container>
+    </nz-modal>
+
+    <!-- Quick Add Customer Type Modal -->
+    <nz-modal
+      [(nzVisible)]="isAddCustomerTypeOpen"
+      nzTitle="Quick Add Customer Type"
+      nzOkText="Add Type"
+      [nzStyle]="{ top: '40px' }"
+      (nzOnCancel)="isAddCustomerTypeOpen = false"
+      (nzOnOk)="saveNewCustomerType()"
+      nzWidth="380px"
+    >
+      <ng-container *nzModalContent>
+        <div class="py-1">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            Customer Type Name <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. Clinic, Corporate, NGO"
+            [(ngModel)]="newCustomerTypeName"
+            class="rounded-md"
+          />
+        </div>
+      </ng-container>
+    </nz-modal>
+  `,
+})
+export class CustomerListComponent implements OnInit, OnDestroy {
+  private readonly msg = inject(NzMessageService);
+  private readonly modal = inject(ModalService);
+  private readonly customerService = inject(CustomerService);
+
+  private searchSubject = new Subject<void>();
+  private searchSub?: Subscription;
+
+  searchName = '';
+  searchPhone = '';
+  filterType = '';
+  dueOnly = false;
+  customerTypes = ['Regular', 'Wholesale Client', 'VIP', 'Staff', 'Doctor Referral'];
+
+  isAddCustomerTypeOpen = false;
+  newCustomerTypeName = '';
+
+  saveNewCustomerType(): void {
+    const val = this.newCustomerTypeName.trim();
+    if (!val) {
+      this.msg.error('Customer type name is required');
+      return;
+    }
+    if (!this.customerTypes.includes(val)) {
+      this.customerTypes.push(val);
+    }
+    this.form.type = val;
+    this.isAddCustomerTypeOpen = false;
+    this.msg.success(`Customer type "${val}" added!`);
+  }
+
+  customers = signal<CustomerRow[]>([
+    { customer_no: 1, name: 'Rafiqul Islam', phone: '+880 1711-234567', type: 'Regular', address: 'Cumilla Sadar', balance: 2400, points: 48, dueDate: '30-09-2026', gender: 'Male', isLoyalty: true },
+    { customer_no: 2, name: 'Dr. Karim Ahmed', phone: '+880 1811-345678', type: 'Doctor Referral', address: 'Dhaka, Gulshan', balance: 0, points: 120, dueDate: '—', gender: 'Male', isLoyalty: true },
+    { customer_no: 3, name: 'Meena Begum', phone: '+880 1611-456789', type: 'VIP', address: 'Cumilla, Muradnagar', balance: 5800, points: 210, dueDate: '15-10-2026', gender: 'Female', isLoyalty: true },
+    { customer_no: 4, name: 'Al-Amin Hossain', phone: '+880 1511-567890', type: 'Wholesale Client', address: 'Cumilla, Chandina', balance: 0, points: 0, dueDate: '—', gender: 'Male', isLoyalty: false },
+    { customer_no: 5, name: 'Shapna Akter', phone: '+880 1711-678901', type: 'Regular', address: 'Cumilla Sadar', balance: 800, points: 22, dueDate: '20-09-2026', gender: 'Female', isLoyalty: false },
+  ]);
+
+  filteredCustomers = computed(() => {
+    const qName = this.searchName.trim().toLowerCase();
+    const qPhone = this.searchPhone.trim();
+    const qType = this.filterType;
+
+    return this.customers().filter(c => {
+      const matchName = !qName || c.name.toLowerCase().includes(qName);
+      const matchPhone = !qPhone || c.phone.includes(qPhone);
+      const matchType = !qType || c.type === qType;
+      const matchDue = !this.dueOnly || c.balance > 0;
+      return matchName && matchPhone && matchType && matchDue;
+    });
+  });
+
+  totalCustomerDue = computed(() => this.filteredCustomers().reduce((sum, c) => sum + (c.balance || 0), 0));
+  totalLoyaltyPoints = computed(() => this.filteredCustomers().reduce((sum, c) => sum + (c.points || 0), 0));
+
+  // Modal State
+  isModalVisible = false;
+  modalMode: 'create' | 'edit' = 'create';
+  form = {
+    customer_no: 0,
+    name: '',
+    phoneSuffix: '',
+    gender: 'Male',
+    type: 'Regular',
+    discountPercent: 0,
+    email: '',
+    address: '',
+    note: '',
+    dueEnabled: false,
+    balance: 0,
+    dueDate: '',
+    isLoyalty: false,
+  };
+
+  // Collect Due State
+  isCollectOpen = false;
+  activeCustomer: CustomerRow | null = null;
+  collectAmount = 0;
+  collectMethod = 'Cash';
+  isLoading = signal(false);
+
+  ngOnInit(): void {
+    this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
+      this.loadCustomers();
+    });
+    this.loadCustomers();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  onSearchChange(): void {
+    this.searchSubject.next();
+  }
+
+  onFilterChange(): void {
+    this.loadCustomers();
+  }
+
+  loadCustomers(): void {
+    this.isLoading.set(true);
+    const params: Record<string, unknown> = {};
+    if (this.searchName.trim()) params['search'] = this.searchName.trim();
+    if (this.searchPhone.trim()) params['phone'] = this.searchPhone.trim();
+    if (this.filterType) params['type'] = this.filterType;
+    if (this.dueOnly) params['dueOnly'] = true;
+
+    this.customerService.getCustomers(params).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  resetFilters(): void {
+    this.searchName = '';
+    this.searchPhone = '';
+    this.filterType = '';
+    this.dueOnly = false;
+    this.loadCustomers();
+  }
+
+  openAddModal(): void {
+    this.modalMode = 'create';
+    this.form = {
+      customer_no: 0,
+      name: '',
+      phoneSuffix: '',
+      gender: 'Male',
+      type: 'Regular',
+      discountPercent: 0,
+      email: '',
+      address: '',
+      note: '',
+      dueEnabled: false,
+      balance: 0,
+      dueDate: '',
+      isLoyalty: false,
+    };
+    this.isModalVisible = true;
+  }
+
+  openEditModal(item: CustomerRow): void {
+    this.modalMode = 'edit';
+    const phoneDigits = item.phone.replace(/^\+880\s*/, '');
+    this.form = {
+      customer_no: item.customer_no,
+      name: item.name,
+      phoneSuffix: phoneDigits,
+      gender: item.gender || 'Male',
+      type: item.type,
+      discountPercent: item.discountPercent || 0,
+      email: item.email || '',
+      address: item.address,
+      note: item.note || '',
+      dueEnabled: item.balance > 0,
+      balance: item.balance,
+      dueDate: item.dueDate === '—' ? '' : item.dueDate,
+      isLoyalty: !!item.isLoyalty,
+    };
+    this.isModalVisible = true;
+  }
+
+  saveCustomer(): void {
+    if (!this.form.name.trim()) {
+      this.msg.error('Please enter customer name');
+      return;
+    }
+    if (!this.form.phoneSuffix.trim()) {
+      this.msg.error('Please enter customer phone');
+      return;
+    }
+
+    const fullPhone = `+880 ${this.form.phoneSuffix.trim()}`;
+    const bal = this.form.dueEnabled ? Number(this.form.balance) || 0 : 0;
+    const due = this.form.dueEnabled && this.form.dueDate ? this.form.dueDate : '—';
+
+    if (this.modalMode === 'create') {
+      const nextId = Math.max(...this.customers().map(c => c.customer_no), 0) + 1;
+      const newCustomer: CustomerRow = {
+        customer_no: nextId,
+        name: this.form.name.trim(),
+        phone: fullPhone,
+        type: this.form.type,
+        address: this.form.address.trim() || 'Local Area',
+        balance: bal,
+        points: this.form.isLoyalty ? 10 : 0,
+        dueDate: due,
+        gender: this.form.gender,
+        discountPercent: this.form.discountPercent,
+        email: this.form.email,
+        note: this.form.note,
+        isLoyalty: this.form.isLoyalty,
+      };
+      this.customers.update(list => [...list, newCustomer]);
+      this.msg.success(`Customer "${newCustomer.name}" created!`);
+    } else {
+      this.customers.update(list =>
+        list.map(c =>
+          c.customer_no === this.form.customer_no
+            ? {
+                ...c,
+                name: this.form.name.trim(),
+                phone: fullPhone,
+                type: this.form.type,
+                address: this.form.address.trim(),
+                balance: bal,
+                dueDate: due,
+                gender: this.form.gender,
+                discountPercent: this.form.discountPercent,
+                email: this.form.email,
+                note: this.form.note,
+                isLoyalty: this.form.isLoyalty,
+              }
+            : c
+        )
+      );
+      this.msg.success(`Customer "${this.form.name}" updated!`);
+    }
+    this.isModalVisible = false;
+  }
+
+  viewLedger(c: CustomerRow): void {
+    this.msg.info(`Viewing customer ledger for ${c.name}`);
+  }
+
+  openCollectModal(c: CustomerRow): void {
+    this.activeCustomer = c;
+    this.collectAmount = c.balance;
+    this.collectMethod = 'Cash';
+    this.isCollectOpen = true;
+  }
+
+  submitCollect(): void {
+    if (!this.activeCustomer || this.collectAmount <= 0) {
+      this.msg.error('Please enter a valid collection amount');
+      return;
+    }
+    const cId = this.activeCustomer.customer_no;
+    const paid = this.collectAmount;
+    const custName = this.activeCustomer.name;
+    const custPhone = this.activeCustomer.phone;
+
+    this.customerService
+      .collectDue({
+        customer: custName,
+        phone: custPhone,
+        amount: paid,
+        method: this.collectMethod,
+        note: `Counter collection from ${custName}`,
+      })
+      .subscribe({
+        next: () => {
+          this.customers.update(list =>
+            list.map(c => (c.customer_no === cId ? { ...c, balance: Math.max(0, c.balance - paid) } : c))
+          );
+          this.msg.success(`Collected ৳ ${paid.toLocaleString()} from ${custName}`);
+          this.isCollectOpen = false;
+        },
+        error: () => {
+          this.msg.error('Failed to record collection');
+        },
+      });
+  }
+
+  deleteCustomer(c: CustomerRow): void {
+    this.modal.confirmAction(
+      'Delete Customer?',
+      `Are you sure you want to delete customer "${c.name}"? This action cannot be undone.`,
+      'Delete',
+      true
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.customers.update(list => list.filter(item => item.customer_no !== c.customer_no));
+        this.msg.success(`Customer "${c.name}" deleted successfully`);
+      }
+    });
+  }
+}

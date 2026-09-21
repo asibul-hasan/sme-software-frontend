@@ -238,19 +238,19 @@
                   <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2">
                       <span class="field-label mb-0">Gross Earning</span>
-                      <strong>{{ detail.total_gross | number:'1.2-2' }}</strong>
+                      <strong>{{ detail.total_gross | appDecimal }}</strong>
                     </div>
                   </div>
                   <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2">
                       <span class="field-label mb-0">Total Deduction</span>
-                      <strong>{{ detail.total_deduction | number:'1.2-2' }}</strong>
+                      <strong>{{ detail.total_deduction | appDecimal }}</strong>
                     </div>
                   </div>
                   <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center rounded-3 border px-3 py-2 bg-light-subtle">
                       <span class="field-label mb-0">Net Payable</span>
-                      <strong>{{ detail.total_net | number:'1.2-2' }}</strong>
+                      <strong>{{ detail.total_net | appDecimal }}</strong>
                     </div>
                   </div>
                 </div>

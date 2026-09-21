@@ -35,19 +35,19 @@ export class Hrm1008ModelService {
 
   initForm(): void {
     this.form = this.fb.group({
-      country_code:          ['BD', [Validators.required, Validators.maxLength(4)]],
-      currency_code:         ['BDT', [Validators.required, Validators.maxLength(4)]],
-      weekend_days:          ['FRI,SAT'],
-      fiscal_year_start:     ['07-01'],
-      overtime_multiplier:   [2.0, [Validators.min(0)]],
-      overtime_formula:      ['BASIC_SALARY / 104', [Validators.maxLength(500)]],
+      country_code:          ['', [Validators.maxLength(4)]],
+      currency_code:         ['', [Validators.maxLength(4)]],
+      weekend_days:          ['SAT,SUN'],
+      fiscal_year_start:     ['01-01'],
+      overtime_multiplier:   [1.5, [Validators.min(0)]],
+      overtime_formula:      ['BASIC_SALARY / 208', [Validators.maxLength(500)]],
       daily_rate_formula:    ['GROSS_SALARY / CALENDAR_DAYS', [Validators.maxLength(500)]],
       lwp_formula:           ['DAILY_RATE * LWP_DAYS', [Validators.maxLength(500)]],
-      tax_regime:            ['BD_NBR', [Validators.maxLength(30)]],
-      enable_provident_fund: [1],
-      enable_gratuity:       [1],
-      enable_festival_bonus: [1],
-      maternity_weeks:       [16, [Validators.min(0)]],
+      tax_regime:            ['STANDARD', [Validators.maxLength(30)]],
+      enable_provident_fund: [0],
+      enable_gratuity:       [0],
+      enable_festival_bonus: [0],
+      maternity_weeks:       [12, [Validators.min(0)]],
     });
   }
 
@@ -58,43 +58,24 @@ export class Hrm1008ModelService {
         if (isSuccess(res) && res.data) {
           const d = res.data as unknown as Record<string, unknown>;
           this.form.patchValue({
-            country_code:          d['country_code'] ?? 'BD',
-            currency_code:         d['currency_code'] ?? 'BDT',
-            weekend_days:          d['weekend_days'] ?? 'FRI,SAT',
-            fiscal_year_start:     d['fiscal_year_start'] ?? '07-01',
-            overtime_multiplier:   d['overtime_multiplier'] ?? 2.0,
-            overtime_formula:      d['overtime_formula'] ?? 'BASIC_SALARY / 104',
+            country_code:          d['country_code'] ?? '',
+            currency_code:         d['currency_code'] ?? '',
+            weekend_days:          d['weekend_days'] ?? 'SAT,SUN',
+            fiscal_year_start:     d['fiscal_year_start'] ?? '01-01',
+            overtime_multiplier:   d['overtime_multiplier'] ?? 1.5,
+            overtime_formula:      d['overtime_formula'] ?? 'BASIC_SALARY / 208',
             daily_rate_formula:    d['daily_rate_formula'] ?? 'GROSS_SALARY / CALENDAR_DAYS',
             lwp_formula:           d['lwp_formula'] ?? 'DAILY_RATE * LWP_DAYS',
-            tax_regime:            d['tax_regime'] ?? 'BD_NBR',
-            enable_provident_fund: d['enable_provident_fund'] ?? 1,
-            enable_gratuity:       d['enable_gratuity'] ?? 1,
-            enable_festival_bonus: d['enable_festival_bonus'] ?? 1,
-            maternity_weeks:       d['maternity_weeks'] ?? 16,
+            tax_regime:            d['tax_regime'] ?? 'STANDARD',
+            enable_provident_fund: d['enable_provident_fund'] ?? 0,
+            enable_gratuity:       d['enable_gratuity'] ?? 0,
+            enable_festival_bonus: d['enable_festival_bonus'] ?? 0,
+            maternity_weeks:       d['maternity_weeks'] ?? 12,
           });
         }
       },
       error: () => this.toastr.error('Failed to load HR settings'),
     });
-  }
-
-  /** Apply a country pack's sensible defaults into the form (user still saves explicitly). */
-  applyPack(country: string): void {
-    if (country === 'BD') {
-      this.form.patchValue({
-        country_code: 'BD', currency_code: 'BDT', weekend_days: 'FRI,SAT', fiscal_year_start: '07-01',
-        overtime_multiplier: 2.0, overtime_formula: 'BASIC_SALARY / 104', daily_rate_formula: 'GROSS_SALARY / CALENDAR_DAYS',
-        lwp_formula: 'DAILY_RATE * LWP_DAYS', tax_regime: 'BD_NBR',
-        enable_provident_fund: 1, enable_gratuity: 1, enable_festival_bonus: 1, maternity_weeks: 16,
-      });
-    } else {
-      this.form.patchValue({
-        country_code: 'INTL', currency_code: 'USD', weekend_days: 'SAT,SUN', fiscal_year_start: '01-01',
-        overtime_multiplier: 1.5, overtime_formula: 'BASIC_SALARY / 208', daily_rate_formula: 'GROSS_SALARY / CALENDAR_DAYS',
-        lwp_formula: 'DAILY_RATE * LWP_DAYS', tax_regime: 'GENERIC',
-        enable_provident_fund: 0, enable_gratuity: 0, enable_festival_bonus: 0, maternity_weeks: 0,
-      });
-    }
   }
 
   onSave(): void {

@@ -1,5 +1,6 @@
 <app-page-form-layout
   [title]="'Stock Adjustment'"
+  [subtitle]="'Inventory quantity and valuation corrections'"
   [icon]="'tune'"
   [recordsCount]="model.filtered().length"
   [sidebarTitle]="'Adjustments'"
@@ -19,8 +20,8 @@
     @for (o of model.pager.paged(); track o.adjustment_no) {
       <button type="button" class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === o.adjustment_no" (click)="model.select(o)">
-        <h6 class="list-item-title mb-0 text-truncate">{{ o.adjustment_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ o.adjustment_date }} · {{ o.warehouse_name }}</p>
+        <h6 class="list-item-title mb-0 truncate">{{ o.adjustment_id }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ o.adjustment_date }} · {{ o.warehouse_name }}</p>
         <div class="list-item-meta">
           <span class="list-item-tag" [ngClass]="{ 'list-item-tag--info': o.status === 2, 'list-item-tag--success': o.status === 3, 'list-item-tag--danger': o.status === 4 }">
             {{ o.status === 3 ? 'Posted' : o.status === 2 ? 'Submitted' : o.status === 4 ? 'Cancelled' : 'Draft' }}
@@ -31,110 +32,107 @@
     @if (model.filtered().length === 0) {
       <div class="list-empty-state">
         <mat-icon>tune</mat-icon>
-        <p>No adjustments</p>
+        <p>No adjustments found</p>
       </div>
     }
   </div>
 
-  <div formContent>
-    <form [formGroup]="model.form" autocomplete="off">
-      <div class="form-section-card card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">tune</mat-icon>Stock Adjustment</h4>
-          <div class="d-flex align-items-center gap-2">
-            @if (model.selectedNo()) {
-              <span class="badge" [ngClass]="{ 'text-bg-secondary': model.isDraft(), 'text-bg-info': model.isSubmitted(), 'text-bg-success': model.isPosted(), 'text-bg-danger': model.isCancelled() }">{{ model.statusLabel() }}</span>
-            }
-            @if (model.selectedNo() && model.isDraft() && permissionService.canUpdate()) {
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="onSubmit()" [disabled]="model.isSaving()">
-                <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">send</mat-icon> Submit
-              </button>
-            }
-            @if (model.isSubmitted() && permissionService.canApprove()) {
-              <button type="button" class="btn btn-sm btn-success" (click)="onApprove()" [disabled]="model.isSaving()">
-                <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">check_circle</mat-icon> Approve &amp; Post
-              </button>
-            }
-            @if (model.isPosted() && permissionService.canApprove()) {
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="onCancel()" [disabled]="model.isSaving()">
-                <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">undo</mat-icon> Cancel
-              </button>
-            }
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row row-group">
-            @if (model.form.get('adjustment_id')?.value) {
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Document No</label><input class="form-control" formControlName="adjustment_id" /></div></div>
-            }
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">Date</label><app-date-picker formControlName="adjustment_date" placeholder="Select date" /></div></div>
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">Warehouse</label>
-              <ng-select formControlName="warehouse_no" [clearable]="false" placeholder="Select">
-                @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }
-              </ng-select></div></div>
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">Type</label>
-              <ng-select formControlName="adjustment_type" [clearable]="false">
-                @for (t of model.adjustmentTypes; track t.value) { <ng-option [value]="t.value">{{ t.label }}</ng-option> }
-              </ng-select></div></div>
-            <div class="col-md-6"><div class="field-group"><label class="field-label">Reason</label><input class="form-control" formControlName="reason_text" /></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section-card card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list</mat-icon>Lines</h4>
-          @if (model.isDraft()) {
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addLine()">
-              <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">add</mat-icon> Add Line
+  <div formContent class="h-full flex flex-col gap-3">
+    <form [formGroup]="model.form" autocomplete="off" class="flex-shrink-0">
+      <app-form-section
+        [title]="model.selectedNo() ? 'Stock Adjustment · ' + model.statusLabel() : 'New Stock Adjustment'"
+        icon="tune"
+      >
+        <div sectionActions class="flex gap-2">
+          @if (model.selectedNo() && model.isDraft() && permissionService.canUpdate()) {
+            <button type="button" class="btn-action" (click)="onSubmit()" [disabled]="model.isSaving()">
+              <mat-icon>send</mat-icon>
+              <span>Submit</span>
+            </button>
+          }
+          @if (model.isSubmitted() && permissionService.canApprove()) {
+            <button type="button" class="btn-action btn-save" (click)="onApprove()" [disabled]="model.isSaving()">
+              <mat-icon>check_circle</mat-icon>
+              <span>Approve &amp; Post</span>
+            </button>
+          }
+          @if (model.isPosted() && permissionService.canApprove()) {
+            <button type="button" class="btn-action btn-delete" (click)="onCancel()" [disabled]="model.isSaving()">
+              <mat-icon>undo</mat-icon>
+              <span>Cancel</span>
             </button>
           }
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="width:120px">Direction</th>
-                  <th style="min-width:200px">Product</th>
-                  <th style="width:130px">UOM</th>
-                  <th class="text-end" style="width:110px">Qty</th>
-                  <th class="text-end" style="width:130px">Unit Cost</th>
-                  <th class="text-end" style="width:120px">Value</th>
-                  <th style="width:130px">Batch</th>
-                  <th style="width:50px"></th>
-                </tr>
-              </thead>
-              <tbody [formArrayName]="'lines'">
-                @for (row of model.lines.controls; track $index) {
-                  <tr [formGroupName]="$index">
-                    <td><ng-select formControlName="direction" [clearable]="false">
-                      @for (d of model.directions; track d.value) { <ng-option [value]="d.value">{{ d.label }}</ng-option> }
-                    </ng-select></td>
-                    <td><ng-select formControlName="product_no" [clearable]="false" placeholder="Product">
-                      @for (p of model.lookups().products; track p.value) { <ng-option [value]="p.value">{{ p.label }}</ng-option> }
-                    </ng-select></td>
-                    <td><ng-select formControlName="uom_no" [clearable]="false" placeholder="UOM">
-                      @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                    </ng-select></td>
-                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty" step="0.0001" /></td>
-                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="unit_cost" step="0.000001" inputmode="decimal" /></td>
-                    <td class="text-end small fw-semibold">{{ model.lineValue($index) | number: '1.2-2' }}</td>
-                    <td><input class="form-control form-control-sm text-uppercase" formControlName="batch_code" placeholder="if batch" /></td>
-                    <td class="text-center">
-                      @if (model.isDraft()) {
-                        <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeLine($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
-                      }
-                    </td>
-                  </tr>
-                }
-                @if (model.lines.length === 0) { <tr><td colspan="8" class="text-center opacity-75 p-4">No lines. Click “Add Line”.</td></tr> }
-              </tbody>
-            </table>
+
+        @if (model.form.get('adjustment_id')?.value) {
+          <app-form-field label="Document No" for="adjustment_id" [span]="3">
+            <input id="adjustment_id" class="form-control" formControlName="adjustment_id" />
+          </app-form-field>
+        }
+
+        <app-form-field label="Date" for="adjustment_date" required [span]="model.form.get('adjustment_id')?.value ? 3 : 4">
+          <app-date-picker formControlName="adjustment_date" placeholder="Select date" />
+        </app-form-field>
+
+        <app-form-field label="Warehouse" for="warehouse_no" required [span]="model.form.get('adjustment_id')?.value ? 3 : 4">
+          <ng-select
+            id="warehouse_no"
+            formControlName="warehouse_no"
+            [clearable]="false"
+            placeholder="Select warehouse"
+          >
+            @for (w of model.lookups().warehouses; track w.value) {
+              <ng-option [value]="w.value">{{ w.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Adjustment Type" for="adjustment_type" required [span]="model.form.get('adjustment_id')?.value ? 3 : 4">
+          <ng-select id="adjustment_type" formControlName="adjustment_type" [clearable]="false">
+            @for (t of model.adjustmentTypes; track t.value) {
+              <ng-option [value]="t.value">{{ t.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Reason / Remarks" for="reason_text" [span]="12">
+          <input id="reason_text" class="form-control" formControlName="reason_text" placeholder="e.g. Broken packaging / monthly count variance" />
+        </app-form-field>
+      </app-form-section>
+    </form>
+
+    <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 420px">
+      <div class="card-header flex items-center">
+        <h4 class="card-header__title mb-0 font-bold flex items-center">
+          <mat-icon class="mr-2">list_alt</mat-icon>
+          Adjustment Lines
+        </h4>
+        <div class="ml-auto flex items-center gap-4">
+          <div class="text-right">
+            <span class="field-label mb-0">Total In</span>
+            <div class="font-bold text-success">{{ model.totalInValue() | appDecimal }}</div>
+          </div>
+          <div class="text-right">
+            <span class="field-label mb-0">Total Out</span>
+            <div class="font-bold text-warning">{{ model.totalOutValue() | appDecimal }}</div>
+          </div>
+          <div class="text-right">
+            <span class="field-label mb-0">Net Impact</span>
+            <div class="font-bold text-primary">{{ model.netValue() | appDecimal }}</div>
           </div>
         </div>
       </div>
-    </form>
+      <div class="card-body p-0 flex-1 min-h-0">
+        <app-erp-grid
+          [config]="lineGrid"
+          [data]="model.lineData()"
+          height="100%"
+          (addRow)="model.addLine()"
+          (rowChange)="model.onLineChange($event)"
+          (rowRemove)="model.removeLine($event)"
+        ></app-erp-grid>
+      </div>
+    </div>
   </div>
 
   <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>

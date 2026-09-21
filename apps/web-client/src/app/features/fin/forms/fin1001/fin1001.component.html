@@ -1,67 +1,99 @@
 <app-page-form-layout
   [title]="'Chart of Accounts'"
-  [subtitle]="'GL account master'"
-  [icon]="'menu_book'"
-  [recordsCount]="model.filtered().length"
-  [sidebarTitle]="'Accounts'"
-  [searchTerm]="model.searchTerm()"
-  (searchTermChange)="onSearchTermChange($event)"
-  [sortDirection]="model.sortDirection()"
-  (sortDirectionChange)="model.sortDirection.set($event); model.pager.reset()"
-  (save)="onSave()"
-  (new)="onNew()"
-  (reset)="onReset()"
-  (delete)="onDelete()"
-  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
-  [showNew]="permissionService.canInsert()"
-  [showDelete]="permissionService.canDelete() && !!model.selectedNo()"
+  [subtitle]="'GL account & group hierarchy master'"
+  [icon]="'account_tree'"
+  [recordsCount]="model.treeData().length"
+  [sidebarTitle]="'COA Tree'"
+  [showSearch]="false"
+  [showSort]="false"
+  [showSave]="false"
+  [showNew]="false"
+  [showReset]="false"
+  [showDelete]="false"
   [isSaving]="model.isSaving()"
   [isLoading]="model.isLoading()"
 >
-  <button
-    extraHeaderActions
-    type="button"
-    class="btn-action"
-    (click)="printCoa()"
-    [disabled]="model.filtered().length === 0"
-  >
-    <mat-icon>picture_as_pdf</mat-icon>
-    <span class="btn-action-label">Print</span>
-  </button>
+  <!-- Header Action Buttons: Group -> New -> Save -> Reset -> Delete -->
+  <div extraHeaderActions class="flex items-center gap-1.5">
+    <!-- 1. Group button in beginning -->
+    <button
+      type="button"
+      class="btn-action"
+      (click)="onNewGroup()"
+      [disabled]="!permissionService.canInsert() || model.isLoading()"
+      matTooltip="Create a new Account Group"
+    >
+      <mat-icon>create_new_folder</mat-icon>
+      <span class="btn-action-label">+ Group</span>
+    </button>
 
-  <div sidebarList>
-    @for (item of model.pager.paged(); track item.account_no) {
-      <button
-        type="button"
-        class="list-group-item list-group-item-action"
-        [class.active]="model.selectedNo() === item.account_no"
-        (click)="select(item)"
-      >
-        <span
-          class="status-dot status-dot--corner"
-          [class.status-dot--active]="item.is_active === 1"
-          [class.status-dot--inactive]="item.is_active !== 1"
-          [matTooltip]="item.is_active === 1 ? 'Active' : 'Inactive'"
-        ></span>
-        <div class="flex w-full items-center">
-          <h6 class="list-item-title mb-0 min-w-0 flex-1 truncate">
-            {{ item.account_code }} {{ item.account_name }}
-          </h6>
-        </div>
-      </button>
-    }
-    @if (model.filtered().length === 0) {
-      <div class="list-empty-state">
-        <mat-icon>menu_book</mat-icon>
-        <p>No records found</p>
-      </div>
-    }
+    <!-- 2. New button (disabled when no node selected) -->
+    <button
+      type="button"
+      class="btn-action btn-new"
+      (click)="onNewAccount()"
+      [disabled]="!permissionService.canInsert() || !model.selectedAccountNo() || model.isLoading()"
+      [matTooltip]="!model.selectedAccountNo() ? 'Select a parent node in the tree to create a new ledger account' : ('new' | translate)"
+    >
+      <mat-icon>add</mat-icon>
+      <span class="btn-action-label">{{ 'new' | translate }}</span>
+    </button>
+
+    <!-- 3. Save button -->
+    <button
+      type="button"
+      class="btn-action btn-save"
+      (click)="onSave()"
+      [disabled]="model.isSaving() || (!permissionService.canInsert() && !permissionService.canUpdate())"
+      matTooltip="{{ 'save' | translate }}"
+    >
+      <mat-icon>{{ model.isSaving() ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+      <span class="btn-action-label">{{ 'save' | translate }}</span>
+    </button>
+
+    <!-- 4. Reset button -->
+    <button
+      type="button"
+      class="btn-action btn-reset"
+      (click)="onReset()"
+      [disabled]="model.isLoading()"
+      matTooltip="{{ 'reset' | translate }}"
+    >
+      <mat-icon>refresh</mat-icon>
+      <span class="btn-action-label">{{ 'reset' | translate }}</span>
+    </button>
+
+    <!-- 5. Delete button (disabled when no node selected OR when selected node has child nodes) -->
+    <button
+      type="button"
+      class="btn-action btn-delete"
+      (click)="onDelete()"
+      [disabled]="!permissionService.canDelete() || !model.selectedAccountNo() || model.selectedHasChildren() || model.isLoading() || model.isSaving()"
+      [matTooltip]="model.selectedHasChildren() ? 'Cannot delete account with child sub-accounts/groups' : ('delete' | translate)"
+    >
+      <mat-icon>delete</mat-icon>
+      <span class="btn-action-label">{{ 'delete' | translate }}</span>
+    </button>
   </div>
 
-  <div formContent>
-    <form [formGroup]="formdata" autocomplete="off">
-      <app-form-section title="Account" icon="menu_book">
-        <app-form-field label="Account Code" for="account_code" required [span]="3">
+  <!-- Sidebar Tree Hierarchy -->
+  <div sidebarList class="h-full">
+    <app-tree-view
+      [data]="model.treeData()"
+      [config]="treeConfig"
+      [selectedId]="model.selectedTreeId()"
+      [(searchTerm)]="model.searchTerm"
+      (nodeClick)="onNodeClick($event)"
+    />
+  </div>
+
+  <!-- Main Form Content Area: Single Unified Form for all COA Nodes -->
+  <div formContent class="flex flex-col gap-3">
+    <form [formGroup]="model.form" autocomplete="off" class="flex flex-col gap-3">
+      
+      <!-- Section 1: General Identification & Hierarchy -->
+      <app-form-section title="General Identification & Hierarchy" icon="menu_book">
+        <app-form-field label="Account No / Code" for="account_code" required [span]="3">
           <input
             type="text"
             id="account_code"
@@ -82,29 +114,111 @@
           />
         </app-form-field>
 
-        <app-form-field label="Account Group" for="account_group_no" required [span]="4">
+        <app-form-field label="Parent Account / Group" for="parent_group_no" [span]="4">
           <ng-select
-            id="account_group_no"
-            formControlName="account_group_no"
+            id="parent_group_no"
+            formControlName="parent_group_no"
             bindLabel="group_name"
             bindValue="account_group_no"
-            [items]="model.groups()"
-            placeholder="Select group"
+            [items]="model.parentGroupOptions()"
+            placeholder="None (Top-level node)"
           >
             <ng-template ng-label-tmp let-item="item">
               {{ item.account_group_id }} {{ item.group_name }}
             </ng-template>
             <ng-template ng-option-tmp let-item="item">
-              {{ item.account_group_id }} {{ item.group_name }}
+              <div class="flex items-center justify-between">
+                <span>{{ item.account_group_id }} {{ item.group_name }}</span>
+                <span class="text-xs opacity-75 font-semibold">{{ rootLabel(item.root_type) }}</span>
+              </div>
             </ng-template>
           </ng-select>
         </app-form-field>
 
-        <app-form-field label="Control Type" for="control_type" [span]="5">
+        <app-form-field label="Account Type" for="root_type" required [span]="3">
+          <ng-select id="root_type" formControlName="root_type" [clearable]="false">
+            @for (o of rootTypes; track o.value) {
+              <ng-option [value]="o.value">{{ o.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Account Nature (Balance)" for="normal_balance" required [span]="3">
+          <ng-select id="normal_balance" formControlName="normal_balance" [clearable]="false">
+            @for (o of drCr; track o.value) {
+              <ng-option [value]="o.value">{{ o.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Account Level (Hierarchy)" for="account_level" [span]="3">
+          <input
+            type="text"
+            id="account_level"
+            formControlName="account_level"
+            class="form-control bg-slate-100 font-medium text-slate-700"
+            readonly
+          />
+        </app-form-field>
+
+        <!-- Print COA Report Button (2nd row, fully right) -->
+        <div class="col-span-3 flex items-end justify-end pb-0.5">
+          <button
+            type="button"
+            class="btn-action !h-[30px] !px-3.5 !bg-indigo-50 hover:!bg-indigo-100 active:!bg-indigo-200 !text-indigo-700 !border !border-indigo-200 shadow-sm transition-all flex items-center gap-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="printCoa()"
+            [disabled]="model.accounts().length === 0"
+            matTooltip="Print Chart of Accounts PDF Report"
+          >
+            <mat-icon class="!text-indigo-600 !text-[16px] !w-4 !h-4 leading-4">picture_as_pdf</mat-icon>
+            <span class="text-xs font-semibold">Print COA</span>
+          </button>
+        </div>
+      </app-form-section>
+
+      <!-- Section 2: Classification & Reporting -->
+      <app-form-section title="Classification & Reporting" icon="category">
+        <app-form-field label="Account Category" for="account_category" [span]="4">
+          <ng-select
+            id="account_category"
+            formControlName="account_category"
+            placeholder="Select category"
+          >
+            @for (o of accountCategories; track o.value) {
+              <ng-option [value]="o.value">{{ o.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Account Sub Category" for="sub_category" [span]="4">
+          <ng-select
+            id="sub_category"
+            formControlName="sub_category"
+            placeholder="Select sub category"
+          >
+            @for (o of accountSubCategories; track o.value) {
+              <ng-option [value]="o.value">{{ o.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Account Class (Reporting)" for="account_class" [span]="4">
+          <ng-select
+            id="account_class"
+            formControlName="account_class"
+            placeholder="Select reporting class"
+          >
+            @for (o of accountClasses; track o.value) {
+              <ng-option [value]="o.value">{{ o.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Control Type (Sub-ledger)" for="control_type" [span]="4">
           <ng-select
             id="control_type"
             formControlName="control_type"
-            placeholder="None (plain)"
+            placeholder="None (plain account)"
           >
             @for (o of controlTypes; track o.value) {
               <ng-option [value]="o.value">{{ o.label }}</ng-option>
@@ -112,29 +226,48 @@
           </ng-select>
         </app-form-field>
 
-        <app-form-field label="Opening Dr/Cr" for="opening_dr_cr" [span]="3">
-          <ng-select
-            id="opening_dr_cr"
-            formControlName="opening_dr_cr"
-            [clearable]="false"
-            [readonly]="true"
-          >
-            @for (o of drCr; track o.value) {
-              <ng-option [value]="o.value">{{ o.label }}</ng-option>
-            }
-          </ng-select>
+        <app-form-field label="Display Order (SL)" for="order_sl" [span]="4">
+          <input
+            type="number"
+            id="order_sl"
+            formControlName="order_sl"
+            class="form-control"
+            placeholder="0"
+          />
         </app-form-field>
 
-        <app-check-field label="Postable" text="Postable" [span]="2" formControlName="is_postable" />
-        <app-check-field label="Status" text="Active" [span]="2" formControlName="is_active" />
-        <app-check-field label="Cost Center" text="Required" [span]="2" formControlName="requires_cost_center" />
-        <app-check-field label="Party (Customer/Vendor)" text="Required" [span]="2" formControlName="requires_party" />
+        <app-check-field label="Account Status" text="Active" [span]="4" formControlName="is_active" />
       </app-form-section>
+
+      <!-- Section 3: Posting Controls & Dimensions -->
+      <app-form-section title="Posting Rules & Control Dimensions" icon="rule">
+        <app-check-field label="Header / Group" text="Is Group Account (Summary)" [span]="3" formControlName="is_group_account" />
+        <app-check-field label="Direct Posting" text="Posting Allowed (GL Entries)" [span]="3" formControlName="is_postable" />
+        <app-check-field label="Sub-Ledger" text="Control Account" [span]="3" formControlName="is_control" />
+        <app-check-field label="Audit & Reconcile" text="Reconciliation Required" [span]="3" formControlName="requires_reconciliation" />
+
+        <app-check-field label="Party Dimension" text="Party Required (Customer/Vendor)" [span]="3" formControlName="requires_party" />
+        <app-check-field label="Cost Center Dimension" text="Cost Center Required" [span]="3" formControlName="requires_cost_center" />
+        <app-check-field label="Branch Dimension" text="Branch Required" [span]="2" formControlName="requires_branch" />
+        <app-check-field label="Project Dimension" text="Project Required" [span]="2" formControlName="requires_project" />
+        <app-check-field label="Department Dimension" text="Department Required" [span]="2" formControlName="requires_department" />
+      </app-form-section>
+
+      <!-- Section 4: Description & Accounting Notes -->
+      <app-form-section title="Description & Accounting Notes" icon="notes">
+        <app-form-field label="Account Description & Policy Guidance" for="description" [span]="12">
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="2"
+            class="form-control resize-y"
+            placeholder="Enter purpose of this account, audit instructions, or specific posting policy notes..."
+          ></textarea>
+        </app-form-field>
+      </app-form-section>
+
     </form>
   </div>
-
-  <app-sidebar-pagination
-    sidebarFooter
-    [pager]="model.pager"
-  ></app-sidebar-pagination>
 </app-page-form-layout>
+
+

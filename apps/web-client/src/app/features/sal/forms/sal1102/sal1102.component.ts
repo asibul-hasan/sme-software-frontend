@@ -22,12 +22,13 @@ interface AllocRow extends OpenInvoice { alloc: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sal1102',
   standalone: true,
-  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Sal1102DataService],
   templateUrl: './sal1102.component.html',
   styles: [`:host { display: block; height: 100%; }`],

@@ -23,8 +23,14 @@
         [class.active]="model.selectedNo() === a.attribute_no"
         (click)="model.select(a)"
       >
-        <h6 class="list-item-title mb-0 text-truncate">{{ a.attribute_name }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ a.attribute_id }}</p>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="a.is_active === 1"
+          [class.status-dot--inactive]="a.is_active !== 1"
+          [matTooltip]="a.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 truncate">{{ a.attribute_name }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ a.attribute_id }}</p>
         <div class="list-item-meta">
           <span class="list-item-tag">{{ a.values.length }} values</span>
         </div>
@@ -38,87 +44,45 @@
     }
   </div>
 
-  <div formContent>
-    <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">tune</mat-icon>
-                Attribute
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="attribute_id">Code</label>
-                    <input type="text" id="attribute_id" formControlName="attribute_id" class="form-control text-uppercase" placeholder="SIZE" />
-                  </div>
-                </div>
-                <div class="col-md-5">
-                  <div class="field-group">
-                    <label class="field-label required" for="attribute_name">Name</label>
-                    <input type="text" id="attribute_name" formControlName="attribute_name" class="form-control" placeholder="Size" />
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <div formContent class="h-full flex flex-col gap-3">
+    <form [formGroup]="model.form" autocomplete="off" class="flex-shrink-0">
+      <app-form-section title="Attribute" icon="tune">
+        <app-form-field label="Code" for="attribute_id" required [span]="4">
+          <input
+            type="text"
+            id="attribute_id"
+            formControlName="attribute_id"
+            class="form-control uppercase"
+            placeholder="SIZE"
+          />
+        </app-form-field>
 
-          <div class="form-section-card card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list</mat-icon>Values</h4>
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addValue()">
-                <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon> Add Value
-              </button>
-            </div>
-            <div class="card-body p-0" [formArrayName]="'values'">
-              <ng-template #codeTpl let-row>
-                <div [formGroupName]="row.index">
-                  <input type="text" class="form-control form-control-sm text-uppercase" formControlName="value_code" placeholder="M" />
-                </div>
-              </ng-template>
+        <app-form-field label="Name" for="attribute_name" required [span]="5">
+          <input
+            type="text"
+            id="attribute_name"
+            formControlName="attribute_name"
+            class="form-control"
+            placeholder="Size"
+          />
+        </app-form-field>
 
-              <ng-template #nameTpl let-row>
-                <div [formGroupName]="row.index">
-                  <input type="text" class="form-control form-control-sm" formControlName="value_name" placeholder="Medium" />
-                </div>
-              </ng-template>
-
-              <ng-template #orderTpl let-row>
-                <div [formGroupName]="row.index">
-                  <input type="number" class="form-control form-control-sm text-end" formControlName="order_sl" />
-                </div>
-              </ng-template>
-
-              <ng-template #removeTpl let-row>
-                <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeValue(row.index)" title="Remove">
-                  <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
-                </button>
-              </ng-template>
-
-              <app-common-table
-                [columns]="valueColumns()"
-                [data]="valueRows()"
-                [config]="valueTableConfig"
-                [tableId]="'inv1006-attribute-values'"
-              ></app-common-table>
-            </div>
-          </div>
-        </div>
-      </div>
+        <app-check-field label="Status" text="Active" [span]="3" formControlName="is_active" />
+      </app-form-section>
     </form>
+
+    <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 380px">
+      <div class="card-body p-0 flex-1 min-h-0">
+        <app-erp-grid
+          [config]="valuesGrid"
+          [data]="model.valueRows()"
+          height="100%"
+          (addRow)="model.addValue()"
+          (rowChange)="model.onValueChange($event)"
+          (rowRemove)="model.removeValue($event)"
+        ></app-erp-grid>
+      </div>
+    </div>
   </div>
 
   <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>

@@ -19,11 +19,11 @@
             <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" />
           </div>
           <div class="ml-auto flex items-center gap-4">
-            <div class="text-end"><span class="field-label mb-0 block">Total Income</span><div class="font-bold">{{ totalIncome() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Total Expense</span><div class="font-bold">{{ totalExpense() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Total Income</span><div class="font-bold">{{ totalIncome() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Total Expense</span><div class="font-bold">{{ totalExpense() | appDecimal }}</div></div>
             <div class="text-end">
               <span class="field-label mb-0 block">Net {{ isProfit() ? 'Profit' : 'Loss' }}</span>
-              <div class="font-bold" [class.text-success]="isProfit()" [class.text-danger]="!isProfit()">{{ netProfit() | number: '1.2-2' }}</div>
+              <div class="font-bold" [class.text-success]="isProfit()" [class.text-danger]="!isProfit()">{{ netProfit() | appDecimal }}</div>
             </div>
             <span class="list-item-tag" [class.list-item-tag--primary]="isProfit()" [class.list-item-tag--warning]="!isProfit()">
               {{ isProfit() ? 'Profit' : 'Loss' }}

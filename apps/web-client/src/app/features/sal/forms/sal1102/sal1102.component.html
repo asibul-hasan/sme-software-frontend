@@ -58,8 +58,8 @@
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">rule</mat-icon> Apply to Open Invoices</h4>
         <div class="ms-auto d-flex align-items-center gap-3">
           @if (editable()) { <button type="button" class="btn-action btn-save" (click)="autoAllocate()"><mat-icon>auto_fix_high</mat-icon> Auto-allocate</button> }
-          <div class="text-end"><span class="field-label mb-0">Allocated</span><div class="fw-bold">{{ allocatedTotal() | number: '1.2-2' }}</div></div>
-          <div class="text-end"><span class="field-label mb-0">On account</span><div class="fw-bold" [class.text-warning]="unallocated() > 0.005">{{ unallocated() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Allocated</span><div class="fw-bold">{{ allocatedTotal() | appDecimal }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">On account</span><div class="fw-bold" [class.text-warning]="unallocated() > 0.005">{{ unallocated() | appDecimal }}</div></div>
         </div>
       </div>
       <div class="card-body p-0" style="flex:1 1 auto; min-height:0">

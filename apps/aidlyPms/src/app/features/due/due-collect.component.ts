@@ -1,0 +1,572 @@
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { CustomerService } from '../../core/services/customer.service';
+import { AccountingService } from '../../core/services/accounting.service';
+import { AccTransactionAccount } from '../../core/models/accounting.models';
+
+interface DueRecord {
+  id: string;
+  customer: string;
+  phone: string;
+  inv: string;
+  saleDate: string;
+  dueDate: string;
+  amount: number;
+}
+
+interface PaidRecord {
+  id: string;
+  customer: string;
+  phone: string;
+  receipt: string;
+  method: string;
+  amount: number;
+  note: string;
+}
+
+@Component({
+  selector: 'app-due-collect',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    NzInputModule,
+    NzButtonModule,
+    NzModalModule,
+    NzIconModule,
+    NzTagModule,
+    NzSelectModule,
+    NzTooltipModule,
+    PageHeaderComponent,
+  ],
+  template: `
+    <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
+      <app-page-header
+        title="Due & Credit Collection"
+        subtitle="Track outstanding patient credit, promised payment schedules, and settlement history"
+        formId="DUE_1301"
+        [breadcrumbs]="[{ label: 'Customers', url: '/customer/list' }, { label: 'Due Collections' }]"
+      >
+        <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <input
+              type="date"
+              nz-input
+              [(ngModel)]="fromDate"
+              (ngModelChange)="onFilterChange()"
+              class="w-32 shrink-0 rounded-md text-xs"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <input
+              type="date"
+              nz-input
+              [(ngModel)]="toDate"
+              (ngModelChange)="onFilterChange()"
+              class="w-32 shrink-0 rounded-md text-xs"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Customer / Bill #</label>
+            <nz-input-group [nzPrefix]="searchIcon" class="w-60 shrink-0 rounded-md">
+              <input
+                type="text"
+                nz-input
+                placeholder="Name, phone, invoice..."
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+                class="text-xs"
+              />
+            </nz-input-group>
+            <ng-template #searchIcon>
+              <span nz-icon nzType="search" class="text-slate-400"></span>
+            </ng-template>
+          </div>
+          <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+            <span nz-icon nzType="clear"></span> Reset
+          </button>
+        </div>
+      </app-page-header>
+
+      <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
+        <!-- Tabs Bar -->
+        <div class="shrink-0 px-4 pt-3 pb-2 flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50/50">
+          @for (t of tabs; track t; let i = $index) {
+            <button
+              type="button"
+              (click)="activeTab = i"
+              class="px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border-0 cursor-pointer"
+              [ngClass]="activeTab === i ? 'theme-pill-active' : 'bg-slate-200/70 text-slate-600 hover:bg-slate-200'"
+            >
+              {{ t }}
+            </button>
+          }
+        </div>
+
+        <!-- Scrollable Table Area -->
+        <div class="flex-1 min-h-0 overflow-auto">
+          @if (activeTab < 3) {
+            <!-- Tab 0, 1, 2: Due Tables -->
+            <table class="w-full text-sm text-left border-collapse">
+              <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
+                <tr>
+                  <th class="p-3">Details</th>
+                  <th class="p-3 text-center">Due Date</th>
+                  <th class="p-3 text-right">Amount</th>
+                  <th class="p-3 text-center w-36">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-800">
+                @for (d of filteredDue(); track d.id) {
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="p-3">
+                      <p class="font-semibold text-slate-900 text-sm mb-0.5">{{ d.customer }}</p>
+                      <p class="text-xs text-slate-400 mb-0">
+                        {{ d.phone }} · <span class="font-mono text-slate-600">{{ d.inv }}</span> · Sale: {{ d.saleDate }}
+                      </p>
+                    </td>
+
+                    <td class="p-3 text-center font-mono text-xs font-semibold text-amber-700">
+                      {{ d.dueDate }}
+                    </td>
+
+                    <td class="p-3 text-right font-mono text-xs font-bold text-rose-600">
+                      ৳ {{ d.amount.toLocaleString() }}
+                    </td>
+
+                    <td class="p-3 text-center">
+                      <div class="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          (click)="openReceiveModal(d)"
+                          nz-tooltip
+                          nzTooltipTitle="Receive Due Collection"
+                          class="btn-tbl-action btn-tbl-success"
+                        >
+                          <span nz-icon nzType="dollar"></span>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openSmsModal(d)"
+                          nz-tooltip
+                          nzTooltipTitle="Send Payment Reminder SMS"
+                          class="btn-tbl-action btn-tbl-warning"
+                        >
+                          <span nz-icon nzType="mail"></span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="p-8 text-center text-slate-400 text-xs">
+                      No overdue credit accounts found for this filter.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <!-- Tab 3: Paid Collections Register -->
+            <table class="w-full text-sm text-left border-collapse">
+              <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
+                <tr>
+                  <th class="p-3">Customer</th>
+                  <th class="p-3">Receipt #</th>
+                  <th class="p-3 text-center">Method</th>
+                  <th class="p-3 text-right">Amount</th>
+                  <th class="p-3">Note</th>
+                  <th class="p-3 text-center w-24">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-800">
+                @for (p of filteredPaid(); track p.id) {
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="p-3">
+                      <p class="font-semibold text-slate-900 text-xs mb-0.5">{{ p.customer }}</p>
+                      <p class="text-xs text-slate-400 mb-0">{{ p.phone }}</p>
+                    </td>
+
+                    <td class="p-3 font-mono text-xs text-slate-700 font-semibold">
+                      {{ p.receipt }}
+                    </td>
+
+                    <td class="p-3 text-center">
+                      <nz-tag [nzColor]="p.method === 'bKash' ? 'blue' : 'green'" class="text-[11px]">
+                        {{ p.method }}
+                      </nz-tag>
+                    </td>
+
+                    <td class="p-3 text-right font-mono text-xs font-bold theme-total-text">
+                      ৳ {{ p.amount.toLocaleString() }}
+                    </td>
+
+                    <td class="p-3 text-xs text-slate-500">
+                      {{ p.note || '—' }}
+                    </td>
+
+                    <td class="p-3 text-center">
+                      <div class="inline-flex items-center gap-1.5 justify-center">
+                        <button
+                          type="button"
+                          (click)="printPaidReceipt(p)"
+                          nz-tooltip
+                          nzTooltipTitle="Print Money Receipt"
+                          class="btn-tbl-action btn-tbl-neutral"
+                        >
+                          <span nz-icon nzType="printer"></span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-400 text-xs">
+                      No due collection receipts recorded.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <!-- Sticky Bottom Footer -->
+        <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
+          <div class="flex items-center gap-3">
+            @if (activeTab < 3) {
+              <span>Due Accounts: <strong class="text-slate-900 font-semibold font-mono">{{ filteredDue().length }}</strong></span>
+              <span class="text-slate-300">|</span>
+              <span class="font-semibold text-slate-700">Total Outstanding Due: <strong class="text-rose-700 font-mono text-sm">৳ {{ totalDueAmount() | number: '1.2-2' }}</strong></span>
+            } @else {
+              <span>Settled Receipts: <strong class="text-slate-900 font-semibold font-mono">{{ filteredPaid().length }}</strong></span>
+              <span class="text-slate-300">|</span>
+              <span class="font-semibold text-slate-700">Total Collected: <strong class="theme-total-text font-mono text-sm">৳ {{ totalPaidAmount() | number: '1.2-2' }}</strong></span>
+            }
+          </div>
+          <span class="text-slate-400 font-mono text-[11px]">Due Settlement Register</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receive Payment Modal -->
+    <nz-modal
+      [(nzVisible)]="isReceiveOpen"
+      [nzTitle]="'Receive Due Payment: ' + activeDue?.customer"
+      nzOkText="Confirm Payment"
+      (nzOnCancel)="isReceiveOpen = false"
+      (nzOnOk)="submitReceive()"
+      nzWidth="480px"
+    >
+      <ng-container *nzModalContent>
+        <div class="space-y-4 py-1">
+          <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
+            <span class="text-xs font-semibold text-rose-700 uppercase tracking-wide block">Outstanding Due</span>
+            <span class="font-mono text-xl font-bold text-rose-700">
+              ৳ {{ activeDue?.amount?.toLocaleString() }}
+            </span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Amount Received (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              nz-input
+              [(ngModel)]="receiveAmount"
+              class="rounded-md font-mono"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Deposit To Account <span class="text-rose-500">*</span></label>
+            <nz-select [(ngModel)]="selectedAccountId" class="w-full" nzPlaceHolder="Select Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (Bal: ৳' + acc.current_balance.toLocaleString() + ')'"></nz-option>
+              }
+            </nz-select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+            <nz-select [(ngModel)]="receiveMethod" class="w-full">
+              <nz-option nzValue="Cash" nzLabel="Cash Counter"></nz-option>
+              <nz-option nzValue="Bank" nzLabel="Bank Deposit"></nz-option>
+              <nz-option nzValue="bKash" nzLabel="bKash"></nz-option>
+              <nz-option nzValue="Nagad" nzLabel="Nagad"></nz-option>
+            </nz-select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Reference / Note</label>
+            <input
+              type="text"
+              nz-input
+              placeholder="e.g. Bank slip, TRx ID, receipt remarks"
+              [(ngModel)]="receiveNote"
+              class="rounded-md"
+            />
+          </div>
+        </div>
+      </ng-container>
+    </nz-modal>
+
+    <!-- Send SMS Reminder Modal -->
+    <nz-modal
+      [(nzVisible)]="isSmsOpen"
+      [nzTitle]="'Send Due Reminder SMS: ' + activeDue?.customer"
+      nzOkText="Send SMS"
+      (nzOnCancel)="isSmsOpen = false"
+      (nzOnOk)="sendSmsNotification()"
+      nzWidth="500px"
+    >
+      <ng-container *nzModalContent>
+        <div class="space-y-3 py-1">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Recipient Number</label>
+            <input
+              type="text"
+              nz-input
+              [value]="activeDue?.phone"
+              readonly
+              class="rounded-md bg-slate-50 font-mono text-xs"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">SMS Content Template</label>
+            <textarea
+              nz-input
+              rows="4"
+              [(ngModel)]="smsContent"
+              class="rounded-md text-xs font-sans"
+            ></textarea>
+          </div>
+        </div>
+      </ng-container>
+    </nz-modal>
+  `,
+})
+export class DueCollectComponent implements OnInit, OnDestroy {
+  private readonly msg = inject(NzMessageService);
+  private readonly customerService = inject(CustomerService);
+  private readonly accountingService = inject(AccountingService);
+
+  private searchSubject = new Subject<void>();
+  private searchSub?: Subscription;
+
+  tabs = ["Today's Due", "Upcoming Due", "Pending Due", "Paid List"];
+  activeTab = 0;
+
+  // Initialize with standard 1-month date range default
+  defaultDates = getDefaultMonthDateRange();
+  fromDate = this.defaultDates.fromDate;
+  toDate = this.defaultDates.toDate;
+  searchQuery = '';
+
+  isLoading = signal(false);
+  accounts = signal<AccTransactionAccount[]>([]);
+  selectedAccountId = 1;
+
+  dueData = signal<DueRecord[]>([
+    { id: '1', customer: 'Rafiqul Islam', phone: '+880 1711-234567', inv: 'INV-2026-1010', saleDate: '10-09-2026', dueDate: '16-09-2026', amount: 2400 },
+    { id: '2', customer: 'Shapna Akter', phone: '+880 1711-678901', inv: 'INV-2026-1012', saleDate: '12-09-2026', dueDate: '16-09-2026', amount: 800 },
+    { id: '3', customer: 'Meena Begum', phone: '+880 1611-456789', inv: 'INV-2026-1027', saleDate: '15-09-2026', dueDate: '20-09-2026', amount: 5800 },
+  ]);
+
+  paidData = signal<PaidRecord[]>([
+    { id: '1', customer: 'Karim Ahmed', phone: '+880 1811-345678', receipt: 'PAY-2026-084', method: 'bKash', amount: 3200, note: 'bKash ref: TRX98765' },
+    { id: '2', customer: 'Meena Begum', phone: '+880 1611-456789', receipt: 'PAY-2026-083', method: 'Cash', amount: 1500, note: 'Partial installment' },
+  ]);
+
+  filteredDue = computed(() => {
+    const q = this.searchQuery.trim().toLowerCase();
+    return this.dueData().filter(d => {
+      if (!q) return true;
+      return (
+        d.customer.toLowerCase().includes(q) ||
+        d.phone.includes(q) ||
+        d.inv.toLowerCase().includes(q)
+      );
+    });
+  });
+
+  filteredPaid = computed(() => {
+    const q = this.searchQuery.trim().toLowerCase();
+    return this.paidData().filter(p => {
+      if (!q) return true;
+      return (
+        p.customer.toLowerCase().includes(q) ||
+        p.phone.includes(q) ||
+        p.receipt.toLowerCase().includes(q)
+      );
+    });
+  });
+
+  totalDueAmount = computed(() => this.filteredDue().reduce((sum, d) => sum + (d.amount || 0), 0));
+  totalPaidAmount = computed(() => this.filteredPaid().reduce((sum, p) => sum + (p.amount || 0), 0));
+
+  // Receive Modal
+  isReceiveOpen = false;
+  activeDue: DueRecord | null = null;
+  receiveAmount = 0;
+  receiveMethod = 'Cash';
+  receiveNote = '';
+
+  // SMS Modal
+  isSmsOpen = false;
+  smsContent = '';
+
+  ngOnInit(): void {
+    this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
+      this.loadDueRecords();
+    });
+    this.loadAccounts();
+    this.loadDueRecords();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  onFilterChange(): void {
+    this.loadDueRecords();
+  }
+
+  onSearchChange(): void {
+    this.searchSubject.next();
+  }
+
+  loadAccounts(): void {
+    this.accountingService.getAccounts().subscribe(res => {
+      if (res.success && res.data) {
+        this.accounts.set(res.data);
+        if (res.data.length > 0) {
+          this.selectedAccountId = res.data[0].account_no;
+        }
+      }
+    });
+  }
+
+  loadDueRecords(): void {
+    this.isLoading.set(true);
+    const params = {
+      fromDate: this.fromDate,
+      toDate: this.toDate,
+      search: this.searchQuery.trim(),
+    };
+    this.customerService.getDueRecords(params).subscribe({
+      next: res => {
+        this.isLoading.set(false);
+        if (res.success && res.data && res.data.length > 0) {
+          this.dueData.set(res.data as DueRecord[]);
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  resetFilters(): void {
+    const def = getDefaultMonthDateRange();
+    this.fromDate = def.fromDate;
+    this.toDate = def.toDate;
+    this.searchQuery = '';
+    this.loadDueRecords();
+  }
+
+  openReceiveModal(d: DueRecord): void {
+    this.activeDue = d;
+    this.receiveAmount = d.amount;
+    this.receiveMethod = 'Cash';
+    this.receiveNote = '';
+    this.isReceiveOpen = true;
+  }
+
+  submitReceive(): void {
+    if (!this.activeDue || this.receiveAmount <= 0) {
+      this.msg.error('Please enter a valid received amount');
+      return;
+    }
+
+    const recId = this.activeDue.id;
+    const paidAmt = this.receiveAmount;
+    const cust = this.activeDue.customer;
+    const phone = this.activeDue.phone;
+
+    this.customerService
+      .collectDue({
+        id: recId,
+        customer: cust,
+        phone: phone,
+        amount: paidAmt,
+        method: this.receiveMethod,
+        account_no: this.selectedAccountId,
+        note: this.receiveNote,
+      })
+      .subscribe({
+        next: res => {
+          const receiptNo = (res.data as Record<string, unknown> | undefined)?.['receipt']
+            ? String((res.data as Record<string, unknown>)['receipt'])
+            : `PAY-${Date.now().toString().slice(-4)}`;
+          // Add to paid list
+          const newPaid: PaidRecord = {
+            id: Date.now().toString(),
+            customer: cust,
+            phone: phone,
+            receipt: receiptNo,
+            method: this.receiveMethod,
+            amount: paidAmt,
+            note: this.receiveNote || 'Due collection settlement',
+          };
+          this.paidData.update(list => [newPaid, ...list]);
+
+          // Update or remove from due
+          if (paidAmt >= (this.activeDue?.amount || 0)) {
+            this.dueData.update(list => list.filter(d => d.id !== recId));
+          } else {
+            this.dueData.update(list =>
+              list.map(d => (d.id === recId ? { ...d, amount: d.amount - paidAmt } : d))
+            );
+          }
+
+          this.msg.success(res.message || `Received ৳ ${paidAmt.toLocaleString()} from ${cust}!`);
+          this.isReceiveOpen = false;
+        },
+        error: () => {
+          this.msg.error('Failed to record due payment');
+        },
+      });
+  }
+
+  openSmsModal(d: DueRecord): void {
+    this.activeDue = d;
+    this.smsContent = `Dear ${d.customer}, your outstanding pharmacy balance of BDT ${d.amount} for invoice ${d.inv} is due on ${d.dueDate}. Kindly clear the balance at your earliest convenience. Thank you.`;
+    this.isSmsOpen = true;
+  }
+
+  sendSmsNotification(): void {
+    this.msg.success(`Reminder SMS queued for ${this.activeDue?.customer} (${this.activeDue?.phone})`);
+    this.isSmsOpen = false;
+  }
+
+  printPaidReceipt(p: PaidRecord): void {
+    this.msg.success(`Printing money receipt for ${p.receipt}`);
+  }
+}

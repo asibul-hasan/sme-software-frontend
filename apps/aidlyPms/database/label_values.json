@@ -1,0 +1,102 @@
+{
+  "business_mode": [
+    { "label": "Retail", "value": 1 },
+    { "label": "Wholesale", "value": 2 }
+  ],
+  "discount_type": [
+    { "label": "Percentage", "value": 1 },
+    { "label": "Flat", "value": 2 }
+  ],
+  "payment_method": [
+    { "label": "Cash", "value": 1 },
+    { "label": "Bank", "value": 2 },
+    { "label": "bKash", "value": 3 },
+    { "label": "Nagad", "value": 4 },
+    { "label": "Rocket", "value": 5 },
+    { "label": "Card", "value": 6 },
+    { "label": "Due", "value": 7 },
+    { "label": "Split", "value": 8 }
+  ],
+  "purchase_calc_mode": [
+    { "label": "Default", "value": 1 },
+    { "label": "Unit TP/VAT", "value": 2 },
+    { "label": "Net Value", "value": 3 },
+    { "label": "Opening Stock", "value": 4 }
+  ],
+  "inventory_type": [
+    { "label": "INVENTORY PURCHASED", "value": 1 },
+    { "label": "OPENING STOCK", "value": 2 },
+    { "label": "CUSTOMER RETURNED", "value": 3 },
+    { "label": "SUPPLIER RETURNED", "value": 4 },
+    { "label": "TRANSFER IN", "value": 5 },
+    { "label": "TRANSFER OUT", "value": 6 },
+    { "label": "ADJUSTMENT", "value": 7 }
+  ],
+  "cash_received_status": [
+    { "label": "Pending", "value": 1 },
+    { "label": "Received", "value": 2 }
+  ],
+  "customer_tier": [
+    { "label": "Regular", "value": 1 },
+    { "label": "Wholesale Client", "value": 2 },
+    { "label": "VIP", "value": 3 },
+    { "label": "Staff", "value": 4 },
+    { "label": "Doctor Referral", "value": 5 }
+  ],
+  "gender": [
+    { "label": "Male", "value": 1 },
+    { "label": "Female", "value": 2 },
+    { "label": "Other", "value": 3 }
+  ],
+  "account_type": [
+    { "label": "Cash In Hand", "value": 1 },
+    { "label": "Bank Account", "value": 2 },
+    { "label": "bKash Personal", "value": 3 },
+    { "label": "bKash Merchant", "value": 4 },
+    { "label": "Nagad", "value": 5 },
+    { "label": "Rocket", "value": 6 },
+    { "label": "Card POS Machine", "value": 7 },
+    { "label": "Other", "value": 99 }
+  ],
+  "medicine_type": [
+    { "label": "Tablet", "value": 1 },
+    { "label": "Capsule", "value": 2 },
+    { "label": "Syrup", "value": 3 },
+    { "label": "Suspension", "value": 4 },
+    { "label": "Drop", "value": 5 },
+    { "label": "Injection", "value": 6 },
+    { "label": "Ointment", "value": 7 },
+    { "label": "Gel", "value": 8 },
+    { "label": "Cream", "value": 9 },
+    { "label": "Inhaler", "value": 10 },
+    { "label": "Suppository", "value": 11 },
+    { "label": "Powder", "value": 12 },
+    { "label": "Other", "value": 99 }
+  ],
+  "unit_type": [
+    { "label": "PIECE", "value": 1 },
+    { "label": "STRIP", "value": 2 },
+    { "label": "BOX", "value": 3 },
+    { "label": "BOTTLE", "value": 4 },
+    { "label": "TUBE", "value": 5 },
+    { "label": "VIAL", "value": 6 },
+    { "label": "AMPOULE", "value": 7 },
+    { "label": "PACKET", "value": 8 }
+  ],
+  "paper_type": [
+    { "label": "80mm", "value": 1 },
+    { "label": "58mm", "value": 2 },
+    { "label": "A4", "value": 3 }
+  ],
+  "subscription_status": [
+    { "label": "Trial", "value": 1 },
+    { "label": "Active", "value": 2 },
+    { "label": "Overdue", "value": 3 },
+    { "label": "Suspended", "value": 4 },
+    { "label": "Cancelled", "value": 5 }
+  ],
+  "billing_cycle": [
+    { "label": "Monthly", "value": 1 },
+    { "label": "Yearly", "value": 2 }
+  ]
+}

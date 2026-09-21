@@ -22,8 +22,6 @@ export class Hrm1008Component implements OnInit {
   public model             = inject(Hrm1008ModelService);
   public permissionService = inject(FormPermissionService);
 
-  readonly countries = hrmConstants.countryPacks;
-
   ngOnInit(): void {
     this.model.initForm();
     setTimeout(() => {
@@ -36,10 +34,6 @@ export class Hrm1008Component implements OnInit {
 
   onSave(): void  { this.model.onSave(); }
   onReset(): void { this.model.loadSettings(); }
-
-  onCountryChange(country: string): void {
-    this.model.applyPack(country);
-  }
 
   toggleFlag(control: string, event: MatCheckboxChange): void {
     this.formdata.get(control)?.setValue(event.checked ? 1 : 0);

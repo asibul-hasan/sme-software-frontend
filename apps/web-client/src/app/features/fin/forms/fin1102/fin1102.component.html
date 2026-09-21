@@ -60,21 +60,21 @@
           <div class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
             <div>
               <span class="field-label mb-1 block">Book Balance</span>
-              <div class="font-bold text-end">{{ bookBalance() | number: '1.2-2' }}</div>
+              <div class="font-bold text-end">{{ bookBalance() | appDecimal }}</div>
             </div>
             <div>
               <span class="field-label mb-1 block">Statement Balance</span>
-              <div class="font-bold text-end">{{ (statementBalance || 0) | number: '1.2-2' }}</div>
+              <div class="font-bold text-end">{{ (statementBalance || 0) | appDecimal }}</div>
             </div>
             <div>
               <span class="field-label mb-1 block">Difference</span>
               <div class="font-bold text-end" [class.text-success]="difference() === 0" [class.text-danger]="difference() !== 0">
-                {{ difference() | number: '1.2-2' }}
+                {{ difference() | appDecimal }}
               </div>
             </div>
             <div>
               <span class="field-label mb-1 block">Selected</span>
-              <div class="font-bold text-end">{{ newlyClearedLines().length }} / {{ clearedBalance() | number: '1.2-2' }}</div>
+              <div class="font-bold text-end">{{ newlyClearedLines().length }} / {{ clearedBalance() | appDecimal }}</div>
             </div>
             <div>
               <span class="field-label mb-1 block">Pending</span>

@@ -1,169 +1,189 @@
-<div class="cnt">
-
-  <!-- ── sheets ──────────────────────────────────────────────────────────── -->
-  <aside class="cnt__list">
-    <header class="cnt__list-head">
-      <h2>Count sheets</h2>
-      <button type="button" class="cnt__btn cnt__btn--sm" (click)="model.loadList()">Refresh</button>
-    </header>
-
-    <div class="cnt__new">
-      <select class="cnt__input" [ngModel]="model.newWarehouseNo()"
-              (ngModelChange)="model.newWarehouseNo.set($event)">
-        <option [ngValue]="null">Warehouse…</option>
-        @for (w of model.warehouses(); track w.value) {
-          <option [ngValue]="w.value">{{ w.label }}</option>
-        }
-      </select>
-
-      <select class="cnt__input" [ngModel]="model.newCountType()"
-              (ngModelChange)="model.newCountType.set($event)">
-        @for (t of countTypes; track t.value) {
-          <option [ngValue]="t.value">{{ t.label }}</option>
-        }
-      </select>
-
-      <button type="button" class="cnt__btn cnt__btn--primary"
-              [disabled]="model.isSaving()" (click)="model.start()">
-        Start count
+<app-page-form-layout
+  [title]="'Physical Count'"
+  [subtitle]="'Warehouse stocktake, variance detection, and automated adjustment'"
+  [icon]="'fact_check'"
+  [recordsCount]="model.filtered().length"
+  [sidebarTitle]="'Count Sheets'"
+  [searchTerm]="model.searchTerm()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (new)="model.current.set(null)"
+  [showSave]="false"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div sidebarList>
+    @for (s of model.pager.paged(); track s.count_no) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action"
+        [class.active]="model.current()?.count_no === s.count_no"
+        (click)="model.select(s.count_no)"
+      >
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="s.status === 4"
+          [class.status-dot--inactive]="s.status !== 4"
+          [matTooltip]="model.statusLabel(s.status)"
+        ></span>
+        <h6 class="list-item-title mb-0 truncate">{{ s.count_id }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ s.warehouse_name }} · {{ s.count_date | date: 'dd MMM' }}</p>
+        <div class="list-item-meta">
+          <span class="list-item-tag" [ngClass]="s.status === 4 ? 'list-item-tag--success' : ''">
+            {{ model.statusLabel(s.status) }}
+          </span>
+          <span class="list-item-value">{{ s.line_count }} lines</span>
+        </div>
       </button>
-    </div>
-
-    <ul class="cnt__sheets">
-      @for (s of model.sheets(); track s.count_no) {
-        <li>
-          <button type="button" class="cnt__sheet"
-                  [class.is-active]="model.current()?.count_no === s.count_no"
-                  (click)="model.select(s.count_no)">
-            <span class="cnt__sheet-id">{{ s.count_id }}</span>
-            <span class="cnt__sheet-meta">
-              {{ s.warehouse_name }} · {{ s.count_date | date: 'dd MMM' }}
-            </span>
-            <span class="cnt__pill" [class.is-open]="s.status < 4" [class.is-posted]="s.status === 4">
-              {{ model.statusLabel(s.status) }}
-            </span>
-          </button>
-        </li>
-      } @empty {
-        <li class="cnt__empty">No count sheets yet</li>
-      }
-    </ul>
-  </aside>
-
-  <!-- ── the sheet ───────────────────────────────────────────────────────── -->
-  @if (model.current(); as sheet) {
-    <section class="cnt__main">
-
-      <header class="cnt__head">
-        <div>
-          <h1>{{ sheet.count_id }}</h1>
-          <p class="cnt__sub">
-            {{ sheet.warehouse_name }} · {{ sheet.count_date | date: 'dd MMM yyyy' }}
-            · {{ model.statusLabel(sheet.status) }}
-            @if (sheet.variance_adjustment_no) {
-              · posted as adjustment #{{ sheet.variance_adjustment_no }}
-            }
-          </p>
-        </div>
-
-        <div class="cnt__actions">
-          @if (model.isOpen()) {
-            <button type="button" class="cnt__btn" [disabled]="model.isSaving()"
-                    (click)="model.saveCounts()">Save counts</button>
-            <button type="button" class="cnt__btn cnt__btn--primary" [disabled]="model.isSaving()"
-                    (click)="confirmPost()">Post</button>
-            <button type="button" class="cnt__btn" (click)="model.cancel()">Cancel sheet</button>
-          }
-        </div>
-      </header>
-
-      <!-- variance summary: the number to look at before posting -->
-      <div class="cnt__summary" [class.is-clean]="model.varianceCount() === 0">
-        <div>
-          <span>Lines</span><strong>{{ sheet.line_count }}</strong>
-        </div>
-        <div>
-          <span>With variance</span><strong>{{ model.varianceCount() }}</strong>
-        </div>
-        <div>
-          <span>Variance value</span>
-          <strong [class.is-loss]="model.varianceValue() < 0">
-            {{ model.varianceValue() | number: '1.2-2' }}
-          </strong>
-        </div>
-        <label class="cnt__toggle">
-          <input type="checkbox" [ngModel]="model.onlyVariances()"
-                 (ngModelChange)="model.onlyVariances.set($event)" />
-          Show only variances
-        </label>
+    }
+    @if (model.filtered().length === 0) {
+      <div class="list-empty-state">
+        <mat-icon>fact_check</mat-icon>
+        <p>No count sheets found</p>
       </div>
+    }
+  </div>
 
-      @if (model.varianceCount() > 0 && model.isOpen()) {
-        <p class="cnt__warn">
-          Posting writes these differences to stock as a Count adjustment. Check them before you post —
-          it is reversible, but it moves real inventory.
+  <div formContent class="h-full flex flex-col gap-3">
+    @if (!model.current()) {
+      <!-- Start New Count Sheet Form -->
+      <div class="card p-6 flex flex-col gap-4">
+        <div class="flex items-center gap-2 border-b pb-3">
+          <mat-icon class="text-primary">add_circle</mat-icon>
+          <h4 class="mb-0 font-bold">Start New Physical Count Sheet</h4>
+        </div>
+        <p class="text-muted text-sm mb-2">
+          Opening a sheet creates an instant system quantity snapshot for the selected warehouse.
         </p>
-      }
-
-      <div class="cnt__table-wrap">
-        <table class="cnt__table">
-          <thead>
-            <tr>
-              <th class="w-10">#</th>
-              <th>Item</th>
-              <th>Batch</th>
-              <th class="num">System</th>
-              <th class="num">Counted</th>
-              <th class="num">Variance</th>
-              <th class="num">Value</th>
-              <th>Note</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (l of model.visibleLines(); track l.count_dtl_no) {
-              <tr [class.has-variance]="l.counted_qty !== l.system_qty">
-                <td>{{ l.line_no }}</td>
-                <td>{{ l.product_name }}</td>
-                <td>{{ l.batch_code }}</td>
-                <td class="num">{{ l.system_qty | number: '1.0-3' }}</td>
-                <td class="num">
-                  @if (model.isOpen()) {
-                    <input type="number" class="cnt__qty" [ngModel]="l.counted_qty"
-                           (ngModelChange)="model.setCounted(l.count_dtl_no, $event)" min="0" />
-                  } @else {
-                    {{ l.counted_qty | number: '1.0-3' }}
-                  }
-                </td>
-                <td class="num" [class.is-loss]="(l.counted_qty - l.system_qty) < 0">
-                  {{ (l.counted_qty - l.system_qty) | number: '1.0-3' }}
-                </td>
-                <td class="num">
-                  {{ ((l.counted_qty - l.system_qty) * l.unit_cost) | number: '1.2-2' }}
-                </td>
-                <td>
-                  @if (model.isOpen()) {
-                    <input type="text" class="cnt__note" [ngModel]="l.remarks"
-                           (ngModelChange)="model.setRemarks(l.count_dtl_no, $event)"
-                           placeholder="reason" />
-                  } @else {
-                    {{ l.remarks }}
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="cnt__empty">
-                  {{ model.onlyVariances() ? 'No variances — the count matches the system' : 'No lines' }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <div class="md:col-span-4">
+            <label class="field-label required">Warehouse</label>
+            <ng-select
+              [items]="model.warehouses()"
+              bindValue="value"
+              bindLabel="label"
+              [clearable]="false"
+              placeholder="Select warehouse"
+              [ngModel]="model.newWarehouseNo()"
+              (ngModelChange)="model.newWarehouseNo.set($event)"
+            ></ng-select>
+          </div>
+          <div class="md:col-span-4">
+            <label class="field-label required">Count Type</label>
+            <ng-select
+              [items]="countTypes"
+              bindValue="value"
+              bindLabel="label"
+              [clearable]="false"
+              [ngModel]="model.newCountType()"
+              (ngModelChange)="model.newCountType.set($event)"
+            ></ng-select>
+          </div>
+          <div class="md:col-span-4 flex items-end">
+            <button
+              type="button"
+              class="btn-action btn-save w-full justify-center"
+              [disabled]="model.isSaving() || !model.newWarehouseNo()"
+              (click)="model.start()"
+            >
+              <mat-icon>play_arrow</mat-icon>
+              <span>Initialize Count Sheet</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </section>
-  } @else {
-    <section class="cnt__main cnt__placeholder">
-      <p>Pick a warehouse and start a count, or select an existing sheet.</p>
-    </section>
-  }
-</div>
+    } @else {
+      @if (model.current(); as sheet) {
+        <!-- Header summary & actions -->
+        <app-form-section
+          [title]="sheet.count_id + ' · ' + sheet.warehouse_name"
+          icon="fact_check"
+        >
+          <div sectionActions class="flex gap-2">
+            @if (model.isOpen()) {
+              <button
+                type="button"
+                class="btn-action"
+                [disabled]="model.isSaving()"
+                (click)="model.saveCounts()"
+              >
+                <mat-icon>save</mat-icon>
+                <span>Save Counts</span>
+              </button>
+              <button
+                type="button"
+                class="btn-action btn-save"
+                [disabled]="model.isSaving()"
+                (click)="confirmPost()"
+              >
+                <mat-icon>check_circle</mat-icon>
+                <span>Post Count</span>
+              </button>
+              <button
+                type="button"
+                class="btn-action btn-delete"
+                [disabled]="model.isSaving()"
+                (click)="cancelSheet()"
+              >
+                <mat-icon>cancel</mat-icon>
+                <span>Cancel Sheet</span>
+              </button>
+            }
+          </div>
+
+          <div class="col-span-12 flex flex-wrap items-center justify-between gap-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+            <div class="flex items-center gap-6">
+              <div>
+                <span class="field-label mb-0">Status</span>
+                <div class="font-bold">{{ model.statusLabel(sheet.status) }}</div>
+              </div>
+              <div>
+                <span class="field-label mb-0">Count Date</span>
+                <div class="font-semibold">{{ sheet.count_date | date: 'dd MMM yyyy' }}</div>
+              </div>
+              <div>
+                <span class="field-label mb-0">Total Lines</span>
+                <div class="font-semibold">{{ sheet.line_count }}</div>
+              </div>
+              <div>
+                <span class="field-label mb-0">Lines w/ Variance</span>
+                <div class="font-bold text-amber-600">{{ model.varianceCount() }}</div>
+              </div>
+              <div>
+                <span class="field-label mb-0">Net Variance Value</span>
+                <div class="font-bold" [class.text-danger]="model.varianceValue() < 0" [class.text-emerald-600]="model.varianceValue() > 0">
+                  {{ model.varianceValue() | appDecimal }}
+                </div>
+              </div>
+            </div>
+
+            <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="model.onlyVariances()"
+                (ngModelChange)="model.onlyVariances.set($event)"
+              />
+              Show only variances
+            </label>
+          </div>
+        </app-form-section>
+
+        <!-- Count lines AG Grid -->
+        <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 420px">
+          <div class="card-body p-0 flex-1 min-h-0">
+            <app-erp-grid
+              [config]="gridConfig"
+              [data]="model.visibleLines()"
+              height="100%"
+              (rowChange)="model.onLineChange($event)"
+            ></app-erp-grid>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>
+</app-page-form-layout>

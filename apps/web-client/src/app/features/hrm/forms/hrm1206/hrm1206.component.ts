@@ -15,12 +15,13 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { hrmConstants } from '../../constants/hrm.constants';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hrm1206',
   standalone: true,
-  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, ReactiveFormsModule, FormsModule, SharedModule, PageFormLayoutComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Hrm1206ModelService, Hrm1206DataService],
   templateUrl: './hrm1206.component.html',
   styles: [`:host { display: block; height: 100%; }`],

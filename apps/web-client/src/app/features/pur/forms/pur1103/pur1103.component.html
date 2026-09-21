@@ -58,9 +58,9 @@
       <div class="card-header d-flex align-items-center">
         <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list_alt</mat-icon> Lines</h4>
         <div class="ms-auto d-flex align-items-center gap-4">
-          <div class="text-end"><span class="field-label mb-0">Sub-total</span><div class="fw-bold">{{ subTotal() | number: '1.2-2' }}</div></div>
-          <div class="text-end"><span class="field-label mb-0">Tax</span><div class="fw-bold">{{ taxTotal() | number: '1.2-2' }}</div></div>
-          <div class="text-end"><span class="field-label mb-0">Grand Total</span><div class="fw-bold text-primary">{{ grandTotal() | number: '1.2-2' }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Sub-total</span><div class="fw-bold">{{ subTotal() | appDecimal }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Tax</span><div class="fw-bold">{{ taxTotal() | appDecimal }}</div></div>
+          <div class="text-end"><span class="field-label mb-0">Grand Total</span><div class="fw-bold text-primary">{{ grandTotal() | appDecimal }}</div></div>
         </div>
       </div>
       <div class="card-body p-0" style="flex:1 1 auto; min-height:0">

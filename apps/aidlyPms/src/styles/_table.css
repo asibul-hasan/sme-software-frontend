@@ -1,0 +1,353 @@
+/* ─────────────────────────────────────────────────────────────────
+   CLINICAL EMERALD & SLATE TABLE ARCHITECTURE (Industry Standard)
+   Designed for High-Speed Medical & Pharmacy POS Systems
+   - Eliminates harsh vertical gridlines in favor of clean horizontal lines
+   - Gentle Nordic zebra striping prevents eye fatigue during long shifts
+   - Crisp frozen boundary dividers for pinned columns
+   - Tabular figures and high-contrast clinical typography
+   ───────────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────────
+   1. FULL HEIGHT TABLE & BOTTOM-PINNED HORIZONTAL SCROLLBAR
+   Ensures app-data-table body expands to fill remaining view height,
+   anchoring the horizontal scrollbar directly above the table footer.
+   ───────────────────────────────────────────────────────────────── */
+app-data-table {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+app-data-table nz-table,
+app-data-table .ant-table-wrapper,
+app-data-table .ant-spin-nested-loading,
+app-data-table .ant-spin-container,
+app-data-table .ant-table,
+app-data-table .ant-table-container {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+app-data-table .ant-table-content {
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  background-color: #ffffff !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   2. CORE TABLE ARCHITECTURE (Single Source for ALL Tables)
+   Separate border-collapse keeps sticky cells intact without bleeding
+   ───────────────────────────────────────────────────────────────── */
+table,
+.ant-table,
+.ant-table-content > table,
+app-data-table table,
+nz-table table,
+.pms-card table {
+  min-width: 100% !important;
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background-color: #ffffff !important;
+}
+
+/* Sticky Table Header and Footer Utilities */
+.table-sticky-header th,
+thead.sticky th,
+thead.table-sticky th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  background-color: #f8fafc !important;
+}
+
+.table-sticky-footer,
+tfoot.sticky,
+div.table-sticky-footer {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+  background-color: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   3. TABLE HEADERS (Quiet, Crisp Slate-50 Header)
+   Subtle 11px uppercase labels with horizontal line, no vertical noise
+   ───────────────────────────────────────────────────────────────── */
+thead > tr > th,
+.ant-table-thead > tr > th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  vertical-align: middle !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   4. TABLE CELLS & CLEAN HORIZONTAL DIVIDERS
+   Soft #f1f5f9 row borders reduce cognitive strain; no harsh column lines
+   ───────────────────────────────────────────────────────────────── */
+/* Zero-out NG-ZORRO measurement row so it never renders as an empty ghost row */
+tr.ant-table-measure-row,
+.ant-table-measure-row,
+.ant-table-tbody > tr.ant-table-measure-row {
+  visibility: collapse !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+tr.ant-table-measure-row > td,
+.ant-table-measure-row > td,
+.ant-table-tbody > tr.ant-table-measure-row > td {
+  padding: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  border: none !important;
+  border-bottom: none !important;
+  background: transparent !important;
+}
+
+/* Data cells: strictly target non-measure rows */
+tbody > tr:not(.ant-table-measure-row) > td,
+.ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  vertical-align: middle !important;
+  line-height: 1.45 !important;
+  color: #1e293b !important;
+}
+
+/* Tabular Numerals for Clinical & Financial Precision */
+.tabular-nums,
+.font-mono,
+td[nzAlign="right"],
+th[nzAlign="right"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   5. PINNED / FROZEN COLUMNS (Clinical Freeze Dividers)
+   Vertical boundary lines are ONLY placed where columns are frozen!
+   ───────────────────────────────────────────────────────────────── */
+.ant-table-cell-fix-left-last {
+  border-right: 1.5px solid #cbd5e1 !important;
+}
+
+.ant-table-cell-fix-right-first {
+  border-left: 1.5px solid #cbd5e1 !important;
+}
+
+/* Eliminate blurry pseudo-element box-shadows */
+.ant-table-cell-fix-left-last::after,
+.ant-table-cell-fix-right-first::after {
+  display: none !important;
+  box-shadow: none !important;
+  content: none !important;
+}
+
+/* Sticky Header Pinned Cells: Highest Z-Index (40), Solid Slate-50 */
+.ant-table-thead > tr > th.ant-table-cell-fix-left,
+.ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background-color: #f8fafc !important;
+  z-index: 40 !important;
+}
+
+/* Sticky Body Pinned Cells: High Z-Index (20) so scrolling cells slide beneath */
+.ant-table-tbody > tr > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  z-index: 20 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   6. ROW COLORS & GENTLE NORDIC ZEBRA STRIPING
+   Header is #f8fafc -> Row 1 is #ffffff -> Row 2 is #fbfcfd
+   Eliminates the "jailbar" effect while keeping rows easy to follow
+   ───────────────────────────────────────────────────────────────── */
+
+/* 1st, 3rd, 5th Rows (Odd indices / row-odd) -> Pure White */
+tbody > tr:not(.ant-table-measure-row):nth-child(odd) > td,
+tbody > tr.row-odd > td,
+.ant-table-tbody > tr.row-odd > td,
+.ant-table-tbody > tr.row-odd > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.row-odd > td.ant-table-cell-fix-right {
+  background-color: #ffffff !important;
+}
+
+/* 2nd, 4th, 6th Rows (Even indices / row-even) -> Soft 1.5% Tint */
+tbody > tr:not(.ant-table-measure-row):nth-child(even) > td,
+tbody > tr.row-even > td,
+.ant-table-tbody > tr.row-even > td,
+.ant-table-tbody > tr.row-even > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.row-even > td.ant-table-cell-fix-right {
+  background-color: #fbfcfd !important;
+}
+
+/* Row Hover State: Synchronized across entire row including pinned cells */
+tbody > tr:not(.ant-table-measure-row):hover > td,
+.ant-table-tbody > tr:not(.ant-table-measure-row):hover > td,
+.ant-table-tbody > tr.row-odd:hover > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.row-odd:hover > td.ant-table-cell-fix-right,
+.ant-table-tbody > tr.row-even:hover > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.row-even:hover > td.ant-table-cell-fix-right {
+  background-color: #f1f5f9 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   7. CLINICAL STATUS BADGES & PHARMACY CHIPS
+   ───────────────────────────────────────────────────────────────── */
+.pms-badge-stock-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.pms-badge-stock-low {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.pms-badge-stock-out {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #fff1f2;
+  color: #be123c;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.pms-badge-rak {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.pms-badge-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   8. SINGLE-SOURCE CARD ARCHITECTURE & CARD TABLES
+   Whenever a card or card-table is used across the software,
+   it inherits this exact unified styling.
+   ───────────────────────────────────────────────────────────────── */
+.pms-card,
+.table-card,
+.card {
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+  overflow: hidden !important;
+}
+
+.pms-card-header,
+.card-header {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  background-color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.pms-card-title,
+.card-title {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Seamless fit for tables inside cards (no double border) */
+.pms-card nz-table,
+.pms-card .ant-table-wrapper,
+.pms-card .ant-table,
+.table-card nz-table,
+.table-card .ant-table {
+  background-color: #ffffff !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   9. PAGINATION STYLING
+   ───────────────────────────────────────────────────────────────── */
+.ant-pagination-item-active {
+  border-color: var(--primary) !important;
+}
+
+.ant-pagination-item-active a {
+  color: var(--primary) !important;
+}

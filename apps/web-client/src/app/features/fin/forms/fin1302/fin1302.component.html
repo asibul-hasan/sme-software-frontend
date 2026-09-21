@@ -22,8 +22,8 @@
             <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" /></div>
           @if (result(); as r) {
             <div class="ml-auto flex items-center gap-4">
-              <div class="text-end"><span class="field-label mb-0 block">Opening</span><div class="font-semibold">{{ r.opening_balance | number: '1.2-2' }}</div></div>
-              <div class="text-end"><span class="field-label mb-0 block">Closing</span><div class="font-bold" [class.text-success]="r.closing_balance >= 0" [class.text-danger]="r.closing_balance < 0">{{ r.closing_balance | number: '1.2-2' }}</div></div>
+              <div class="text-end"><span class="field-label mb-0 block">Opening</span><div class="font-semibold">{{ r.opening_balance | appDecimal }}</div></div>
+              <div class="text-end"><span class="field-label mb-0 block">Closing</span><div class="font-bold" [class.text-success]="r.closing_balance >= 0" [class.text-danger]="r.closing_balance < 0">{{ r.closing_balance | appDecimal }}</div></div>
             </div>
           }
         </div>

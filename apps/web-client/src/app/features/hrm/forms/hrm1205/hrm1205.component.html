@@ -144,7 +144,7 @@
                 <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Calculation</span><span class="fw-semibold">{{ calculationTypeLabel(cur.calculation_type) || '—' }}</span></div>
                 <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Scope</span><span class="fw-semibold">{{ applicabilityLabel(cur.applicability_type) || '—' }}</span></div>
                 <div class="d-flex justify-content-between mb-1"><span class="field-label mb-0">Employees</span><span class="fw-semibold">{{ cur.employee_count || 0 }}</span></div>
-                <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom:1px solid var(--border-color)"><span class="field-label mb-0">Total Amount</span><span class="fw-bold" style="color:var(--success)">{{ (cur.total_amount || 0) | number: '1.2-2' }}</span></div>
+                <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom:1px solid var(--border-color)"><span class="field-label mb-0">Total Amount</span><span class="fw-bold" style="color:var(--success)">{{ (cur.total_amount || 0) | appDecimal }}</span></div>
               }
 
               <div class="d-flex flex-wrap gap-1">

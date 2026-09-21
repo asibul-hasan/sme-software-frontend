@@ -46,6 +46,10 @@ export interface TreeViewConfig {
   autoExpandRoots?: boolean;
   /** Show the slim toolbar (expand-all / collapse-all / count). Default true. */
   showToolbar?: boolean;
+  /** Embed search input inside the toolbar. Default false. */
+  showSearch?: boolean;
+  /** Placeholder for embedded search input. Default 'Search...'. */
+  searchPlaceholder?: string;
 
   /** Empty-state text + icon. */
   emptyText?: string;
@@ -76,12 +80,14 @@ export interface FlatTreeNode {
 }
 
 export const DEFAULT_TREE_CONFIG: Required<
-  Pick<TreeViewConfig, 'indent' | 'showConnectors' | 'autoExpandRoots' | 'showToolbar' | 'emptyText' | 'emptyIcon'>
+  Pick<TreeViewConfig, 'indent' | 'showConnectors' | 'autoExpandRoots' | 'showToolbar' | 'showSearch' | 'searchPlaceholder' | 'emptyText' | 'emptyIcon'>
 > = {
-  indent: 22,
+  indent: 14,
   showConnectors: true,
   autoExpandRoots: true,
   showToolbar: true,
+  showSearch: false,
+  searchPlaceholder: 'Search...',
   emptyText: 'No records found',
   emptyIcon: 'account_tree',
 };

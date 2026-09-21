@@ -1,0 +1,17 @@
+@layer theme, base, vendor, components, utilities;
+
+@import 'ng-zorro-antd/ng-zorro-antd.min.css' layer(vendor);
+@import 'tailwindcss';
+
+
+/* ─────────────────────────────────────────────────────────────────
+   AIDLY PMS MODULAR ARCHITECTURE
+   Controlled from single root entrypoint with domain-isolated partials
+   ───────────────────────────────────────────────────────────────── */
+@import './styles/_variables.css';
+@import './styles/_buttons.css';
+@import './styles/_form.css';
+@import './styles/_table.css';
+@import './styles/_header.css';
+@import './styles/_sidebar.css';
+@import './styles/_modal.css';

@@ -1,0 +1,45 @@
+/* ─────────────────────────────────────────────────────────────────
+   SIDEBAR & NAVIGATION ARCHITECTURE (Aidly ERP Parity)
+   ───────────────────────────────────────────────────────────────── */
+
+.ant-menu-dark {
+  background: var(--sidebar) !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: var(--sidebar-active-bg) !important;
+  color: #a78bfa !important;
+}
+
+.ant-menu-dark .ant-menu-submenu-title:hover,
+.ant-menu-dark .ant-menu-item:hover {
+  background-color: var(--sidebar-hover) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-container {
+  background-color: var(--sidebar);
+  color: var(--header-text);
+  transition: width 0.2s ease-in-out;
+}
+
+.sb-module-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+
+.sb-module-btn:hover {
+  background-color: var(--sidebar-hover);
+  color: #ffffff;
+}
+
+.sb-module-btn.active {
+  background-color: var(--sidebar-active-bg);
+  color: #a78bfa;
+}

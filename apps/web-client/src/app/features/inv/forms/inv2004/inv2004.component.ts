@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
 import { CommonLookupService, LookupOption } from '../../../../core/services/common-lookup.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { isSuccess } from '../../../../core/models/response.model';
@@ -16,9 +18,10 @@ import { invConstants } from '../../constants/inv.constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv2004',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, CommonTableComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Inv2004DataService],
   templateUrl: './inv2004.component.html',
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Inv2004Component implements OnInit {
   public permissionService = inject(FormPermissionService);
@@ -42,31 +45,67 @@ export class Inv2004Component implements OnInit {
   nearCount = computed(() => this.rows().filter((r) => r.expiry_status === 'near_expiry').length);
   onHand = computed(() => this.rows().reduce((s, r) => s + (Number(r.qty_on_hand) || 0), 0));
   value = computed(() => this.rows().reduce((s, r) => s + (Number(r.stock_value) || 0), 0));
-  tableData = computed(() => this.rows() as unknown as Record<string, unknown>[]);
 
-  readonly columns: ColumnDef[] = [
-    { title: 'Product', field: 'product_name', cellType: 'text', width: '240px', pin: 'left' },
-    { title: 'Batch', field: 'batch_code', cellType: 'text', width: '140px' },
-    { title: 'Warehouse', field: 'warehouse_name', cellType: 'text', width: '160px' },
-    { title: 'Expiry', field: 'expiry_date', cellType: 'date', width: '120px' },
-    { title: 'Days', field: 'days_to_expiry', cellType: 'number', align: 'right', width: '80px' },
-    { title: 'Status', field: 'expiry_status', cellType: 'badge', width: '120px', badgeConfig: (v) => this.badge(String(v)) },
-    { title: 'On Hand', field: 'qty_on_hand', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-    { title: 'Available', field: 'qty_available', cellType: 'decimal', align: 'right', precision: 2 },
-    { title: 'Avg Cost', field: 'received_cost', cellType: 'decimal', align: 'right', precision: 4 },
-    { title: 'Value', field: 'stock_value', cellType: 'decimal', align: 'right', precision: 2, bottomTotal: true },
-  ];
-
-  readonly config: Partial<TableConfig> = {
-    showSearch: true,
-    pagination: true,
-    defaultPageSize: 25,
-    dense: true,
-    striped: true,
-    showColumnToggle: true,
-    showExport: true,
-    showTitle: false,
-    maxHeight: '100%',
+  readonly gridConfig: GridConfig<BatchExpiryRow> = {
+    gridKey: 'INV_2004_BATCH_EXPIRY_GRID',
+    rowIdField: 'batch_no' as any,
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: false,
+    showPagination: true,
+    pageSize: 50,
+    toolbar: {
+      title: 'Batch Stock',
+      showAdd: false,
+      showDelete: false,
+      showSearch: true,
+      showExport: true,
+      searchPlaceholder: 'Search batches...',
+    },
+    columns: [
+      GridColumns.text<BatchExpiryRow>('product_name', 'Product')
+        .pinned('left')
+        .minWidth(220)
+        .flex(1)
+        .build(),
+      GridColumns.text<BatchExpiryRow>('batch_code', 'Batch')
+        .width(140)
+        .build(),
+      GridColumns.text<BatchExpiryRow>('warehouse_name', 'Warehouse')
+        .width(160)
+        .build(),
+      GridColumns.date<BatchExpiryRow>('expiry_date', 'Expiry')
+        .width(120)
+        .build(),
+      GridColumns.number<BatchExpiryRow>('days_to_expiry', 'Days')
+        .width(90)
+        .build(),
+      GridColumns.text<BatchExpiryRow>('expiry_status', 'Status')
+        .valueFormatter((val) => {
+          if (val === 'expired') return 'Expired';
+          if (val === 'near_expiry') return 'Near Expiry';
+          if (val === 'ok') return 'OK';
+          return 'No Expiry';
+        })
+        .width(130)
+        .build(),
+      GridColumns.decimal<BatchExpiryRow>('qty_on_hand', 'On Hand')
+        .width(120)
+        .sum()
+        .footer('Total On Hand')
+        .build(),
+      GridColumns.decimal<BatchExpiryRow>('qty_available', 'Available')
+        .width(120)
+        .build(),
+      GridColumns.decimal<BatchExpiryRow>('received_cost', 'Avg Cost')
+        .width(120)
+        .build(),
+      GridColumns.decimal<BatchExpiryRow>('stock_value', 'Value')
+        .width(140)
+        .sum()
+        .footer('Total Value')
+        .build(),
+    ],
   };
 
   ngOnInit(): void {
@@ -84,12 +123,5 @@ export class Inv2004Component implements OnInit {
         next: (res) => { if (isSuccess(res) && res.data) this.rows.set(res.data); },
         error: (e) => this.toastr.error(e?.error?.message ?? 'Failed to load batches'),
       });
-  }
-
-  private badge(v: string): { label: string; variant: 'success' | 'warning' | 'danger' | 'neutral' } {
-    if (v === 'expired') return { label: 'Expired', variant: 'danger' };
-    if (v === 'near_expiry') return { label: 'Near Expiry', variant: 'warning' };
-    if (v === 'ok') return { label: 'OK', variant: 'success' };
-    return { label: 'No Expiry', variant: 'neutral' };
   }
 }

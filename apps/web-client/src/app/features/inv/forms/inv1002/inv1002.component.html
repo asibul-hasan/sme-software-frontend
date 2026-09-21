@@ -1,101 +1,138 @@
-<div class="p-3">
-  <!-- Header + product selector -->
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0 fw-bold">
-      <mat-icon class="me-2 align-middle">qr_code_2</mat-icon>
-      Barcode Generator
-    </h4>
-    <div class="d-flex align-items-center gap-2">
-      <div style="min-width: 320px">
-        <ng-select
-          [items]="model.products()"
-          bindValue="value"
-          bindLabel="label"
-          [clearable]="false"
-          placeholder="Select product"
-          [ngModel]="model.selectedProductNo()"
-          (ngModelChange)="model.selectProduct($event)"
-        ></ng-select>
+<app-page-form-layout
+  [title]="'Barcode Generator'"
+  [subtitle]="'Product barcode registration and label generation'"
+  [icon]="'qr_code_2'"
+  [hasSidebar]="false"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  (delete)="onDelete()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="permissionService.canDelete() && !!model.selectedBarcodeNo()"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-full flex flex-col gap-3">
+    <!-- Top toolbar: Product selector & Print -->
+    <div class="card p-3 flex flex-row items-center justify-between gap-4 flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <mat-icon class="text-muted">inventory_2</mat-icon>
+          <span class="font-semibold text-sm">Target Product:</span>
+        </div>
+        <div style="width: 360px">
+          <ng-select
+            [items]="model.products()"
+            bindValue="value"
+            bindLabel="label"
+            [clearable]="false"
+            placeholder="Select product"
+            [ngModel]="model.selectedProductNo()"
+            (ngModelChange)="model.selectProduct($event)"
+          ></ng-select>
+        </div>
       </div>
+
       @if (model.barcodes().length > 0) {
-        <button type="button" class="btn btn-outline-secondary" (click)="model.printLabels()" title="Print labels">
-          <mat-icon style="font-size: 18px; height: 18px; width: 18px">print</mat-icon>
+        <button type="button" class="btn-action" (click)="model.printLabels()" title="Print labels">
+          <mat-icon>print</mat-icon>
+          <span>Print Labels</span>
         </button>
       }
     </div>
-  </div>
 
-  @if (!model.selectedProductNo()) {
-    <div class="p-4 text-center opacity-75">Select a product to manage its barcodes.</div>
-  } @else {
-    <div class="row row-group">
-      <!-- Barcode list -->
-      <div class="col-lg-7">
-        <app-common-table
-          [columns]="columns"
-          [data]="rows()"
-          [config]="tableConfig"
-          [loading]="model.isLoading()"
-          [tableId]="'inv1002-barcodes'"
-          (rowClick)="onRowClick($event)"
-        ></app-common-table>
+    @if (!model.selectedProductNo()) {
+      <div class="card p-8 text-center opacity-75">
+        <mat-icon class="text-4xl text-muted mb-2">qr_code_2</mat-icon>
+        <p>Please select a product to manage and generate its barcodes.</p>
       </div>
-
-      <!-- Barcode form -->
-      <div class="col-lg-5">
-        <div class="form-section-card card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-header__title mb-0 fw-bold">{{ model.selectedBarcodeNo() ? 'Edit' : 'New' }} Barcode</h4>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="model.newBarcode()">New</button>
-          </div>
-          <div class="card-body">
-            <form [formGroup]="model.form" autocomplete="off">
-              <div class="row row-group">
-                <div class="col-12">
-                  <div class="field-group">
-                    <label class="field-label required" for="barcode">Barcode</label>
-                    <div class="input-group">
-                      <input type="text" id="barcode" formControlName="barcode" class="form-control" placeholder="Scan or generate" />
-                      <button type="button" class="btn btn-outline-primary" (click)="model.generateCode()" title="Generate EAN-13">
-                        <mat-icon style="font-size:18px;height:18px;width:18px">auto_fix_high</mat-icon>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-7"><div class="field-group"><label class="field-label required" for="uom_no">UOM</label>
-                  <ng-select id="uom_no" labelForId="uom_no" formControlName="uom_no" [clearable]="false" placeholder="UOM">
-                    @for (u of model.uoms(); track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                  </ng-select></div></div>
-                <div class="col-5"><div class="field-group"><label class="field-label required" for="pack_qty">Pack Qty</label><input type="number" id="pack_qty" formControlName="pack_qty" class="form-control" step="0.0001" /></div></div>
-                <div class="col-7"><div class="field-group"><label class="field-label" for="barcode_type">Type</label>
-                  <ng-select id="barcode_type" labelForId="barcode_type" formControlName="barcode_type" [clearable]="false">
-                    @for (t of model.barcodeTypes; track t.value) { <ng-option [value]="t.value">{{ t.label }}</ng-option> }
-                  </ng-select></div></div>
-                <div class="col-5"><div class="field-group"><label class="field-label" for="is_primary">Primary</label>
-                  <ng-select id="is_primary" labelForId="is_primary" formControlName="is_primary" [clearable]="false"><ng-option [value]="1">Yes</ng-option><ng-option [value]="0">No</ng-option></ng-select></div></div>
-              </div>
-            </form>
-            @if (permissionService.canInsert() || permissionService.canUpdate()) {
-              <button type="button" class="btn btn-primary mt-2" (click)="model.onSave()" [disabled]="model.isSaving()">
-                <mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">save</mat-icon> Save
-              </button>
-            }
+    } @else {
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">
+        <!-- Left: Barcodes AG Grid -->
+        <div class="lg:col-span-7 h-full flex flex-col min-h-[400px]">
+          <div class="card flex-1 min-h-0 flex flex-col">
+            <div class="card-body p-0 flex-1 min-h-0">
+              <app-erp-grid
+                [config]="gridConfig"
+                [data]="model.barcodes()"
+                [selectedId]="model.selectedBarcodeNo()"
+                height="100%"
+                (rowClick)="onRowSelected($event)"
+                (rowRemove)="onRowRemove($event)"
+              ></app-erp-grid>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Printable labels (visible on print) -->
-    <div class="d-print-block" style="display: none">
-      <div class="d-flex flex-wrap gap-3 pt-3">
-        @for (b of model.barcodes(); track b.barcode_no) {
-          <div class="border rounded text-center p-2" style="width: 200px">
-            <div class="small fw-semibold text-truncate">{{ b.product_name }}</div>
-            <div class="fw-bold" style="font-family: monospace; letter-spacing: 2px">{{ b.barcode }}</div>
-            <div class="small opacity-75">{{ b.uom_name }} · x{{ b.pack_qty }}</div>
-          </div>
-        }
+        <!-- Right: Barcode details form -->
+        <div class="lg:col-span-5 flex flex-col">
+          <form [formGroup]="model.form" autocomplete="off" class="h-full">
+            <app-form-section
+              [title]="model.selectedBarcodeNo() ? 'Edit Barcode' : 'New Barcode'"
+              icon="qr_code_2"
+            >
+              <div class="col-span-12">
+                <app-form-field label="Barcode" for="barcode" required [span]="12">
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      id="barcode"
+                      formControlName="barcode"
+                      class="form-control flex-1 font-mono uppercase"
+                      placeholder="Scan or generate"
+                    />
+                    <button
+                      type="button"
+                      class="btn-action"
+                      (click)="model.generateCode()"
+                      title="Generate EAN-13"
+                    >
+                      <mat-icon>auto_fix_high</mat-icon>
+                      <span>Generate</span>
+                    </button>
+                  </div>
+                </app-form-field>
+              </div>
+
+              <app-form-field label="UOM" for="uom_no" required [span]="7">
+                <ng-select
+                  id="uom_no"
+                  formControlName="uom_no"
+                  [clearable]="false"
+                  placeholder="Select UOM"
+                >
+                  @for (u of model.uoms(); track u.value) {
+                    <ng-option [value]="u.value">{{ u.label }}</ng-option>
+                  }
+                </ng-select>
+              </app-form-field>
+
+              <app-form-field label="Pack Qty" for="pack_qty" required [span]="5">
+                <input
+                  type="number"
+                  id="pack_qty"
+                  formControlName="pack_qty"
+                  class="form-control text-right"
+                  step="0.0001"
+                />
+              </app-form-field>
+
+              <app-form-field label="Barcode Type" for="barcode_type" [span]="7">
+                <ng-select id="barcode_type" formControlName="barcode_type" [clearable]="false">
+                  @for (t of model.barcodeTypes; track t.value) {
+                    <ng-option [value]="t.value">{{ t.label }}</ng-option>
+                  }
+                </ng-select>
+              </app-form-field>
+
+              <app-check-field label="Primary" text="Primary Barcode" [span]="5" formControlName="is_primary" />
+
+              <app-check-field label="Status" text="Active" [span]="12" formControlName="is_active" />
+            </app-form-section>
+          </form>
+        </div>
       </div>
-    </div>
-  }
-</div>
+    }
+  </div>
+</app-page-form-layout>

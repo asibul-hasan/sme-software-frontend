@@ -1,9 +1,12 @@
 import {
-  Component, ChangeDetectionStrategy, OnInit, TemplateRef, computed, inject, viewChild,
+  Component, ChangeDetectionStrategy, OnInit, inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../shared';
-import { CommonTableComponent, ColumnDef, TableConfig } from '../../../../shared/components/common-table';
+import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { ErpGridComponent } from '../../../../shared/ag-grid/components/erp-grid.component';
+import { GridConfig } from '../../../../shared/ag-grid/models/grid-config.model';
+import { GridColumns } from '../../../../shared/ag-grid/utils/column-builder';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { IReorder, Inv2005ModelService } from './services/model.service';
 import { Inv2005DataService } from './services/data.service';
@@ -13,64 +16,64 @@ import { Inv2005DataService } from './services/data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-inv2005',
   standalone: true,
-  imports: [SharedModule, CommonModule, CommonTableComponent],
+  imports: [SharedModule, CommonModule, PageFormLayoutComponent, ErpGridComponent],
   providers: [Inv2005ModelService, Inv2005DataService],
   templateUrl: './inv2005.component.html',
-  styles: [],
+  styles: [`:host { display: block; height: 100%; }`],
 })
 export class Inv2005Component implements OnInit {
   public model = inject(Inv2005ModelService);
   public permissionService = inject(FormPermissionService);
 
-  private productTpl = viewChild<TemplateRef<unknown>>('productTpl');
-  private numberTpl = viewChild<TemplateRef<unknown>>('numberTpl');
-  private removeTpl = viewChild<TemplateRef<unknown>>('removeTpl');
-
-  readonly rows = computed(() => this.model.rows() as unknown as Record<string, unknown>[]);
-
-  readonly columns = computed<ColumnDef[]>(() => [
-    {
-      title: 'Product',
-      field: 'product_no',
-      cellType: 'custom-template',
-      customTemplate: this.productTpl(),
-      value: (row) => this.productLabel(row),
-      minWidth: '260px',
-      pin: 'left',
-      hideable: false,
-      sort: true,
+  readonly gridConfig: GridConfig<IReorder> = {
+    gridKey: 'INV_2005_REORDER_POLICY_GRID',
+    rowIdField: '__uid',
+    height: '100%',
+    selectionMode: 'none',
+    externalRowState: true,
+    showPagination: true,
+    pageSize: 50,
+    canAdd: () => this.permissionService.canInsert() || this.permissionService.canUpdate(),
+    canEdit: () => this.permissionService.canUpdate() || this.permissionService.canInsert(),
+    canDeleteRow: () => this.permissionService.canDelete() || this.permissionService.canUpdate(),
+    toolbar: {
+      title: 'Reorder Rules',
+      showAdd: true,
+      showDelete: false,
+      showSearch: true,
+      showExport: true,
+      searchPlaceholder: 'Search rules...',
     },
-    this.numberColumn('Reorder Level', 'reorder_level'),
-    this.numberColumn('Reorder Qty', 'reorder_qty'),
-    this.numberColumn('Min Stock', 'min_stock'),
-    this.numberColumn('Max Stock', 'max_stock'),
-    this.numberColumn('Lead Days', 'lead_time_days', '1'),
-    {
-      title: '',
-      field: '__remove',
-      cellType: 'custom-template',
-      customTemplate: this.removeTpl(),
-      value: () => '',
-      width: '56px',
-      align: 'center',
-      hideable: false,
-    },
-  ]);
-
-  readonly tableConfig: Partial<TableConfig> = {
-    showTitle: true,
-    title: 'Reorder Rules',
-    showSearch: true,
-    pagination: true,
-    defaultPageSize: 12,
-    pageSizeOptions: [12, 25, 50],
-    showExport: true,
-    showColumnToggle: true,
-    showActions: false,
-    dense: true,
-    compact: true,
-    striped: true,
-    maxHeight: '100%',
+    columns: [
+      GridColumns.lookup<IReorder>('product_no', 'Product', () => this.model.products().map(p => ({ value: p.value, label: p.label })))
+        .required()
+        .flex(1)
+        .minWidth(240)
+        .build(),
+      GridColumns.decimal<IReorder>('reorder_level', 'Reorder Level')
+        .required()
+        .min(0)
+        .width(140)
+        .build(),
+      GridColumns.decimal<IReorder>('reorder_qty', 'Reorder Qty')
+        .required()
+        .min(0)
+        .width(140)
+        .build(),
+      GridColumns.decimal<IReorder>('min_stock', 'Min Stock')
+        .min(0)
+        .width(130)
+        .build(),
+      GridColumns.decimal<IReorder>('max_stock', 'Max Stock')
+        .min(0)
+        .width(130)
+        .build(),
+      GridColumns.number<IReorder>('lead_time_days', 'Lead Days')
+        .min(0)
+        .width(120)
+        .build(),
+      GridColumns.action<IReorder>().build(),
+    ],
   };
 
   ngOnInit(): void {
@@ -78,31 +81,7 @@ export class Inv2005Component implements OnInit {
     this.model.loadOptions();
   }
 
-  setRowValue(row: Record<string, unknown>, field: string, value: unknown): void {
-    row[field] = value === '' ? null : value;
-    this.model.rows.update((rows) => [...rows]);
-  }
-
-  removeRow(row: Record<string, unknown>): void {
-    const index = this.model.rows().indexOf(row as unknown as IReorder);
-    if (index >= 0) this.model.removeRow(index);
-  }
-
-  productLabel(row: Record<string, unknown>): string {
-    return String(row['product_name'] ?? this.model.products().find((p) => p.value === row['product_no'])?.label ?? '');
-  }
-
-  private numberColumn(title: string, field: keyof IReorder, step = '0.0001'): ColumnDef {
-    return {
-      title,
-      field,
-      cellType: 'custom-template',
-      customTemplate: this.numberTpl(),
-      value: (row) => row[field] ?? '',
-      sort: true,
-      align: 'right',
-      width: field === 'lead_time_days' ? '110px' : '130px',
-      tooltip: step,
-    };
-  }
+  onSave(): void { this.model.onSave(); }
+  onNew(): void { this.model.addRow(); }
+  onReset(): void { this.model.loadRows(); }
 }

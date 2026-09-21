@@ -6,6 +6,7 @@ import { Fin1006DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
+import { FormUtilService } from '../../../../../core/services/form-util.service';
 
 export interface AccountLite { account_no: number; account_code: string; account_name: string; is_active?: number | null; is_postable?: number | null; }
 
@@ -21,12 +22,15 @@ export interface GlMap extends BaseEntity {
   row_version: number;
 }
 
+const IGNORED_GL_MAP_KEYS = ['account_code', 'account_name'];
+
 /** State + form for FIN_1006 – GL Account Mapping. */
 @Injectable()
 export class Fin1006ModelService {
-  private data   = inject(Fin1006DataService);
-  private toastr = inject(ToastrService);
+  private data      = inject(Fin1006DataService);
+  private toastr    = inject(ToastrService);
   private translate = inject(TranslateService);
+  private formUtil  = inject(FormUtilService);
 
   maps          = signal<GlMap[]>([]);
   accounts      = signal<AccountLite[]>([]);
@@ -36,6 +40,8 @@ export class Fin1006ModelService {
   eventTypeFilter = signal<string | null>(null);
   selectedNo    = signal<number | null>(null);
   sortDirection = signal<SortDirection>('');
+
+  private backupMap = new Map<number, GlMap>();
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -58,10 +64,6 @@ export class Fin1006ModelService {
       .map(a => ({ label: `${a.account_code} ${a.account_name}`, value: a.account_no }))
   );
 
-  initForm(): void {
-    // using inline table editing instead
-  }
-
   addRow(): void {
     const newRow = {
       gl_map_no: 0,
@@ -73,7 +75,22 @@ export class Fin1006ModelService {
       row_version: 0
     } as GlMap;
     
-    this.maps.update(list => [newRow, ...list]);
+    this.maps.update(list => [...list, newRow]);
+  }
+
+  updateRow(row: GlMap): void {
+    this.maps.update((list) => {
+      if (row.gl_map_no > 0) {
+        return list.map((item) => (item.gl_map_no === row.gl_map_no ? { ...item, ...row } : item));
+      }
+      const idx = list.findIndex((item) => item === row || (item.gl_map_no === 0 && item.leg_key === row.leg_key));
+      if (idx !== -1) {
+        const copy = [...list];
+        copy[idx] = { ...copy[idx], ...row };
+        return copy;
+      }
+      return list;
+    });
   }
 
   loadAccounts(): void { 
@@ -87,35 +104,57 @@ export class Fin1006ModelService {
     this.data.loadMaps().pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res) && res.data) {
+          this.backupMap.clear();
+          for (const item of res.data) {
+            this.backupMap.set(item.gl_map_no, { ...item });
+          }
           this.maps.set(res.data);
         }
       },
-      error: () => this.toastr.error('Failed to load mappings'),
+      error: () => this.toastr.error(this.translate.instant('common.loadFail') || 'Failed to load mappings'),
     });
   }
 
-  saveAll(): void {
-    const maps = this.maps();
-    const toSave = maps.filter(m => m.gl_map_no === 0 || (m as any).__dirty);
+  saveAll(customRows?: GlMap[]): void {
+    const maps = customRows ?? this.maps();
+    
+    const toSave: { isUpdate: boolean; row: GlMap; payload: any }[] = [];
+
+    for (const row of maps) {
+      if (!row.gl_map_no) {
+        toSave.push({ isUpdate: false, row, payload: row });
+      } else {
+        const backup = this.backupMap.get(row.gl_map_no);
+        if (this.formUtil.hasChanges(backup, row, IGNORED_GL_MAP_KEYS)) {
+          const diffPayload = this.formUtil.getDiffPayload(
+            backup,
+            row,
+            'gl_map_no',
+            ['row_version'],
+            IGNORED_GL_MAP_KEYS
+          );
+          toSave.push({ isUpdate: true, row, payload: diffPayload });
+        }
+      }
+    }
     
     if (toSave.length === 0) {
-      this.toastr.info('No changes to save');
+      this.toastr.info(this.translate.instant('common.noChanges') || 'No changes found');
       return;
     }
 
-    const invalid = toSave.find(m => !m.event_type || !m.leg_key || !m.account_no);
+    const invalid = toSave.find(item => !item.row.event_type || !item.row.leg_key || !item.row.account_no);
     if (invalid) {
-      if (!invalid.event_type) { this.toastr.warning('Event Type is required'); }
-      else if (!invalid.leg_key) { this.toastr.warning('Leg Key is required'); }
-      else if (!invalid.account_no) { this.toastr.warning('GL Account is required'); }
+      if (!invalid.row.event_type) { this.toastr.warning('Event Type is required'); }
+      else if (!invalid.row.leg_key) { this.toastr.warning('Leg Key is required'); }
+      else if (!invalid.row.account_no) { this.toastr.warning('GL Account is required'); }
       return;
     }
 
     this.isSaving.set(true);
 
-    const requests = toSave.map(row => {
-      const isUpdate = !!row.gl_map_no;
-      return isUpdate ? this.data.update(row.gl_map_no, row) : this.data.save(row);
+    const requests = toSave.map(item => {
+      return item.isUpdate ? this.data.update(item.row.gl_map_no, item.payload) : this.data.save(item.payload);
     });
 
     forkJoin(requests)
@@ -124,13 +163,13 @@ export class Fin1006ModelService {
         next: (results) => {
           const hasError = results.some(r => !isSuccess(r));
           if (hasError) {
-            this.toastr.error('Some rows failed to save');
+            this.toastr.error(this.translate.instant('common.saveFail') || 'Some rows failed to save');
           } else {
-            this.toastr.success('Saved successfully');
+            this.toastr.success(this.translate.instant('common.saveSuccess') || 'Saved successfully');
           }
           this.load();
         },
-        error: () => this.toastr.error('Failed to save changes')
+        error: () => this.toastr.error(this.translate.instant('common.saveFail') || 'Failed to save changes')
       });
   }
 
@@ -144,13 +183,18 @@ export class Fin1006ModelService {
     this.data.remove(row.gl_map_no).pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) {
-          this.toastr.success('Mapping deleted');
-          this.maps.update(list => list.filter(m => m.gl_map_no !== row.gl_map_no));
+          this.toastr.success(this.translate.instant('common.deleteSuccess') || 'Mapping deleted');
+          this.typesFilter(row.gl_map_no);
         } else {
-          this.toastr.error(res.message || 'Delete failed');
+          this.toastr.error(res.message || this.translate.instant('common.deleteFail') || 'Delete failed');
         }
       },
-      error: (err) => this.toastr.error(err?.error?.message || 'Delete failed'),
+      error: (err) => this.toastr.error(err?.error?.message || this.translate.instant('common.deleteFail') || 'Delete failed'),
     });
+  }
+
+  private typesFilter(deletedNo: number): void {
+    this.maps.update(list => list.filter(m => m.gl_map_no !== deletedNo));
+    this.backupMap.delete(deletedNo);
   }
 }

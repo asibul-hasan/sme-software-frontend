@@ -1,0 +1,234 @@
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL VARIABLES, TOKENS & BASE RESETS (Sidebar & Brand Parity)
+   ───────────────────────────────────────────────────────────────── */
+:root {
+  /* Sidebar Indigo & Brand Primary Theme Tokens */
+  --primary: #4f46e5;                    /* Indigo-600 */
+  --primary-hover: #4338ca;              /* Indigo-700 */
+  --primary-active: #3730a3;             /* Indigo-800 */
+  --primary-light: #eef2ff;              /* Indigo-50 */
+  --primary-border: #c7d2fe;             /* Indigo-200 */
+  --primary-gradient: linear-gradient(135deg, #6d5cff 0%, #4f46e5 100%);
+  --primary-gradient-active: linear-gradient(135deg, #6257f5 0%, #4431df 100%);
+  --primary-focus-ring: rgba(99, 102, 241, 0.2);
+
+  /* Theme Highlight & Banner Tokens (Card Callouts, Final Price, Loyalty) */
+  --theme-highlight-bg: #eef2ff;         /* Indigo-50 */
+  --theme-highlight-border: #c7d2fe;     /* Indigo-200 */
+  --theme-highlight-text: #312e81;       /* Indigo-900 */
+  --theme-highlight-text-muted: #4f46e5; /* Indigo-600 */
+  --theme-highlight-badge-bg: rgba(99, 102, 241, 0.15);
+  --theme-highlight-badge-text: #4338ca;
+
+  /* Sidebar Shell & Rail Palette */
+  --sidebar: #101723;                    /* Deep Navy Shell */
+  --sidebar-shell: #101723;
+  --sidebar-rail: #0c1020;               /* Deep Navy Rail */
+  --sidebar-hover: rgba(81, 96, 136, 0.22);
+  --sidebar-hover-border: rgba(115, 124, 255, 0.18);
+  --sidebar-active: #6c63ff;
+  --sidebar-active-bg: rgba(108, 99, 255, 0.22);
+  --indigo: #6c63ff;
+  --indigo-rgb: 108, 99, 255;
+  --header-bg: #101723;
+  --header-text: #ffffff;
+  --header-border: rgba(255, 255, 255, 0.08);
+  
+  /* Canvas & Surface Tokens */
+  --background: #f8fafc;       /* Slate-50: Softer, clean clinical background */
+  --surface: #ffffff;          /* Pure Crisp White */
+  --border: #e2e8f0;           /* Slate-200: Subtle, clean border */
+  --border-subtle: #f1f5f9;    /* Slate-100: Very soft divider */
+  
+  /* Typography Tokens */
+  --text-primary: #0f172a;     /* Slate-900: High-contrast crisp text */
+  --text-secondary: #475569;   /* Slate-600: Secondary descriptive text */
+  --text-muted: #94a3b8;       /* Slate-400: Subdued helper text */
+  
+  /* Data Table Specific Tokens */
+  --table-header-bg: #f8fafc;
+  --table-header-text: #475569;
+  --table-header-border: #e2e8f0;
+  --table-row-odd: #ffffff;
+  --table-row-even: #fbfcfd;   /* Gentle 1.5% Nordic tint */
+  --table-row-hover: #f1f5f9;  /* Soft slate hover feedback */
+  --table-border-bottom: #f1f5f9;
+  --table-pinned-divider: #cbd5e1;
+  
+  --radius: 8px;
+  --radius-card: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL THEME STANDARD CLASSES (Centralized CSS Theme Control)
+   ───────────────────────────────────────────────────────────────── */
+.theme-total-text {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+
+.theme-highlight-card {
+  background-color: var(--theme-highlight-bg) !important;
+  border: 1px solid var(--theme-highlight-border) !important;
+  color: var(--theme-highlight-text) !important;
+}
+
+.theme-highlight-title {
+  color: var(--theme-highlight-text) !important;
+  font-weight: 700 !important;
+}
+
+.theme-highlight-subtitle {
+  color: var(--theme-highlight-text-muted) !important;
+}
+
+.theme-highlight-value {
+  color: var(--theme-highlight-text) !important;
+  font-weight: 700 !important;
+}
+
+.theme-link {
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  transition: color 0.15s ease !important;
+}
+
+.theme-link:hover {
+  color: var(--primary-hover) !important;
+}
+
+.theme-pill-active {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px 0 rgba(79, 70, 229, 0.25) !important;
+}
+
+.theme-badge {
+  background-color: var(--theme-highlight-badge-bg) !important;
+  color: var(--theme-highlight-badge-text) !important;
+  border: 1px solid var(--primary-border) !important;
+  border-radius: 9999px !important;
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.theme-avatar {
+  background-color: var(--theme-highlight-bg) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary-border) !important;
+}
+
+.theme-dropzone {
+  border: 2px dashed #cbd5e1 !important;
+  transition: border-color 0.2s ease, background-color 0.2s ease !important;
+}
+.theme-dropzone:hover {
+  border-color: var(--primary) !important;
+  background-color: var(--primary-light) !important;
+}
+
+.btn-quick-add {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.btn-quick-add:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: #ffffff !important;
+}
+
+.theme-btn-soft {
+  background-color: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary-border) !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+.theme-btn-soft:hover {
+  background-color: var(--primary-border) !important;
+  color: var(--primary-active) !important;
+}
+
+.theme-active-row {
+  background-color: rgba(79, 70, 229, 0.08) !important;
+}
+
+.theme-indicator-active {
+  background-color: var(--primary) !important;
+}
+
+.theme-checkbox {
+  accent-color: var(--primary) !important;
+}
+
+.theme-shell-banner {
+  background-color: var(--sidebar-shell) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-avatar-gradient {
+  background: var(--primary-gradient) !important;
+  color: #ffffff !important;
+}

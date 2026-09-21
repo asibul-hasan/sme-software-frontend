@@ -6,7 +6,7 @@ import { Routes } from '@angular/router';
 export const FIN_ROUTES: Routes = [
   // ── Setup ──────────────────────────────────────────────────────────────────
   { path: 'form/chart-of-accounts', loadComponent: () => import('./forms/fin1001/fin1001.component').then((m) => m.Fin1001Component) },
-  { path: 'form/account-group',     loadComponent: () => import('./forms/fin1002/fin1002.component').then((m) => m.Fin1002Component) },
+  { path: 'form/account-group',     redirectTo: 'form/chart-of-accounts', pathMatch: 'full' },
   { path: 'form/voucher-type',      loadComponent: () => import('./forms/fin1003/fin1003.component').then((m) => m.Fin1003Component) },
   { path: 'form/opening-balance',   loadComponent: () => import('./forms/fin1004/fin1004.component').then((m) => m.Fin1004Component) },
   { path: 'form/bank-account',      loadComponent: () => import('./forms/fin1005/fin1005.component').then((m) => m.Fin1005Component) },

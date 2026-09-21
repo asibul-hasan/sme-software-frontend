@@ -295,8 +295,8 @@
                           <td>{{ item.effective_from }}</td>
                           <td>{{ model.designationName(item.designation_no) }}</td>
                           <td>{{ model.gradeLabel(item.grade_no) }}</td>
-                          <td class="text-end">{{ item.basic_salary || 0 | number: '1.2-2' }}</td>
-                          <td class="text-end">{{ item.gross_salary | number: '1.2-2' }}</td>
+                          <td class="text-end">{{ item.basic_salary || 0 | appDecimal }}</td>
+                          <td class="text-end">{{ item.gross_salary | appDecimal }}</td>
                           <td><span class="list-item-tag" [class.list-item-tag--primary]="item.status === 1">{{ statusLabel(item.status) }}</span></td>
                           <td>{{ item.revision_reason || '—' }}</td>
                         </tr>

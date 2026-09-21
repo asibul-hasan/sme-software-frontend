@@ -1,0 +1,611 @@
+/* ─────────────────────────────────────────────────────────────────
+   FORM CONTROLS, SELECTS, INPUTS & CHECKBOXES (Aidly ERP Parity)
+   Height: 28px standard. Border: 1px solid #cbd5e1. Radius: 6px.
+   ───────────────────────────────────────────────────────────────── */
+
+/* ── NZ-SELECT & DROPDOWN PANEL ── */
+nz-select {
+  display: inline-block !important;
+  position: relative !important;
+  vertical-align: middle !important;
+}
+
+nz-select.w-full {
+  display: block !important;
+  width: 100% !important;
+}
+
+nz-select-top-control {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.ant-select {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+.ant-select.w-full {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  width: 100% !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  padding: 0 26px 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease-in-out !important;
+  box-sizing: border-box !important;
+}
+
+.ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-item {
+  line-height: 26px !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+  font-weight: 500 !important;
+  padding: 0 !important;
+}
+
+.ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-placeholder {
+  line-height: 26px !important;
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+  padding: 0 !important;
+}
+
+.ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-search {
+  inset-inline-start: 10px !important;
+  inset-inline-end: 26px !important;
+}
+
+.ant-select-single .ant-select-selector .ant-select-selection-search-input {
+  height: 26px !important;
+  line-height: 26px !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector,
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+/* Clear & Arrow Icons - Vertically Centered */
+.ant-select-clear,
+.ant-select-arrow {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin-top: 0 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2 !important;
+  right: 10px !important;
+  inset-inline-end: 10px !important;
+}
+
+.ant-select-clear {
+  width: 14px !important;
+  height: 14px !important;
+  color: #94a3b8 !important;
+  background: #ffffff !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease !important;
+}
+
+.ant-select:hover .ant-select-clear {
+  opacity: 1 !important;
+}
+
+.ant-select-clear:hover {
+  color: #475569 !important;
+}
+
+.ant-select-arrow {
+  color: #64748b !important;
+  font-size: 11px !important;
+  pointer-events: none !important;
+  transition: transform 0.2s ease !important;
+}
+
+.ant-select-open .ant-select-arrow {
+  transform: translateY(-50%) rotate(180deg) !important;
+}
+
+/* Dropdown Overlay Panel */
+.ant-select-dropdown {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  padding: 4px !important;
+  z-index: 1050 !important;
+  font-family: inherit !important;
+  overflow: hidden !important;
+}
+
+.ant-select-item {
+  min-height: 30px !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: #334155 !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  margin-bottom: 2px !important;
+  transition: all 0.15s ease-in-out !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ant-select-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.ant-select-item-option-content {
+  font-size: 13px !important;
+  color: inherit !important;
+}
+
+.ant-select-item-option-active:not(.ant-select-item-option-disabled):not(.ant-select-item-option-selected) {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-content {
+  color: #ffffff !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
+  color: #ffffff !important;
+}
+
+.ant-select-item-empty {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  padding: 12px 0 !important;
+  text-align: center !important;
+}
+
+/* ── STANDARD FORM INPUTS & INPUT GROUPS ── */
+.ant-input:not(textarea):not(.ant-input-affix-wrapper .ant-input):not(nz-input-group .ant-input) {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  font-size: 13px !important;
+  padding: 0 10px !important;
+  line-height: 26px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.ant-input:not(textarea):not(.ant-input-affix-wrapper .ant-input):not(nz-input-group .ant-input):hover {
+  border-color: var(--primary) !important;
+}
+
+.ant-input:not(textarea):not(.ant-input-affix-wrapper .ant-input):not(nz-input-group .ant-input):focus,
+.ant-input-focused:not(.ant-input-affix-wrapper):not(nz-input-group) {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+/* Input Affix Wrapper (nz-input-group with Prefix/Suffix icons) */
+nz-input-group {
+  display: inline-flex !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+}
+
+nz-input-group:not([class*="w-"]):not(.w-auto) {
+  width: 100%;
+}
+
+nz-input-group.flex-1 {
+  flex: 1 1 0% !important;
+}
+
+.ant-input-affix-wrapper,
+nz-input-group.ant-input-affix-wrapper,
+nz-input-group .ant-input-affix-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 8px 0 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.ant-input-affix-wrapper:not([class*="w-"]):not(.w-auto) {
+  width: 100%;
+}
+
+.ant-input-affix-wrapper:hover,
+nz-input-group.ant-input-affix-wrapper:hover,
+nz-input-group .ant-input-affix-wrapper:hover {
+  border-color: var(--primary) !important;
+}
+
+.ant-input-affix-wrapper:focus-within,
+.ant-input-affix-wrapper-focused,
+nz-input-group.ant-input-affix-wrapper:focus-within,
+nz-input-group.ant-input-affix-wrapper-focused,
+nz-input-group .ant-input-affix-wrapper:focus-within,
+nz-input-group .ant-input-affix-wrapper-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+.ant-input-prefix {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 6px !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+.ant-input-prefix span[nz-icon],
+.ant-input-prefix .anticon {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+.ant-input-suffix {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 6px !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Inner input inside the affix wrapper */
+.ant-input-affix-wrapper > input.ant-input,
+.ant-input-affix-wrapper input.ant-input,
+.ant-input-affix-wrapper .ant-input,
+nz-input-group.ant-input-affix-wrapper > input,
+nz-input-group.ant-input-affix-wrapper input,
+nz-input-group > input.ant-input {
+  position: relative !important;
+  display: inline-block !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  line-height: 24px !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+}
+
+.ant-input-affix-wrapper > input.ant-input:focus,
+.ant-input-affix-wrapper input.ant-input:focus,
+.ant-input-affix-wrapper .ant-input:focus,
+nz-input-group.ant-input-affix-wrapper > input:focus,
+nz-input-group.ant-input-affix-wrapper input:focus,
+nz-input-group > input.ant-input:focus {
+  border: 0 !important;
+  border-width: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.ant-input-affix-wrapper input::placeholder,
+.ant-input-affix-wrapper .ant-input::placeholder,
+nz-input-group input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+/* ── NUMBER INPUT ── */
+.ant-input-number {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-size: 13px !important;
+  line-height: 26px !important;
+}
+
+.ant-input-number-input {
+  height: 26px !important;
+  line-height: 26px !important;
+  font-size: 13px !important;
+  padding: 0 10px !important;
+}
+
+/* ── TEXTAREA INPUT ── */
+textarea.ant-input {
+  min-height: 60px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+  box-sizing: border-box !important;
+}
+
+textarea.ant-input:focus,
+textarea.ant-input-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+/* ── DATEPICKER & RANGE PICKER ── */
+nz-date-picker,
+nz-range-picker,
+.ant-picker {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  padding: 0 10px !important;
+  font-size: 13px !important;
+  line-height: 26px !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease-in-out !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+nz-date-picker.w-full,
+nz-range-picker.w-full,
+.ant-picker.w-full {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.ant-picker:hover,
+.ant-picker-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+.ant-picker-input {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 26px !important;
+}
+
+.ant-picker-input > input {
+  font-size: 13px !important;
+  color: #0f172a !important;
+  font-weight: 500 !important;
+  line-height: 26px !important;
+  height: 26px !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.ant-picker-input > input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+.ant-picker-suffix {
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.ant-picker-clear {
+  background: #ffffff !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  right: 10px !important;
+}
+
+.ant-picker-clear:hover {
+  color: #475569 !important;
+}
+
+.ant-picker-dropdown {
+  z-index: 1050 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+}
+
+.ant-picker-panel-container {
+  border-radius: 8px !important;
+  background: #ffffff !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: var(--primary) !important;
+  border-radius: 6px !important;
+}
+
+/* ── CHECKBOX DESIGN SYSTEM ── */
+.ant-checkbox-wrapper {
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  line-height: normal !important;
+  vertical-align: middle !important;
+}
+
+.ant-checkbox {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  outline: none !important;
+  cursor: pointer !important;
+  margin-right: 6px !important;
+  top: 0 !important;
+}
+
+.ant-checkbox-inner {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  direction: ltr !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  border-collapse: separate !important;
+  transition: all 0.15s ease-in-out !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox:hover .ant-checkbox-inner,
+.ant-checkbox-input:focus + .ant-checkbox-inner {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-focus-ring) !important;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.ant-checkbox-inner::after {
+  position: absolute !important;
+  box-sizing: border-box !important;
+  top: 48% !important;
+  left: 23% !important;
+  display: table !important;
+  width: 5.5px !important;
+  height: 9.5px !important;
+  border: 2px solid #ffffff !important;
+  border-top: 0 !important;
+  border-left: 0 !important;
+  transform: rotate(45deg) scale(0) translate(-50%, -50%) !important;
+  transition: all 0.15s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.05s !important;
+  opacity: 0 !important;
+  content: ' ' !important;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner::after {
+  transform: rotate(45deg) scale(1) translate(-50%, -50%) !important;
+  opacity: 1 !important;
+}
+
+.ant-checkbox-disabled .ant-checkbox-inner {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
+}
+
+input[type="checkbox"]:not(.ant-checkbox-input) {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
+  border: 1.5px solid #cbd5e1 !important;
+  accent-color: var(--primary) !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+/* ── RADIO & SWITCH ── */
+.ant-radio-checked .ant-radio-inner {
+  border-color: var(--primary) !important;
+}
+
+.ant-radio-inner::after {
+  background-color: var(--primary) !important;
+}
+
+.ant-switch-checked {
+  background-color: var(--primary) !important;
+}
+
+/* ── EXPLICIT WIDTH UTILITY ENFORCEMENT ── */
+.w-24, nz-input-group.w-24, .ant-input-affix-wrapper.w-24, nz-select.w-24, .ant-select.w-24 { width: 6rem !important; min-width: 6rem !important; max-width: 6rem !important; }
+.w-28, nz-input-group.w-28, .ant-input-affix-wrapper.w-28, nz-select.w-28, .ant-select.w-28 { width: 7rem !important; min-width: 7rem !important; max-width: 7rem !important; }
+.w-32, nz-input-group.w-32, .ant-input-affix-wrapper.w-32, nz-select.w-32, .ant-select.w-32 { width: 8rem !important; min-width: 8rem !important; max-width: 8rem !important; }
+.w-36, nz-input-group.w-36, .ant-input-affix-wrapper.w-36, nz-select.w-36, .ant-select.w-36 { width: 9rem !important; min-width: 9rem !important; max-width: 9rem !important; }
+.w-40, nz-input-group.w-40, .ant-input-affix-wrapper.w-40, nz-select.w-40, .ant-select.w-40 { width: 10rem !important; min-width: 10rem !important; max-width: 10rem !important; }
+.w-44, nz-input-group.w-44, .ant-input-affix-wrapper.w-44, nz-select.w-44, .ant-select.w-44 { width: 11rem !important; min-width: 11rem !important; max-width: 11rem !important; }
+.w-48, nz-input-group.w-48, .ant-input-affix-wrapper.w-48, nz-select.w-48, .ant-select.w-48 { width: 12rem !important; min-width: 12rem !important; max-width: 12rem !important; }
+.w-52, nz-input-group.w-52, .ant-input-affix-wrapper.w-52, nz-select.w-52, .ant-select.w-52 { width: 13rem !important; min-width: 13rem !important; max-width: 13rem !important; }
+.w-56, nz-input-group.w-56, .ant-input-affix-wrapper.w-56, nz-select.w-56, .ant-select.w-56 { width: 14rem !important; min-width: 14rem !important; max-width: 14rem !important; }
+.w-60, nz-input-group.w-60, .ant-input-affix-wrapper.w-60, nz-select.w-60, .ant-select.w-60 { width: 15rem !important; min-width: 15rem !important; max-width: 15rem !important; }
+.w-64, nz-input-group.w-64, .ant-input-affix-wrapper.w-64, nz-select.w-64, .ant-select.w-64 { width: 16rem !important; min-width: 16rem !important; max-width: 16rem !important; }
+.w-72, nz-input-group.w-72, .ant-input-affix-wrapper.w-72, nz-select.w-72, .ant-select.w-72 { width: 18rem !important; min-width: 18rem !important; max-width: 18rem !important; }
+.w-80, nz-input-group.w-80, .ant-input-affix-wrapper.w-80, nz-select.w-80, .ant-select.w-80 { width: 20rem !important; min-width: 20rem !important; max-width: 20rem !important; }
+.w-96, nz-input-group.w-96, .ant-input-affix-wrapper.w-96, nz-select.w-96, .ant-select.w-96 { width: 24rem !important; min-width: 24rem !important; max-width: 24rem !important; }
+.w-auto, nz-input-group.w-auto, .ant-input-affix-wrapper.w-auto, nz-select.w-auto, .ant-select.w-auto { width: auto !important; }

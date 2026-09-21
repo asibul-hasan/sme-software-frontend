@@ -28,12 +28,13 @@ import { Pur1105DataService, Receipt, ReceiptLine } from './services/data.servic
 interface WorkLine extends ReceiptLine { __uid: number; __total?: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1105',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Pur1105DataService],
   templateUrl: './pur1105.component.html',
   styles: [':host { display: block; height: 100%; }'],

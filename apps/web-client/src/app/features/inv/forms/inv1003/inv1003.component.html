@@ -23,8 +23,14 @@
         [class.active]="model.selectedNo() === c.category_no"
         (click)="model.select(c)"
       >
-        <h6 class="list-item-title mb-0 text-truncate">{{ c.category_name }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ c.category_id }}@if (c.parent_category_name) { · under {{ c.parent_category_name }} }</p>
+        <span
+          class="status-dot status-dot--corner"
+          [class.status-dot--active]="c.is_active === 1"
+          [class.status-dot--inactive]="c.is_active !== 1"
+          [matTooltip]="c.is_active === 1 ? 'Active' : 'Inactive'"
+        ></span>
+        <h6 class="list-item-title mb-0 truncate">{{ c.category_name }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ c.category_id }}@if (c.parent_category_name) { · under {{ c.parent_category_name }} }</p>
         <div class="list-item-meta">
           <span class="list-item-tag">Level {{ c.depth ?? 0 }}</span>
         </div>
@@ -40,75 +46,75 @@
 
   <div formContent>
     <form [formGroup]="model.form" autocomplete="off">
-      <div class="row row-group">
-        <div class="col-xl-8 col-lg-12">
-          <div class="form-section-card card">
-            <div class="card-header">
-              <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">account_tree</mat-icon>
-                Category
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="row row-group">
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label required" for="category_id">Code</label>
-                    <input type="text" id="category_id" formControlName="category_id" class="form-control text-uppercase" placeholder="CAT-001" />
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="field-group">
-                    <label class="field-label required" for="category_name">Name</label>
-                    <input type="text" id="category_name" formControlName="category_name" class="form-control" placeholder="e.g. Beverages" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="parent_category_no">Parent Category</label>
-                    <ng-select id="parent_category_no" labelForId="parent_category_no" formControlName="parent_category_no" [clearable]="true" placeholder="None (root)">
-                      @for (p of model.availableParents(); track p.value) {
-                        <ng-option [value]="p.value">{{ p.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label" for="default_vat_tax_no">Default Tax</label>
-                    <ng-select id="default_vat_tax_no" labelForId="default_vat_tax_no" formControlName="default_vat_tax_no" [clearable]="true" placeholder="None">
-                      @for (t of model.taxOptions(); track t.value) {
-                        <ng-option [value]="t.value">{{ t.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="category_name_nls">Name (NLS)</label>
-                    <input type="text" id="category_name_nls" formControlName="category_name_nls" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="order_sl">Order</label>
-                    <input type="number" id="order_sl" formControlName="order_sl" class="form-control" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="field-group">
-                    <label class="field-label" for="is_active">Status</label>
-                    <ng-select id="is_active" labelForId="is_active" formControlName="is_active" [clearable]="false">
-                      <ng-option [value]="1">Active</ng-option>
-                      <ng-option [value]="0">Inactive</ng-option>
-                    </ng-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-form-section title="Category" icon="account_tree">
+        <app-form-field label="Code" for="category_id" required [span]="4">
+          <input
+            type="text"
+            id="category_id"
+            formControlName="category_id"
+            class="form-control uppercase"
+            placeholder="CAT-001"
+          />
+        </app-form-field>
+
+        <app-form-field label="Name" for="category_name" required [span]="8">
+          <input
+            type="text"
+            id="category_name"
+            formControlName="category_name"
+            class="form-control"
+            placeholder="e.g. Beverages"
+          />
+        </app-form-field>
+
+        <app-form-field label="Parent Category" for="parent_category_no" [span]="6">
+          <ng-select
+            id="parent_category_no"
+            labelForId="parent_category_no"
+            formControlName="parent_category_no"
+            [clearable]="true"
+            placeholder="None (root)"
+          >
+            @for (p of model.availableParents(); track p.value) {
+              <ng-option [value]="p.value">{{ p.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Default Tax" for="default_vat_tax_no" [span]="6">
+          <ng-select
+            id="default_vat_tax_no"
+            labelForId="default_vat_tax_no"
+            formControlName="default_vat_tax_no"
+            [clearable]="true"
+            placeholder="None"
+          >
+            @for (t of model.taxOptions(); track t.value) {
+              <ng-option [value]="t.value">{{ t.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Name (NLS)" for="category_name_nls" [span]="4">
+          <input
+            type="text"
+            id="category_name_nls"
+            formControlName="category_name_nls"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-form-field label="Order" for="order_sl" [span]="4">
+          <input
+            type="number"
+            id="order_sl"
+            formControlName="order_sl"
+            class="form-control"
+          />
+        </app-form-field>
+
+        <app-check-field label="Status" text="Active" [span]="4" formControlName="is_active" />
+      </app-form-section>
     </form>
   </div>
 

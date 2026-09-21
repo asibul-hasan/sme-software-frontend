@@ -1,6 +1,6 @@
 <app-page-form-layout
   [title]="'HR Policy / Settings'"
-  [subtitle]="'Country pack switch and payroll/leave policy'"
+  [subtitle]="'Company payroll, work calendar, and leave policies'"
   [icon]="'tune'"
   [hasSidebar]="false"
   (save)="onSave()"
@@ -14,44 +14,33 @@
   <div formContent>
     <form [formGroup]="formdata" autocomplete="off">
       <div class="row row-group">
-        <!-- Country / Region pack -->
+        <!-- General HR & Work Calendar Policy -->
         <div class="col-xl-6 col-lg-12">
           <div class="form-section-card card">
             <div class="card-header">
               <h4 class="card-header__title mb-0 fw-bold">
-                <mat-icon class="me-2 align-middle">public</mat-icon>
-                Region / Country Pack
+                <mat-icon class="me-2 align-middle">calendar_month</mat-icon>
+                General HR & Work Calendar Policy
               </h4>
             </div>
             <div class="card-body">
               <div class="row row-group">
                 <div class="col-md-6">
                   <div class="field-group">
-                    <label class="field-label required" for="country_code">Country Pack</label>
-                    <ng-select id="country_code" labelForId="country_code" formControlName="country_code" [clearable]="false"
-                      (change)="onCountryChange($event.value)" placeholder="Select country">
-                      @for (opt of countries; track opt.value) {
-                        <ng-option [value]="opt.value">{{ opt.label }}</ng-option>
-                      }
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="field-group">
-                    <label class="field-label required" for="currency_code">Currency</label>
-                    <input type="text" id="currency_code" formControlName="currency_code" class="form-control text-uppercase" maxlength="4" placeholder="e.g. BDT" />
+                    <label class="field-label" for="currency_code">Payroll Currency</label>
+                    <input type="text" id="currency_code" formControlName="currency_code" class="form-control text-uppercase" maxlength="4" placeholder="e.g. BDT, USD" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="weekend_days">Weekend Days</label>
-                    <input type="text" id="weekend_days" formControlName="weekend_days" class="form-control text-uppercase" placeholder="e.g. FRI,SAT" />
+                    <input type="text" id="weekend_days" formControlName="weekend_days" class="form-control text-uppercase" placeholder="e.g. FRI,SAT or SAT,SUN" />
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <div class="field-group">
                     <label class="field-label" for="fiscal_year_start">Fiscal Year Start (MM-DD)</label>
-                    <input type="text" id="fiscal_year_start" formControlName="fiscal_year_start" class="form-control" placeholder="e.g. 07-01" />
+                    <input type="text" id="fiscal_year_start" formControlName="fiscal_year_start" class="form-control" placeholder="e.g. 07-01 or 01-01" />
                   </div>
                 </div>
               </div>
@@ -79,7 +68,7 @@
                 <div class="col-md-6">
                   <div class="field-group">
                     <label class="field-label" for="tax_regime">Tax Regime</label>
-                    <input type="text" id="tax_regime" formControlName="tax_regime" class="form-control text-uppercase" placeholder="e.g. BD_NBR" />
+                    <input type="text" id="tax_regime" formControlName="tax_regime" class="form-control text-uppercase" placeholder="e.g. STANDARD" />
                   </div>
                 </div>
                 <div class="col-md-6">

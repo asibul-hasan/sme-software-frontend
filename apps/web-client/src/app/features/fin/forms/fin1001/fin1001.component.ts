@@ -4,22 +4,30 @@ import {
   OnInit,
   inject,
   computed,
+  effect,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
+import { TreeViewComponent, TreeViewConfig } from '../../../../shared/components/tree-view';
 import { Fin1001ModelService, Account } from './services/model.service';
 import { Fin1001DataService } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { AlertService } from '../../../../core/services/alert.service';
-import { AuthContextService } from '../../../../core/services/auth-context.service';
 import { finConstants } from '../../constants/fin.constants';
 
 import { PdfTemplateService } from '../../../../shared/pdf-templates';
 import { buildCoaReportContext, CoaReportContext } from '../../report-templates';
 import { pdfReportTemplate } from '../../../../shared/pdf-templates';
 
+/**
+ * FIN_1001 – Chart of Accounts Component.
+ * Provides a single unified interface combining Account Groups hierarchy and leaf Accounts.
+ */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1001',
@@ -28,8 +36,11 @@ import { pdfReportTemplate } from '../../../../shared/pdf-templates';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    MatIconModule,
+    MatTooltipModule,
     SharedModule,
     PageFormLayoutComponent,
+    TreeViewComponent,
   ],
   providers: [Fin1001ModelService, Fin1001DataService],
   templateUrl: './fin1001.component.html',
@@ -43,69 +54,101 @@ import { pdfReportTemplate } from '../../../../shared/pdf-templates';
   ],
 })
 export class Fin1001Component implements OnInit {
-  public model = inject(Fin1001ModelService);
-  public permissionService = inject(FormPermissionService);
-  private alertService = inject(AlertService);
-  private pdfService = inject(PdfTemplateService);
+  public readonly model = inject(Fin1001ModelService);
+  public readonly permissionService = inject(FormPermissionService);
+  private readonly alertService = inject(AlertService);
+  private readonly pdfService = inject(PdfTemplateService);
+  private readonly el = inject(ElementRef);
 
   readonly drCr = finConstants.drCr;
   readonly controlTypes = finConstants.controlTypes;
   readonly rootTypes = finConstants.rootTypes;
+  readonly accountCategories = finConstants.accountCategories;
+  readonly accountSubCategories = finConstants.accountSubCategories;
+  readonly accountClasses = finConstants.accountClasses;
+  readonly currencyOptions = finConstants.currencyOptions;
+
+  /** Tree Configuration for unified COA view. */
+  readonly treeConfig: TreeViewConfig = {
+    idField: 'id',
+    parentField: 'parent_id',
+    labelField: (row) => `${row['code'] || ''} ${row['name'] || ''}`.trim(),
+    statusDot: (row) => row['is_active'] === 1,
+    indent: 14,
+    icon: ({ hasChildren, expanded, row }) => {
+      if (row['node_type'] === 'group') {
+        return hasChildren ? (expanded ? 'folder_open' : 'folder') : 'account_tree';
+      }
+      return 'menu_book';
+    },
+    showSearch: true,
+    searchPlaceholder: 'Search...',
+    emptyText: 'No chart of accounts found',
+    emptyIcon: 'account_tree',
+  };
+
+  constructor() {
+    // Scroll selected tree node into view
+    effect(() => {
+      this.model.selectedTreeId();
+      setTimeout(() => {
+        this.el.nativeElement
+          .querySelector('.tv-node.is-active')
+          ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 50);
+    });
+  }
 
   ngOnInit(): void {
-    this.model.initForm();
-    setTimeout(() => {
-      this.permissionService.useLocalPermissions('FIN_1001');
-      this.model.loadGroups();
-      this.model.load();
-    });
-
-    this.formdata.get('account_group_no')?.valueChanges.subscribe((groupNo) => {
-      const group = this.model
-        .groups()
-        .find((g) => g.account_group_no === groupNo);
-      if (group) {
-        const drCr =
-          group.root_type === 1 || group.root_type === 5 ? 'dr' : 'cr';
-        this.formdata.patchValue({ opening_dr_cr: drCr }, { emitEvent: false });
-      }
-    });
+    this.model.initForms();
+    this.permissionService.useLocalPermissions('FIN_1001');
+    this.model.loadAll();
   }
 
   onSearchTermChange(v: string): void {
     this.model.searchTerm.set(v);
-    this.model.pager.reset();
   }
-  get formdata() {
-    return this.model.form;
+
+  onNodeClick(row: Record<string, unknown>): void {
+    this.model.selectNode(row);
+  }
+
+  onNewAccount(): void {
+    if (!this.model.selectedAccountNo()) return;
+    this.model.onNewAccount();
+  }
+
+  onNewGroup(): void {
+    this.model.onNewGroup();
   }
 
   onSave(): void {
     this.model.onSave();
   }
-  onNew(): void {
-    this.model.onNew();
-  }
+
   onReset(): void {
-    const o = this.model
-      .accounts()
-      .find((a) => a.account_no === this.model.selectedNo());
-    if (o) this.model.select(o);
-    else this.model.onNew();
+    const acc = this.model.currentAccount();
+    if (acc) {
+      this.model.selectAccount(acc);
+    } else {
+      this.model.onNewGroup();
+    }
   }
+
   onDelete(): void {
-    if (!this.model.selectedNo()) return;
-    this.alertService.deleteConfirm().subscribe((ok) => {
+    const no = this.model.selectedAccountNo();
+    if (!no || this.model.selectedHasChildren()) return;
+
+    this.alertService.deleteConfirm('Delete this Chart of Accounts record?').subscribe((ok) => {
       if (ok) this.model.onDelete();
     });
   }
-  select(item: Account): void {
-    this.model.select(item);
-  }
-  toUpper(c: string): void {
-    const ctrl = this.formdata.get(c);
-    if (ctrl?.value)
+
+  toUpper(fieldName: string): void {
+    const ctrl = this.model.form.get(fieldName);
+    if (ctrl?.value) {
       ctrl.setValue(ctrl.value.toUpperCase(), { emitEvent: false });
+    }
   }
 
   controlLabel(v?: number | null): string {
@@ -114,24 +157,37 @@ export class Fin1001Component implements OnInit {
     if (label === 'Accounts Receivable') return 'AR';
     return label;
   }
+
   rootLabel(v?: number | null): string {
     return this.rootTypes.find((r) => r.value === v)?.label ?? '';
   }
 
-  // ── PDF COA Print ─────────────────────────────────────────────────────
+  // ── PDF COA Print ──────────────────────────────────────────────────────────
   readonly coaPdfContext = computed<CoaReportContext | null>(() => {
     const accounts = this.model.accounts();
     if (!accounts || accounts.length === 0) return null;
+
+    const groupMap = new Map<number, Account>();
+    accounts
+      .filter((a) => a.is_group === 1)
+      .forEach((g) => groupMap.set(g.account_no, g));
+
     return {
       currency_code: 'BDT',
-      rows: accounts.map((a) => ({
-        account_group_name: a.account_group_name ?? '',
-        account_code: a.account_code ?? '',
-        account_name: a.account_name ?? '',
-        control_type: a.control_type,
-        control_type_label: this.controlLabel(a.control_type),
-        is_postable: a.is_postable,
-      })),
+      rows: accounts
+        .filter((a) => a.is_group === 0)
+        .map((a) => {
+          const grp = a.parent_account_no ? groupMap.get(a.parent_account_no) : null;
+          const groupName = grp ? `${grp.account_code} ${grp.account_name}` : a.parent_account_name ?? '';
+          return {
+            account_group_name: groupName,
+            account_code: a.account_code ?? '',
+            account_name: a.account_name ?? '',
+            control_type: a.control_type,
+            control_type_label: this.controlLabel(a.control_type),
+            is_postable: a.is_postable,
+          };
+        }),
     };
   });
 
@@ -142,4 +198,3 @@ export class Fin1001Component implements OnInit {
     await this.pdfService.render(pdfReportTemplate, reportCtx);
   }
 }
-

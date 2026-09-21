@@ -1,14 +1,33 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator } from '../../../../../core/utils/paginator';
 import { resolvePostReloadSelection } from '../../../../../core/utils/list-selection.utils';
 import { Inv1102DataService } from './data.service';
+import { invConstants } from '../../../constants/inv.constants';
 
 export interface Lookup { value: number; label: string; }
 export interface Lookups { warehouses: Lookup[]; products: Lookup[]; uoms: Lookup[]; }
+
+export interface IAdjustmentLine {
+  __uid?: number;
+  adjustment_dtl_no?: number | null;
+  product_no: number | null;
+  product_name?: string | null;
+  variant_no?: number | null;
+  uom_no: number | null;
+  uom_name?: string | null;
+  direction: number;
+  qty: number;
+  unit_cost: number;
+  batch_no?: number | null;
+  batch_code?: string | null;
+  expiry_date?: string | null;
+  __total?: number;
+  row_version?: number;
+}
 
 export interface IAdjustment {
   adjustment_no: number;
@@ -21,9 +40,8 @@ export interface IAdjustment {
   status: number;
   total_in_value?: number | null;
   total_out_value?: number | null;
-  remarks?: string | null;
   row_version?: number;
-  lines?: unknown[];
+  lines?: IAdjustmentLine[];
 }
 
 @Injectable()
@@ -31,6 +49,7 @@ export class Inv1102ModelService {
   private fb = inject(FormBuilder);
   private data = inject(Inv1102DataService);
   private toastr = inject(ToastrService);
+  private uid = 0;
 
   items = signal<IAdjustment[]>([]);
   lookups = signal<Lookups>({ warehouses: [], products: [], uoms: [] });
@@ -38,39 +57,58 @@ export class Inv1102ModelService {
   isSaving = signal(false);
   searchTerm = signal('');
   selectedNo = signal<number | null>(null);
-  status = signal<number>(1);
+  status = signal(1);
   form!: FormGroup;
 
-  readonly adjustmentTypes = [
-    { value: 1, label: 'Correction' },
-    { value: 3, label: 'Damage' },
-    { value: 4, label: 'Loss / Theft' },
-    { value: 5, label: 'Count Variance' },
-    { value: 6, label: 'Revaluation' },
-  ];
-  readonly directions = [
-    { value: 1, label: 'Increase' },
-    { value: -1, label: 'Decrease' },
-  ];
+  lineRows = signal<IAdjustmentLine[]>([]);
 
-  isDraft = computed(() => this.status() === 1);
-  isSubmitted = computed(() => this.status() === 2);
-  isPosted = computed(() => this.status() === 3);
-  isCancelled = computed(() => this.status() === 4);
-  isLocked = computed(() => this.status() >= 2);
-
-  statusLabel = computed(() => ({ 1: 'Draft', 2: 'Submitted', 3: 'Posted', 4: 'Cancelled' } as Record<number, string>)[this.status()] || 'Draft');
+  readonly adjustmentTypes = invConstants.adjustmentTypes;
+  readonly directions = [{ value: 1, label: 'In (+)' }, { value: 2, label: 'Out (-)' }];
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter((o) => (o.adjustment_id || '').toLowerCase().includes(term));
+    const list = term
+      ? data.filter(
+          (o) =>
+            (o.adjustment_id || '').toLowerCase().includes(term) ||
+            (o.warehouse_name || '').toLowerCase().includes(term) ||
+            (o.reason_text || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.adjustment_no ?? 0) - (a.adjustment_no ?? 0));
   });
 
   pager = makePaginator<IAdjustment>(this.filtered);
 
-  get lines(): FormArray { return this.form.get('lines') as FormArray; }
+  readonly isDraft = computed(() => this.status() === 1);
+  readonly isSubmitted = computed(() => this.status() === 2);
+  readonly isPosted = computed(() => this.status() === 3);
+
+  readonly totalInValue = computed(() =>
+    this.lineRows()
+      .filter((l) => Number(l.direction) === 1)
+      .reduce((sum, l) => sum + (Number(l.qty) || 0) * (Number(l.unit_cost) || 0), 0),
+  );
+
+  readonly totalOutValue = computed(() =>
+    this.lineRows()
+      .filter((l) => Number(l.direction) === 2)
+      .reduce((sum, l) => sum + (Number(l.qty) || 0) * (Number(l.unit_cost) || 0), 0),
+  );
+
+  readonly netValue = computed(() => this.totalInValue() - this.totalOutValue());
+
+  readonly statusLabel = computed(
+    () => ({ 1: 'Draft', 2: 'Submitted', 3: 'Posted', 4: 'Cancelled' } as Record<number, string>)[this.status()] || 'Draft',
+  );
+
+  readonly lineData = computed(() =>
+    this.lineRows().map((l) => ({
+      ...l,
+      __total: (Number(l.direction) === 2 ? -1 : 1) * (Number(l.qty) || 0) * (Number(l.unit_cost) || 0),
+    })),
+  );
 
   initForm(): void {
     this.form = this.fb.group({
@@ -81,21 +119,6 @@ export class Inv1102ModelService {
       adjustment_type: [1, [Validators.required]],
       reason_text: [''],
       remarks: [''],
-      lines: this.fb.array([]),
-    });
-  }
-
-  private lineGroup(l?: any): FormGroup {
-    return this.fb.group({
-      adjustment_dtl_no: [l?.adjustment_dtl_no ?? null],
-      product_no: [l?.product_no ?? null, [Validators.required]],
-      uom_no: [l?.uom_no ?? null, [Validators.required]],
-      direction: [l?.direction ?? 1, [Validators.required]],
-      qty: [l?.qty ?? null, [Validators.required, Validators.min(0.0001)]],
-      unit_cost: [l?.unit_cost ?? 0],
-      batch_code: [l?.batch_code ?? ''],
-      expiry_date: [l?.expiry_date ?? null],
-      remarks: [l?.remarks ?? ''],
     });
   }
 
@@ -109,7 +132,11 @@ export class Inv1102ModelService {
       if (isSuccess(res) && res.data) {
         this.items.set(res.data);
         const resolved = resolvePostReloadSelection(res.data, (o: IAdjustment) => o.adjustment_no, reselectNo);
-        resolved ? this.select(resolved.item as IAdjustment) : this.onNew();
+        if (resolved) {
+          this.select(resolved.item as IAdjustment);
+        } else {
+          this.onNew();
+        }
       }
     });
   }
@@ -124,29 +151,60 @@ export class Inv1102ModelService {
 
   private patch(o: any): void {
     this.status.set(o.status ?? 1);
-    this.lines.clear();
-    (o.lines || []).forEach((l: any) => this.lines.push(this.lineGroup(l)));
+    const lines: IAdjustmentLine[] = (o.lines || []).map((l: any) => ({ ...l, __uid: ++this.uid }));
+    this.lineRows.set(lines);
     this.form.patchValue({
       adjustment_no: o.adjustment_no, adjustment_id: o.adjustment_id, adjustment_date: o.adjustment_date,
-      warehouse_no: o.warehouse_no, adjustment_type: o.adjustment_type, reason_text: o.reason_text ?? '', remarks: o.remarks ?? '',
+      warehouse_no: o.warehouse_no, adjustment_type: o.adjustment_type ?? 1,
+      reason_text: o.reason_text ?? '', remarks: o.remarks ?? '',
     });
-    if (this.isLocked()) this.form.disable({ emitEvent: false });
-    else this.form.enable({ emitEvent: false });
+    if (o.status === 1) this.form.enable({ emitEvent: false });
+    else this.form.disable({ emitEvent: false });
     this.form.get('adjustment_id')?.disable({ emitEvent: false });
   }
 
-  addLine(): void { if (this.isDraft()) this.lines.push(this.lineGroup()); }
-  removeLine(i: number): void { if (this.isDraft()) this.lines.removeAt(i); }
+  addLine(): void {
+    this.lineRows.update((rows) => [
+      ...rows,
+      {
+        __uid: ++this.uid,
+        product_no: null,
+        uom_no: null,
+        direction: 1,
+        qty: 1,
+        unit_cost: 0,
+        batch_code: '',
+        expiry_date: null,
+      },
+    ]);
+  }
 
-  lineValue(i: number): number {
-    const g = this.lines.at(i);
-    return (Number(g.get('qty')?.value) || 0) * (Number(g.get('unit_cost')?.value) || 0);
+  onLineChange(row: IAdjustmentLine): void {
+    this.lineRows.update((rows) =>
+      rows.map((r) => {
+        if (r.__uid !== row.__uid) return r;
+        const updated = { ...r, ...row };
+        if (row.product_no && row.product_no !== r.product_no) {
+          const p = this.lookups().products.find((x) => x.value === row.product_no);
+          if (p) {
+            updated.product_name = p.label;
+            const uom = this.lookups().uoms[0];
+            if (uom && !updated.uom_no) updated.uom_no = uom.value;
+          }
+        }
+        return updated;
+      }),
+    );
+  }
+
+  removeLine(row: IAdjustmentLine): void {
+    this.lineRows.update((rows) => rows.filter((r) => r.__uid !== row.__uid));
   }
 
   onNew(): void {
     this.selectedNo.set(null);
     this.status.set(1);
-    this.lines.clear();
+    this.lineRows.set([]);
     this.form.enable({ emitEvent: false });
     this.form.reset({ adjustment_date: new Date().toISOString().substring(0, 10), adjustment_type: 1 });
     this.form.get('adjustment_id')?.disable({ emitEvent: false });
@@ -155,10 +213,16 @@ export class Inv1102ModelService {
   onSaveDraft(): void {
     if (!this.isDraft()) return;
     if (this.form.invalid) { this.form.markAllAsTouched(); this.toastr.warning('Please correct the validation errors.'); return; }
+    if (this.lineRows().length === 0) { this.toastr.warning('Please add at least one line item.'); return; }
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
     this.isSaving.set(true);
-    this.data.save({ ...val, adjustment_no: this.selectedNo() }).pipe(finalize(() => this.isSaving.set(false))).subscribe({
+    const payload = {
+      ...val,
+      adjustment_no: this.selectedNo(),
+      lines: this.lineRows().map(({ __uid: _uid, __total: _tot, ...rest }) => rest),
+    };
+    this.data.save(payload).pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) { this.toastr.success(isUpdate ? 'Draft updated' : 'Draft created'); this.loadList(res.data?.adjustment_no ?? this.selectedNo()); }
         else this.toastr.error(res.message || 'Save failed');

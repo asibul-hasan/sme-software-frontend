@@ -53,12 +53,14 @@ export class Inv1003ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter(
-      (c) =>
-        (c.category_name || '').toLowerCase().includes(term) ||
-        (c.category_id || '').toLowerCase().includes(term),
-    );
+    const list = term
+      ? data.filter(
+          (c) =>
+            (c.category_name || '').toLowerCase().includes(term) ||
+            (c.category_id || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.category_no ?? 0) - (a.category_no ?? 0));
   });
 
   pager = makePaginator<ICategory>(this.filtered);
@@ -94,7 +96,11 @@ export class Inv1003ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (c: ICategory) => c.category_no, reselectNo);
-          resolved ? this.select(resolved.item as ICategory) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as ICategory);
+          } else {
+            this.onNew();
+          }
         }
       });
   }

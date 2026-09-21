@@ -1,5 +1,6 @@
 <app-page-form-layout
   [title]="'Stock Transfer'"
+  [subtitle]="'Inter-warehouse inventory movements'"
   [icon]="'swap_horiz'"
   [recordsCount]="model.filtered().length"
   [sidebarTitle]="'Transfers'"
@@ -19,8 +20,8 @@
     @for (o of model.pager.paged(); track o.transfer_no) {
       <button type="button" class="list-group-item list-group-item-action"
         [class.active]="model.selectedNo() === o.transfer_no" (click)="model.select(o)">
-        <h6 class="list-item-title mb-0 text-truncate">{{ o.transfer_id }}</h6>
-        <p class="list-item-subtitle mb-0 text-truncate">{{ o.from_warehouse_name }} → {{ o.to_warehouse_name }}</p>
+        <h6 class="list-item-title mb-0 truncate">{{ o.transfer_id }}</h6>
+        <p class="list-item-subtitle mb-0 truncate">{{ o.from_warehouse_name }} → {{ o.to_warehouse_name }}</p>
         <div class="list-item-meta">
           <span class="list-item-tag" [ngClass]="{ 'list-item-tag--info': o.status === 2, 'list-item-tag--warning': o.status === 3 || o.status === 5, 'list-item-tag--success': o.status === 4, 'list-item-tag--danger': o.status === 6 }">
             {{ model.statusLabels[o.status] }}
@@ -31,101 +32,116 @@
     @if (model.filtered().length === 0) {
       <div class="list-empty-state">
         <mat-icon>swap_horiz</mat-icon>
-        <p>No transfers</p>
+        <p>No transfers found</p>
       </div>
     }
   </div>
 
-  <div formContent>
-    <form [formGroup]="model.form" autocomplete="off">
-      <div class="form-section-card card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">swap_horiz</mat-icon>Stock Transfer</h4>
-          <div class="d-flex align-items-center gap-2">
-            @if (model.selectedNo()) {
-              <span class="badge" [ngClass]="{ 'text-bg-secondary': model.isDraft(), 'text-bg-info': model.isSubmitted(), 'text-bg-warning': model.isDispatched(), 'text-bg-success': model.status() === 4, 'text-bg-danger': model.status() === 6 }">{{ model.statusLabel() }}</span>
-            }
-            @if (model.selectedNo() && model.isDraft() && permissionService.canUpdate()) {
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="onSubmit()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">send</mat-icon> Submit</button>
-            }
-            @if (model.isSubmitted() && permissionService.canApprove()) {
-              <button type="button" class="btn btn-sm btn-primary" (click)="onDispatch()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">local_shipping</mat-icon> Dispatch</button>
-            }
-            @if (model.isDispatched() && permissionService.canApprove()) {
-              <button type="button" class="btn btn-sm btn-success" (click)="onReceive()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">inventory</mat-icon> Receive</button>
-            }
-            @if ((model.isDraft() || model.isSubmitted()) && permissionService.canApprove()) {
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="onCancel()" [disabled]="model.isSaving()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">cancel</mat-icon> Cancel</button>
-            }
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row row-group">
-            @if (model.form.get('transfer_id')?.value) {
-              <div class="col-md-3"><div class="field-group"><label class="field-label">Document No</label><input class="form-control" formControlName="transfer_id" /></div></div>
-            }
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">Date</label><app-date-picker formControlName="transfer_date" placeholder="Select date" /></div></div>
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">From Warehouse</label>
-              <ng-select formControlName="from_warehouse_no" [clearable]="false" placeholder="Source">
-                @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }
-              </ng-select></div></div>
-            <div class="col-md-3"><div class="field-group"><label class="field-label required">To Warehouse</label>
-              <ng-select formControlName="to_warehouse_no" [clearable]="false" placeholder="Destination">
-                @for (w of model.lookups().warehouses; track w.value) { <ng-option [value]="w.value">{{ w.label }}</ng-option> }
-              </ng-select></div></div>
-            <div class="col-md-6"><div class="field-group"><label class="field-label">Remarks</label><input class="form-control" formControlName="remarks" /></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section-card card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-header__title mb-0 fw-bold"><mat-icon class="me-2 align-middle">list</mat-icon>Lines</h4>
-          @if (model.isDraft()) {
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addLine()"><mat-icon class="align-middle" style="font-size:18px;height:18px;width:18px">add</mat-icon> Add Line</button>
+  <div formContent class="h-full flex flex-col gap-3">
+    <form [formGroup]="model.form" autocomplete="off" class="flex-shrink-0">
+      <app-form-section
+        [title]="model.selectedNo() ? 'Stock Transfer · ' + model.statusLabel() : 'New Stock Transfer'"
+        icon="swap_horiz"
+      >
+        <div sectionActions class="flex gap-2">
+          @if (model.selectedNo() && model.isDraft() && permissionService.canUpdate()) {
+            <button type="button" class="btn-action" (click)="onSubmit()" [disabled]="model.isSaving()">
+              <mat-icon>send</mat-icon>
+              <span>Submit</span>
+            </button>
+          }
+          @if (model.isSubmitted() && permissionService.canApprove()) {
+            <button type="button" class="btn-action btn-save" (click)="onDispatch()" [disabled]="model.isSaving()">
+              <mat-icon>local_shipping</mat-icon>
+              <span>Dispatch</span>
+            </button>
+          }
+          @if (model.isDispatched() && permissionService.canApprove()) {
+            <button type="button" class="btn-action btn-save" (click)="onReceive()" [disabled]="model.isSaving()">
+              <mat-icon>inventory</mat-icon>
+              <span>Receive</span>
+            </button>
+          }
+          @if ((model.isDraft() || model.isSubmitted()) && permissionService.canApprove()) {
+            <button type="button" class="btn-action btn-delete" (click)="onCancel()" [disabled]="model.isSaving()">
+              <mat-icon>cancel</mat-icon>
+              <span>Cancel</span>
+            </button>
           }
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="min-width:200px">Product</th>
-                  <th style="width:130px">UOM</th>
-                  <th class="text-end" style="width:120px">Qty Sent</th>
-                  @if (model.isDispatched() || model.status() >= 4) { <th class="text-end" style="width:130px">Qty Received</th> }
-                  <th style="width:130px">Batch</th>
-                  <th style="width:50px"></th>
-                </tr>
-              </thead>
-              <tbody [formArrayName]="'lines'">
-                @for (row of model.lines.controls; track $index) {
-                  <tr [formGroupName]="$index" [class.table-warning]="(model.status() >= 4) && row.get('qty_received')?.value != null && row.get('qty_received')?.value < row.get('qty_sent')?.value">
-                    <td><ng-select formControlName="product_no" [clearable]="false" placeholder="Product">
-                      @for (p of model.lookups().products; track p.value) { <ng-option [value]="p.value">{{ p.label }}</ng-option> }
-                    </ng-select></td>
-                    <td><ng-select formControlName="uom_no" [clearable]="false" placeholder="UOM">
-                      @for (u of model.lookups().uoms; track u.value) { <ng-option [value]="u.value">{{ u.label }}</ng-option> }
-                    </ng-select></td>
-                    <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty_sent" step="0.0001" /></td>
-                    @if (model.isDispatched() || model.status() >= 4) {
-                      <td><input type="number" class="form-control form-control-sm text-end" formControlName="qty_received" step="0.0001" /></td>
-                    }
-                    <td><input class="form-control form-control-sm text-uppercase" formControlName="batch_code" placeholder="if batch" /></td>
-                    <td class="text-center">
-                      @if (model.isDraft()) {
-                        <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="model.removeLine($index)"><mat-icon style="font-size:18px;height:18px;width:18px">delete</mat-icon></button>
-                      }
-                    </td>
-                  </tr>
-                }
-                @if (model.lines.length === 0) { <tr><td colspan="6" class="text-center opacity-75 p-4">No lines. Click “Add Line”.</td></tr> }
-              </tbody>
-            </table>
+
+        @if (model.form.get('transfer_id')?.value) {
+          <app-form-field label="Document No" for="transfer_id" [span]="3">
+            <input id="transfer_id" class="form-control" formControlName="transfer_id" />
+          </app-form-field>
+        }
+
+        <app-form-field label="Date" for="transfer_date" required [span]="model.form.get('transfer_id')?.value ? 3 : 4">
+          <app-date-picker formControlName="transfer_date" placeholder="Select date" />
+        </app-form-field>
+
+        <app-form-field label="From Warehouse (Source)" for="from_warehouse_no" required [span]="model.form.get('transfer_id')?.value ? 3 : 4">
+          <ng-select
+            id="from_warehouse_no"
+            formControlName="from_warehouse_no"
+            [clearable]="false"
+            placeholder="Select source"
+          >
+            @for (w of model.lookups().warehouses; track w.value) {
+              <ng-option [value]="w.value">{{ w.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="To Warehouse (Destination)" for="to_warehouse_no" required [span]="model.form.get('transfer_id')?.value ? 3 : 4">
+          <ng-select
+            id="to_warehouse_no"
+            formControlName="to_warehouse_no"
+            [clearable]="false"
+            placeholder="Select destination"
+          >
+            @for (w of model.lookups().warehouses; track w.value) {
+              <ng-option [value]="w.value">{{ w.label }}</ng-option>
+            }
+          </ng-select>
+        </app-form-field>
+
+        <app-form-field label="Remarks" for="remarks" [span]="12">
+          <input id="remarks" class="form-control" formControlName="remarks" placeholder="Optional transfer notes" />
+        </app-form-field>
+      </app-form-section>
+    </form>
+
+    <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 420px">
+      <div class="card-header flex items-center">
+        <h4 class="card-header__title mb-0 font-bold flex items-center">
+          <mat-icon class="mr-2">list_alt</mat-icon>
+          Transfer Items
+        </h4>
+        <div class="ml-auto flex items-center gap-4">
+          <div class="text-right">
+            <span class="field-label mb-0">Total Sent Qty</span>
+            <div class="font-bold text-primary">{{ model.totalSentQty() | appDecimal }}</div>
           </div>
+          @if (model.isDispatched() || model.isClosed()) {
+            <div class="text-right">
+              <span class="field-label mb-0">Total Recv Qty</span>
+              <div class="font-bold text-emerald-600">{{ model.totalReceivedQty() | appDecimal }}</div>
+            </div>
+          }
         </div>
       </div>
-    </form>
+      <div class="card-body p-0 flex-1 min-h-0">
+        <app-erp-grid
+          [config]="lineGrid"
+          [data]="model.lineRows()"
+          height="100%"
+          (addRow)="model.addLine()"
+          (rowChange)="model.onLineChange($event)"
+          (rowRemove)="model.removeLine($event)"
+        ></app-erp-grid>
+      </div>
+    </div>
   </div>
 
   <app-sidebar-pagination sidebarFooter [pager]="model.pager"></app-sidebar-pagination>

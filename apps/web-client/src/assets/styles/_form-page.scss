@@ -470,12 +470,30 @@
     line-height: 14px !important;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-1px);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0) scale(0.95);
+  }
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.42 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: grayscale(70%) !important;
+
+    &:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    &:active {
+      transform: none !important;
+    }
   }
 }
 
@@ -491,10 +509,20 @@
   color: #fff;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
     color: #fff;
+  }
+
+  &:disabled,
+  &[disabled] {
+    background: #cbd5e1 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    mat-icon {
+      color: #64748b !important;
+    }
   }
 
   mat-icon {
@@ -515,10 +543,20 @@
   color: #fff;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
     color: #fff;
+  }
+
+  &:disabled,
+  &[disabled] {
+    background: #cbd5e1 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    mat-icon {
+      color: #64748b !important;
+    }
   }
 
   mat-icon {
@@ -530,8 +568,14 @@
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.3);
   color: var(--amber);
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(245, 158, 11, 0.25);
+  }
+  &:disabled,
+  &[disabled] {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
   }
 }
 
@@ -539,8 +583,14 @@
   background: rgba(244, 63, 94, 0.15);
   border-color: rgba(244, 63, 94, 0.3);
   color: var(--rose);
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(244, 63, 94, 0.25);
+  }
+  &:disabled,
+  &[disabled] {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
   }
 }
 

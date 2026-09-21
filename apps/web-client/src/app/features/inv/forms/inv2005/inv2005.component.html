@@ -1,12 +1,25 @@
-<div class="p-3">
-  <!-- Header + warehouse selector -->
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0 fw-bold">
-      <mat-icon class="me-2 align-middle">low_priority</mat-icon>
-      Reorder Level Setup
-    </h4>
-    <div class="d-flex align-items-center gap-2">
-      <div style="min-width: 280px">
+<app-page-form-layout
+  [title]="'Reorder Level Setup'"
+  [subtitle]="'Safety stock thresholds, reorder quantities, and procurement lead times'"
+  [icon]="'low_priority'"
+  [hasSidebar]="false"
+  (save)="onSave()"
+  (new)="onNew()"
+  (reset)="onReset()"
+  [showSave]="permissionService.canInsert() || permissionService.canUpdate()"
+  [showNew]="permissionService.canInsert()"
+  [showDelete]="false"
+  [isSaving]="model.isSaving()"
+  [isLoading]="model.isLoading()"
+>
+  <div formContent class="h-full flex flex-col gap-3">
+    <!-- Top toolbar: Warehouse selector -->
+    <div class="card p-3 flex flex-row items-center justify-between gap-4 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-muted">warehouse</mat-icon>
+        <span class="font-semibold text-sm">Target Warehouse:</span>
+      </div>
+      <div style="width: 320px">
         <ng-select
           [items]="model.warehouses()"
           bindValue="value"
@@ -17,66 +30,26 @@
           (ngModelChange)="model.selectWarehouse($event)"
         ></ng-select>
       </div>
-      @if (permissionService.canInsert() || permissionService.canUpdate()) {
-        <button type="button" class="btn btn-primary" (click)="model.onSave()" [disabled]="model.isSaving()">
-          <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">save</mat-icon> Save
-        </button>
-      }
     </div>
+
+    @if (!model.selectedWarehouseNo()) {
+      <div class="card p-8 text-center opacity-75">
+        <mat-icon class="text-4xl text-muted mb-2">low_priority</mat-icon>
+        <p>Please select a warehouse to manage its reorder policies.</p>
+      </div>
+    } @else {
+      <div class="form-section-card card flex-1 min-h-0 flex flex-col" style="min-height: 420px">
+        <div class="card-body p-0 flex-1 min-h-0">
+          <app-erp-grid
+            [config]="gridConfig"
+            [data]="model.rows()"
+            height="100%"
+            (addRow)="model.addRow()"
+            (rowChange)="model.onRowChange($event)"
+            (rowRemove)="model.removeRow($event)"
+          ></app-erp-grid>
+        </div>
+      </div>
+    }
   </div>
-
-  @if (!model.selectedWarehouseNo()) {
-    <div class="p-4 text-center opacity-75">Select a warehouse to manage its reorder policy.</div>
-  } @else {
-    <ng-template #productTpl let-row>
-      @if (row.reorder_no) {
-        <span class="small fw-semibold">{{ row.product_name }}</span>
-      } @else {
-        <ng-select
-          [items]="model.products()"
-          bindValue="value"
-          bindLabel="label"
-          [clearable]="false"
-          placeholder="Select product"
-          [ngModel]="row.product_no"
-          (ngModelChange)="setRowValue(row, 'product_no', $event)"
-          [ngModelOptions]="{ standalone: true }"
-          appendTo="body"
-        ></ng-select>
-      }
-    </ng-template>
-
-    <ng-template #numberTpl let-row let-column="column">
-      <input
-        type="number"
-        class="form-control form-control-sm text-end"
-        [ngModel]="row[column.field]"
-        (ngModelChange)="setRowValue(row, column.field, $event)"
-        [ngModelOptions]="{ standalone: true }"
-        [step]="column.tooltip || '0.0001'"
-      />
-    </ng-template>
-
-    <ng-template #removeTpl let-row>
-      <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="removeRow(row)" title="Remove">
-        <mat-icon style="font-size: 18px; height: 18px; width: 18px">delete</mat-icon>
-      </button>
-    </ng-template>
-
-    <div class="d-flex justify-content-end mb-1">
-      @if (permissionService.canInsert()) {
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="model.addRow()">
-          <mat-icon class="align-middle" style="font-size: 18px; height: 18px; width: 18px">add</mat-icon> Add Product
-        </button>
-      }
-    </div>
-
-    <app-common-table
-      [columns]="columns()"
-      [data]="rows()"
-      [config]="tableConfig"
-      [loading]="model.isLoading()"
-      [tableId]="'inv2005-reorder-rules'"
-    ></app-common-table>
-  }
-</div>
+</app-page-form-layout>

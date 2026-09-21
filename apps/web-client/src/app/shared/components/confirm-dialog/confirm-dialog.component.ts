@@ -31,48 +31,48 @@ export interface ConfirmDialogData {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
   template: `
-    <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div class="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl">
       <!-- Close Button -->
       <button
         type="button"
         (click)="onCancel()"
-        class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
+        class="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
       >
-        <mat-icon class="!text-[20px]">close</mat-icon>
+        <mat-icon class="!text-[18px]">close</mat-icon>
       </button>
 
       <!-- Body -->
-      <div class="px-8 pt-8 pb-6 text-center">
+      <div class="px-6 pt-5 pb-3 text-center">
         <!-- Icon -->
         <div
-          class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
+          class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
           [ngClass]="iconBackground"
         >
-          <mat-icon class="!h-10 !w-10 !text-[42px]" [ngClass]="iconColor">
+          <mat-icon class="!h-6 !w-6 !text-[26px]" [ngClass]="iconColor">
             {{ icon }}
           </mat-icon>
         </div>
 
         <!-- Title -->
-        <h2 class="text-2xl font-semibold tracking-tight text-gray-900">
+        <h2 class="text-base font-semibold tracking-tight text-gray-900">
           {{ data.title || 'Confirmation' }}
         </h2>
 
         <!-- Message -->
-        <p class="mt-3 text-sm leading-6 text-gray-500">
+        <p class="mt-1.5 text-xs leading-5 text-gray-500">
           {{ data.message }}
         </p>
       </div>
 
       <!-- Footer -->
       <div
-        class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4"
+        class="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/80 px-5 py-2.5"
       >
         <button
           *ngIf="showCancel"
           type="button"
           (click)="onCancel()"
-          class="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:border-gray-400 hover:bg-gray-100"
+          class="rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-xs font-medium text-gray-700 transition-all duration-200 hover:border-gray-400 hover:bg-gray-100"
         >
           {{ data.cancelText || 'Cancel' }}
         </button>
@@ -80,7 +80,7 @@ export interface ConfirmDialogData {
         <button
           type="button"
           (click)="onConfirm()"
-          class="rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
+          class="rounded-lg px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
           [ngClass]="buttonClass"
         >
           {{ data.confirmText || (showCancel ? 'Confirm' : 'OK') }}

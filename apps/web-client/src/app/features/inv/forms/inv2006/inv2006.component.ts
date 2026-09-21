@@ -12,6 +12,8 @@ import { ICountLine, Inv2006DataService } from './services/data.service';
 import { COUNT_TYPES, Inv2006ModelService } from './services/model.service';
 import { formatDecimal } from '../../../../core/utils/format-number';
 
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
+
 /**
  * INV_2006 — Physical Count.
  *
@@ -28,6 +30,7 @@ import { formatDecimal } from '../../../../core/utils/format-number';
     SharedModule,
     PageFormLayoutComponent,
     ErpGridComponent,
+    AppDecimalPipe,
   ],
   providers: [Inv2006DataService, Inv2006ModelService],
   templateUrl: './inv2006.component.html',

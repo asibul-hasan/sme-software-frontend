@@ -15,7 +15,12 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@app/*": ["apps/web-client/src/app/*"]
+      "@app/*": ["apps/web-client/src/app/*"],
+      "@pms/*": ["apps/aidlyPms/src/app/*"],
+      "@pms/core/*": ["apps/aidlyPms/src/app/core/*"],
+      "@pms/shared/*": ["apps/aidlyPms/src/app/shared/*"],
+      "@pms/layout/*": ["apps/aidlyPms/src/app/layout/*"],
+      "@pms/features/*": ["apps/aidlyPms/src/app/features/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

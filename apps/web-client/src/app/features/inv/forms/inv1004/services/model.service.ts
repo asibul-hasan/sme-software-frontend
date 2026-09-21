@@ -35,12 +35,14 @@ export class Inv1004ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter(
-      (b) =>
-        (b.brand_name || '').toLowerCase().includes(term) ||
-        (b.brand_id || '').toLowerCase().includes(term),
-    );
+    const list = term
+      ? data.filter(
+          (b) =>
+            (b.brand_name || '').toLowerCase().includes(term) ||
+            (b.brand_id || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.brand_no ?? 0) - (a.brand_no ?? 0));
   });
 
   pager = makePaginator<IBrand>(this.filtered);
@@ -65,7 +67,11 @@ export class Inv1004ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (b: IBrand) => b.brand_no, reselectNo);
-          resolved ? this.select(resolved.item as IBrand) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as IBrand);
+          } else {
+            this.onNew();
+          }
         }
       });
   }

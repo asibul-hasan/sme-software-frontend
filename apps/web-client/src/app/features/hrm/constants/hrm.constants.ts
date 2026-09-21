@@ -81,14 +81,13 @@ export const hrmConstants = {
     { value: 3, label: 'Up' },
   ],
   countryPacks: [
-    { value: 'BD', label: 'Bangladesh (BD pack)' },
-    { value: 'INTL', label: 'Global / Generic' },
+    { value: 'DEFAULT', label: 'Standard / Default' },
   ],
   taxpayerClasses: [
     { value: 'GENERAL', label: 'General' },
-    { value: 'WOMEN_SENIOR', label: 'Women / Senior Citizen' },
+    { value: 'SENIOR', label: 'Senior Citizen' },
     { value: 'DISABILITY', label: 'Person with Disability' },
-    { value: 'FREEDOM_FIGHTER', label: 'Freedom Fighter' },
+    { value: 'SPECIAL', label: 'Special Exemption' },
     { value: 'OTHER', label: 'Other' },
   ],
 

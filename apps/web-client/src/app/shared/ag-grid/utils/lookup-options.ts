@@ -29,3 +29,44 @@ export function matchLookupOption(
     options.find((o) => String(o.value) === String(value))
   );
 }
+
+/**
+ * Compares two grid cell values for semantic equality.
+ *
+ * Prevents false-positive cell change events when entering/exiting edit mode
+ * with equivalent values (e.g. null vs undefined vs empty string, number vs numeric string, boolean vs 1/0).
+ */
+export function areGridValuesEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+
+  // Handle null / undefined / empty string equivalence
+  const emptyA = a === null || a === undefined || a === '';
+  const emptyB = b === null || b === undefined || b === '';
+  if (emptyA && emptyB) return true;
+  if (emptyA !== emptyB) return false;
+
+  // Numbers vs numeric strings (e.g. 1 === "1", 100.0 === "100")
+  if (typeof a === 'number' && typeof b === 'string') {
+    const numB = Number(b);
+    return !isNaN(numB) && a === numB;
+  }
+  if (typeof a === 'string' && typeof b === 'number') {
+    const numA = Number(a);
+    return !isNaN(numA) && numA === b;
+  }
+
+  // Boolean vs 1/0 numeric representation
+  if (
+    (typeof a === 'boolean' || typeof a === 'number') &&
+    (typeof b === 'boolean' || typeof b === 'number')
+  ) {
+    return (a ? 1 : 0) === (b ? 1 : 0);
+  }
+
+  // Trimmed string comparison
+  if (typeof a === 'string' && typeof b === 'string') {
+    return a.trim() === b.trim();
+  }
+
+  return false;
+}

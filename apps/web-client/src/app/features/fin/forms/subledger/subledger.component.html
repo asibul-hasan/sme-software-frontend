@@ -20,16 +20,16 @@
           <div class="ml-auto flex items-center gap-4 flex-wrap">
             <div class="text-end">
               <span class="field-label mb-0 block">Sub-ledger</span>
-              <div class="font-bold">{{ subLedgerTotal() | number: '1.2-2' }}</div>
+              <div class="font-bold">{{ subLedgerTotal() | appDecimal }}</div>
             </div>
             <div class="text-end">
               <span class="field-label mb-0 block">GL control</span>
-              <div class="font-bold">{{ glControlTotal() | number: '1.2-2' }}</div>
+              <div class="font-bold">{{ glControlTotal() | appDecimal }}</div>
             </div>
             <div class="text-end">
               <span class="field-label mb-0 block">Difference</span>
               <div class="font-bold" [class.text-danger]="!isReconciled()" [class.text-success]="isReconciled()">
-                {{ difference() | number: '1.2-2' }}
+                {{ difference() | appDecimal }}
               </div>
             </div>
           </div>
@@ -51,11 +51,11 @@
         } @else {
           <div class="mt-3 p-2 rounded border border-danger bg-danger-subtle text-sm">
             <mat-icon class="align-middle mr-1 text-danger">error</mat-icon>
-            Out by <strong>{{ difference() | number: '1.2-2' }}</strong>
+            Out by <strong>{{ difference() | appDecimal }}</strong>
             across {{ mismatchCount() }} {{ mismatchCount() === 1 ? 'party' : 'parties' }}.
             @if (unattributed() !== 0) {
               <span>
-                <strong>{{ unattributed() | number: '1.2-2' }}</strong> of the control account names no
+                <strong>{{ unattributed() | appDecimal }}</strong> of the control account names no
                 {{ partyLabel.toLowerCase() }} — usually a journal posted straight to the control
                 account, which no party statement can ever show.
               </span>

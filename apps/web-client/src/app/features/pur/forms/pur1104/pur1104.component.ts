@@ -25,12 +25,13 @@ interface AllocRow extends OpenInvoice { alloc: number; }
 
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
 import { DecimalInputDirective } from '@app/shared/directives/decimal-input.directive';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pur1104',
   standalone: true,
-  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [DecimalInputDirective, CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Pur1104DataService],
   templateUrl: './pur1104.component.html',
   styles: [`:host { display: block; height: 100%; }`],

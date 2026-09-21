@@ -6,6 +6,7 @@ import { SharedModule } from '../../../../shared/shared.module';
 import { PageFormLayoutComponent } from '../../../../shared/components/page-form-layout/page-form-layout.component';
 import { ErpGridComponent, GridConfig, GridColumns } from '../../../../shared/ag-grid';
 import { AppDatePickerComponent } from '../../../../shared/components/date-picker';
+import { AppDecimalPipe } from '../../../../shared/pipes/app-decimal.pipe';
 import { Fin1302DataService, AccountLite, LedgerResult } from './services/data.service';
 import { FormPermissionService } from '../../../../core/services/form-permission.service';
 import { isSuccess } from '../../../../core/models/response.model';
@@ -15,7 +16,7 @@ import { ToastrService } from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-fin1302',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent],
+  imports: [CommonModule, FormsModule, SharedModule, PageFormLayoutComponent, ErpGridComponent, AppDatePickerComponent, AppDecimalPipe],
   providers: [Fin1302DataService],
   templateUrl: './fin1302.component.html',
   styles: [`:host { display: block; height: 100%; }`],

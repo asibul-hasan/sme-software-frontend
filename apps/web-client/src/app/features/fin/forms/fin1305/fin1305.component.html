@@ -15,8 +15,8 @@
             <app-date-picker [(ngModel)]="asOf" (ngModelChange)="load()" placeholder="Select date" />
           </div>
           <div class="ml-auto flex items-center gap-4">
-            <div class="text-end"><span class="field-label mb-0 block">Total Assets</span><div class="font-bold">{{ totalAssets() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Liabilities + Equity</span><div class="font-bold">{{ totalLiabEquity() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Total Assets</span><div class="font-bold">{{ totalAssets() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Liabilities + Equity</span><div class="font-bold">{{ totalLiabEquity() | appDecimal }}</div></div>
             <span class="list-item-tag" [class.list-item-tag--primary]="balanced()" [class.list-item-tag--warning]="!balanced()">
               {{ balanced() ? 'Balanced' : 'Out of balance' }}
             </span>
@@ -49,11 +49,11 @@
           </div>
           <div class="card-body py-2 flex justify-between items-center border-t border-[var(--border-color)]">
             <span class="field-label mb-0">Current Year Earnings</span>
-            <span class="font-bold">{{ currentEarnings() | number: '1.2-2' }}</span>
+            <span class="font-bold">{{ currentEarnings() | appDecimal }}</span>
           </div>
           <div class="card-body py-2 flex justify-between items-center border-t border-[var(--border-color)]">
             <span class="field-label mb-0 font-bold">Total Equity</span>
-            <span class="font-bold">{{ totalEquity() | number: '1.2-2' }}</span>
+            <span class="font-bold">{{ totalEquity() | appDecimal }}</span>
           </div>
         </div>
       </div>

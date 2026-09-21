@@ -7,6 +7,7 @@ import { Fin1002DataService } from './data.service';
 import { BaseEntity } from '../../../../../core/models/base-entity.model';
 import { isSuccess } from '../../../../../core/models/response.model';
 import { makePaginator, SortDirection } from '../../../../../core/utils/paginator';
+import { FormUtilService } from '../../../../../core/services/form-util.service';
 
 export interface AccountGroup extends BaseEntity {
   account_group_no: number;
@@ -25,10 +26,11 @@ export interface AccountGroup extends BaseEntity {
 /** State + form for FIN_1002 – Account Group. */
 @Injectable()
 export class Fin1002ModelService {
-  private fb     = inject(FormBuilder);
+  private fb        = inject(FormBuilder);
   private data      = inject(Fin1002DataService);
   private toastr    = inject(ToastrService);
   private translate = inject(TranslateService);
+  private formUtil  = inject(FormUtilService);
 
   groups        = signal<AccountGroup[]>([]);
   isLoading     = signal(false);
@@ -36,6 +38,7 @@ export class Fin1002ModelService {
   searchTerm    = signal('');
   selectedNo    = signal<number | null>(null);
   sortDirection = signal<SortDirection>('');
+  backupData: Record<string, any> | null = null;
 
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -48,7 +51,10 @@ export class Fin1002ModelService {
   pager = makePaginator(this.filtered);
 
   /** Live parent options (exclude self). */
-  parentOptions = computed(() => this.groups().filter((g) => g.account_group_no !== this.selectedNo()));
+  parentOptions = computed(() => {
+    const sel = this.selectedNo();
+    return this.groups().filter((g) => g.account_group_no !== sel);
+  });
 
   form!: FormGroup;
 
@@ -95,13 +101,15 @@ export class Fin1002ModelService {
       account_group_no: item.account_group_no,
       account_group_id: item.account_group_id,
       group_name:       item.group_name,
-      parent_group_no:  item.parent_group_no,
+      parent_group_no:  item.parent_group_no ?? null,
       root_type:        item.root_type,
-      normal_balance:   item.normal_balance,
+      normal_balance:   item.normal_balance ?? null,
       is_control:       item.is_control ?? 0,
       order_sl:         item.order_sl ?? 0,
-      is_active:        item.is_active,
+      is_active:        item.is_active ?? 1,
     });
+    this.backupData = this.form.getRawValue();
+    this.form.markAsPristine();
   }
 
   onSave(): void {
@@ -112,11 +120,30 @@ export class Fin1002ModelService {
       else { this.toastr.warning(this.translate.instant('validationErrors')); }
       return;
     }
-    this.isSaving.set(true);
+
     const val = this.form.getRawValue();
     const isUpdate = !!this.selectedNo();
-    const obs = isUpdate ? this.data.update(this.selectedNo()!, val) : this.data.save(val);
-    obs.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+
+    if (isUpdate && !this.formUtil.hasChanges(this.backupData, val)) {
+      this.toastr.info(this.translate.instant('common.noChanges') || 'No changes found');
+      return;
+    }
+
+    this.isSaving.set(true);
+    let request$;
+    if (isUpdate) {
+      const diffPayload = this.formUtil.getDiffPayload(
+        this.backupData,
+        val,
+        'account_group_no',
+        ['row_version']
+      );
+      request$ = this.data.update(this.selectedNo()!, diffPayload);
+    } else {
+      request$ = this.data.save(val);
+    }
+
+    request$.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (res) => {
         if (isSuccess(res)) {
           this.toastr.success(this.translate.instant(isUpdate ? 'common.updateSuccess' : 'common.saveSuccess'));
@@ -143,5 +170,7 @@ export class Fin1002ModelService {
   onNew(): void {
     this.selectedNo.set(null);
     this.form?.reset({ root_type: 1, is_control: 0, order_sl: 0, is_active: 1 });
+    this.backupData = null;
+    this.form.markAsPristine();
   }
 }

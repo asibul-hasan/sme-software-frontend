@@ -36,7 +36,11 @@ export class Inv1004Component implements OnInit {
   onReset(): void {
     const no = this.model.selectedNo();
     const item = this.model.items().find((x) => x.brand_no === no);
-    item ? this.model.select(item) : this.model.onNew();
+    if (item) {
+      this.model.select(item);
+    } else {
+      this.model.onNew();
+    }
   }
   onDelete(): void {
     if (!this.model.selectedNo()) return;

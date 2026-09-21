@@ -19,11 +19,11 @@
             <app-date-picker [(ngModel)]="to" (ngModelChange)="load()" placeholder="To date" />
           </div>
           <div class="ml-auto flex items-center gap-4 flex-wrap">
-            <div class="text-end"><span class="field-label mb-0 block">Opening Cash</span><div class="font-bold">{{ openingCash() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Receipts</span><div class="font-bold text-success">{{ totalReceipts() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Payments</span><div class="font-bold text-danger">{{ totalPayments() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Net</span><div class="font-bold" [class.text-success]="netCashFlow() >= 0" [class.text-danger]="netCashFlow() < 0">{{ netCashFlow() | number: '1.2-2' }}</div></div>
-            <div class="text-end"><span class="field-label mb-0 block">Closing Cash</span><div class="font-bold">{{ closingCash() | number: '1.2-2' }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Opening Cash</span><div class="font-bold">{{ openingCash() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Receipts</span><div class="font-bold text-success">{{ totalReceipts() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Payments</span><div class="font-bold text-danger">{{ totalPayments() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Net</span><div class="font-bold" [class.text-success]="netCashFlow() >= 0" [class.text-danger]="netCashFlow() < 0">{{ netCashFlow() | appDecimal }}</div></div>
+            <div class="text-end"><span class="field-label mb-0 block">Closing Cash</span><div class="font-bold">{{ closingCash() | appDecimal }}</div></div>
           </div>
         </div>
       </div>

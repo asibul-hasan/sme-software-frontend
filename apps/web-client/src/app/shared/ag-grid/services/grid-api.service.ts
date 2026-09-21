@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { GridApi } from 'ag-grid-community';
 import { ErpGridRowWrapper, GridBatchPayload, SqlRowState } from '../models/grid-row-state.enum';
+import { areGridValuesEqual } from '../utils/lookup-options';
 
 @Injectable()
 export class GridApiService<T = any> {
@@ -105,6 +106,11 @@ export class GridApiService<T = any> {
     if (index < 0) return;
 
     const wrapper = current[index];
+    const oldValue = (wrapper.data as any)?.[field];
+    if (areGridValuesEqual(oldValue, newValue)) {
+      return;
+    }
+
     const updatedData = { ...wrapper.data, [field]: newValue };
     const nextState = wrapper.__sqlState === SqlRowState.Insert ? SqlRowState.Insert : SqlRowState.Update;
 

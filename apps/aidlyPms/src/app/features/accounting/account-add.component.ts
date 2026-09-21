@@ -1,0 +1,145 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+
+@Component({
+  selector: 'app-account-add',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NzInputModule,
+    NzButtonModule,
+    NzSelectModule,
+    NzIconModule,
+    PageHeaderComponent,
+  ],
+  template: `
+    <div class="w-full space-y-4">
+      <app-page-header
+        title="Create Account"
+        subtitle="Add a new ledger or deposit account to your pharmacy finance book"
+        formId="ACC_1102"
+        [breadcrumbs]="[{ label: 'Accounts', url: '/accounting/transaction' }, { label: 'Create Account' }]"
+      >
+        <div actions class="flex items-center gap-2">
+          <button nz-button nzType="default" (click)="goBack()" class="rounded-md">
+            <span nz-icon nzType="arrow-left"></span> Back
+          </button>
+        </div>
+      </app-page-header>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+        <form (ngSubmit)="submitForm()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Account Name / Holder <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              nz-input
+              placeholder="e.g. Counter Cash, Islami Bank Main"
+              [(ngModel)]="name"
+              name="name"
+              class="rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Phone / Account Number <span class="text-rose-500">*</span>
+            </label>
+            <div class="flex gap-2">
+              <span class="h-9 px-3 flex items-center bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-600 shrink-0">
+                +880
+              </span>
+              <input
+                type="text"
+                nz-input
+                placeholder="1XXXXXXXXX"
+                [(ngModel)]="phone"
+                name="phone"
+                class="rounded-md flex-1"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Account Type <span class="text-rose-500">*</span>
+            </label>
+            <nz-select [(ngModel)]="accountType" name="accountType" class="w-full">
+              <nz-option nzValue="Cash In Hand" nzLabel="Cash In Hand"></nz-option>
+              <nz-option nzValue="Bank Account" nzLabel="Bank Account"></nz-option>
+              <nz-option nzValue="bKash Personal" nzLabel="bKash Personal"></nz-option>
+              <nz-option nzValue="bKash Merchant" nzLabel="bKash Merchant"></nz-option>
+              <nz-option nzValue="Nagad" nzLabel="Nagad"></nz-option>
+              <nz-option nzValue="Rocket" nzLabel="Rocket"></nz-option>
+              <nz-option nzValue="Card POS Machine" nzLabel="Card POS Machine"></nz-option>
+            </nz-select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Initial Balance (৳)
+            </label>
+            <input
+              type="number"
+              nz-input
+              placeholder="0.00"
+              [(ngModel)]="initialBalance"
+              name="initialBalance"
+              class="rounded-md font-mono"
+            />
+          </div>
+
+          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+            <button type="button" nz-button nzType="default" (click)="goBack()" class="rounded-md">
+              Cancel
+            </button>
+            <button type="submit" nz-button nzType="primary" class="rounded-md">
+              <span nz-icon nzType="check"></span> Submit Account
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `,
+})
+export class AccountAddComponent {
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly msg = inject(NzMessageService);
+
+  name = '';
+  phone = '';
+  accountType = 'Bank Account';
+  initialBalance = 0;
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/accounting/transaction']);
+    }
+  }
+
+  submitForm(): void {
+    if (!this.name.trim()) {
+      this.msg.error('Please enter account name');
+      return;
+    }
+    this.msg.success(`Account "${this.name}" created successfully!`);
+    this.router.navigate(['/accounting/transaction']);
+  }
+}

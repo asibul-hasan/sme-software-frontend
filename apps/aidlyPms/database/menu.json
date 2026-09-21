@@ -1,0 +1,605 @@
+[
+  {
+    "module": "Accounting & Financials",
+    "module_code": "ACC",
+    "series": 1100,
+    "screens": [
+      {
+        "form_id": "ACC_1101",
+        "title": "Chart of Accounts Register",
+        "type": "Main Screen",
+        "route": "/accounting/transaction",
+        "permission_code": "PMS-Chart-Of-Accounting-Module",
+        "description": "View ledger accounts, cash drawers, banks, and MFS balances."
+      },
+      {
+        "form_id": "ACC_1102",
+        "title": "Create Transaction Account",
+        "type": "Modal Dialog",
+        "route": "/accounting/transaction/add",
+        "permission_code": "PMS-Chart-Of-Accounting-Module",
+        "description": "Add Bank, Cash-in-hand, or MFS account with initial balance."
+      },
+      {
+        "form_id": "ACC_1103",
+        "title": "Expense Vouchers Register",
+        "type": "Main Screen",
+        "route": "/accounting/expenses",
+        "permission_code": "PMS-Expense-Module",
+        "description": "View categorized expenses, date filters, and daily totals."
+      },
+      {
+        "form_id": "ACC_1104",
+        "title": "Add Expense Voucher",
+        "type": "Modal Dialog",
+        "route": "/accounting/expenses/add",
+        "permission_code": "PMS-Expense-Module",
+        "description": "Entry of operational expense, category selection, and account debit."
+      },
+      {
+        "form_id": "ACC_1105",
+        "title": "Add Expense Category",
+        "type": "Modal Dialog",
+        "route": "/accounting/expense-category/add",
+        "permission_code": "PMS-Expense-Category-Module",
+        "description": "Quick-create expense classification heads (Rent, Utility, Salary)."
+      },
+      {
+        "form_id": "ACC_1106",
+        "title": "Miscellaneous Income Register",
+        "type": "Main Screen",
+        "route": "/accounting/income",
+        "permission_code": "PMS-Income-Module",
+        "description": "View non-sales income receipts, scraps, rebates, and incentives."
+      },
+      {
+        "form_id": "ACC_1107",
+        "title": "Add Income Voucher",
+        "type": "Modal Dialog",
+        "route": "/accounting/income/add",
+        "permission_code": "PMS-Income-Module",
+        "description": "Entry of miscellaneous receipt, category, and target account credit."
+      },
+      {
+        "form_id": "ACC_1108",
+        "title": "Add Income Category",
+        "type": "Modal Dialog",
+        "route": "/accounting/income-category/add",
+        "permission_code": "PMS-Income-Category-Module",
+        "description": "Create non-operational revenue classification heads."
+      },
+      {
+        "form_id": "ACC_1109",
+        "title": "Capital / Equity Balance Log",
+        "type": "Main Screen",
+        "route": "/accounting/additional-balance",
+        "permission_code": "Account-Module",
+        "description": "View owner equity infusions, capital adjustments, and audit dates."
+      },
+      {
+        "form_id": "ACC_1110",
+        "title": "Add Capital Balance",
+        "type": "Modal Dialog",
+        "route": "/accounting/additional-balance/add",
+        "permission_code": "Account-Module",
+        "description": "Record manual cash/bank capital injection into specific ledger account."
+      }
+    ]
+  },
+  {
+    "module": "Cash Counter & Reconciliation",
+    "module_code": "CASH",
+    "series": 1200,
+    "screens": [
+      {
+        "form_id": "CASH_1201",
+        "title": "Received Cash Register",
+        "type": "Main Screen",
+        "route": "/cash/receive",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Counter cashier ticket audit; shows sales pending physical cash handover."
+      },
+      {
+        "form_id": "CASH_1202",
+        "title": "Bulk Cash Handover Action",
+        "type": "Action Modal",
+        "route": "/cash/receive/check-all",
+        "permission_code": "PMS-Sale-Module",
+        "description": "F9 / Checked All batch confirmation to settle counter cash into drawer."
+      },
+      {
+        "form_id": "CASH_1203",
+        "title": "Inter-Account Fund Transfers",
+        "type": "Main Screen",
+        "route": "/reconciliation",
+        "permission_code": "PMS-Reconciliation-Module",
+        "description": "View audit trail of fund transfers between cash drawers, banks, and MFS."
+      },
+      {
+        "form_id": "CASH_1204",
+        "title": "Add Fund Transfer",
+        "type": "Modal Dialog",
+        "route": "/reconciliation/add",
+        "permission_code": "PMS-Reconciliation-Module",
+        "description": "Transfer funds between accounts (Counter Cash -> Bank Deposit)."
+      },
+      {
+        "form_id": "CASH_1205",
+        "title": "Daily Cash Register Closer",
+        "type": "Global Modal",
+        "route": "/cash/closer",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Daily closing reconciliation: calculates expected vs actual cash and discrepancies."
+      }
+    ]
+  },
+  {
+    "module": "Due & Credit Collection",
+    "module_code": "DUE",
+    "series": 1300,
+    "screens": [
+      {
+        "form_id": "DUE_1301",
+        "title": "Due Collection Workbench",
+        "type": "Main Screen",
+        "route": "/due-collect",
+        "permission_code": "PMS-Customer-Module",
+        "description": "Filter tabs for Today's Due, Upcoming Due, Pending Due; collect partial/full dues."
+      },
+      {
+        "form_id": "DUE_1302",
+        "title": "Due Paid Collections Audit",
+        "type": "Sub-Screen",
+        "route": "/pms-due-paid-payments",
+        "permission_code": "PMS-Customer-Module",
+        "description": "Historical ledger of all customer credit settlements and receipt printing."
+      }
+    ]
+  },
+  {
+    "module": "Customer & Point of Sale (POS)",
+    "module_code": "SALE",
+    "series": 1400,
+    "screens": [
+      {
+        "form_id": "SALE_1401",
+        "title": "Retail POS Counter",
+        "type": "Main Screen",
+        "route": "/customer/sale",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Fast unit/piece barcode billing, cart discount, tenders, quick print."
+      },
+      {
+        "form_id": "SALE_1402",
+        "title": "Wholesale POS Counter",
+        "type": "Main Screen",
+        "route": "/customer/sale?mode=wholesale",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Bulk box/strip billing, box trade price, credit limit enforcement, card fee."
+      },
+      {
+        "form_id": "SALE_1403",
+        "title": "POS Sales Return & Refund",
+        "type": "Drawer View",
+        "route": "/customer/sale/return",
+        "permission_code": "PMS-Sale-Module",
+        "description": "In-screen return mode: restock returned medicines, calculate cash refund."
+      },
+      {
+        "form_id": "SALE_1404",
+        "title": "Quick Add Product (POS)",
+        "type": "Modal Dialog",
+        "route": "/products/quick-add",
+        "permission_code": "PMS-Product-Module",
+        "description": "Instant medicine creation directly from POS counter without navigation."
+      },
+      {
+        "form_id": "SALE_1405",
+        "title": "Quick Add Company (POS)",
+        "type": "Modal Dialog",
+        "route": "/products/company/quick-add",
+        "permission_code": "POS-Shop-Company-Module",
+        "description": "Inline creation of manufacturer during POS product setup."
+      },
+      {
+        "form_id": "SALE_1406",
+        "title": "Quick Add Generic (POS)",
+        "type": "Modal Dialog",
+        "route": "/products/generic/quick-add",
+        "permission_code": "POS-Shop-Generic-Module",
+        "description": "Inline creation of drug generic chemical formula during POS setup."
+      },
+      {
+        "form_id": "CUST_1407",
+        "title": "Customer Directory & Ledger",
+        "type": "Main Screen",
+        "route": "/customer/list",
+        "permission_code": "PMS-Customer-Module",
+        "description": "Customer profiles, outstanding due balances, loyalty tiers, phone search."
+      },
+      {
+        "form_id": "CUST_1408",
+        "title": "Add / Edit Customer Profile",
+        "type": "Modal Dialog",
+        "route": "/customer/add",
+        "permission_code": "PMS-Customer-Module",
+        "description": "Register customer with phone, discount %, opening due, loyalty flag."
+      },
+      {
+        "form_id": "SALE_1409",
+        "title": "Customer Return Invoices",
+        "type": "Main Screen",
+        "route": "/customer/returns",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Master register of all sales return vouchers and restocked inventory items."
+      },
+      {
+        "form_id": "SALE_1410",
+        "title": "Sales Invoices Audit Log",
+        "type": "Main Screen",
+        "route": "/customer/sales",
+        "permission_code": "PMS-Sale-Module",
+        "description": "Search sale receipts by date/time, customer, salesman, item; reprint invoice."
+      }
+    ]
+  },
+  {
+    "module": "Suppliers & Purchase Invoicing",
+    "module_code": "PUR",
+    "series": 1500,
+    "screens": [
+      {
+        "form_id": "SUPP_1501",
+        "title": "Supplier Directory & Ledger",
+        "type": "Main Screen",
+        "route": "/supplier/list",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "View drug suppliers, phone, current payables balance, filter due suppliers."
+      },
+      {
+        "form_id": "SUPP_1502",
+        "title": "Add / Edit Supplier",
+        "type": "Modal Dialog",
+        "route": "/supplier/add",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "Register vendor/wholesaler with contact phone, address, and opening due."
+      },
+      {
+        "form_id": "PUR_1503",
+        "title": "Purchase Invoice Entry (GRN)",
+        "type": "Main Screen",
+        "route": "/supplier/purchase",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "Purchase receiving: batch number, expiry date, box cost, free items, discount."
+      },
+      {
+        "form_id": "PUR_1504",
+        "title": "Purchase Calculation Selector",
+        "type": "Control Drawer",
+        "route": "/supplier/purchase/mode",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "Toggle calculation mode: Default, Unit TP/VAT, Net Value, Opening Stock."
+      },
+      {
+        "form_id": "PUR_1505",
+        "title": "Quick Add Supplier (Purchase)",
+        "type": "Modal Dialog",
+        "route": "/supplier/quick-add",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "Inline vendor creation modal inside the purchase receiving screen."
+      },
+      {
+        "form_id": "PUR_1506",
+        "title": "Quick Add Product (Purchase)",
+        "type": "Modal Dialog",
+        "route": "/products/quick-add-pur",
+        "permission_code": "PMS-Product-Module",
+        "description": "Inline product catalog entry from the purchase invoice screen."
+      },
+      {
+        "form_id": "PUR_1507",
+        "title": "Quick Add Company (Purchase)",
+        "type": "Modal Dialog",
+        "route": "/products/company/quick-pur",
+        "permission_code": "POS-Shop-Company-Module",
+        "description": "Inline manufacturer creation modal from purchase screen."
+      },
+      {
+        "form_id": "PUR_1508",
+        "title": "Quick Add Generic (Purchase)",
+        "type": "Modal Dialog",
+        "route": "/products/generic/quick-pur",
+        "permission_code": "POS-Shop-Generic-Module",
+        "description": "Inline chemical generic creation modal from purchase screen."
+      },
+      {
+        "form_id": "PUR_1509",
+        "title": "Purchase Invoices Audit",
+        "type": "Main Screen",
+        "route": "/supplier/records",
+        "permission_code": "PMS-Vendor-Module",
+        "description": "Audit purchase bills by date, inventory #, supplier; track initial/late dues."
+      }
+    ]
+  },
+  {
+    "module": "Products & Inventory Stock",
+    "module_code": "PROD",
+    "series": 1600,
+    "screens": [
+      {
+        "form_id": "PROD_1601",
+        "title": "Master Medicine Catalog",
+        "type": "Main Screen",
+        "route": "/products/list",
+        "permission_code": "PMS-Product-Module",
+        "description": "Inventory table: medicine type, strength, strip/box qty, price, shelf/rack #."
+      },
+      {
+        "form_id": "PROD_1602",
+        "title": "Add Medicine Master",
+        "type": "Main Screen",
+        "route": "/products/add",
+        "permission_code": "PMS-Product-Module",
+        "description": "Full product entry: type, unit, quantity/box, MRP, TP, strength, barcode."
+      },
+      {
+        "form_id": "PROD_1603",
+        "title": "Pharmaceutical Manufacturers",
+        "type": "Main Screen",
+        "route": "/products/company",
+        "permission_code": "POS-Shop-Company-Module",
+        "description": "Manufacturer directory (Square, Beximco, Incepta) with medicine counts."
+      },
+      {
+        "form_id": "PROD_1604",
+        "title": "Add Pharmaceutical Company",
+        "type": "Modal Dialog",
+        "route": "/products/company/add",
+        "permission_code": "POS-Shop-Company-Module",
+        "description": "Create new medicine manufacturing brand."
+      },
+      {
+        "form_id": "PROD_1605",
+        "title": "Generic Drug Formulations",
+        "type": "Main Screen",
+        "route": "/products/generic",
+        "permission_code": "POS-Shop-Generic-Module",
+        "description": "Directory of generic therapeutic classes (Paracetamol, Esomeprazole)."
+      },
+      {
+        "form_id": "PROD_1606",
+        "title": "Add Generic Formulation",
+        "type": "Modal Dialog",
+        "route": "/products/generic/add",
+        "permission_code": "POS-Shop-Generic-Module",
+        "description": "Create active drug generic formulation."
+      },
+      {
+        "form_id": "PROD_1607",
+        "title": "Inventory Requisition Planner",
+        "type": "Main Screen",
+        "route": "/products/requisition",
+        "permission_code": "PMS-Requisition-Module",
+        "description": "Generate purchase order proposals based on 6-month sales velocity."
+      },
+      {
+        "form_id": "PROD_1608",
+        "title": "Requisition Item Selector",
+        "type": "Modal Dialog",
+        "route": "/products/requisition/add-item",
+        "permission_code": "PMS-Requisition-Module",
+        "description": "Select medicines, box quantities, minimum stock breach triggers."
+      },
+      {
+        "form_id": "PROD_1609",
+        "title": "Requisitions Audit History",
+        "type": "Main Screen",
+        "route": "/products/requisition/records",
+        "permission_code": "PMS-Requisition-Module",
+        "description": "View historical stock requisitions, status, and generated purchase bills."
+      },
+      {
+        "form_id": "PROD_1610",
+        "title": "Expired & Near-Expiry Alerts",
+        "type": "Main Screen",
+        "route": "/products/expired",
+        "permission_code": "PMS-Product-Module",
+        "description": "Audit medicines expiring within 30/60/90 days with batch IDs and rack locations."
+      }
+    ]
+  },
+  {
+    "module": "Doctors Portal & Prescriptions",
+    "module_code": "DOC",
+    "series": 1700,
+    "screens": [
+      {
+        "form_id": "DOC_1701",
+        "title": "Medical Practitioners Directory",
+        "type": "Main Screen",
+        "route": "/doctors-portal/list",
+        "permission_code": "Pharmacy-Module",
+        "description": "Directory of registered physicians, phone, specialty, and print settings."
+      },
+      {
+        "form_id": "DOC_1702",
+        "title": "Add / Edit Doctor (Bilingual)",
+        "type": "Main Screen",
+        "route": "/doctors-portal/add",
+        "permission_code": "Pharmacy-Module",
+        "description": "Bilingual EN/BN doctor profiles, bio, qualification, digital signature upload."
+      },
+      {
+        "form_id": "DOC_1703",
+        "title": "Prescription Pad Settings",
+        "type": "Main Screen",
+        "route": "/doctors-portal/settings",
+        "permission_code": "Pharmacy-Module",
+        "description": "Upload clinic/pharmacy logo, customize prescription header & bottom terms."
+      }
+    ]
+  },
+  {
+    "module": "Representatives & Staff Users",
+    "module_code": "REP",
+    "series": 1800,
+    "screens": [
+      {
+        "form_id": "REP_1801",
+        "title": "Representative User List",
+        "type": "Main Screen",
+        "route": "/representative",
+        "permission_code": "Role-Module",
+        "description": "View pharmacists, cashier accounts, contact phones, assigned branches."
+      },
+      {
+        "form_id": "REP_1802",
+        "title": "Add / Edit Representative",
+        "type": "Main Screen",
+        "route": "/representative/add",
+        "permission_code": "Role-Module",
+        "description": "Staff credential setup, password hash, role assignment (Manager/Salesman)."
+      }
+    ]
+  },
+  {
+    "module": "Roles & Permissions (RBAC)",
+    "module_code": "ROLE",
+    "series": 1900,
+    "screens": [
+      {
+        "form_id": "ROLE_1901",
+        "title": "Role Authorization Matrix",
+        "type": "Main Screen",
+        "route": "/roles",
+        "permission_code": "Role-Module",
+        "description": "Master list of system roles (PMS Manager, PMS Salesman, Custom Roles)."
+      },
+      {
+        "form_id": "ROLE_1902",
+        "title": "Add / Edit Role & ACL",
+        "type": "Main Screen",
+        "route": "/roles/add",
+        "permission_code": "Role-Module",
+        "description": "Configure granular permissions across all 20 ACL modules with select-all."
+      }
+    ]
+  },
+  {
+    "module": "System & POS Configuration",
+    "module_code": "CFG",
+    "series": 2000,
+    "screens": [
+      {
+        "form_id": "CFG_2001",
+        "title": "Sale Business Rules Config",
+        "type": "Main Screen",
+        "route": "/settings/sale-config",
+        "permission_code": "Pharmacy-Module",
+        "description": "Out of stock sale toggle, loss sale toggle, opening markup %, max discount %."
+      },
+      {
+        "form_id": "CFG_2002",
+        "title": "Thermal Receipt / POS Invoice",
+        "type": "Main Screen",
+        "route": "/settings/invoice-config",
+        "permission_code": "Pharmacy-Module",
+        "description": "80mm/58mm/A4 paper, header text, served-by row, logo print, footer notes."
+      },
+      {
+        "form_id": "CFG_2003",
+        "title": "Product Alert Thresholds",
+        "type": "Main Screen",
+        "route": "/settings/product-config",
+        "permission_code": "Pharmacy-Module",
+        "description": "Configure expired notification window days (90 days warning)."
+      },
+      {
+        "form_id": "CFG_2004",
+        "title": "Customer Loyalty Rules",
+        "type": "Main Screen",
+        "route": "/settings/loyalty-config",
+        "permission_code": "Pharmacy-Module",
+        "description": "Spend-to-point earn ratios, points-per-Taka redemption, minimum redeem caps."
+      },
+      {
+        "form_id": "CFG_2005",
+        "title": "Bulk SMS Packages & Gateway",
+        "type": "Main Screen",
+        "route": "/settings/bulk-sms-config",
+        "permission_code": "Pharmacy-Module",
+        "description": "SMS balance tracker, sender ID configuration, top-up package purchasing."
+      }
+    ]
+  },
+  {
+    "module": "SaaS Subscription & Billing",
+    "module_code": "SUB",
+    "series": 2100,
+    "screens": [
+      {
+        "form_id": "SUB_2101",
+        "title": "Subscription Status & History",
+        "type": "Main Screen",
+        "route": "/subscription-report",
+        "permission_code": "Pharmacy-Module",
+        "description": "Active subscription plan, trial days remaining, billing cycle, invoice download."
+      },
+      {
+        "form_id": "SUB_2102",
+        "title": "bKash Payment Gateway",
+        "type": "Action Modal",
+        "route": "/subscription-report/pay-bkash",
+        "permission_code": "Pharmacy-Module",
+        "description": "Direct MFS checkout with coupon codes and automated bKash subscription renewal."
+      }
+    ]
+  },
+  {
+    "module": "Branch Location Management",
+    "module_code": "PHAR",
+    "series": 2200,
+    "screens": [
+      {
+        "form_id": "PHAR_2201",
+        "title": "Store / Branch Switcher",
+        "type": "Header Modal",
+        "route": "/change-pharmacy",
+        "permission_code": "Pharmacy-Module",
+        "description": "Multi-branch tenant switch modal (switch active counter between branches)."
+      }
+    ]
+  },
+  {
+    "module": "Dashboard & Analytics",
+    "module_code": "DASH",
+    "series": 2300,
+    "screens": [
+      {
+        "form_id": "DASH_2301",
+        "title": "Executive Financial Dashboard",
+        "type": "Main Screen",
+        "route": "/dashboard",
+        "permission_code": "PMS-Report-Module",
+        "description": "Cash balance, bank balance, MFS balance, today's sales vs. purchase cards."
+      },
+      {
+        "form_id": "DASH_2302",
+        "title": "Sales Performance & Fast Movers",
+        "type": "Sub-Screen",
+        "route": "/dashboard/analytics",
+        "permission_code": "PMS-Report-Module",
+        "description": "Top selling medicines, lowest selling products, gross profit breakdown charts."
+      },
+      {
+        "form_id": "DASH_2303",
+        "title": "Cashbook & Buy/Sale Audit",
+        "type": "Sub-Screen",
+        "route": "/dashboard/cashbook",
+        "permission_code": "PMS-Report-Module",
+        "description": "Date range financial statement: Net Profit, Dues, Demurrage, Returns balance."
+      }
+    ]
+  }
+]

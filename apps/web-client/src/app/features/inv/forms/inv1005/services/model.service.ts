@@ -42,12 +42,14 @@ export class Inv1005ModelService {
   filtered = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const data = this.items();
-    if (!term) return data;
-    return data.filter(
-      (u) =>
-        (u.uom_name || '').toLowerCase().includes(term) ||
-        (u.uom_id || '').toLowerCase().includes(term),
-    );
+    const list = term
+      ? data.filter(
+          (u) =>
+            (u.uom_name || '').toLowerCase().includes(term) ||
+            (u.uom_id || '').toLowerCase().includes(term),
+        )
+      : data;
+    return [...list].sort((a, b) => (b.uom_no ?? 0) - (a.uom_no ?? 0));
   });
 
   pager = makePaginator<IUom>(this.filtered);
@@ -73,7 +75,11 @@ export class Inv1005ModelService {
         if (isSuccess(res) && res.data) {
           this.items.set(res.data);
           const resolved = resolvePostReloadSelection(res.data, (u: IUom) => u.uom_no, reselectNo);
-          resolved ? this.select(resolved.item as IUom) : this.onNew();
+          if (resolved) {
+            this.select(resolved.item as IUom);
+          } else {
+            this.onNew();
+          }
         }
       });
   }

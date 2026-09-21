@@ -89,7 +89,8 @@ export class AlertService {
   private open(data: ConfirmDialogData): Observable<boolean> {
     return this.dialog
       .open(ConfirmDialogComponent, {
-        width: '450px',
+        width: '480px',
+        maxWidth: '92vw',
         data,
         panelClass: ['custom-dialog-panel', 'alert-dialog-panel'],
         disableClose: true,
