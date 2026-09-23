@@ -10,7 +10,8 @@
     "verify:pms-schema": "node apps/aidlyPms/scripts/verify-schema-parity.mjs",
     "postinstall": "node scripts/patch-ng-zorro.js",
     "test": "nx test web-client",
-    "lint": "nx lint web-client"
+    "lint": "nx lint web-client",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -54,6 +55,8 @@
     "@angular/cli": "21.1.3",
     "@angular/compiler-cli": "21.1.3",
     "@angular/language-service": "21.1.3",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@eslint/js": "^9.8.0",
     "@nx/angular": "22.4.3",
     "@nx/eslint": "22.4.3",
@@ -75,6 +78,7 @@
     "angular-eslint": "^21.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.7",
     "nx": "22.4.3",
     "postcss": "^8.5.14",
     "prettier": "~3.6.2",
