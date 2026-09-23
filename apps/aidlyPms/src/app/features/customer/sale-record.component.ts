@@ -17,6 +17,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { CustomerService } from '../../core/services/customer.service';
+import { Customer } from '../../core/models/customer.models';
 
 interface SaleRecordRow {
   inv: string;
@@ -100,10 +102,9 @@ interface SaleRecordRow {
               nzAllowClear
             >
               <nz-option nzValue="" nzLabel="All Customers"></nz-option>
-              <nz-option nzValue="Rafiqul Islam" nzLabel="Rafiqul Islam"></nz-option>
-              <nz-option nzValue="Walk-in" nzLabel="Walk-in"></nz-option>
-              <nz-option nzValue="Meena Begum" nzLabel="Meena Begum"></nz-option>
-              <nz-option nzValue="Al-Amin Hossain" nzLabel="Al-Amin Hossain"></nz-option>
+              @for (c of customers(); track c.customer_no) {
+                <nz-option [nzValue]="c.name" [nzLabel]="c.name"></nz-option>
+              }
             </nz-select>
           </div>
           <div class="flex flex-col">
@@ -321,82 +322,15 @@ interface SaleRecordRow {
 export class SaleRecordComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
-
-  sales = signal<SaleRecordRow[]>([
-    {
-      inv: 'INV-2026-1029',
-      date: '16-09-2026 11:42',
-      customer: 'Rafiqul Islam',
-      salesman: 'Admin',
-      subtotal: 46.0,
-      disc: 0,
-      total: 46.0,
-      items: 3,
-      payment: 'Cash',
-      paid: 50.0,
-      due: 0,
-      lines: [
-        { name: 'Napa 500mg Tablet', qty: 20, price: 1.2, total: 24.0 },
-        { name: 'Ceevit 250mg Chewable', qty: 10, price: 2.2, total: 22.0 },
-      ],
-    },
-    {
-      inv: 'INV-2026-1028',
-      date: '16-09-2026 10:15',
-      customer: 'Walk-in',
-      salesman: 'Admin',
-      subtotal: 120.0,
-      disc: 5.0,
-      total: 115.0,
-      items: 5,
-      payment: 'bKash',
-      paid: 115.0,
-      due: 0,
-      lines: [
-        { name: 'Seclo 20mg Capsule', qty: 10, price: 7.0, total: 70.0 },
-        { name: 'Ace 500mg Tablet', qty: 25, price: 2.0, total: 50.0 },
-      ],
-    },
-    {
-      inv: 'INV-2026-1027',
-      date: '15-09-2026 18:30',
-      customer: 'Meena Begum',
-      salesman: 'Sumon',
-      subtotal: 840.0,
-      disc: 40.0,
-      total: 800.0,
-      items: 8,
-      payment: 'Due',
-      paid: 0,
-      due: 800.0,
-      lines: [
-        { name: 'Maxpro 20mg Capsule', qty: 50, price: 9.0, total: 450.0 },
-        { name: 'Monas 10mg Tablet', qty: 25, price: 15.6, total: 390.0 },
-      ],
-    },
-    {
-      inv: 'INV-2026-1026',
-      date: '15-09-2026 16:05',
-      customer: 'Al-Amin Hossain',
-      salesman: 'Admin',
-      subtotal: 2400.0,
-      disc: 100.0,
-      total: 2300.0,
-      items: 12,
-      payment: 'Cash',
-      paid: 2300.0,
-      due: 0,
-      lines: [
-        { name: 'Sergel 20mg Capsule (Box)', qty: 3, price: 800.0, total: 2400.0 },
-      ],
-    },
-  ]);
-
   private readonly posSaleService = inject(PosSaleService);
+  private readonly customerService = inject(CustomerService);
+
+  sales = signal<SaleRecordRow[]>([]);
+  customers = signal<Customer[]>([]);
+  isLoading = signal(false);
+
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
-
-  isLoading = signal(false);
 
   // Initialize with standard 1-month date range default
   defaultDates = getDefaultMonthDateRange();
@@ -430,11 +364,22 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
       this.loadRecords();
     });
+    this.loadCustomers();
     this.loadRecords();
   }
 
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
+  }
+
+  loadCustomers(): void {
+    this.customerService.getCustomers({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          this.customers.set([...res.data.items]);
+        }
+      },
+    });
   }
 
   onFilterChange(): void {
@@ -447,15 +392,38 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
 
   loadRecords(): void {
     this.isLoading.set(true);
-    const params = {
-      fromDate: this.fromDate,
-      toDate: this.toDate,
-      search: this.searchInvoice.trim(),
-      customer: this.filterCustomer,
-      salesman: this.searchSalesman.trim(),
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 50,
     };
+    if (this.searchInvoice.trim()) params['search'] = this.searchInvoice.trim();
+    if (this.fromDate) params['startDate'] = this.fromDate;
+    if (this.toDate) params['endDate'] = this.toDate;
+    if (this.filterCustomer) params['search'] = this.filterCustomer;
+
     this.posSaleService.getSaleRecords(params).subscribe({
-      next: () => {
+      next: (res) => {
+        const invoices = res.data?.items || [];
+        const rows: SaleRecordRow[] = invoices.map(inv => ({
+          inv: inv.sales_number || `INV-${inv.sale_invoice_no}`,
+          date: inv.sale_timestamp ? new Date(inv.sale_timestamp).toLocaleString('en-GB') : '',
+          customer: inv.customer?.name || inv.customer_name || 'Walk-in',
+          salesman: 'Admin',
+          subtotal: Number(inv.gross_total_price) || 0,
+          disc: Number(inv.discount_value) || 0,
+          total: Number(inv.final_price) || 0,
+          items: inv.total_items || 0,
+          payment: inv.due_amount > 0 ? 'Due' : (inv.payment_method === 2 ? 'Card' : (inv.payment_method === 3 ? 'MFS' : 'Cash')),
+          paid: (Number(inv.final_price) || 0) - (Number(inv.due_amount) || 0),
+          due: Number(inv.due_amount) || 0,
+          lines: (inv.items || []).map(item => ({
+            name: item.product?.product_name || item.product_name || `Product #${item.product_no}`,
+            qty: item.sale_qty,
+            price: Number(item.unit_sale_price) || 0,
+            total: Number(item.total_price) || 0,
+          })),
+        }));
+        this.sales.set(rows);
         this.isLoading.set(false);
       },
       error: () => {

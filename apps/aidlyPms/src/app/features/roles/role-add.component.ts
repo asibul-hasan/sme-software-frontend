@@ -7,6 +7,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { RoleService } from '../../core/services/role.service';
 
 const MODULES = [
   'Account-Module',
@@ -165,6 +166,7 @@ export class RoleAddComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly roleService = inject(RoleService);
 
   modules = MODULES;
   ops = OPS;
@@ -233,7 +235,28 @@ export class RoleAddComponent {
       this.msg.error('Please enter a role alias');
       return;
     }
-    this.msg.success(`Role "${this.roleAlias}" created successfully!`);
-    this.router.navigate(['/roles']);
+
+    const selectedCodes: string[] = [];
+    for (const m of MODULES) {
+      for (const op of OPS) {
+        if (this.perms[m]?.[op]) {
+          selectedCodes.push(`${m.toUpperCase().replace(/-/g, '_')}_${op}`);
+        }
+      }
+    }
+
+    this.roleService.createRole({
+      alias: this.roleAlias.trim(),
+      is_system: false,
+      permissions: selectedCodes,
+    }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Role "${this.roleAlias}" created successfully!`);
+        this.router.navigate(['/roles']);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to create role');
+      },
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -9,6 +9,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { ProductService } from '../../core/services/product.service';
 import { ProdCompany } from '../../core/models/product.models';
 
 @Component({
@@ -99,7 +100,7 @@ import { ProdCompany } from '../../core/models/product.models';
               } @empty {
                 <tr>
                   <td colspan="3" class="p-8 text-center text-slate-400 text-xs">
-                    No pharmaceutical companies match your search.
+                    {{ isLoading() ? 'Loading companies from database...' : 'No pharmaceutical companies match your search.' }}
                   </td>
                 </tr>
               }
@@ -122,6 +123,7 @@ import { ProdCompany } from '../../core/models/product.models';
       [(nzVisible)]="isModalVisible"
       [nzTitle]="modalMode === 'create' ? 'Add New Company' : ('Modify Company: ' + currentForm.name)"
       [nzOkText]="modalMode === 'create' ? 'Save Company' : 'Update Company'"
+      [nzOkLoading]="isSaving()"
       (nzOnCancel)="isModalVisible = false"
       (nzOnOk)="saveCompany()"
     >
@@ -145,24 +147,15 @@ import { ProdCompany } from '../../core/models/product.models';
     </nz-modal>
   `,
 })
-export class CompanyListComponent {
+export class CompanyListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly productService = inject(ProductService);
 
   searchQuery = '';
-
-  companies = signal<ProdCompany[]>([
-    { company_no: 1, pharmacy_no: 1, name: 'Beximco Pharmaceuticals Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 2, pharmacy_no: 1, name: 'Square Pharmaceuticals PLC', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 3, pharmacy_no: 1, name: 'ACI Limited', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 4, pharmacy_no: 1, name: 'Incepta Pharmaceuticals Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 5, pharmacy_no: 1, name: 'Renata Limited', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 6, pharmacy_no: 1, name: 'Eskayef Pharmaceuticals Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 7, pharmacy_no: 1, name: 'Aristopharma Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 8, pharmacy_no: 1, name: 'General Pharmaceuticals Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 9, pharmacy_no: 1, name: 'Opsonin Pharma Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { company_no: 10, pharmacy_no: 1, name: 'Acme Laboratories Ltd.', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  ]);
+  companies = signal<ProdCompany[]>([]);
+  isLoading = signal<boolean>(false);
+  isSaving = signal<boolean>(false);
 
   filteredCompanies = computed(() => {
     const q = this.searchQuery.trim().toLowerCase();
@@ -173,6 +166,24 @@ export class CompanyListComponent {
   isModalVisible = false;
   modalMode: 'create' | 'edit' = 'create';
   currentForm: { company_no: number; name: string } = { company_no: 0, name: '' };
+
+  ngOnInit(): void {
+    this.loadCompanies();
+  }
+
+  loadCompanies(): void {
+    this.isLoading.set(true);
+    this.productService.getCompanies().subscribe({
+      next: res => {
+        this.companies.set(res.data || []);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.msg.error('Failed to load companies from server.');
+      },
+    });
+  }
 
   openAddModal(): void {
     this.modalMode = 'create';
@@ -193,25 +204,35 @@ export class CompanyListComponent {
       return;
     }
 
+    this.isSaving.set(true);
+
     if (this.modalMode === 'create') {
-      const nextId = Math.max(...this.companies().map(c => c.company_no), 0) + 1;
-      const newCompany: ProdCompany = {
-        company_no: nextId,
-        pharmacy_no: 1,
-        name,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      this.companies.update(list => [...list, newCompany]);
-      this.msg.success(`Company "${name}" successfully registered!`);
+      this.productService.createCompany({ name }).subscribe({
+        next: res => {
+          this.isSaving.set(false);
+          this.isModalVisible = false;
+          this.msg.success(res.message || `Company "${name}" successfully registered!`);
+          this.loadCompanies();
+        },
+        error: () => {
+          this.isSaving.set(false);
+          this.msg.error('Failed to register company.');
+        },
+      });
     } else {
-      this.companies.update(list =>
-        list.map(c => (c.company_no === this.currentForm.company_no ? { ...c, name, updated_at: new Date().toISOString() } : c))
-      );
-      this.msg.success(`Company "${name}" updated successfully!`);
+      this.productService.updateCompany(this.currentForm.company_no, { name }).subscribe({
+        next: res => {
+          this.isSaving.set(false);
+          this.isModalVisible = false;
+          this.msg.success(res.message || `Company "${name}" updated successfully!`);
+          this.loadCompanies();
+        },
+        error: () => {
+          this.isSaving.set(false);
+          this.msg.error('Failed to update company.');
+        },
+      });
     }
-    this.isModalVisible = false;
   }
 
   deleteCompany(item: ProdCompany): void {
@@ -219,8 +240,15 @@ export class CompanyListComponent {
       .confirmDelete(`Company "${item.name}"`, 'This will permanently remove this company from the directory.')
       .subscribe(confirmed => {
         if (confirmed) {
-          this.companies.update(list => list.filter(c => c.company_no !== item.company_no));
-          this.msg.success(`Company "${item.name}" removed.`);
+          this.productService.deleteCompany(item.company_no).subscribe({
+            next: () => {
+              this.msg.success(`Company "${item.name}" removed.`);
+              this.loadCompanies();
+            },
+            error: () => {
+              this.msg.error('Failed to delete company.');
+            },
+          });
         }
       });
   }

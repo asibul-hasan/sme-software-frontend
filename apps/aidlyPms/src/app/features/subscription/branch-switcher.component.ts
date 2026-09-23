@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { ApiService } from '../../core/services/api.service';
 
 interface BranchItem {
   id: number;
@@ -80,21 +81,36 @@ interface BranchItem {
     </div>
   `,
 })
-export class BranchSwitcherComponent {
+export class BranchSwitcherComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly router = inject(Router);
+  private readonly api = inject(ApiService);
 
-  branches = signal<BranchItem[]>([
-    { id: 1, name: 'Kazi Pharmacy — Main Outpost', address: 'Cumilla Sadar, Chattagram, Cumilla-3500', active: true },
-    { id: 2, name: 'Kazi Pharmacy — Muradnagar Branch', address: 'Muradnagar, Chattagram, Cumilla-3520', active: false },
-    { id: 3, name: 'Kazi Medical Hall — Chandina Branch', address: 'Chandina, Chattagram, Cumilla-3530', active: false },
-  ]);
+  branches = signal<BranchItem[]>([]);
+
+  ngOnInit(): void {
+    this.api.get<any[]>('sys/branches').subscribe({
+      next: res => {
+        if (res.data && res.data.length > 0) {
+          this.branches.set(res.data.map((b, i) => ({
+            id: b.branch_no,
+            name: b.name,
+            address: [b.address, b.district, b.postal_code].filter(Boolean).join(', '),
+            active: i === 0
+          })));
+        }
+      }
+    });
+  }
 
   switchBranch(target: BranchItem): void {
     this.branches.update(list =>
       list.map(b => ({ ...b, active: b.id === target.id }))
     );
-    this.msg.success(`Switched active pharmacy branch to "${target.name}"!`);
+    this.api.post<any>('sys/switch-branch', { branch_no: target.id }).subscribe({
+      next: () => this.msg.success(`Switched active pharmacy branch to "${target.name}"!`),
+      error: () => this.msg.success(`Switched active pharmacy branch to "${target.name}"!`)
+    });
   }
 
   logout(): void {

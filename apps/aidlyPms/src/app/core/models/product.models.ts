@@ -59,6 +59,7 @@ export interface ProdProduct {
   // Navigation and frontend compatibility fields
   brand_name?: string; // alias for product_name
   generic_name?: string; // alias for generic?.name
+  company_name?: string; // alias for company?.name
   stock_qty?: number;
   company?: ProdCompany;
   generic?: ProdGeneric;
@@ -84,6 +85,7 @@ export interface ProdProductBatch {
 
   // Navigation
   product?: ProdProduct;
+  product_name?: string;
 }
 
 export interface ProdProductRequisition {

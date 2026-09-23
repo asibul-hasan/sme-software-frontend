@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -11,6 +11,8 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { ProductService } from '../../core/services/product.service';
+import { SupplierService } from '../../core/services/supplier.service';
 
 interface RequisitionRecord {
   id: string;
@@ -51,9 +53,9 @@ interface RequisitionRecord {
           <nz-date-picker class="w-32 shrink-0" [(ngModel)]="toDate" nzPlaceHolder="To Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
           <nz-select class="w-36 shrink-0" [(ngModel)]="selectedSupplier" nzPlaceHolder="Supplier">
             <nz-option nzValue="" nzLabel="All Suppliers"></nz-option>
-            <nz-option nzValue="Beximco Dist." nzLabel="Beximco Dist."></nz-option>
-            <nz-option nzValue="ACI Dist." nzLabel="ACI Dist."></nz-option>
-            <nz-option nzValue="Square Dist." nzLabel="Square Dist."></nz-option>
+            @for (s of suppliers(); track s) {
+              <nz-option [nzValue]="s" [nzLabel]="s"></nz-option>
+            }
           </nz-select>
           <input
             type="text"
@@ -212,9 +214,11 @@ interface RequisitionRecord {
     </nz-modal>
   `,
 })
-export class RequisitionRecordComponent {
+export class RequisitionRecordComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly productService = inject(ProductService);
+  private readonly supplierService = inject(SupplierService);
 
   searchCode = '';
   selectedSupplier = '';
@@ -222,11 +226,8 @@ export class RequisitionRecordComponent {
   toDate: Date | null = null;
   createdBy = '';
 
-  records = signal<RequisitionRecord[]>([
-    { id: '1', date: '15-09-2026 14:32', total: 48200, reqCode: 'REQ-2026-042', supplier: 'Beximco Dist.', itemsCount: 12, createdBy: 'Counter Staff', status: 'Approved' },
-    { id: '2', date: '13-09-2026 10:15', total: 31750, reqCode: 'REQ-2026-041', supplier: 'ACI Dist.', itemsCount: 8, createdBy: 'Manager', status: 'Approved' },
-    { id: '3', date: '10-09-2026 09:00', total: 62400, reqCode: 'REQ-2026-040', supplier: 'Square Dist.', itemsCount: 18, createdBy: 'Admin', status: 'Pending' },
-  ]);
+  suppliers = signal<string[]>([]);
+  records = signal<RequisitionRecord[]>([]);
 
   filteredRecords = computed(() => {
     const q = this.searchCode.trim().toLowerCase();
@@ -247,12 +248,49 @@ export class RequisitionRecordComponent {
   isDetailsVisible = false;
   activeRecord: RequisitionRecord | null = null;
 
+  ngOnInit(): void {
+    this.loadRecords();
+    this.loadSuppliers();
+  }
+
+  loadRecords(): void {
+    this.productService.getRequisitions({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const list: RequisitionRecord[] = (res.data.items || []).map((r: any) => ({
+            id: String(r.requisition_no),
+            date: r.requisition_date ? new Date(r.requisition_date).toISOString().slice(0, 16).replace('T', ' ') : '',
+            total: r.total_amount || 0,
+            reqCode: r.requisition_number || `REQ-${r.requisition_no}`,
+            supplier: r.supplier_name || 'General Supplier',
+            itemsCount: r.total_items || 0,
+            createdBy: 'System Staff',
+            status: (r.requisition_status === 2 ? 'Approved' : (r.requisition_status === 3 ? 'Cancelled' : 'Pending')) as any,
+          }));
+          this.records.set(list);
+        }
+      },
+    });
+  }
+
+  loadSuppliers(): void {
+    this.supplierService.getSuppliers({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const names = res.data.items.map(s => s.name).filter(Boolean);
+          this.suppliers.set(names);
+        }
+      },
+    });
+  }
+
   resetFilters(): void {
     this.searchCode = '';
     this.selectedSupplier = '';
     this.fromDate = null;
     this.toDate = null;
     this.createdBy = '';
+    this.loadRecords();
   }
 
   viewDetails(r: RequisitionRecord): void {

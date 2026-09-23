@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -8,6 +8,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SettingsService } from '../../core/services/settings.service';
+import { CfgLoyaltyConfig } from '../../core/models/config.models';
 
 @Component({
   selector: 'app-loyalty-config',
@@ -113,8 +115,9 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </div>
   `,
 })
-export class LoyaltyConfigComponent {
+export class LoyaltyConfigComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly settingsService = inject(SettingsService);
 
   isEnabled = true;
   spendForPoint = 100;
@@ -122,7 +125,38 @@ export class LoyaltyConfigComponent {
   minRedeemPoints = 100;
   maxRedeemPoints = 500;
 
+  ngOnInit(): void {
+    this.settingsService.getLoyaltyConfig().subscribe({
+      next: (res) => {
+        if (res.data) {
+          const c: any = res.data;
+          this.isEnabled = c.is_enabled ?? c.isEnabled ?? true;
+          if (c.earning_spend_amount_per_point !== undefined) this.spendForPoint = c.earning_spend_amount_per_point;
+          if (c.redemption_points_per_taka !== undefined) this.pointsPerTaka = c.redemption_points_per_taka;
+          if (c.min_redeem_points !== undefined) this.minRedeemPoints = c.min_redeem_points;
+          if (c.max_redeem_limit_per_tx !== undefined) this.maxRedeemPoints = c.max_redeem_limit_per_tx;
+        }
+      },
+      error: () => {},
+    });
+  }
+
   saveLoyaltyConfig(): void {
-    this.msg.success('Customer loyalty rewards program configuration updated!');
+    const payload: Partial<CfgLoyaltyConfig> = {
+      is_enabled: this.isEnabled,
+      earning_spend_amount_per_point: Number(this.spendForPoint) || 100,
+      redemption_points_per_taka: Number(this.pointsPerTaka) || 10,
+      min_redeem_points: Number(this.minRedeemPoints) || 100,
+      max_redeem_limit_per_tx: Number(this.maxRedeemPoints) || 500,
+    };
+
+    this.settingsService.updateLoyaltyConfig(payload).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || 'Customer loyalty rewards program configuration updated!');
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to update loyalty settings');
+      },
+    });
   }
 }

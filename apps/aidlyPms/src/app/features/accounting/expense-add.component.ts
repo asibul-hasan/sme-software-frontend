@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,6 +10,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { AccountingService } from '../../core/services/accounting.service';
+import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/accounting.models';
 
 @Component({
   selector: 'app-expense-add',
@@ -49,8 +51,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             </label>
             <div class="flex gap-1.5">
               <nz-select [(ngModel)]="category" name="category" class="flex-1">
-                @for (c of categories; track c) {
-                  <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
+                @for (c of categoriesList(); track c.expense_category_no) {
+                  <nz-option [nzValue]="c.name" [nzLabel]="c.name"></nz-option>
                 }
               </nz-select>
               <button
@@ -86,8 +88,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             </label>
             <div class="flex gap-1.5">
               <nz-select [(ngModel)]="account" name="account" class="flex-1">
-                @for (acc of accounts; track acc) {
-                  <nz-option [nzValue]="acc" [nzLabel]="acc"></nz-option>
+                @for (acc of accountsList(); track acc.account_no) {
+                  <nz-option [nzValue]="acc.account_name" [nzLabel]="acc.account_name"></nz-option>
                 }
               </nz-select>
               <button
@@ -177,17 +179,18 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </nz-modal>
   `,
 })
-export class ExpenseAddComponent {
+export class ExpenseAddComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly accountingService = inject(AccountingService);
 
-  categories = ['Rent', 'Salary', 'Utilities', 'Maintenance', 'Tea & Refreshment', 'Stationery'];
-  category = 'Rent';
+  categoriesList = signal<AccExpenseCategory[]>([]);
+  accountsList = signal<AccTransactionAccount[]>([]);
+
+  category = '';
   amount = 0;
-
-  accounts = ['Counter Cash', 'Islami Bank Account', 'bKash Merchant Account', 'BRAC Bank Limited'];
-  account = 'Counter Cash';
+  account = '';
   note = '';
 
   // Quick Category
@@ -197,6 +200,22 @@ export class ExpenseAddComponent {
   // Quick Account
   isAddAccountModalVisible = false;
   newAccountName = '';
+
+  ngOnInit(): void {
+    this.accountingService.getExpenseCategories().subscribe(res => {
+      if (res.data?.length) {
+        this.categoriesList.set(res.data);
+        this.category = res.data[0].name;
+      }
+    });
+
+    this.accountingService.getAccounts().subscribe(res => {
+      if (res.data?.length) {
+        this.accountsList.set(res.data);
+        this.account = res.data[0].account_name;
+      }
+    });
+  }
 
   goBack(): void {
     if (window.history.length > 1) {
@@ -212,11 +231,21 @@ export class ExpenseAddComponent {
       return;
     }
     const name = this.newCategoryName.trim();
-    this.categories = [...this.categories, name];
-    this.category = name;
-    this.newCategoryName = '';
-    this.isAddCategoryModalVisible = false;
-    this.msg.success(`Category "${name}" added!`);
+    this.accountingService.createExpenseCategory({ name }).subscribe({
+      next: (res) => {
+        const createdCategory = res.data;
+        if (createdCategory) {
+          this.categoriesList.update(list => [...list, createdCategory]);
+          this.category = createdCategory.name;
+          this.msg.success(`Category "${name}" added!`);
+        }
+        this.newCategoryName = '';
+        this.isAddCategoryModalVisible = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to create category');
+      },
+    });
   }
 
   saveNewAccount(): void {
@@ -225,11 +254,24 @@ export class ExpenseAddComponent {
       return;
     }
     const name = this.newAccountName.trim();
-    this.accounts = [...this.accounts, name];
-    this.account = name;
-    this.newAccountName = '';
-    this.isAddAccountModalVisible = false;
-    this.msg.success(`Payment account "${name}" added!`);
+    this.accountingService.createAccount({
+      account_name: name,
+      account_type: 2,
+    }).subscribe({
+      next: (res) => {
+        const createdAccount = res.data;
+        if (createdAccount) {
+          this.accountsList.update(list => [...list, createdAccount]);
+          this.account = createdAccount.account_name;
+          this.msg.success(`Payment account "${name}" added!`);
+        }
+        this.newAccountName = '';
+        this.isAddAccountModalVisible = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to create account');
+      },
+    });
   }
 
   submitForm(): void {
@@ -237,9 +279,28 @@ export class ExpenseAddComponent {
       this.msg.error('Please enter a valid expense amount');
       return;
     }
-    this.msg.success(`Expense of ৳ ${this.amount} recorded successfully under ${this.category}!`);
-    setTimeout(() => {
-      this.router.navigate(['/accounting/expenses']);
-    }, 400);
+
+    const selectedCat = this.categoriesList().find(c => c.name === this.category);
+    const selectedAcc = this.accountsList().find(a => a.account_name === this.account);
+
+    const catNo = selectedCat ? selectedCat.expense_category_no : 1;
+    const accNo = selectedAcc ? selectedAcc.account_no : 1;
+    const methodCode = this.account.toLowerCase().includes('bank') ? 2 : this.account.toLowerCase().includes('bkash') ? 4 : 1;
+
+    this.accountingService.createExpense({
+      expense_category_no: catNo,
+      account_no: accNo,
+      amount: Number(this.amount),
+      note: this.note.trim() || undefined,
+      payment_method: methodCode,
+    }).subscribe({
+      next: () => {
+        this.msg.success(`Expense of ৳ ${this.amount} recorded successfully under ${this.category}!`);
+        this.router.navigate(['/accounting/expenses']);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to record expense');
+      },
+    });
   }
 }

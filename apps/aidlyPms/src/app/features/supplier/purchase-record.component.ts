@@ -16,6 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
+import { SuppSupplier } from '../../core/models/supplier.models';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 
 interface PurchaseRecordRow {
@@ -98,10 +99,9 @@ interface PurchaseRecordRow {
               nzAllowClear
             >
               <nz-option nzValue="" nzLabel="All Suppliers"></nz-option>
-              <nz-option nzValue="Beximco Dist." nzLabel="Beximco Dist."></nz-option>
-              <nz-option nzValue="ACI Dist." nzLabel="ACI Dist."></nz-option>
-              <nz-option nzValue="Square Dist." nzLabel="Square Dist."></nz-option>
-              <nz-option nzValue="Opening Stock" nzLabel="Opening Stock"></nz-option>
+              @for (s of suppliers(); track s.supplier_no) {
+                <nz-option [nzValue]="s.name" [nzLabel]="s.name"></nz-option>
+              }
             </nz-select>
           </div>
           <div class="flex flex-col">
@@ -308,53 +308,8 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
 
-  records = signal<PurchaseRecordRow[]>([
-    {
-      id: '1',
-      ref: 'INV-2026-0842',
-      date: '15-09-2026 14:32',
-      supplier: 'Beximco Dist.',
-      gross: 48200,
-      disc: 0,
-      net: 48200,
-      itemsCount: 12,
-      type: 'INVENTORY PURCHASED',
-      lines: [
-        { name: 'Napa Extra 500mg Tablet (100s)', qty: 20, unitPrice: 200, total: 4000 },
-        { name: 'Seclo 20mg Capsule (50s)', qty: 40, unitPrice: 800, total: 32000 },
-        { name: 'Ace 500mg Tablet (100s)', qty: 61, unitPrice: 200, total: 12200 },
-      ],
-    },
-    {
-      id: '2',
-      ref: 'INV-2026-0841',
-      date: '13-09-2026 10:15',
-      supplier: 'ACI Dist.',
-      gross: 31750,
-      disc: 500,
-      net: 31250,
-      itemsCount: 8,
-      type: 'INVENTORY PURCHASED',
-      lines: [
-        { name: 'Amodis 400mg Tablet', qty: 25, unitPrice: 450, total: 11250 },
-        { name: 'Ceevit 250mg Chewable', qty: 50, unitPrice: 400, total: 20000 },
-      ],
-    },
-    {
-      id: '3',
-      ref: 'OPG-2026-0010',
-      date: '01-09-2026 09:00',
-      supplier: 'Opening Stock',
-      gross: 284000,
-      disc: 0,
-      net: 284000,
-      itemsCount: 64,
-      type: 'OPENING STOCK',
-      lines: [
-        { name: 'Opening Stock Initial Intake', qty: 64, unitPrice: 4437.5, total: 284000 },
-      ],
-    },
-  ]);
+  records = signal<PurchaseRecordRow[]>([]);
+  suppliers = signal<SuppSupplier[]>([]);
 
   private readonly supplierService = inject(SupplierService);
   private searchSubject = new Subject<void>();
@@ -395,11 +350,22 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
       this.loadPurchases();
     });
+    this.loadSuppliers();
     this.loadPurchases();
   }
 
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
+  }
+
+  loadSuppliers(): void {
+    this.supplierService.getSuppliers({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          this.suppliers.set([...res.data.items]);
+        }
+      },
+    });
   }
 
   onFilterChange(): void {
@@ -412,15 +378,36 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
 
   loadPurchases(): void {
     this.isLoading.set(true);
-    const params = {
-      fromDate: this.fromDate,
-      toDate: this.toDate,
-      search: this.searchInvoice.trim(),
-      supplier: this.filterSupplier,
-      type: this.filterType,
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 50,
     };
+    if (this.fromDate) params['fromDate'] = this.fromDate;
+    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.searchInvoice.trim()) params['search'] = this.searchInvoice.trim();
+    if (this.filterSupplier) params['search'] = this.filterSupplier;
+    if (this.filterType) params['inventoryType'] = this.filterType === 'OPENING STOCK' ? 2 : 1;
+
     this.supplierService.getPurchases(params).subscribe({
-      next: () => {
+      next: (res) => {
+        const items = res.data?.items || [];
+        this.records.set(items.map(inv => ({
+          id: inv.purchase_invoice_no.toString(),
+          ref: inv.inventory_number || inv.supplier_invoice_no || `PUR-${inv.purchase_invoice_no}`,
+          date: inv.purchase_date ? new Date(inv.purchase_date).toLocaleString('en-GB') : '',
+          supplier: inv.supplier?.name || 'Supplier',
+          gross: Number(inv.gross_total_price) || 0,
+          disc: Number(inv.discount_value) || 0,
+          net: Number(inv.final_price) || 0,
+          itemsCount: inv.total_items || 0,
+          type: inv.inventory_type === 2 ? 'OPENING STOCK' : 'INVENTORY PURCHASED',
+          lines: (inv.items || []).map(i => ({
+            name: i.product?.product_name || `Product #${i.product_no}`,
+            qty: i.total_qty_pcs || i.box_qty,
+            unitPrice: Number(i.unit_cost) || Number(i.btp) || 0,
+            total: Number(i.total_price) || 0,
+          })),
+        })));
         this.isLoading.set(false);
       },
       error: () => {

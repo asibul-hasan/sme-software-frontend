@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,9 +11,12 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { DoctorService } from '../../core/services/doctor.service';
+import { DocDoctor } from '../../core/models/doctor.models';
 
 interface DoctorRow {
   id: string;
+  doctorNo: number;
   name: string;
   nameBn: string;
   phone: string;
@@ -52,18 +55,12 @@ interface DoctorRow {
               nz-input
               placeholder="Search doctor..."
               [(ngModel)]="searchName"
+              (ngModelChange)="onSearchChange()"
             />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
           </ng-template>
-          <input
-            type="text"
-            nz-input
-            placeholder="Phone (+880...)"
-            [(ngModel)]="searchPhone"
-            class="w-36 shrink-0 rounded-md"
-          />
           <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
@@ -96,7 +93,7 @@ interface DoctorRow {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
-              @for (d of filteredDoctors(); track d.id) {
+              @for (d of doctors(); track d.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="p-3 font-semibold text-slate-900">{{ d.name }}</td>
                   <td class="p-3 text-slate-700 font-medium font-bengali">{{ d.nameBn }}</td>
@@ -152,22 +149,21 @@ interface DoctorRow {
         <!-- Sticky Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
-            <span>Registered Doctors: <strong class="text-slate-900 font-semibold font-mono">{{ filteredDoctors().length }}</strong></span>
+            <span>Registered Doctors: <strong class="text-slate-900 font-semibold font-mono">{{ doctors().length }}</strong></span>
           </div>
           <span class="text-slate-400 font-mono text-[11px]">Authorized Medical Practitioners</span>
         </div>
       </div>
     </div>
 
-    <!-- Unified Dual-Purpose Modal (Add & Modify) -->
+    <!-- Quick Add/Edit Doctor Modal -->
     <nz-modal
       [(nzVisible)]="isModalVisible"
-      [nzTitle]="modalMode === 'create' ? 'Add New Doctor (SCR-41)' : ('Modify Doctor: ' + form.name)"
-      [nzOkText]="modalMode === 'create' ? 'Save Doctor' : 'Update Doctor'"
+      [nzTitle]="modalMode === 'create' ? 'Add Doctor' : 'Edit Doctor'"
+      [nzOkText]="modalMode === 'create' ? 'Register Doctor' : 'Save Changes'"
       (nzOnCancel)="isModalVisible = false"
       (nzOnOk)="saveDoctor()"
-      nzWidth="820px"
-      [nzStyle]="{ top: '24px' }"
+      nzWidth="580px"
     >
       <ng-container *nzModalContent>
         <div class="space-y-3 py-1 text-xs">
@@ -187,49 +183,49 @@ interface DoctorRow {
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">
-                ডাক্তারের নাম (বাংলা)
+                Doctor Name (বাংলা)
               </label>
               <input
                 type="text"
                 nz-input
-                placeholder="ডা. মোহাম্মদ আলী"
+                placeholder="e.g. ডা. মোহাম্মদ আলী"
                 [(ngModel)]="form.nameBn"
+                class="rounded-md font-bengali"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Qualifications & Degree (English)
+              </label>
+              <input
+                type="text"
+                nz-input
+                placeholder="MBBS, FCPS (Medicine)"
+                [(ngModel)]="form.desc"
                 class="rounded-md"
               />
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">
-                Description / Degrees (English)
+                ডিগ্রি ও পদবি (বাংলা)
               </label>
-              <textarea
+              <input
+                type="text"
                 nz-input
-                rows="2"
-                placeholder="MBBS, FCPS (Medicine) — Qualifications & designation"
-                [(ngModel)]="form.desc"
-                class="rounded-md"
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
-                ডিগ্রি ও বিবরণ (বাংলা)
-              </label>
-              <textarea
-                nz-input
-                rows="2"
-                placeholder="এমবিবিএস, এফসিপিএস (মেডিসিন) — যোগ্যতা ও পদবি"
+                placeholder="এমবিবিএস, এফসিপিএস"
                 [(ngModel)]="form.descBn"
-                class="rounded-md"
-              ></textarea>
+                class="rounded-md font-bengali"
+              />
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">
                 Phone Number <span class="text-rose-500">*</span>
               </label>
-              <div class="flex gap-2">
-                <span class="h-7 px-2.5 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
+              <div class="flex gap-1.5">
+                <span class="h-8 px-2 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
                   +880
                 </span>
                 <input
@@ -237,7 +233,7 @@ interface DoctorRow {
                   nz-input
                   placeholder="1XXXXXXXXX"
                   [(ngModel)]="form.phoneSuffix"
-                  class="rounded-md flex-1"
+                  class="rounded-md flex-1 text-xs"
                 />
               </div>
             </div>
@@ -250,60 +246,25 @@ interface DoctorRow {
                 <nz-option nzValue="Other" nzLabel="Other"></nz-option>
               </nz-select>
             </div>
-
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
-                Doctor E-Signature
-              </label>
-              <div
-                (click)="simulateSignatureUpload()"
-                class="theme-dropzone rounded-lg p-3 text-center cursor-pointer bg-slate-50"
-              >
-                @if (hasSignature) {
-                  <p class="text-xs theme-total-text font-semibold mb-0">
-                    ✓ Signature uploaded: dr_ali_signature.png
-                  </p>
-                } @else {
-                  <p class="text-xs text-slate-600 mb-0.5 font-medium">📎 Click to upload digital signature</p>
-                  <p class="text-[10px] text-slate-400 mb-0">PNG, JPG up to 2MB (transparent background recommended)</p>
-                }
-              </div>
-            </div>
           </div>
         </div>
       </ng-container>
     </nz-modal>
   `,
 })
-export class DoctorListComponent {
+export class DoctorListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly doctorService = inject(DoctorService);
 
   searchName = '';
-  searchPhone = '';
-
-  doctors = signal<DoctorRow[]>([
-    { id: '1', name: 'Dr. Mohammad Ali', nameBn: 'ডা. মোহাম্মদ আলী', phone: '+880 1711-234567', gender: 'Male', desc: 'MBBS, FCPS (Medicine)', descBn: 'এমবিবিএস, এফসিপিএস (মেডিসিন)' },
-    { id: '2', name: 'Dr. Fatema Khanam', nameBn: 'ডা. ফাতেমা খানম', phone: '+880 1811-345678', gender: 'Female', desc: 'MBBS, MS (Gynaecology)', descBn: 'এমবিবিএস, এমএস (গাইনোকোলজি)' },
-    { id: '3', name: 'Dr. Karim Ahmed', nameBn: 'ডা. করিম আহমেদ', phone: '+880 1611-456789', gender: 'Male', desc: 'BDS (Dental)', descBn: 'বিডিএস (ডেন্টাল)' },
-  ]);
-
-  filteredDoctors = computed(() => {
-    const qName = this.searchName.trim().toLowerCase();
-    const qPhone = this.searchPhone.trim();
-
-    return this.doctors().filter(d => {
-      const matchName = !qName || d.name.toLowerCase().includes(qName) || d.nameBn.includes(qName);
-      const matchPhone = !qPhone || d.phone.includes(qPhone);
-      return matchName && matchPhone;
-    });
-  });
+  doctors = signal<DoctorRow[]>([]);
 
   isModalVisible = false;
   modalMode: 'create' | 'edit' = 'create';
-  hasSignature = false;
   form = {
     id: '',
+    doctorNo: 0,
     name: '',
     nameBn: '',
     phoneSuffix: '',
@@ -312,16 +273,54 @@ export class DoctorListComponent {
     descBn: '',
   };
 
+  ngOnInit(): void {
+    this.loadDoctors();
+  }
+
+  loadDoctors(): void {
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 100,
+    };
+    if (this.searchName.trim()) {
+      params['search'] = this.searchName.trim();
+    }
+
+    this.doctorService.getDoctors(params).subscribe({
+      next: (res) => {
+        const rawItems = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+        const rows: DoctorRow[] = rawItems.map((d: any) => ({
+          id: (d.doctor_no || d.doctorNo || Math.random()).toString(),
+          doctorNo: d.doctor_no || d.doctorNo,
+          name: [d.first_name_en || d.firstNameEn, d.last_name_en || d.lastNameEn].filter(Boolean).join(' ') || 'Dr. Physician',
+          nameBn: [d.first_name_bn || d.firstNameBn, d.last_name_bn || d.lastNameBn].filter(Boolean).join(' ') || '',
+          phone: d.phone || '',
+          gender: d.gender || 'Male',
+          desc: d.description_en || d.descriptionEn || 'MBBS',
+          descBn: d.description_bn || d.descriptionBn || '',
+        }));
+        this.doctors.set(rows);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to load doctors');
+      },
+    });
+  }
+
+  onSearchChange(): void {
+    this.loadDoctors();
+  }
+
   resetFilters(): void {
     this.searchName = '';
-    this.searchPhone = '';
+    this.loadDoctors();
   }
 
   openAddModal(): void {
     this.modalMode = 'create';
-    this.hasSignature = false;
     this.form = {
       id: '',
+      doctorNo: 0,
       name: '',
       nameBn: '',
       phoneSuffix: '',
@@ -334,10 +333,10 @@ export class DoctorListComponent {
 
   openEditModal(d: DoctorRow): void {
     this.modalMode = 'edit';
-    this.hasSignature = true;
     const phoneClean = d.phone.replace(/^\+880\s*/, '');
     this.form = {
       id: d.id,
+      doctorNo: d.doctorNo,
       name: d.name,
       nameBn: d.nameBn,
       phoneSuffix: phoneClean,
@@ -346,11 +345,6 @@ export class DoctorListComponent {
       descBn: d.descBn,
     };
     this.isModalVisible = true;
-  }
-
-  simulateSignatureUpload(): void {
-    this.hasSignature = true;
-    this.msg.success('Signature file attached.');
   }
 
   saveDoctor(): void {
@@ -364,49 +358,62 @@ export class DoctorListComponent {
     }
 
     const fullPhone = `+880 ${this.form.phoneSuffix.trim()}`;
+    const names = this.form.name.trim().split(' ');
+    const firstName = names[0] || 'Dr.';
+    const lastName = names.slice(1).join(' ') || '';
+
+    const payload: Partial<DocDoctor> = {
+      first_name_en: firstName,
+      last_name_en: lastName,
+      first_name_bn: this.form.nameBn.trim() || firstName,
+      phone: fullPhone,
+      gender: this.form.gender,
+      description_en: this.form.desc.trim() || undefined,
+      description_bn: this.form.descBn.trim() || undefined,
+      is_active: true,
+    };
 
     if (this.modalMode === 'create') {
-      const newDoc: DoctorRow = {
-        id: Date.now().toString(),
-        name: this.form.name.trim(),
-        nameBn: this.form.nameBn.trim() || this.form.name.trim(),
-        phone: fullPhone,
-        gender: this.form.gender,
-        desc: this.form.desc.trim() || 'MBBS',
-        descBn: this.form.descBn.trim() || 'এমবিবিএস',
-      };
-      this.doctors.update(list => [...list, newDoc]);
-      this.msg.success(`Doctor "${newDoc.name}" registered!`);
+      this.doctorService.createDoctor(payload).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Doctor "${this.form.name}" registered!`);
+          this.isModalVisible = false;
+          this.loadDoctors();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to register doctor');
+        },
+      });
     } else {
-      this.doctors.update(list =>
-        list.map(d =>
-          d.id === this.form.id
-            ? {
-                ...d,
-                name: this.form.name.trim(),
-                nameBn: this.form.nameBn.trim(),
-                phone: fullPhone,
-                gender: this.form.gender,
-                desc: this.form.desc.trim(),
-                descBn: this.form.descBn.trim(),
-              }
-            : d
-        )
-      );
-      this.msg.success(`Doctor "${this.form.name}" updated!`);
+      this.doctorService.updateDoctor(this.form.doctorNo, payload).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Doctor "${this.form.name}" updated!`);
+          this.isModalVisible = false;
+          this.loadDoctors();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to update doctor');
+        },
+      });
     }
-    this.isModalVisible = false;
   }
 
   viewPrescriptions(d: DoctorRow): void {
-    this.msg.info(`Loading prescriptions signed by ${d.name}`);
+    this.msg.info(`Viewing prescriptions signed by ${d.name}`);
   }
 
   deleteDoctor(d: DoctorRow): void {
     this.modal.confirmDelete(`Doctor "${d.name}"`, 'Remove this doctor from directory?').subscribe(ok => {
       if (ok) {
-        this.doctors.update(list => list.filter(item => item.id !== d.id));
-        this.msg.success(`Doctor "${d.name}" removed.`);
+        this.doctorService.deleteDoctor(d.doctorNo).subscribe({
+          next: () => {
+            this.msg.success(`Doctor "${d.name}" removed.`);
+            this.loadDoctors();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to remove doctor');
+          },
+        });
       }
     });
   }

@@ -19,8 +19,10 @@ export interface CustCustomer {
   email?: string | null;
   address?: string | null;
   note?: string | null;
+  notes?: string | null;
   has_due: boolean;
   current_due: number;
+  total_due?: number;
   advance_balance?: number;
   promised_payment_date?: string | null;
   is_loyalty_member: boolean;
@@ -66,6 +68,7 @@ export interface SaleInvoice {
 
   // Navigation
   customer?: CustCustomer;
+  customer_name?: string;
   items?: readonly SaleInvoiceItem[];
   payments?: readonly SaleInvoicePayment[];
 }
@@ -91,6 +94,7 @@ export interface SaleInvoiceItem {
 
   // Navigation
   product?: ProdProduct;
+  product_name?: string;
 }
 
 export interface SaleInvoicePayment {

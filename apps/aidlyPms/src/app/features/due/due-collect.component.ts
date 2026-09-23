@@ -383,16 +383,8 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   accounts = signal<AccTransactionAccount[]>([]);
   selectedAccountId = 1;
 
-  dueData = signal<DueRecord[]>([
-    { id: '1', customer: 'Rafiqul Islam', phone: '+880 1711-234567', inv: 'INV-2026-1010', saleDate: '10-09-2026', dueDate: '16-09-2026', amount: 2400 },
-    { id: '2', customer: 'Shapna Akter', phone: '+880 1711-678901', inv: 'INV-2026-1012', saleDate: '12-09-2026', dueDate: '16-09-2026', amount: 800 },
-    { id: '3', customer: 'Meena Begum', phone: '+880 1611-456789', inv: 'INV-2026-1027', saleDate: '15-09-2026', dueDate: '20-09-2026', amount: 5800 },
-  ]);
-
-  paidData = signal<PaidRecord[]>([
-    { id: '1', customer: 'Karim Ahmed', phone: '+880 1811-345678', receipt: 'PAY-2026-084', method: 'bKash', amount: 3200, note: 'bKash ref: TRX98765' },
-    { id: '2', customer: 'Meena Begum', phone: '+880 1611-456789', receipt: 'PAY-2026-083', method: 'Cash', amount: 1500, note: 'Partial installment' },
-  ]);
+  dueData = signal<DueRecord[]>([]);
+  paidData = signal<PaidRecord[]>([]);
 
   filteredDue = computed(() => {
     const q = this.searchQuery.trim().toLowerCase();
@@ -473,12 +465,29 @@ export class DueCollectComponent implements OnInit, OnDestroy {
     this.customerService.getDueRecords(params).subscribe({
       next: res => {
         this.isLoading.set(false);
-        if (res.success && res.data && res.data.length > 0) {
+        if (res.success && res.data) {
           this.dueData.set(res.data as DueRecord[]);
         }
       },
       error: () => {
         this.isLoading.set(false);
+      },
+    });
+
+    this.customerService.getDueHistory(params).subscribe({
+      next: res => {
+        if (res.success && res.data) {
+          const list: PaidRecord[] = res.data.map((p: any) => ({
+            id: String(p.id || Date.now()),
+            customer: p.customer || 'Customer',
+            phone: p.phone || '',
+            receipt: p.receipt || 'RCPT',
+            method: p.method || 'Cash',
+            amount: Number(p.amount) || 0,
+            note: p.note || 'Settlement',
+          }));
+          this.paidData.set(list);
+        }
       },
     });
   }

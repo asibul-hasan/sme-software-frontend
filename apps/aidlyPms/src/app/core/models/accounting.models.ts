@@ -58,6 +58,7 @@ export interface AccTransactionAccount {
   account_type: number;
   bank_account_number?: string | null;
   bank_name?: string | null;
+  opening_balance?: number;
   current_balance: number;
   is_active: boolean;
   created_at: string;
@@ -81,7 +82,8 @@ export interface AccExpense {
   expense_category_no: number;
   account_no: number;
   amount: number;
-  payment_type: string;
+  payment_type?: string;
+  payment_method?: number;
   note?: string | null;
   created_by_user_no: number;
   expense_date: string;
@@ -89,7 +91,9 @@ export interface AccExpense {
 
   // Navigation
   category?: AccExpenseCategory;
+  category_name?: string;
   account?: AccTransactionAccount;
+  account_name?: string;
 }
 
 export interface AccIncomeCategory {
@@ -109,7 +113,8 @@ export interface AccIncome {
   income_category_no: number;
   account_no: number;
   amount: number;
-  payment_type: string;
+  payment_type?: string;
+  payment_method?: number;
   received_from?: string | null;
   note?: string | null;
   created_by_user_no: number;
@@ -118,7 +123,9 @@ export interface AccIncome {
 
   // Navigation
   category?: AccIncomeCategory;
+  category_name?: string;
   account?: AccTransactionAccount;
+  account_name?: string;
 }
 
 export interface AccAdditionalBalance {

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,9 +11,15 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { CustomerService } from '../../core/services/customer.service';
+import { ProductService } from '../../core/services/product.service';
+import { PosSaleService, CreateSaleReturnPayload } from '../../core/services/pos-sale.service';
+import { Customer } from '../../core/models/customer.models';
+import { Product } from '../../core/models/product.models';
 
 interface ReturnLine {
   id: string;
+  productNo: number;
   name: string;
   box: number;
   qtyBox: number;
@@ -69,11 +75,12 @@ interface ReturnLine {
                   <nz-select
                     nzShowSearch
                     nzPlaceHolder="Search product to return..."
-                    [(ngModel)]="currentLine.name"
+                    [(ngModel)]="selectedProductNo"
+                    (ngModelChange)="onProductSelect($event)"
                     class="flex-1"
                   >
-                    @for (p of availableProducts; track p) {
-                      <nz-option [nzValue]="p" [nzLabel]="p"></nz-option>
+                    @for (p of availableProducts(); track p.product_no) {
+                      <nz-option [nzValue]="p.product_no" [nzLabel]="p.product_name"></nz-option>
                     }
                   </nz-select>
                   <button
@@ -295,9 +302,9 @@ interface ReturnLine {
               <div>
                 <label class="text-xs font-semibold text-slate-700 block mb-1">Customer</label>
                 <div class="flex gap-1.5">
-                  <nz-select nzShowSearch [(ngModel)]="selectedCustomer" class="flex-1">
-                    @for (c of customers; track c.id) {
-                      <nz-option [nzValue]="c.id" [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"></nz-option>
+                  <nz-select nzShowSearch [(ngModel)]="selectedCustomer" class="flex-1" nzPlaceHolder="Select customer...">
+                    @for (c of customers(); track c.customer_no) {
+                      <nz-option [nzValue]="c.customer_no" [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"></nz-option>
                     }
                   </nz-select>
                   <button
@@ -405,15 +412,16 @@ interface ReturnLine {
     </nz-modal>
   `,
 })
-export class SaleReturnComponent {
+export class SaleReturnComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly customerService = inject(CustomerService);
+  private readonly productService = inject(ProductService);
+  private readonly posSaleService = inject(PosSaleService);
 
-  customers = [
-    { id: '1', name: 'Walking Customer', phone: '' },
-    { id: '2', name: 'Md. Tariqul Islam', phone: '+8801711223344' },
-    { id: '3', name: 'Kandirpar General Clinic', phone: '+8801819988776' },
-  ];
-  selectedCustomer = '1';
+  customers = signal<Customer[]>([]);
+  availableProducts = signal<Product[]>([]);
+  selectedCustomer: number | null = null;
+  selectedProductNo: number | null = null;
 
   // Customer modal
   isCustomerModalOpen = false;
@@ -427,31 +435,10 @@ export class SaleReturnComponent {
   newProductGeneric = '';
   newProductPrice = 0;
 
-  availableProducts = [
-    'Napa 500mg Tablet',
-    'Seclo 20mg Capsule',
-    'Ace 500mg Tablet',
-    'Ceevit 250mg Chewable',
-    'Sergel 20mg Capsule',
-    'Monas 10mg Tablet',
-    'Maxpro 20mg Capsule',
-  ];
-
-  lines = signal<ReturnLine[]>([
-    {
-      id: '1',
-      name: 'Napa 500mg Tablet',
-      box: 1,
-      qtyBox: 10,
-      totalQty: 10,
-      salePrice: 1.2,
-      expiryDate: '2027-10-31',
-      minQty: 1,
-      total: 12.0,
-    },
-  ]);
+  lines = signal<ReturnLine[]>([]);
 
   currentLine = {
+    productNo: 0,
     name: '',
     box: 1,
     qtyBox: 10,
@@ -463,9 +450,49 @@ export class SaleReturnComponent {
 
   discountEnabled = false;
   discountAmount = 0;
-  paidRefund = 12.0;
+  paidRefund = 0;
   inventoryType = 'CUSTOMER RETURNED';
-  originalInvoice = 'INV-2026-1028';
+  originalInvoice = '';
+  isSubmitting = signal(false);
+
+  ngOnInit(): void {
+    this.loadCustomers();
+    this.loadProducts();
+  }
+
+  loadCustomers(): void {
+    this.customerService.getCustomers({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          this.customers.set([...res.data.items]);
+          if (res.data.items.length > 0 && !this.selectedCustomer) {
+            this.selectedCustomer = res.data.items[0].customer_no;
+          }
+        }
+      },
+    });
+  }
+
+  loadProducts(): void {
+    this.productService.getProducts({ pageSize: 150 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          this.availableProducts.set([...res.data.items]);
+        }
+      },
+    });
+  }
+
+  onProductSelect(productNo: number): void {
+    const prod = this.availableProducts().find(p => p.product_no === productNo);
+    if (prod) {
+      this.currentLine.productNo = prod.product_no;
+      this.currentLine.name = prod.product_name;
+      this.currentLine.salePrice = Number(prod.sale_price_per_piece) || Number(prod.purchase_price_per_piece) || 0;
+      this.currentLine.qtyBox = prod.quantity_per_box || 10;
+      this.currentLine.totalQty = (this.currentLine.box || 1) * this.currentLine.qtyBox;
+    }
+  }
 
   grossTotal = computed(() => {
     return this.lines().reduce((acc, curr) => acc + curr.total, 0);
@@ -478,16 +505,17 @@ export class SaleReturnComponent {
   });
 
   addLine(): void {
-    if (!this.currentLine.name) {
+    if (!this.currentLine.name || !this.currentLine.productNo) {
       this.msg.warning('Please select a product to return');
       return;
     }
     const qty = Number(this.currentLine.totalQty) || (Number(this.currentLine.box) * Number(this.currentLine.qtyBox)) || 1;
-    const price = Number(this.currentLine.salePrice) || 1.2;
+    const price = Number(this.currentLine.salePrice) || 0;
     const lineTotal = qty * price;
 
     const newLine: ReturnLine = {
       id: Date.now().toString(),
+      productNo: this.currentLine.productNo,
       name: this.currentLine.name,
       box: Number(this.currentLine.box) || 1,
       qtyBox: Number(this.currentLine.qtyBox) || 10,
@@ -503,7 +531,9 @@ export class SaleReturnComponent {
     this.msg.success(`Added return line for ${newLine.name}`);
 
     // reset
+    this.selectedProductNo = null;
     this.currentLine = {
+      productNo: 0,
       name: '',
       box: 1,
       qtyBox: 10,
@@ -529,12 +559,35 @@ export class SaleReturnComponent {
       return;
     }
 
-    this.msg.success(
-      `Return for ${this.originalInvoice} processed! Refund of ৳ ${this.finalRefund().toFixed(2)} recorded.`
-    );
-    this.lines.set([]);
-    this.originalInvoice = '';
-    this.paidRefund = 0;
+    this.isSubmitting.set(true);
+    const payload: CreateSaleReturnPayload = {
+      original_invoice_no: this.originalInvoice.trim(),
+      customer_no: this.selectedCustomer || 1,
+      return_amount: this.finalRefund(),
+      refund_method: 'Cash',
+      items: this.lines().map(l => ({
+        product_no: l.productNo,
+        return_qty: l.totalQty,
+        unit_price: l.salePrice,
+        total_price: l.total,
+      })),
+    };
+
+    this.posSaleService.createSaleReturn(payload).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.msg.success(
+          `Return for ${this.originalInvoice} processed successfully! Refund of ৳ ${this.finalRefund().toFixed(2)} recorded.`
+        );
+        this.lines.set([]);
+        this.originalInvoice = '';
+        this.paidRefund = 0;
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.msg.error(err?.error?.message || 'Failed to process sale return');
+      },
+    });
   }
 
   saveCustomer(): void {
@@ -542,18 +595,27 @@ export class SaleReturnComponent {
       this.msg.warning('Please enter customer name');
       return;
     }
-    const newCust = {
-      id: Date.now().toString(),
+    this.customerService.createCustomer({
       name: this.newCustomerName.trim(),
       phone: this.newCustomerPhone.trim(),
-    };
-    this.customers = [...this.customers, newCust];
-    this.selectedCustomer = newCust.id;
-    this.newCustomerName = '';
-    this.newCustomerPhone = '';
-    this.newCustomerAddress = '';
-    this.isCustomerModalOpen = false;
-    this.msg.success(`Customer "${newCust.name}" registered and selected!`);
+      address: this.newCustomerAddress.trim(),
+    }).subscribe({
+      next: (res) => {
+        const createdCustomer = res.data;
+        if (createdCustomer) {
+          this.customers.update(list => [createdCustomer, ...list]);
+          this.selectedCustomer = createdCustomer.customer_no;
+          this.msg.success(`Customer "${createdCustomer.name}" registered and selected!`);
+        }
+        this.newCustomerName = '';
+        this.newCustomerPhone = '';
+        this.newCustomerAddress = '';
+        this.isCustomerModalOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to create customer');
+      },
+    });
   }
 
   saveProduct(): void {
@@ -561,16 +623,27 @@ export class SaleReturnComponent {
       this.msg.warning('Please enter brand name');
       return;
     }
-    const name = this.newProductName.trim();
-    this.availableProducts = [...this.availableProducts, name];
-    this.currentLine.name = name;
-    if (this.newProductPrice > 0) {
-      this.currentLine.salePrice = this.newProductPrice;
-    }
-    this.newProductName = '';
-    this.newProductGeneric = '';
-    this.newProductPrice = 0;
-    this.isProductModalOpen = false;
-    this.msg.success(`Product "${name}" added and selected!`);
+    this.productService.createProduct({
+      product_name: this.newProductName.trim(),
+      sale_price_per_piece: this.newProductPrice || 0,
+      purchase_price_per_piece: this.newProductPrice ? this.newProductPrice * 0.85 : 0,
+    }).subscribe({
+      next: (res) => {
+        const createdProduct = res.data;
+        if (createdProduct) {
+          this.availableProducts.update(list => [createdProduct, ...list]);
+          this.selectedProductNo = createdProduct.product_no;
+          this.onProductSelect(createdProduct.product_no);
+          this.msg.success(`Product "${createdProduct.product_name}" added and selected!`);
+        }
+        this.newProductName = '';
+        this.newProductGeneric = '';
+        this.newProductPrice = 0;
+        this.isProductModalOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to quick-add product');
+      },
+    });
   }
 }

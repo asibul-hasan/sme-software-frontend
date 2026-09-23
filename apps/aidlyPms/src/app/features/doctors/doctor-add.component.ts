@@ -8,6 +8,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { DoctorService } from '../../core/services/doctor.service';
 
 @Component({
   selector: 'app-doctor-add',
@@ -216,6 +217,7 @@ export class DoctorAddComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly doctorService = inject(DoctorService);
 
   firstName = '';
   lastName = '';
@@ -247,8 +249,27 @@ export class DoctorAddComponent {
       return;
     }
 
+    const fullPhone = `+880 ${this.phone.trim()}`;
     const fullName = `Dr. ${this.firstName.trim()} ${this.lastName.trim()}`.trim();
-    this.msg.success(`Doctor "${fullName}" registered successfully!`);
-    this.router.navigate(['/doctors-portal/list']);
+
+    this.doctorService.createDoctor({
+      first_name_en: this.firstName.trim(),
+      last_name_en: this.lastName.trim() || undefined,
+      first_name_bn: this.firstNameBn.trim() || this.firstName.trim(),
+      last_name_bn: this.lastNameBn.trim() || undefined,
+      description_en: this.desc.trim() || undefined,
+      description_bn: this.descBn.trim() || undefined,
+      phone: fullPhone,
+      gender: this.gender,
+      is_active: true,
+    }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Doctor "${fullName}" registered successfully!`);
+        this.router.navigate(['/doctors-portal/list']);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to register doctor');
+      },
+    });
   }
 }

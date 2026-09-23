@@ -232,10 +232,7 @@ export class SubscriptionComponent implements OnInit {
   renewalDueDate = signal<string>('14 Oct 2026');
   daysRemaining = signal<number>(30);
 
-  history: BillingHistoryRow[] = [
-    { product: 'PMS Pro Monthly', ref: 'bKash-TRX-9984512', date: '14-09-2026', start: '14-09-2026', end: '14-10-2026', amount: 500.0, status: 'Paid' },
-    { product: 'PMS Pro Monthly', ref: 'bKash-TRX-8821345', date: '14-08-2026', start: '14-08-2026', end: '14-09-2026', amount: 500.0, status: 'Paid' },
-  ];
+  history: BillingHistoryRow[] = [];
 
   ngOnInit(): void {
     this.loadSubscriptionData();

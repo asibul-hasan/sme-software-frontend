@@ -10,6 +10,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ApiService } from '../../core/services/api.service';
+import { AccountingService } from '../../core/services/accounting.service';
 
 interface CashItem {
   id: string;
@@ -349,6 +350,7 @@ export class CashHandoverComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
+  private readonly accountingService = inject(AccountingService);
 
   constructor() {
     this.route.queryParams.subscribe(params => {
@@ -360,6 +362,16 @@ export class CashHandoverComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPendingHandovers();
+    this.accountingService.getAccounts().subscribe({
+      next: res => {
+        if (res.data && res.data.length > 0) {
+          const nonCash = res.data.filter(a => a.account_type !== 1);
+          if (nonCash.length > 0) {
+            this.bankAccounts = nonCash.map(a => ({ name: a.account_name, amount: 0 }));
+          }
+        }
+      }
+    });
   }
 
   items = signal<CashItem[]>([]);

@@ -416,13 +416,25 @@ export class SupplierListComponent implements OnInit, OnDestroy {
 
   loadSuppliers(): void {
     this.isLoading.set(true);
-    const params: Record<string, unknown> = {};
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 50,
+    };
     if (this.searchName.trim()) params['search'] = this.searchName.trim();
     if (this.searchPhone.trim()) params['phone'] = this.searchPhone.trim();
     if (this.dueOnly) params['dueOnly'] = true;
 
     this.supplierService.getSuppliers(params).subscribe({
-      next: () => {
+      next: (res) => {
+        const items = res.data?.items || [];
+        this.suppliers.set(items.map(s => ({
+          supplier_no: s.supplier_no,
+          name: s.name,
+          phone: s.phone,
+          address: '',
+          balance: Number(s.current_due_balance) || 0,
+          note: s.note || '',
+        })));
         this.isLoading.set(false);
       },
       error: () => {
@@ -452,13 +464,7 @@ export class SupplierListComponent implements OnInit, OnDestroy {
     this.msg.success(`Payment method "${val}" added!`);
   }
 
-  suppliers = signal<SupplierRow[]>([
-    { supplier_no: 1, name: 'Beximco Distribution Ltd.', phone: '+880 1711-234567', address: 'Dhaka, Dhaka-1000', balance: 24500 },
-    { supplier_no: 2, name: 'ACI Pharma Distributors', phone: '+880 1811-345678', address: 'Cumilla, Chattagram-3500', balance: 0 },
-    { supplier_no: 3, name: 'Square Dist. Network', phone: '+880 1911-456789', address: 'Narayanganj, Dhaka-1400', balance: 8200 },
-    { supplier_no: 4, name: 'Incepta Healthcare Dist.', phone: '+880 1611-567890', address: 'Gazipur, Dhaka-1700', balance: 0 },
-    { supplier_no: 5, name: 'Renata Trade Partner', phone: '+880 1711-678901', address: 'Cumilla, Chattagram-3500', balance: 14700 },
-  ]);
+  suppliers = signal<SupplierRow[]>([]);
 
   filteredSuppliers = computed(() => {
     const nameQ = this.searchName.trim().toLowerCase();
@@ -536,36 +542,37 @@ export class SupplierListComponent implements OnInit, OnDestroy {
     const balance = this.form.dueEnabled ? Number(this.form.balance) || 0 : 0;
 
     if (this.modalMode === 'create') {
-      const nextId = Math.max(...this.suppliers().map(s => s.supplier_no), 0) + 1;
-      const newSupplier: SupplierRow = {
-        supplier_no: nextId,
+      this.supplierService.createSupplier({
         name: this.form.name.trim(),
         phone: fullPhone,
-        address: this.form.address.trim() || 'Dhaka HQ',
-        balance,
+        current_due_balance: balance,
         note: this.form.note.trim(),
-      };
-      this.suppliers.update(list => [...list, newSupplier]);
-      this.msg.success(`Supplier "${newSupplier.name}" created successfully!`);
+      }).subscribe({
+        next: () => {
+          this.msg.success(`Supplier "${this.form.name}" created successfully!`);
+          this.isModalVisible = false;
+          this.loadSuppliers();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to create supplier');
+        },
+      });
     } else {
-      this.suppliers.update(list =>
-        list.map(s =>
-          s.supplier_no === this.form.supplier_no
-            ? {
-                ...s,
-                name: this.form.name.trim(),
-                phone: fullPhone,
-                address: this.form.address.trim(),
-                balance,
-                note: this.form.note.trim(),
-              }
-            : s
-        )
-      );
-      this.msg.success(`Supplier "${this.form.name}" updated successfully!`);
+      this.supplierService.updateSupplier(this.form.supplier_no, {
+        name: this.form.name.trim(),
+        phone: fullPhone,
+        note: this.form.note.trim(),
+      }).subscribe({
+        next: () => {
+          this.msg.success(`Supplier "${this.form.name}" updated successfully!`);
+          this.isModalVisible = false;
+          this.loadSuppliers();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to update supplier');
+        },
+      });
     }
-
-    this.isModalVisible = false;
   }
 
   viewLedger(s: SupplierRow): void {
@@ -599,14 +606,12 @@ export class SupplierListComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this.suppliers.update(list =>
-            list.map(s => (s.supplier_no === supId ? { ...s, balance: Math.max(0, s.balance - paid) } : s))
-          );
           this.msg.success(`Payment of ৳ ${paid.toLocaleString()} recorded for ${supName}!`);
           this.isPayModalVisible = false;
+          this.loadSuppliers();
         },
-        error: () => {
-          this.msg.error('Failed to record supplier payment');
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to record supplier payment');
         },
       });
   }
@@ -619,8 +624,15 @@ export class SupplierListComponent implements OnInit, OnDestroy {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.suppliers.update(list => list.filter(item => item.supplier_no !== s.supplier_no));
-        this.msg.success(`Supplier "${s.name}" deleted successfully`);
+        this.supplierService.deleteSupplier(s.supplier_no).subscribe({
+          next: () => {
+            this.msg.success(`Supplier "${s.name}" deleted successfully`);
+            this.loadSuppliers();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete supplier');
+          },
+        });
       }
     });
   }

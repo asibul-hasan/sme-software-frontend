@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,10 +11,13 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { AccountingService } from '../../core/services/accounting.service';
+import { AccReconciliation, AccTransactionAccount } from '../../core/models/accounting.models';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 
 interface ReconcileRecord {
   id: string;
+  reconciliationNo: number;
   voucher: string;
   date: string;
   by: string;
@@ -71,31 +74,31 @@ interface ReconcileRecord {
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Source Account</label>
             <nz-select
-              [(ngModel)]="filterFrom"
+              [(ngModel)]="filterFromAccountNo"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Sources"
-              class="w-40 shrink-0"
+              class="w-44 shrink-0"
               nzAllowClear
             >
-              <nz-option nzValue="" nzLabel="All Sources"></nz-option>
-              <nz-option nzValue="Counter Cash" nzLabel="Counter Cash"></nz-option>
-              <nz-option nzValue="bKash Merchant" nzLabel="bKash Merchant"></nz-option>
-              <nz-option nzValue="Islami Bank" nzLabel="Islami Bank"></nz-option>
+              <nz-option [nzValue]="null" nzLabel="All Sources"></nz-option>
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
+              }
             </nz-select>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Destination Account</label>
             <nz-select
-              [(ngModel)]="filterTo"
+              [(ngModel)]="filterToAccountNo"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Destinations"
-              class="w-40 shrink-0"
+              class="w-44 shrink-0"
               nzAllowClear
             >
-              <nz-option nzValue="" nzLabel="All Destinations"></nz-option>
-              <nz-option nzValue="Counter Cash" nzLabel="Counter Cash"></nz-option>
-              <nz-option nzValue="bKash Merchant" nzLabel="bKash Merchant"></nz-option>
-              <nz-option nzValue="Islami Bank" nzLabel="Islami Bank"></nz-option>
+              <nz-option [nzValue]="null" nzLabel="All Destinations"></nz-option>
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
+              }
             </nz-select>
           </div>
           <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
@@ -125,7 +128,7 @@ interface ReconcileRecord {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
-              @for (r of filteredRecords(); track r.id) {
+              @for (r of records(); track r.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="p-3">
                     <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ r.voucher }}</p>
@@ -191,7 +194,7 @@ interface ReconcileRecord {
         <!-- Sticky Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
-            <span>Vouchers: <strong class="text-slate-900 font-semibold font-mono">{{ filteredRecords().length }}</strong></span>
+            <span>Vouchers: <strong class="text-slate-900 font-semibold font-mono">{{ records().length }}</strong></span>
             <span class="text-slate-300">|</span>
             <span class="font-semibold text-slate-700">Total Transferred: <strong class="theme-total-text font-mono text-sm">৳ {{ totalReconciledAmount() | number: '1.2-2' }}</strong></span>
           </div>
@@ -215,10 +218,10 @@ interface ReconcileRecord {
             <label class="block text-xs font-semibold text-slate-700 mb-1">
               Payment From (Source Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="form.from" class="w-full">
-              <nz-option nzValue="Counter Cash (৳ 84,250)" nzLabel="Counter Cash (৳ 84,250)"></nz-option>
-              <nz-option nzValue="Islami Bank (৳ 2,42,000)" nzLabel="Islami Bank (৳ 2,42,000)"></nz-option>
-              <nz-option nzValue="bKash Merchant (৳ 6,300)" nzLabel="bKash Merchant (৳ 6,300)"></nz-option>
+            <nz-select [(ngModel)]="form.payment_from_account_no" class="w-full" nzPlaceHolder="Select Source Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
+              }
             </nz-select>
           </div>
 
@@ -226,10 +229,10 @@ interface ReconcileRecord {
             <label class="block text-xs font-semibold text-slate-700 mb-1">
               Payment To (Destination Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="form.to" class="w-full">
-              <nz-option nzValue="Counter Cash" nzLabel="Counter Cash"></nz-option>
-              <nz-option nzValue="Islami Bank" nzLabel="Islami Bank"></nz-option>
-              <nz-option nzValue="bKash Merchant" nzLabel="bKash Merchant"></nz-option>
+            <nz-select [(ngModel)]="form.payment_to_account_no" class="w-full" nzPlaceHolder="Select Destination Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
+              }
             </nz-select>
           </div>
 
@@ -261,58 +264,99 @@ interface ReconcileRecord {
     </nz-modal>
   `,
 })
-export class ReconciliationListComponent {
+export class ReconciliationListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly accountingService = inject(AccountingService);
 
   // Standard 1-month date range default
   defaultDates = getDefaultMonthDateRange();
   fromDate = this.defaultDates.fromDate;
   toDate = this.defaultDates.toDate;
-  filterFrom = '';
-  filterTo = '';
+  filterFromAccountNo: number | null = null;
+  filterToAccountNo: number | null = null;
 
-  records = signal<ReconcileRecord[]>([
-    { id: '1', voucher: 'REC-2026-012', date: '15-09-2026 10:00', by: 'Admin', from: 'Counter Cash', to: 'Islami Bank', amount: 30000, note: 'Bank deposit via counter deposit slip #4102' },
-    { id: '2', voucher: 'REC-2026-011', date: '14-09-2026 11:30', by: 'Admin', from: 'bKash Merchant', to: 'Counter Cash', amount: 5000, note: 'Cashout to drawer' },
-  ]);
+  records = signal<ReconcileRecord[]>([]);
+  accounts = signal<AccTransactionAccount[]>([]);
 
-  filteredRecords = computed(() => {
-    const f = this.filterFrom;
-    const t = this.filterTo;
-    return this.records().filter(r => {
-      const matchF = !f || r.from.includes(f);
-      const matchT = !t || r.to.includes(t);
-      return matchF && matchT;
-    });
-  });
-
-  totalReconciledAmount = computed(() => this.filteredRecords().reduce((sum, r) => sum + (r.amount || 0), 0));
+  totalReconciledAmount = computed(() => this.records().reduce((sum, r) => sum + (r.amount || 0), 0));
 
   isModalOpen = false;
   form = {
-    from: 'Counter Cash (৳ 84,250)',
-    to: 'Islami Bank',
+    payment_from_account_no: null as number | null,
+    payment_to_account_no: null as number | null,
     amount: 0,
     note: '',
   };
 
+  ngOnInit(): void {
+    this.loadAccounts();
+    this.loadReconciliations();
+  }
+
+  loadAccounts(): void {
+    this.accountingService.getAccounts().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.accounts.set(res.data);
+          if (res.data.length >= 2) {
+            this.form.payment_from_account_no = res.data[0].account_no;
+            this.form.payment_to_account_no = res.data[1].account_no;
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  loadReconciliations(): void {
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 100,
+    };
+    if (this.filterFromAccountNo) params['fromAccountNo'] = this.filterFromAccountNo;
+    if (this.filterToAccountNo) params['toAccountNo'] = this.filterToAccountNo;
+
+    this.accountingService.getReconciliations(params).subscribe({
+      next: (res) => {
+        const rawItems = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+        const rows: ReconcileRecord[] = rawItems.map((item: any) => ({
+          id: (item.reconciliation_no || item.reconciliationNo || Math.random()).toString(),
+          reconciliationNo: item.reconciliation_no || item.reconciliationNo,
+          voucher: item.voucher_no || item.voucherNo || `REC-${item.reconciliation_no}`,
+          date: item.transfer_date ? new Date(item.transfer_date).toLocaleDateString('en-GB') + ' ' + new Date(item.transfer_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-',
+          by: item.created_by_user_name || 'Admin',
+          from: item.from_account_name || item.fromAccountName || item.from_account?.account_name || 'Counter Cash',
+          to: item.to_account_name || item.toAccountName || item.to_account?.account_name || 'Bank',
+          amount: Number(item.amount) || 0,
+          note: item.note || '',
+        }));
+        this.records.set(rows);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to load reconciliation records');
+      },
+    });
+  }
+
   onFilterChange(): void {
-    // Reactive filter change handler
+    this.loadReconciliations();
   }
 
   resetFilters(): void {
     const def = getDefaultMonthDateRange();
     this.fromDate = def.fromDate;
     this.toDate = def.toDate;
-    this.filterFrom = '';
-    this.filterTo = '';
+    this.filterFromAccountNo = null;
+    this.filterToAccountNo = null;
+    this.loadReconciliations();
   }
 
   openAddModal(): void {
+    const accs = this.accounts();
     this.form = {
-      from: 'Counter Cash (৳ 84,250)',
-      to: 'Islami Bank',
+      payment_from_account_no: accs.length > 0 ? accs[0].account_no : null,
+      payment_to_account_no: accs.length > 1 ? accs[1].account_no : (accs.length > 0 ? accs[0].account_no : null),
       amount: 0,
       note: '',
     };
@@ -320,26 +364,38 @@ export class ReconciliationListComponent {
   }
 
   saveReconciliation(): void {
+    if (!this.form.payment_from_account_no || !this.form.payment_to_account_no) {
+      this.msg.error('Please select both source and destination accounts');
+      return;
+    }
+    if (this.form.payment_from_account_no === this.form.payment_to_account_no) {
+      this.msg.error('Source and destination accounts must be different');
+      return;
+    }
     if (this.form.amount <= 0) {
       this.msg.error('Please enter a valid transfer amount');
       return;
     }
 
-    const fromClean = this.form.from.replace(/\s*\(.*\)/, '');
-    const newRec: ReconcileRecord = {
-      id: Date.now().toString(),
-      voucher: `REC-2026-0${this.records().length + 13}`,
-      date: new Date().toLocaleDateString('en-GB') + ' 10:00',
-      by: 'Admin',
-      from: fromClean,
-      to: this.form.to,
+    const payload: Partial<AccReconciliation> = {
+      payment_from_account_no: this.form.payment_from_account_no,
+      payment_to_account_no: this.form.payment_to_account_no,
       amount: Number(this.form.amount),
-      note: this.form.note.trim(),
+      note: this.form.note.trim() || undefined,
+      transfer_date: new Date().toISOString(),
     };
 
-    this.records.update(list => [newRec, ...list]);
-    this.msg.success(`Transfer voucher ${newRec.voucher} recorded!`);
-    this.isModalOpen = false;
+    this.accountingService.createReconciliation(payload).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || 'Transfer voucher recorded successfully!');
+        this.isModalOpen = false;
+        this.loadReconciliations();
+        this.loadAccounts();
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to submit fund transfer');
+      },
+    });
   }
 
   viewVoucher(r: ReconcileRecord): void {
@@ -358,8 +414,15 @@ export class ReconciliationListComponent {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.records.update(list => list.filter(item => item.id !== r.id));
-        this.msg.success(`Voucher "${r.voucher}" deleted`);
+        this.accountingService.deleteReconciliation(r.reconciliationNo).subscribe({
+          next: () => {
+            this.msg.success(`Voucher "${r.voucher}" deleted`);
+            this.loadReconciliations();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete voucher');
+          },
+        });
       }
     });
   }

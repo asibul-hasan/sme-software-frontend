@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -12,6 +12,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { ProductService } from '../../core/services/product.service';
 
 interface RequisitionRow {
   id: number;
@@ -62,9 +63,9 @@ interface RequisitionRow {
 
           <nz-select class="w-36 shrink-0" [(ngModel)]="selectedCompany" nzPlaceHolder="Company">
             <nz-option nzValue="" nzLabel="All Companies"></nz-option>
-            <nz-option nzValue="Beximco Pharma" nzLabel="Beximco Pharma"></nz-option>
-            <nz-option nzValue="Square Pharma" nzLabel="Square Pharma"></nz-option>
-            <nz-option nzValue="Incepta" nzLabel="Incepta"></nz-option>
+            @for (comp of companies(); track comp) {
+              <nz-option [nzValue]="comp" [nzLabel]="comp"></nz-option>
+            }
           </nz-select>
 
           <nz-select class="w-32 shrink-0" [(ngModel)]="presetFilter" (ngModelChange)="applyPreset()" nzPlaceHolder="Preset">
@@ -226,9 +227,10 @@ interface RequisitionRow {
     </nz-modal>
   `,
 })
-export class RequisitionListComponent {
+export class RequisitionListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly productService = inject(ProductService);
 
   searchQuery = '';
   selectedCompany = '';
@@ -237,37 +239,29 @@ export class RequisitionListComponent {
   asPerSale = false;
   minQtyOnly = false;
 
-  items = signal<RequisitionRow[]>([
-    { id: 1, name: 'Napa 500mg Tablet', generic: 'Paracetamol', company: 'Beximco Pharma', box: 5, minQty: 100, sale6m: 1240, qtyBox: 10, btp: 4.5, vatPercent: 15, total: 258.75 },
-    { id: 2, name: 'Seclo 20mg Capsule', generic: 'Omeprazole', company: 'Square Pharma', box: 3, minQty: 50, sale6m: 860, qtyBox: 10, btp: 65.0, vatPercent: 10, total: 2145 },
-    { id: 3, name: 'Amoxi 500mg Capsule', generic: 'Amoxicillin', company: 'Beximco Pharma', box: 4, minQty: 60, sale6m: 720, qtyBox: 10, btp: 60.0, vatPercent: 5, total: 2520 },
-    { id: 4, name: 'Cef-3 250mg Capsule', generic: 'Cefixime', company: 'Incepta', box: 2, minQty: 30, sale6m: 520, qtyBox: 10, btp: 270.0, vatPercent: 0, total: 5400 },
-  ]);
+  companies = signal<string[]>([]);
+  items = signal<RequisitionRow[]>([]);
 
   filteredItems = computed(() => {
     const q = this.searchQuery.trim().toLowerCase();
     const comp = this.selectedCompany;
     const preset = this.presetFilter;
     const all = this.allItems;
-    
+
     return this.items().filter(item => {
       const matchQ = !q || item.name.toLowerCase().includes(q) || item.generic.toLowerCase().includes(q);
       const matchComp = !comp || item.company === comp;
-      
+
       let matchPreset = true;
       if (preset === 'Fast Moving') {
         matchPreset = item.sale6m > 800;
       } else if (preset === 'Low Stock') {
-        matchPreset = item.minQty > 50; // simple condition for mock data
+        matchPreset = item.minQty > 50;
       }
-      
+
       return matchQ && matchComp && (all || matchPreset);
     });
   });
-
-  applyPreset(): void {
-    // This could also explicitly check `presetFilter` value
-  }
 
   totalEstimatedCost = computed(() => {
     return this.filteredItems().reduce((sum, item) => sum + item.total, 0);
@@ -289,6 +283,52 @@ export class RequisitionListComponent {
     total: 100,
   };
 
+  ngOnInit(): void {
+    this.loadCompanies();
+    this.loadInitialRequisitionItems();
+  }
+
+  loadCompanies(): void {
+    this.productService.getCompanies().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const comps = res.data.map(c => c.name).filter(Boolean);
+          this.companies.set(comps);
+        }
+      },
+    });
+  }
+
+  loadInitialRequisitionItems(): void {
+    this.productService.getProducts({ pageSize: 50 }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const initial: RequisitionRow[] = (res.data.items || []).map((p: any, idx: number) => {
+            const qtyBox = p.quantity_per_box || 10;
+            const btp = p.purchase_price_per_piece || (p.cost_per_box ? p.cost_per_box / qtyBox : 5);
+            const box = 2;
+            return {
+              id: p.product_no || (idx + 1),
+              name: p.product_name,
+              generic: p.generic_name || 'Generic Formulation',
+              company: p.company_name || 'Pharmaceuticals Ltd.',
+              box: box,
+              minQty: p.min_stock_qty_pcs || 50,
+              sale6m: 100,
+              qtyBox: qtyBox,
+              btp: btp,
+              vatPercent: 0,
+              total: box * btp * qtyBox,
+            };
+          });
+          this.items.set(initial);
+        }
+      },
+    });
+  }
+
+  applyPreset(): void {}
+
   resetFilters(): void {
     this.searchQuery = '';
     this.selectedCompany = '';
@@ -304,7 +344,7 @@ export class RequisitionListComponent {
       id: 0,
       name: '',
       generic: '',
-      company: 'Beximco Pharma',
+      company: this.companies()[0] || 'Pharmaceuticals Ltd.',
       box: 1,
       minQty: 20,
       sale6m: 100,
@@ -363,6 +403,26 @@ export class RequisitionListComponent {
       this.msg.warning('No requisition lines to generate bill.');
       return;
     }
-    this.msg.success(`Requisition order generated for ${this.items().length} items (Total: ৳ ${this.totalEstimatedCost().toLocaleString()})!`);
+    const payload = {
+      items: this.items().map(i => ({
+        product_no: i.id,
+        requested_box_qty: i.box,
+        quantity_in_box: i.qtyBox,
+        requested_pcs_qty: i.box * i.qtyBox,
+        estimated_unit_cost: i.btp,
+        remarks: `${i.name} requisition`,
+      })),
+    };
+    this.productService.createRequisition(payload).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.msg.success(`Requisition order generated for ${this.items().length} items (Total: ৳ ${this.totalEstimatedCost().toLocaleString()})!`);
+          this.items.set([]);
+        } else {
+          this.msg.error(res.message || 'Failed to create requisition');
+        }
+      },
+      error: (err) => this.msg.error(err?.error?.message || 'Failed to create requisition'),
+    });
   }
 }

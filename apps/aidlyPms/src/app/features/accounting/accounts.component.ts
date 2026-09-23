@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -12,6 +12,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { AccountingService } from '../../core/services/accounting.service';
 
 interface AccountRow {
   account_no: number;
@@ -234,19 +235,15 @@ interface AccountRow {
     </nz-modal>
   `,
 })
-export class AccountsComponent {
+export class AccountsComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly accountingService = inject(AccountingService);
 
   typeFilter = '';
+  isLoading = signal(false);
 
-  accounts = signal<AccountRow[]>([
-    { account_no: 1, name: 'Counter Cash', provider: 'Cash In Hand', number: '—', balance: 84250, type: 'Cash' },
-    { account_no: 2, name: 'Islami Bank', provider: 'Bank Account', number: 'IBBL-4012-XXXX-5678', balance: 242000, type: 'Bank' },
-    { account_no: 3, name: 'Modhumoti Bank', provider: 'Bank Account', number: 'MDB-2298-XXXX-4321', balance: 100000, type: 'Bank' },
-    { account_no: 4, name: 'Admin bKash', provider: 'bKash Personal', number: '+880 1711-234567', balance: 12450, type: 'MFS' },
-    { account_no: 5, name: 'Pharmacy bKash', provider: 'bKash Merchant', number: '+880 1811-345678', balance: 6300, type: 'MFS' },
-  ]);
+  accounts = signal<AccountRow[]>([]);
 
   filteredAccounts = computed(() => {
     const f = this.typeFilter;
@@ -266,6 +263,41 @@ export class AccountsComponent {
     balance: 0,
     type: 'Bank',
   };
+
+  ngOnInit(): void {
+    this.loadAccounts();
+  }
+
+  loadAccounts(): void {
+    this.isLoading.set(true);
+    const typeMap: Record<number, string> = {
+      1: 'Cash',
+      2: 'Bank',
+      3: 'Bank',
+      4: 'MFS',
+      5: 'MFS',
+      6: 'MFS',
+      7: 'Card',
+      99: 'Ledger',
+    };
+    this.accountingService.getAccounts().subscribe({
+      next: (res) => {
+        const list = res.data || [];
+        this.accounts.set(list.map(a => ({
+          account_no: a.account_no,
+          name: a.account_name,
+          provider: a.bank_name || (a.account_type === 1 ? 'Cash In Hand' : (a.account_code || 'General')),
+          number: a.bank_account_number || a.phone_number || '—',
+          balance: Number(a.current_balance) || 0,
+          type: typeMap[a.account_type] || 'Cash',
+        })));
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      },
+    });
+  }
 
   openAddModal(): void {
     this.modalMode = 'create';
@@ -299,35 +331,45 @@ export class AccountsComponent {
       return;
     }
 
+    const typeCode = this.form.type === 'Cash' ? 1 : this.form.type === 'Bank' ? 2 : 4;
+
     if (this.modalMode === 'create') {
-      const nextId = Math.max(...this.accounts().map(x => x.account_no), 0) + 1;
-      const newAcc: AccountRow = {
-        account_no: nextId,
-        name: this.form.name.trim(),
-        provider: this.form.provider.trim() || this.form.type,
-        number: this.form.number.trim() || '—',
-        balance: Number(this.form.balance) || 0,
-        type: this.form.type,
-      };
-      this.accounts.update(list => [...list, newAcc]);
-      this.msg.success(`Account "${newAcc.name}" created!`);
+      this.accountingService.createAccount({
+        account_name: this.form.name.trim(),
+        account_type: typeCode,
+        bank_name: this.form.provider.trim() || undefined,
+        bank_account_number: this.form.type === 'Bank' ? this.form.number.trim() : undefined,
+        phone_number: this.form.type === 'MFS' ? this.form.number.trim() : undefined,
+        opening_balance: Number(this.form.balance) || 0,
+        current_balance: Number(this.form.balance) || 0,
+      }).subscribe({
+        next: () => {
+          this.msg.success(`Account "${this.form.name}" created!`);
+          this.isModalVisible = false;
+          this.loadAccounts();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to create account');
+        },
+      });
     } else {
-      this.accounts.update(list =>
-        list.map(x =>
-          x.account_no === this.form.account_no
-            ? {
-                ...x,
-                name: this.form.name.trim(),
-                provider: this.form.provider.trim(),
-                number: this.form.number.trim() || '—',
-                type: this.form.type,
-              }
-            : x
-        )
-      );
-      this.msg.success(`Account "${this.form.name}" updated!`);
+      this.accountingService.updateAccount(this.form.account_no, {
+        account_name: this.form.name.trim(),
+        account_type: typeCode,
+        bank_name: this.form.provider.trim() || undefined,
+        bank_account_number: this.form.type === 'Bank' ? this.form.number.trim() : undefined,
+        phone_number: this.form.type === 'MFS' ? this.form.number.trim() : undefined,
+      }).subscribe({
+        next: () => {
+          this.msg.success(`Account "${this.form.name}" updated!`);
+          this.isModalVisible = false;
+          this.loadAccounts();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to update account');
+        },
+      });
     }
-    this.isModalVisible = false;
   }
 
   viewStatement(a: AccountRow): void {
@@ -342,8 +384,15 @@ export class AccountsComponent {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.accounts.update(list => list.filter(item => item.account_no !== a.account_no));
-        this.msg.success(`Account "${a.name}" deleted successfully`);
+        this.accountingService.deleteAccount(a.account_no).subscribe({
+          next: () => {
+            this.msg.success(`Account "${a.name}" deleted successfully`);
+            this.loadAccounts();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete account');
+          },
+        });
       }
     });
   }

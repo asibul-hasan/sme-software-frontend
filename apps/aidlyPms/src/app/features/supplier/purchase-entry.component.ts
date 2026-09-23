@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -17,9 +17,12 @@ import {
   DEFAULT_COMPANIES,
   DEFAULT_GENERICS,
 } from '../../shared/constants/label-values.constant';
+import { ProductService } from '../../core/services/product.service';
+import { SupplierService, CreatePurchasePayload } from '../../core/services/supplier.service';
 
 interface PurchaseLine {
   id: string;
+  product_no: number;
   product: string;
   barcode?: string;
   box: number;
@@ -33,10 +36,20 @@ interface PurchaseLine {
 }
 
 interface SupplierOption {
-  id: string;
+  id: number;
   name: string;
   phone?: string;
   address?: string;
+}
+
+interface ProductOption {
+  product_no: number;
+  name: string;
+  generic: string;
+  btp: number;
+  sale: number;
+  qtyBox: number;
+  barcode?: string;
 }
 
 @Component({
@@ -128,8 +141,8 @@ interface SupplierOption {
                     (keyup.enter)="onProductEnterKey()"
                     class="flex-1"
                   >
-                    @for (p of availableProducts; track p.name) {
-                      <nz-option [nzValue]="p.name" [nzLabel]="p.name + ' (' + p.generic + ')'"></nz-option>
+                    @for (p of availableProducts(); track p.product_no) {
+                      <nz-option [nzValue]="p.name" [nzLabel]="p.name + (p.generic ? ' (' + p.generic + ')' : '')"></nz-option>
                     }
                   </nz-select>
                   <button
@@ -462,12 +475,12 @@ interface SupplierOption {
                     <div class="flex gap-2">
                       <nz-select
                         nzShowSearch
-                        [(ngModel)]="selectedSupplier"
+                        [(ngModel)]="selectedSupplierId"
                         nzPlaceHolder="Select supplier"
                         class="flex-1"
                       >
                         @for (sup of suppliers(); track sup.id) {
-                          <nz-option [nzValue]="sup.name" [nzLabel]="sup.name"></nz-option>
+                          <nz-option [nzValue]="sup.id" [nzLabel]="sup.name"></nz-option>
                         }
                       </nz-select>
                       <button
@@ -713,8 +726,10 @@ interface SupplierOption {
     </nz-modal>
   `,
 })
-export class PurchaseEntryComponent {
+export class PurchaseEntryComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly productService = inject(ProductService);
+  private readonly supplierService = inject(SupplierService);
   readonly Math = Math;
   readonly DiscountType = DiscountType;
 
@@ -723,57 +738,15 @@ export class PurchaseEntryComponent {
 
   calcMode = 1; // Default
   inventoryType = 1; // INVENTORY PURCHASED
-  selectedSupplier = 'Beximco Distribution Ltd.';
+  selectedSupplierId: number | null = null;
   invoiceNumber = '';
 
-  suppliers = signal<SupplierOption[]>([
-    { id: '1', name: 'Beximco Distribution Ltd.', phone: '+8801711001122', address: 'Tongi, Gazipur' },
-    { id: '2', name: 'ACI Pharma Distributors', phone: '+8801711334455', address: 'Tejgaon, Dhaka' },
-    { id: '3', name: 'Square Dist. Network', phone: '+8801711556677', address: 'Uttara, Dhaka' },
-    { id: '4', name: 'Incepta Healthcare Dist.', phone: '+8801711778899', address: 'Savar, Dhaka' },
-  ]);
-
-  availableProducts = [
-    { name: 'Napa 500mg Tablet', generic: 'Paracetamol', btp: 4.5, sale: 10.0, qtyBox: 10, barcode: '894100101' },
-    { name: 'Seclo 20mg Capsule', generic: 'Omeprazole', btp: 65.0, sale: 180.0, qtyBox: 10, barcode: '894100102' },
-    { name: 'Sergel 20mg Capsule', generic: 'Esomeprazole', btp: 70.0, sale: 200.0, qtyBox: 10, barcode: '894100103' },
-    { name: 'Ace 500mg Tablet', generic: 'Paracetamol', btp: 4.2, sale: 9.5, qtyBox: 10, barcode: '894100104' },
-    { name: 'Ceevit 250mg Chewable', generic: 'Ascorbic Acid', btp: 18.0, sale: 45.0, qtyBox: 10, barcode: '894100105' },
-    { name: 'Monas 10mg Tablet', generic: 'Montelukast', btp: 120.0, sale: 250.0, qtyBox: 10, barcode: '894100106' },
-    { name: 'Maxpro 20mg Capsule', generic: 'Esomeprazole', btp: 68.0, sale: 190.0, qtyBox: 10, barcode: '894100107' },
-    { name: 'Amodis 400mg Tablet', generic: 'Metronidazole', btp: 22.0, sale: 55.0, qtyBox: 10, barcode: '894100108' },
-  ];
-
-  lines = signal<PurchaseLine[]>([
-    {
-      id: '1',
-      product: 'Napa 500mg Tablet',
-      barcode: '894100101',
-      box: 10,
-      qtyBox: 10,
-      totalQtyPcs: 100,
-      btpVat: 4.5,
-      salePrice: 10.0,
-      freeQty: 0,
-      expiryDate: '2027-08-31',
-      total: 450,
-    },
-    {
-      id: '2',
-      product: 'Seclo 20mg Capsule',
-      barcode: '894100102',
-      box: 5,
-      qtyBox: 10,
-      totalQtyPcs: 50,
-      btpVat: 65.0,
-      salePrice: 180.0,
-      freeQty: 0,
-      expiryDate: '2028-01-31',
-      total: 3250,
-    },
-  ]);
+  suppliers = signal<SupplierOption[]>([]);
+  availableProducts = signal<ProductOption[]>([]);
+  lines = signal<PurchaseLine[]>([]);
 
   currentLine = {
+    product_no: 0,
     product: '',
     barcode: '',
     box: 1,
@@ -787,7 +760,7 @@ export class PurchaseEntryComponent {
 
   discountType: number = DiscountType.Flat;
   discountValue = 0;
-  paidAmount = 4000;
+  paidAmount = 0;
 
   grossTotal = computed(() => {
     return this.lines().reduce((sum, item) => sum + item.total, 0);
@@ -826,6 +799,16 @@ export class PurchaseEntryComponent {
   quickSupplierPhone = '';
   quickSupplierAddress = '';
 
+  currentSearchTerm = '';
+
+  // Sub-Modals for Quick Product
+  companiesList: string[] = [...DEFAULT_COMPANIES];
+  genericsList: string[] = [...DEFAULT_GENERICS];
+  isQuickGenericOpen = false;
+  newQuickGeneric = '';
+  isQuickCompanyOpen = false;
+  newQuickCompany = '';
+
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (event.key === 'F2') {
@@ -834,7 +817,66 @@ export class PurchaseEntryComponent {
     }
   }
 
-  currentSearchTerm = '';
+  ngOnInit(): void {
+    this.loadSuppliers();
+    this.loadProducts();
+    this.loadCompaniesAndGenerics();
+  }
+
+  loadSuppliers(): void {
+    this.supplierService.getSuppliers({ pageSize: 100 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          const sups: SupplierOption[] = res.data.items.map(s => ({
+            id: s.supplier_no,
+            name: s.name,
+            phone: s.phone,
+            address: '',
+          }));
+          this.suppliers.set(sups);
+          if (sups.length > 0 && !this.selectedSupplierId) {
+            this.selectedSupplierId = sups[0].id;
+          }
+        }
+      },
+    });
+  }
+
+  loadProducts(): void {
+    this.productService.getProducts({ pageSize: 200 }).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          const prods: ProductOption[] = res.data.items.map(p => ({
+            product_no: p.product_no,
+            name: p.product_name,
+            generic: p.generic_name || 'General',
+            btp: Number(p.purchase_price_per_piece) || 10,
+            sale: Number(p.sale_price_per_piece) || 15,
+            qtyBox: p.quantity_per_box || 10,
+            barcode: p.barcode_value || '',
+          }));
+          this.availableProducts.set(prods);
+        }
+      },
+    });
+  }
+
+  loadCompaniesAndGenerics(): void {
+    this.productService.getCompanies().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.companiesList = res.data.map(c => c.name);
+        }
+      },
+    });
+    this.productService.getGenerics().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.genericsList = res.data.map(g => g.name);
+        }
+      },
+    });
+  }
 
   onProductSearch(term: string): void {
     this.currentSearchTerm = term || '';
@@ -843,10 +885,10 @@ export class PurchaseEntryComponent {
   onProductEnterKey(): void {
     if (!this.currentLine.product && this.currentSearchTerm) {
       const term = this.currentSearchTerm.toLowerCase().trim();
-      const match = this.availableProducts.find(p =>
+      const match = this.availableProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
-        p.barcode.toLowerCase() === term
+        (p.barcode && p.barcode.toLowerCase() === term)
       );
       if (match) {
         this.currentLine.product = match.name;
@@ -859,12 +901,13 @@ export class PurchaseEntryComponent {
   }
 
   onProductSelected(name: string): void {
-    const p = this.availableProducts.find(item => item.name === name);
+    const p = this.availableProducts().find(item => item.name === name);
     if (p) {
+      this.currentLine.product_no = p.product_no;
       this.currentLine.btpVat = p.btp;
       this.currentLine.salePrice = p.sale;
       this.currentLine.qtyBox = p.qtyBox;
-      this.currentLine.barcode = p.barcode;
+      this.currentLine.barcode = p.barcode || '';
       this.onBoxOrQtyChange();
     }
   }
@@ -878,10 +921,10 @@ export class PurchaseEntryComponent {
   addLine(): void {
     if (!this.currentLine.product && this.currentSearchTerm.trim()) {
       const term = this.currentSearchTerm.toLowerCase().trim();
-      const match = this.availableProducts.find(p =>
+      const match = this.availableProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
-        p.barcode.toLowerCase() === term
+        (p.barcode && p.barcode.toLowerCase() === term)
       );
       if (match) {
         this.currentLine.product = match.name;
@@ -901,6 +944,7 @@ export class PurchaseEntryComponent {
 
     const newLine: PurchaseLine = {
       id: Date.now().toString(),
+      product_no: this.currentLine.product_no,
       product: this.currentLine.product,
       barcode: this.currentLine.barcode,
       box,
@@ -918,6 +962,7 @@ export class PurchaseEntryComponent {
 
     // Reset line form
     this.currentLine = {
+      product_no: 0,
       product: '',
       barcode: '',
       box: 1,
@@ -935,14 +980,6 @@ export class PurchaseEntryComponent {
     this.lines.update(items => items.filter((_, i) => i !== idx));
   }
 
-  // Sub-Modals for Quick Product
-  companiesList: string[] = [...DEFAULT_COMPANIES];
-  genericsList: string[] = [...DEFAULT_GENERICS];
-  isQuickGenericOpen = false;
-  newQuickGeneric = '';
-  isQuickCompanyOpen = false;
-  newQuickCompany = '';
-
   openNewProductModal(): void {
     this.quickProductName = '';
     this.quickProductGeneric = this.genericsList[0] || 'Paracetamol';
@@ -958,13 +995,20 @@ export class PurchaseEntryComponent {
       return;
     }
     const name = this.newQuickGeneric.trim();
-    if (!this.genericsList.includes(name)) {
-      this.genericsList = [...this.genericsList, name];
-    }
-    this.quickProductGeneric = name;
-    this.newQuickGeneric = '';
-    this.isQuickGenericOpen = false;
-    this.msg.success(`Generic "${name}" added!`);
+    this.productService.createGeneric({ name }).subscribe({
+      next: () => {
+        if (!this.genericsList.includes(name)) {
+          this.genericsList = [...this.genericsList, name];
+        }
+        this.quickProductGeneric = name;
+        this.newQuickGeneric = '';
+        this.isQuickGenericOpen = false;
+        this.msg.success(`Generic "${name}" added!`);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add generic');
+      },
+    });
   }
 
   saveQuickCompany(): void {
@@ -973,13 +1017,20 @@ export class PurchaseEntryComponent {
       return;
     }
     const name = this.newQuickCompany.trim();
-    if (!this.companiesList.includes(name)) {
-      this.companiesList = [...this.companiesList, name];
-    }
-    this.quickProductCompany = name;
-    this.newQuickCompany = '';
-    this.isQuickCompanyOpen = false;
-    this.msg.success(`Company "${name}" added!`);
+    this.productService.createCompany({ name }).subscribe({
+      next: () => {
+        if (!this.companiesList.includes(name)) {
+          this.companiesList = [...this.companiesList, name];
+        }
+        this.quickProductCompany = name;
+        this.newQuickCompany = '';
+        this.isQuickCompanyOpen = false;
+        this.msg.success(`Company "${name}" added!`);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add company');
+      },
+    });
   }
 
   saveQuickProduct(): void {
@@ -988,19 +1039,38 @@ export class PurchaseEntryComponent {
       this.msg.error('Please enter product name');
       return;
     }
-    const newProd = {
-      name,
-      generic: this.quickProductGeneric || 'General',
-      btp: Number(this.quickProductBtp) || 10,
-      sale: (Number(this.quickProductBtp) || 10) * 1.25,
-      qtyBox: Number(this.quickProductQtyBox) || 10,
-      barcode: Date.now().toString().slice(-8),
-    };
-    this.availableProducts.push(newProd);
-    this.currentLine.product = name;
-    this.onProductSelected(name);
-    this.msg.success(`Product "${name}" added to list!`);
-    this.isQuickProductOpen = false;
+    const btp = Number(this.quickProductBtp) || 10;
+    const sale = btp * 1.25;
+    const qtyBox = Number(this.quickProductQtyBox) || 10;
+
+    this.productService.createProduct({
+      product_name: name,
+      purchase_price_per_piece: btp,
+      sale_price_per_piece: sale,
+      quantity_per_box: qtyBox,
+    }).subscribe({
+      next: (res) => {
+        if (res.data) {
+          const newProd: ProductOption = {
+            product_no: res.data.product_no,
+            name: res.data.product_name,
+            generic: this.quickProductGeneric || 'General',
+            btp,
+            sale,
+            qtyBox,
+            barcode: res.data.barcode_value || Date.now().toString().slice(-8),
+          };
+          this.availableProducts.update(list => [newProd, ...list]);
+          this.currentLine.product = name;
+          this.onProductSelected(name);
+          this.msg.success(`Product "${name}" added to list!`);
+        }
+        this.isQuickProductOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add product');
+      },
+    });
   }
 
   openQuickAddSupplier(): void {
@@ -1016,16 +1086,28 @@ export class PurchaseEntryComponent {
       this.msg.error('Please enter supplier name');
       return;
     }
-    const newSup: SupplierOption = {
-      id: Date.now().toString(),
+    this.supplierService.createSupplier({
       name,
-      phone: this.quickSupplierPhone,
-      address: this.quickSupplierAddress,
-    };
-    this.suppliers.update(list => [...list, newSup]);
-    this.selectedSupplier = name;
-    this.msg.success(`Supplier "${name}" registered successfully!`);
-    this.isQuickSupplierOpen = false;
+      phone: this.quickSupplierPhone.trim() ? `+880 ${this.quickSupplierPhone.trim()}` : undefined,
+    }).subscribe({
+      next: (res) => {
+        if (res.data) {
+          const newSup: SupplierOption = {
+            id: res.data.supplier_no,
+            name: res.data.name,
+            phone: res.data.phone,
+            address: '',
+          };
+          this.suppliers.update(list => [newSup, ...list]);
+          this.selectedSupplierId = res.data.supplier_no;
+          this.msg.success(`Supplier "${name}" registered successfully!`);
+        }
+        this.isQuickSupplierOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to save supplier');
+      },
+    });
   }
 
   completePurchase(): void {
@@ -1033,13 +1115,57 @@ export class PurchaseEntryComponent {
       this.msg.warning('Please add at least one product line before purchasing.');
       return;
     }
-    if (!this.selectedSupplier) {
+    if (!this.selectedSupplierId) {
       this.msg.warning('Please select a supplier.');
       return;
     }
 
-    this.msg.success(
-      `Purchase of ৳ ${this.finalPrice().toLocaleString()} from ${this.selectedSupplier} recorded successfully!`
-    );
+    const payload: CreatePurchasePayload = {
+      invoice: {
+        supplier_no: this.selectedSupplierId,
+        supplier_invoice_no: this.invoiceNumber.trim() || undefined,
+        calculation_mode: this.calcMode,
+        inventory_type: this.inventoryType,
+        gross_total_price: this.grossTotal(),
+        discount_type: this.discountType,
+        discount_value: Number(this.discountValue) || 0,
+        paid_amount: Number(this.paidAmount) || 0,
+        due_amount: this.balanceDue() > 0 ? this.balanceDue() : 0,
+      },
+      items: this.lines().map(l => ({
+        product_no: l.product_no,
+        batch_number: l.barcode || `B-${Date.now().toString().slice(-6)}`,
+        box_qty: l.box,
+        qty_in_box: l.qtyBox,
+        total_qty_pcs: l.totalQtyPcs,
+        btp: l.btpVat,
+        sale_price: l.salePrice,
+        vat_percent: 0,
+        expiry_date: l.expiryDate ? new Date(l.expiryDate).toISOString() : new Date(Date.now() + 365*24*60*60*1000).toISOString(),
+      })),
+      batches: [],
+      payments: [
+        {
+          account_no: 1,
+          payment_method: 1,
+          amount: Number(this.paidAmount) || 0,
+        }
+      ],
+    };
+
+    this.supplierService.createPurchaseInvoice(payload).subscribe({
+      next: () => {
+        this.msg.success(
+          `Purchase of ৳ ${this.finalPrice().toLocaleString()} recorded successfully!`
+        );
+        this.lines.set([]);
+        this.invoiceNumber = '';
+        this.paidAmount = 0;
+        this.discountValue = 0;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to complete purchase');
+      },
+    });
   }
 }

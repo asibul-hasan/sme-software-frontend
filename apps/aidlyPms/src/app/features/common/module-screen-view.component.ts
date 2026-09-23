@@ -397,19 +397,7 @@ export class ModuleScreenViewComponent implements OnInit {
   ngOnInit(): void {
     const key = this.screen?.form_id || this.router.url;
     if (!SCREEN_RECORDS_STORE[key]) {
-      // Seed initial sample entry so user can see populated view or create new ones
-      SCREEN_RECORDS_STORE[key] = [
-        {
-          id: '1',
-          reference_no: `${this.screen?.form_id || 'REC'}-001`,
-          name: `Sample Verified Record for ${this.screen?.title || 'Module'}`,
-          category: 'Standard Mode',
-          amount: this.hasAmountColumn ? 1500.0 : undefined,
-          notes: 'Configured and mapped to PostgreSQL system entity definition.',
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        },
-      ];
+      SCREEN_RECORDS_STORE[key] = [];
     }
     this.records = SCREEN_RECORDS_STORE[key];
     this.filteredRecords = [...this.records];

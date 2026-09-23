@@ -15,7 +15,7 @@ export interface DocDoctor {
   first_name_bn?: string | null;
   last_name_bn?: string | null;
   phone: string;
-  gender: number;
+  gender?: number | string | null;
   description_en?: string | null;
   description_bn?: string | null;
   password_hash?: string | null;

@@ -1145,21 +1145,16 @@ export class PosTerminalComponent implements OnInit {
   quickPrint = true;
 
   // Catalog Products for fast search & selection
-  catalogProducts = [
-    { id: 101, name: 'ABC, ACRIFLAVIN 1000SOLUTION N GROUP SQUARE', generic: 'Acriflavin', manufacturer: 'Square Pharmaceuticals', cost: 12.0, saleRetail: 15.0, saleWholesale: 12.5, pcsPerBox: 4 },
-    { id: 102, name: 'Napa 500mg Tablet', generic: 'Paracetamol', manufacturer: 'Beximco Pharma', cost: 0.9, saleRetail: 1.2, saleWholesale: 1.0, pcsPerBox: 50 },
-    { id: 103, name: 'Napa Extra Tablet', generic: 'Paracetamol + Caffeine', manufacturer: 'Beximco Pharma', cost: 2.0, saleRetail: 2.5, saleWholesale: 2.2, pcsPerBox: 50 },
-    { id: 104, name: 'Seclo 20mg Capsule', generic: 'Omeprazole', manufacturer: 'Square Pharma', cost: 4.8, saleRetail: 7.0, saleWholesale: 5.5, pcsPerBox: 100 },
-    { id: 105, name: 'Sergel 20mg Capsule', generic: 'Esomeprazole', manufacturer: 'Incepta Pharma', cost: 5.5, saleRetail: 8.0, saleWholesale: 6.2, pcsPerBox: 100 },
-    { id: 106, name: 'Ace 500mg Tablet', generic: 'Paracetamol', manufacturer: 'Square Pharma', cost: 0.9, saleRetail: 1.2, saleWholesale: 1.0, pcsPerBox: 50 },
-    { id: 107, name: 'Monas 10mg Tablet', generic: 'Montelukast', manufacturer: 'Acme Laboratories', cost: 12.5, saleRetail: 17.5, saleWholesale: 14.5, pcsPerBox: 30 },
-    { id: 108, name: 'Amoxi 500mg Capsule', generic: 'Amoxicillin', manufacturer: 'Square Pharma', cost: 5.0, saleRetail: 7.0, saleWholesale: 6.0, pcsPerBox: 100 },
-    { id: 109, name: 'Tuspel Cough Syrup 100ml', generic: 'Dextromethorphan', manufacturer: 'Square Pharma', cost: 65.0, saleRetail: 85.0, saleWholesale: 75.0, pcsPerBox: 1 },
-    { id: 110, name: 'Ceevit 250mg Chewable', generic: 'Vitamin C', manufacturer: 'Square Pharma', cost: 1.5, saleRetail: 2.0, saleWholesale: 1.7, pcsPerBox: 100 },
-    { id: 111, name: 'Pantonix 20mg Tablet', generic: 'Pantoprazole', manufacturer: 'Incepta Pharma', cost: 5.0, saleRetail: 7.0, saleWholesale: 5.8, pcsPerBox: 100 },
-    { id: 112, name: 'Alatrol 10mg Tablet', generic: 'Cetirizine', manufacturer: 'Square Pharma', cost: 2.5, saleRetail: 3.5, saleWholesale: 3.0, pcsPerBox: 100 },
-    { id: 113, name: 'Finix 20mg Tablet', generic: 'Rabeprazole', manufacturer: 'Opsonin Pharma', cost: 5.5, saleRetail: 8.0, saleWholesale: 6.5, pcsPerBox: 100 },
-  ];
+  catalogProducts: Array<{
+    id: number;
+    name: string;
+    generic: string;
+    manufacturer: string;
+    cost: number;
+    saleRetail: number;
+    saleWholesale: number;
+    pcsPerBox: number;
+  }> = [];
 
   // Entry Form State
   selectedProductText = '';
@@ -1193,25 +1188,9 @@ export class PosTerminalComponent implements OnInit {
 
   customers: CustomerOption[] = [
     { id: '1', name: 'Walking Customer', phone: '', customer_type: 1, address: 'Counter', current_due: 0 },
-    { id: '2', name: 'Md. Rahim', phone: '+8801711223344', customer_type: 1, address: 'Kandirpar, Cumilla', current_due: 0 },
-    { id: '3', name: 'Comilla Central Pharmacy', phone: '+8801819988776', customer_type: 2, address: 'Badurtola, Cumilla', current_due: 1540 },
   ];
 
-  cart = signal<CartItem[]>([
-    {
-      product_no: 101,
-      product_name: 'ABC, ACRIFLAVIN 1000SOLUTION N GROUP SQUARE',
-      generic_name: 'Acriflavin',
-      manufacturer: 'Square Pharmaceuticals',
-      cost_price: 12.0,
-      unit_price: 12.5,
-      qty: 0.25,
-      pcs_per_box: 4,
-      discount: 0,
-      discount_type: DiscountType.Percentage,
-      total: 3.13,
-    },
-  ]);
+  cart = signal<CartItem[]>([]);
 
   // Computed Values
   readonly subtotal = computed(() => {
@@ -1294,7 +1273,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productService.getProducts().subscribe(res => {
+    this.productService.getProducts({ pageSize: 200 }).subscribe(res => {
       if (res.data?.items?.length) {
         this.catalogProducts = res.data.items.map(p => ({
           id: p.product_no,
@@ -1309,16 +1288,20 @@ export class PosTerminalComponent implements OnInit {
       }
     });
 
-    this.customerService.getCustomers().subscribe(res => {
+    this.customerService.getCustomers({ pageSize: 100 }).subscribe(res => {
       if (res.data?.items?.length) {
-        this.customers = res.data.items.map(c => ({
+        const liveCusts = res.data.items.map(c => ({
           id: String(c.customer_no),
           name: c.name,
-          phone: c.phone,
+          phone: c.phone || '',
           customer_type: c.customer_type,
           address: c.address || '',
           current_due: c.current_due || 0,
         }));
+        this.customers = [
+          { id: '1', name: 'Walking Customer', phone: '', customer_type: 1, address: 'Counter', current_due: 0 },
+          ...liveCusts,
+        ];
       }
     });
 

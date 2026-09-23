@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -12,14 +12,18 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { RepresentativeService, SysRepresentative } from '../../core/services/representative.service';
+import { RoleService, SysRole } from '../../core/services/role.service';
 
 interface RepUser {
   id: string;
+  userNo: number;
   name: string;
   firstName: string;
   lastName: string;
   phone: string;
   email: string;
+  roleNo: number;
   role: string;
   gender: string;
   isActive: boolean;
@@ -56,12 +60,13 @@ interface RepUser {
               nz-input
               placeholder="Search by name, phone or role..."
               [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearchChange()"
             />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
           </ng-template>
-          <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="searchQuery = ''">
+          <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
@@ -88,16 +93,16 @@ interface RepUser {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
-              @for (r of filteredReps(); track r.id) {
+              @for (r of reps(); track r.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="p-3">
                     <div class="flex items-center gap-2.5">
                       <div class="w-8 h-8 rounded-full theme-avatar flex items-center justify-center text-xs font-bold shrink-0">
-                        {{ r.name[0] }}
+                        {{ r.name[0] || 'U' }}
                       </div>
                       <div>
                         <p class="font-semibold text-slate-900 text-sm mb-0">{{ r.name }}</p>
-                        <p class="text-xs text-slate-400 mb-0">{{ r.email }}</p>
+                        <p class="text-xs text-slate-400 mb-0">{{ r.email || '—' }}</p>
                       </div>
                     </div>
                   </td>
@@ -161,97 +166,98 @@ interface RepUser {
         <!-- Sticky Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
-            <span>Total Staff Members: <strong class="text-slate-900 font-semibold font-mono">{{ filteredReps().length }}</strong></span>
+            <span>Staff Count: <strong class="text-slate-900 font-semibold font-mono">{{ reps().length }}</strong></span>
           </div>
-          <span class="text-slate-400 font-mono text-[11px]">Pharmacy Staff Accounts</span>
+          <span class="text-slate-400 font-mono text-[11px]">Store Operators & Cashiers Directory</span>
         </div>
       </div>
     </div>
 
-    <!-- Unified Dual-Purpose Modal (Add & Modify) -->
+    <!-- Quick Add/Edit Rep Modal -->
     <nz-modal
       [(nzVisible)]="isModalVisible"
-      [nzTitle]="modalMode === 'create' ? 'Add Representative (SCR-37)' : ('Modify Representative: ' + form.firstName + ' ' + form.lastName)"
-      [nzOkText]="modalMode === 'create' ? 'Save Representative' : 'Update Details'"
+      [nzTitle]="modalMode === 'create' ? 'Add Representative (SCR-22)' : 'Edit Representative'"
+      [nzOkText]="modalMode === 'create' ? 'Create Staff' : 'Save Changes'"
       (nzOnCancel)="isModalVisible = false"
       (nzOnOk)="saveRep()"
-      nzWidth="780px"
-      [nzStyle]="{ top: '24px' }"
+      nzWidth="580px"
     >
       <ng-container *nzModalContent>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 py-1 text-xs">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              First Name <span class="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              nz-input
-              placeholder="First name"
-              [(ngModel)]="form.firstName"
-              class="rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              Last Name <span class="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              nz-input
-              placeholder="Last name"
-              [(ngModel)]="form.lastName"
-              class="rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              Phone Number <span class="text-rose-500">*</span>
-            </label>
-            <div class="flex gap-1.5">
-              <span class="h-7 px-2.5 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
-                +880
-              </span>
+        <div class="space-y-3 py-1 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                First Name <span class="text-rose-500">*</span>
+              </label>
               <input
                 type="text"
                 nz-input
-                placeholder="1XXXXXXXXX"
-                [(ngModel)]="form.phoneSuffix"
-                class="rounded-md flex-1"
+                placeholder="First name"
+                [(ngModel)]="form.firstName"
+                class="rounded-md"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Last Name <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                nz-input
+                placeholder="Last name"
+                [(ngModel)]="form.lastName"
+                class="rounded-md"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Phone Number <span class="text-rose-500">*</span>
+              </label>
+              <div class="flex gap-1.5">
+                <span class="h-8 px-2 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
+                  +880
+                </span>
+                <input
+                  type="text"
+                  nz-input
+                  placeholder="1XXXXXXXXX"
+                  [(ngModel)]="form.phoneSuffix"
+                  class="rounded-md flex-1 text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
+              <nz-select [(ngModel)]="form.gender" class="w-full">
+                <nz-option nzValue="Male" nzLabel="Male"></nz-option>
+                <nz-option nzValue="Female" nzLabel="Female"></nz-option>
+                <nz-option nzValue="Other" nzLabel="Other"></nz-option>
+              </nz-select>
+            </div>
+
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                nz-input
+                placeholder="staff@pharmacy.com"
+                [(ngModel)]="form.email"
+                class="rounded-md"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-            <nz-select [(ngModel)]="form.gender" class="w-full">
-              <nz-option nzValue="Male" nzLabel="Male"></nz-option>
-              <nz-option nzValue="Female" nzLabel="Female"></nz-option>
-              <nz-option nzValue="Other" nzLabel="Other"></nz-option>
-            </nz-select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
-            <input
-              type="email"
-              nz-input
-              placeholder="name@pharmacy.com"
-              [(ngModel)]="form.email"
-              class="rounded-md"
-            />
-          </div>
-
-          <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
-              Assigned Role <span class="text-rose-500">*</span>
+              Role / Access Permission <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="form.role" class="w-full">
-              <nz-option nzValue="PMS Manager" nzLabel="PMS Manager"></nz-option>
-              <nz-option nzValue="PMS Salesman" nzLabel="PMS Salesman"></nz-option>
-              <nz-option nzValue="PMS Cashier" nzLabel="PMS Cashier"></nz-option>
+            <nz-select [(ngModel)]="form.roleNo" class="w-full" nzPlaceHolder="Select Role">
+              @for (r of availableRoles(); track r.role_no) {
+                <nz-option [nzValue]="r.role_no" [nzLabel]="r.alias"></nz-option>
+              }
             </nz-select>
           </div>
 
@@ -323,40 +329,28 @@ interface RepUser {
     </nz-modal>
   `,
 })
-export class RepListComponent {
+export class RepListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly repService = inject(RepresentativeService);
+  private readonly roleService = inject(RoleService);
 
   searchQuery = '';
-
-  reps = signal<RepUser[]>([
-    { id: '1', name: 'Mohammad Admin', firstName: 'Mohammad', lastName: 'Admin', phone: '+880 1711-234567', role: 'PMS Manager', email: 'admin@kazi.pharmacy', gender: 'Male', isActive: true },
-    { id: '2', name: 'Sumon Hossain', firstName: 'Sumon', lastName: 'Hossain', phone: '+880 1811-345678', role: 'PMS Salesman', email: 'sumon@kazi.pharmacy', gender: 'Male', isActive: true },
-    { id: '3', name: 'Kohinoor Akter', firstName: 'Kohinoor', lastName: 'Akter', phone: '+880 1611-456789', role: 'PMS Cashier', email: 'kohinoor@kazi.pharmacy', gender: 'Female', isActive: true },
-  ]);
-
-  filteredReps = computed(() => {
-    const q = this.searchQuery.trim().toLowerCase();
-    if (!q) return this.reps();
-    return this.reps().filter(
-      r =>
-        r.name.toLowerCase().includes(q) ||
-        r.phone.includes(q) ||
-        r.role.toLowerCase().includes(q)
-    );
-  });
+  reps = signal<RepUser[]>([]);
+  availableRoles = signal<SysRole[]>([]);
 
   // Modal State
   isModalVisible = false;
   modalMode: 'create' | 'edit' = 'create';
   form = {
     id: '',
+    userNo: 0,
     firstName: '',
     lastName: '',
     phoneSuffix: '',
     gender: 'Male',
     email: '',
-    role: 'PMS Salesman',
+    roleNo: null as number | null,
     password: '',
     confirmPassword: '',
   };
@@ -367,16 +361,79 @@ export class RepListComponent {
   newPassword = '';
   confirmNewPassword = '';
 
+  ngOnInit(): void {
+    this.loadRoles();
+    this.loadReps();
+  }
+
+  loadRoles(): void {
+    this.roleService.getRoles().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.availableRoles.set(res.data);
+          if (!this.form.roleNo && res.data.length > 0) {
+            this.form.roleNo = res.data[0].role_no;
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  loadReps(): void {
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 100,
+    };
+    if (this.searchQuery.trim()) {
+      params['search'] = this.searchQuery.trim();
+    }
+
+    this.repService.getRepresentatives(params).subscribe({
+      next: (res) => {
+        const rawItems = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+        const rows: RepUser[] = rawItems.map((u: any) => ({
+          id: (u.user_no || u.userNo || Math.random()).toString(),
+          userNo: u.user_no || u.userNo,
+          name: [u.first_name || u.firstName, u.last_name || u.lastName].filter(Boolean).join(' ') || 'Staff User',
+          firstName: u.first_name || u.firstName || '',
+          lastName: u.last_name || u.lastName || '',
+          phone: u.phone || '',
+          email: u.email || '',
+          roleNo: u.role_no || u.roleNo || 1,
+          role: u.role_name || u.roleName || 'Operator',
+          gender: u.gender === 2 ? 'Female' : 'Male',
+          isActive: u.is_active ?? true,
+        }));
+        this.reps.set(rows);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to load representatives');
+      },
+    });
+  }
+
+  onSearchChange(): void {
+    this.loadReps();
+  }
+
+  resetFilters(): void {
+    this.searchQuery = '';
+    this.loadReps();
+  }
+
   openAddModal(): void {
     this.modalMode = 'create';
+    const roles = this.availableRoles();
     this.form = {
       id: '',
+      userNo: 0,
       firstName: '',
       lastName: '',
       phoneSuffix: '',
       gender: 'Male',
       email: '',
-      role: 'PMS Salesman',
+      roleNo: roles.length > 0 ? roles[0].role_no : null,
       password: '',
       confirmPassword: '',
     };
@@ -388,12 +445,13 @@ export class RepListComponent {
     const phoneClean = r.phone.replace(/^\+880\s*/, '');
     this.form = {
       id: r.id,
+      userNo: r.userNo,
       firstName: r.firstName,
       lastName: r.lastName,
       phoneSuffix: phoneClean,
       gender: r.gender,
       email: r.email,
-      role: r.role,
+      roleNo: r.roleNo,
       password: '',
       confirmPassword: '',
     };
@@ -409,48 +467,49 @@ export class RepListComponent {
       this.msg.error('Please enter phone number');
       return;
     }
+    if (!this.form.roleNo) {
+      this.msg.error('Please select a role');
+      return;
+    }
 
     const fullPhone = `+880 ${this.form.phoneSuffix.trim()}`;
-    const fullName = `${this.form.firstName.trim()} ${this.form.lastName.trim()}`;
+    const payload: Partial<SysRepresentative> = {
+      first_name: this.form.firstName.trim(),
+      last_name: this.form.lastName.trim(),
+      phone: fullPhone,
+      email: this.form.email.trim() || undefined,
+      role_no: this.form.roleNo,
+      gender: this.form.gender === 'Female' ? 2 : 1,
+      is_active: true,
+    };
 
     if (this.modalMode === 'create') {
       if (this.form.password && this.form.password !== this.form.confirmPassword) {
         this.msg.error('Passwords do not match');
         return;
       }
-      const newRep: RepUser = {
-        id: Date.now().toString(),
-        name: fullName,
-        firstName: this.form.firstName.trim(),
-        lastName: this.form.lastName.trim(),
-        phone: fullPhone,
-        email: this.form.email.trim() || `${this.form.firstName.toLowerCase()}@pharmacy.com`,
-        role: this.form.role,
-        gender: this.form.gender,
-        isActive: true,
-      };
-      this.reps.update(list => [...list, newRep]);
-      this.msg.success(`Staff member "${newRep.name}" created!`);
+      this.repService.createRepresentative(payload).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Staff member "${this.form.firstName} ${this.form.lastName}" created!`);
+          this.isModalVisible = false;
+          this.loadReps();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to create staff member');
+        },
+      });
     } else {
-      this.reps.update(list =>
-        list.map(r =>
-          r.id === this.form.id
-            ? {
-                ...r,
-                name: fullName,
-                firstName: this.form.firstName.trim(),
-                lastName: this.form.lastName.trim(),
-                phone: fullPhone,
-                email: this.form.email.trim(),
-                role: this.form.role,
-                gender: this.form.gender,
-              }
-            : r
-        )
-      );
-      this.msg.success(`Staff member "${fullName}" updated!`);
+      this.repService.updateRepresentative(this.form.userNo, payload).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Staff member "${this.form.firstName}" updated!`);
+          this.isModalVisible = false;
+          this.loadReps();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to update staff member');
+        },
+      });
     }
-    this.isModalVisible = false;
   }
 
   openPassModal(r: RepUser): void {
@@ -473,13 +532,6 @@ export class RepListComponent {
     this.isPassOpen = false;
   }
 
-  toggleActive(r: RepUser): void {
-    this.reps.update(list =>
-      list.map(item => (item.id === r.id ? { ...item, isActive: !item.isActive } : item))
-    );
-    this.msg.info(`User ${r.name} ${r.isActive ? 'deactivated' : 'activated'}`);
-  }
-
   deleteRep(r: RepUser): void {
     this.modal.confirmAction(
       'Delete Representative?',
@@ -488,8 +540,15 @@ export class RepListComponent {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.reps.update(list => list.filter(item => item.id !== r.id));
-        this.msg.success(`Staff user "${r.name}" deleted successfully`);
+        this.repService.deleteRepresentative(r.userNo).subscribe({
+          next: () => {
+            this.msg.success(`Staff user "${r.name}" deleted successfully`);
+            this.loadReps();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete representative');
+          },
+        });
       }
     });
   }

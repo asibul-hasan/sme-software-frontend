@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-sms-config',
@@ -139,10 +140,11 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </nz-modal>
   `,
 })
-export class SmsConfigComponent {
+export class SmsConfigComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly settingsService = inject(SettingsService);
 
-  currentCredits = signal(240);
+  currentCredits = signal(0);
   qty = signal(1);
 
   totalSms = computed(() => this.qty() * 100);
@@ -151,6 +153,19 @@ export class SmsConfigComponent {
   isPayOpen = false;
   bkashNumber = '01711234567';
   coupon = '';
+
+  ngOnInit(): void {
+    this.settingsService.getSmsConfig().subscribe({
+      next: (res) => {
+        if (res.data) {
+          const c: any = res.data;
+          const count = c.current_sms_count ?? c.currentSmsCount ?? 0;
+          this.currentCredits.set(count);
+        }
+      },
+      error: () => {},
+    });
+  }
 
   decQty(): void {
     this.qty.update(q => Math.max(1, q - 1));
@@ -162,8 +177,20 @@ export class SmsConfigComponent {
 
   confirmPayment(): void {
     const purchased = this.totalSms();
-    this.currentCredits.update(c => c + purchased);
-    this.msg.success(`bKash payment verified! ${purchased} SMS credits added to your account.`);
-    this.isPayOpen = false;
+    const newTotal = this.currentCredits() + purchased;
+
+    this.settingsService.updateSmsConfig({
+      current_sms_count: newTotal,
+      sender_id: 'AIDLY_PMS',
+    }).subscribe({
+      next: (res) => {
+        this.currentCredits.set(newTotal);
+        this.msg.success(res.message || `bKash payment verified! ${purchased} SMS credits added to your account.`);
+        this.isPayOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to update SMS credits');
+      },
+    });
   }
 }

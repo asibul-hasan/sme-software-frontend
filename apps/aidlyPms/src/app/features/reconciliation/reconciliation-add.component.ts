@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { AccountingService } from '../../core/services/accounting.service';
+import { AccTransactionAccount, AccReconciliation } from '../../core/models/accounting.models';
 
 @Component({
   selector: 'app-reconciliation-add',
@@ -43,10 +45,10 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             <label class="block text-xs font-semibold text-slate-700 mb-1">
               Payment From (Source Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="from" name="from" class="w-full">
-              <nz-option nzValue="Counter Cash (৳ 84,250)" nzLabel="Counter Cash (৳ 84,250)"></nz-option>
-              <nz-option nzValue="Islami Bank (৳ 2,42,000)" nzLabel="Islami Bank (৳ 2,42,000)"></nz-option>
-              <nz-option nzValue="bKash Merchant (৳ 6,300)" nzLabel="bKash Merchant (৳ 6,300)"></nz-option>
+            <nz-select [(ngModel)]="fromAccountNo" name="fromAccountNo" class="w-full" nzPlaceHolder="Select Source Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
+              }
             </nz-select>
           </div>
 
@@ -54,10 +56,10 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             <label class="block text-xs font-semibold text-slate-700 mb-1">
               Payment To (Destination Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="to" name="to" class="w-full">
-              <nz-option nzValue="Counter Cash" nzLabel="Counter Cash"></nz-option>
-              <nz-option nzValue="Islami Bank" nzLabel="Islami Bank"></nz-option>
-              <nz-option nzValue="bKash Merchant" nzLabel="bKash Merchant"></nz-option>
+            <nz-select [(ngModel)]="toAccountNo" name="toAccountNo" class="w-full" nzPlaceHolder="Select Destination Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
+              }
             </nz-select>
           </div>
 
@@ -101,15 +103,32 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </div>
   `,
 })
-export class ReconciliationAddComponent {
+export class ReconciliationAddComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly accountingService = inject(AccountingService);
 
-  from = 'Counter Cash (৳ 84,250)';
-  to = 'Islami Bank';
+  accounts = signal<AccTransactionAccount[]>([]);
+  fromAccountNo: number | null = null;
+  toAccountNo: number | null = null;
   amount = 0;
   note = '';
+
+  ngOnInit(): void {
+    this.accountingService.getAccounts().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.accounts.set(res.data);
+          if (res.data.length >= 2) {
+            this.fromAccountNo = res.data[0].account_no;
+            this.toAccountNo = res.data[1].account_no;
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
 
   goBack(): void {
     if (window.history.length > 1) {
@@ -120,11 +139,35 @@ export class ReconciliationAddComponent {
   }
 
   submitForm(): void {
+    if (!this.fromAccountNo || !this.toAccountNo) {
+      this.msg.error('Please select both source and destination accounts');
+      return;
+    }
+    if (this.fromAccountNo === this.toAccountNo) {
+      this.msg.error('Source and destination accounts must be different');
+      return;
+    }
     if (this.amount <= 0) {
       this.msg.error('Please enter a valid transfer amount');
       return;
     }
-    this.msg.success(`Fund transfer of ৳ ${this.amount.toLocaleString()} submitted!`);
-    this.router.navigate(['/reconciliation']);
+
+    const payload: Partial<AccReconciliation> = {
+      payment_from_account_no: this.fromAccountNo,
+      payment_to_account_no: this.toAccountNo,
+      amount: Number(this.amount),
+      note: this.note.trim() || undefined,
+      transfer_date: new Date().toISOString(),
+    };
+
+    this.accountingService.createReconciliation(payload).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Fund transfer of ৳ ${this.amount.toLocaleString()} submitted!`);
+        this.router.navigate(['/reconciliation']);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to submit fund transfer');
+      },
+    });
   }
 }

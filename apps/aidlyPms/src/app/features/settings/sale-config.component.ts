@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -8,6 +8,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SettingsService } from '../../core/services/settings.service';
+import { CfgSaleConfig } from '../../core/models/config.models';
 
 interface SettingToggle {
   key: string;
@@ -115,8 +117,9 @@ interface SettingToggle {
     </div>
   `,
 })
-export class SaleConfigComponent {
+export class SaleConfigComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly settingsService = inject(SettingsService);
 
   toggles: SettingToggle[] = [
     { key: 'cashReceived', label: 'Prompt Cash Received', desc: 'Ask for customer cash tendered on checkout to compute change', value: true },
@@ -132,7 +135,64 @@ export class SaleConfigComponent {
   openingStockMarkup = 10;
   maxDiscount = 10;
 
+  ngOnInit(): void {
+    this.settingsService.getSaleConfig().subscribe({
+      next: (res) => {
+        if (res.data) {
+          const c: any = res.data;
+          this.setToggle('cashReceived', c.cash_received ?? c.cashReceived ?? true);
+          this.setToggle('outOfStock', c.out_of_stock_sale ?? c.outOfStockSale ?? false);
+          this.setToggle('allowLoss', c.allow_loss_sale ?? c.allowLossSale ?? false);
+          this.setToggle('showCost', c.product_purchase_cost ?? c.productPurchaseCost ?? false);
+          this.setToggle('showStock', c.stock_qty ?? c.stockQty ?? true);
+          this.setToggle('showCompany', c.company_name ?? c.companyName ?? true);
+          this.setToggle('showRak', c.rak_number ?? c.rakNumber ?? false);
+
+          if (c.business_type === 2 || c.businessType === 2) {
+            this.businessMode = 'Wholesale';
+          } else {
+            this.businessMode = 'Retail';
+          }
+
+          if (c.opening_stock_percent !== undefined) this.openingStockMarkup = c.opening_stock_percent;
+          if (c.max_sale_discount_percent !== undefined) this.maxDiscount = c.max_sale_discount_percent;
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  private setToggle(key: string, val: boolean): void {
+    const t = this.toggles.find(x => x.key === key);
+    if (t) t.value = val;
+  }
+
+  private getToggle(key: string): boolean {
+    return this.toggles.find(x => x.key === key)?.value || false;
+  }
+
   saveSettings(): void {
-    this.msg.success('POS sales configuration saved successfully!');
+    const payload: Partial<CfgSaleConfig> = {
+      cash_received: this.getToggle('cashReceived'),
+      out_of_stock_sale: this.getToggle('outOfStock'),
+      allow_loss_sale: this.getToggle('allowLoss'),
+      product_purchase_cost: this.getToggle('showCost'),
+      stock_qty: this.getToggle('showStock'),
+      company_name: this.getToggle('showCompany'),
+      rak_number: this.getToggle('showRak'),
+      business_type: this.businessMode === 'Wholesale' ? 2 : 1,
+      opening_stock_percent: Number(this.openingStockMarkup) || 0,
+      max_sale_discount_percent: Number(this.maxDiscount) || 0,
+      is_max_discount_enabled: (Number(this.maxDiscount) || 0) > 0,
+    };
+
+    this.settingsService.updateSaleConfig(payload).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || 'POS sales configuration saved successfully!');
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to save POS configuration');
+      },
+    });
   }
 }

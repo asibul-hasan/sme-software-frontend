@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { CustomerService } from '../../core/services/customer.service';
+import { CustCustomer } from '../../core/models';
 
 @Component({
   selector: 'app-customer-add',
@@ -256,6 +258,8 @@ export class CustomerAddComponent {
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
 
+  private readonly customerService = inject(CustomerService);
+
   name = '';
   phone = '';
   gender = 'Male';
@@ -305,7 +309,32 @@ export class CustomerAddComponent {
       return;
     }
 
-    this.msg.success(`Customer "${this.name}" registered successfully!`);
-    this.router.navigate(['/customer/list']);
+    const typeCode = this.type === 'Doctor Referral' ? 2 : (this.type === 'VIP' ? 3 : (this.type === 'Wholesale Client' ? 4 : 1));
+
+    const payload: Partial<CustCustomer> = {
+      name: this.name.trim(),
+      phone: `+880 ${this.phone.trim()}`,
+      customer_type: typeCode,
+      gender: this.gender === 'Female' ? 2 : 1,
+      discount_percent: this.discountPercent,
+      email: this.email,
+      total_due: this.dueEnabled ? Number(this.dueAmount) || 0 : 0,
+      address: this.address.trim() || 'Local Area',
+      notes: this.note,
+      is_loyalty_member: this.loyalty,
+      is_active: true,
+    };
+
+    this.customerService.createCustomer(payload).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.msg.success(`Customer "${this.name}" registered successfully!`);
+          this.router.navigate(['/customer/list']);
+        } else {
+          this.msg.error(res.message || 'Failed to register customer');
+        }
+      },
+      error: (err) => this.msg.error(err?.error?.message || 'Failed to register customer'),
+    });
   }
 }

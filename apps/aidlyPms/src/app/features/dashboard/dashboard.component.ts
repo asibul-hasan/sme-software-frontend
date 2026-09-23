@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import {
   BusinessMode,
 } from '../../shared/constants/label-values.constant';
 import { AuthService } from '../../core/auth/auth.service';
+import { DashboardService, DashboardSummary, FastMovingProduct } from '../../core/services/dashboard.service';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Tooltip, Legend);
 
@@ -56,7 +57,7 @@ interface TopProduct {
       <!-- Header Bar -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pms-card p-4">
         <div>
-          <h1 class="text-xl font-bold text-slate-900 m-0 font-display">Wednesday, 16 September 2026</h1>
+          <h1 class="text-xl font-bold text-slate-900 m-0 font-display">{{ todayLabel() }}</h1>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
@@ -81,14 +82,15 @@ interface TopProduct {
           <!-- Branch Selector -->
           <nz-select [(ngModel)]="selectedBranch" class="w-40">
             <nz-option nzValue="all" nzLabel="All Branches"></nz-option>
-            <nz-option nzValue="cumilla" nzLabel="Kazi — Cumilla"></nz-option>
-            <nz-option nzValue="dhaka" nzLabel="Dhaka Branch"></nz-option>
+            @for (br of branchOptions(); track br.value) {
+              <nz-option [nzValue]="br.value" [nzLabel]="br.label"></nz-option>
+            }
           </nz-select>
           
           <!-- Date Range -->
           <div class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 flex items-center gap-2">
             <span>📅</span>
-            <span>10-09-2026 ~ 16-09-2026</span>
+            <span>{{ dateRangeLabel() }}</span>
           </div>
 
           <!-- Quick Actions Button -->
@@ -259,30 +261,30 @@ interface TopProduct {
         <div class="pms-card p-4 flex flex-col">
           <h2 class="text-sm font-bold text-slate-900 mb-4 m-0">Cashbook Summary</h2>
           <div class="space-y-2 text-sm flex-1">
-            <div class="flex justify-between items-center"><span class="text-slate-600">Gross Profit</span><span class="font-mono font-medium theme-total-text">৳ 46,700</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-600">+ Income</span><span class="font-mono font-medium theme-total-text">৳ 3,200</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-600">− Operational Cost</span><span class="font-mono font-medium text-rose-600">৳ 14,000</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-600">− Demurrage</span><span class="font-mono font-medium text-rose-600">৳ 1,500</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-600">Gross Profit</span><span class="font-mono font-medium theme-total-text">৳ {{ formatBd(summary()?.today_profit || 0) }}</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-600">+ Income</span><span class="font-mono font-medium theme-total-text">৳ {{ formatBd(summary()?.today_cash_collected || 0) }}</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-600">− Operational Cost</span><span class="font-mono font-medium text-rose-600">৳ {{ formatBd(summary()?.today_expenses || 0) }}</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-600">− Demurrage</span><span class="font-mono font-medium text-rose-600">৳ 0</span></div>
           </div>
           <div class="mt-4 theme-highlight-card font-bold p-3 rounded-lg flex justify-between items-center text-base">
-            <span class="theme-highlight-title">Net Profit</span><span class="theme-highlight-value">৳ 34,400</span>
+            <span class="theme-highlight-title">Net Profit</span><span class="theme-highlight-value">৳ {{ formatBd((summary()?.today_profit || 0) - (summary()?.today_expenses || 0)) }}</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 text-sm border-t border-slate-100 pt-4">
             <div>
               <p class="text-slate-500 text-xs mb-1 m-0">Cash Balance</p>
-              <p class="font-mono font-semibold text-slate-800 m-0">৳ 84,250</p>
+              <p class="font-mono font-semibold text-slate-800 m-0">৳ {{ formatBd(summary()?.today_cash_collected || 0) }}</p>
             </div>
             <div>
               <p class="text-slate-500 text-xs mb-1 m-0">Bank Balance</p>
-              <p class="font-mono font-semibold text-slate-800 m-0">৳ 3,42,000</p>
+              <p class="font-mono font-semibold text-slate-800 m-0">৳ 0</p>
             </div>
             <div>
               <p class="text-slate-500 text-xs mb-1 m-0">MFS Balance</p>
-              <p class="font-mono font-semibold text-slate-800 m-0">৳ 18,750</p>
+              <p class="font-mono font-semibold text-slate-800 m-0">৳ 0</p>
             </div>
             <div>
               <p class="text-slate-500 text-xs mb-1 m-0">Closing Balance</p>
-              <p class="font-mono font-semibold theme-total-text m-0">৳ 4,45,000</p>
+              <p class="font-mono font-semibold theme-total-text m-0">৳ {{ formatBd(summary()?.today_cash_collected || 0) }}</p>
             </div>
           </div>
         </div>
@@ -291,14 +293,14 @@ interface TopProduct {
         <div class="pms-card p-4">
           <h2 class="text-sm font-bold text-slate-900 mb-4 m-0">Buy & Sale Summary</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Total Sale</span><span class="font-mono font-medium text-slate-800">৳ 1,24,380</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Inventory Purchase</span><span class="font-mono font-medium text-slate-800">৳ 82,700</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Sales</span><span class="font-mono font-medium text-amber-600">৳ 18,200</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Purchase</span><span class="font-mono font-medium text-amber-600">৳ 14,500</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Sale Return</span><span class="font-mono font-medium text-rose-600">৳ 3,400</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Purchase Return</span><span class="font-mono font-medium text-rose-600">৳ 2,100</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Payment Received</span><span class="font-mono font-medium theme-total-text">৳ 12,600</span></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Purchase Paid</span><span class="font-mono font-medium theme-total-text">৳ 9,800</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Total Sale</span><span class="font-mono font-medium text-slate-800">৳ {{ formatBd(summary()?.today_sales || 0) }}</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Inventory Purchase</span><span class="font-mono font-medium text-slate-800">৳ {{ formatBd(summary()?.today_purchases || 0) }}</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Sales</span><span class="font-mono font-medium text-amber-600">৳ {{ formatBd(summary()?.total_customer_due || 0) }}</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Purchase</span><span class="font-mono font-medium text-amber-600">৳ {{ formatBd(summary()?.total_supplier_payable || 0) }}</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Sale Return</span><span class="font-mono font-medium text-rose-600">৳ 0</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Purchase Return</span><span class="font-mono font-medium text-rose-600">৳ 0</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Payment Received</span><span class="font-mono font-medium theme-total-text">৳ 0</span></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="text-slate-600">Due Purchase Paid</span><span class="font-mono font-medium theme-total-text">৳ 0</span></div>
           </div>
         </div>
       </div>
@@ -318,9 +320,9 @@ interface TopProduct {
           <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
             <span nz-icon nzType="warning" class="text-amber-500 text-lg mt-0.5"></span>
             <div class="flex-1 text-xs">
-              <p class="font-semibold text-amber-900 m-0">Near-Expiry Warning (14 Batches)</p>
+              <p class="font-semibold text-amber-900 m-0">Near-Expiry Warning ({{ summary()?.near_expiry_items_count || 0 }} Batches)</p>
               <p class="text-amber-700 mt-0.5 m-0">
-                Batches reaching shelf expiry within 30 days. Estimated capital at risk: ৳ 18,450.
+                Batches reaching shelf expiry within 90 days. Review and take action.
               </p>
             </div>
             <a routerLink="/products/expired" nz-button nzSize="small" nzType="default" class="text-xs font-medium border-amber-300 text-amber-800">
@@ -331,9 +333,9 @@ interface TopProduct {
           <div class="p-3 bg-rose-50 rounded-lg border border-rose-200 flex items-start gap-3">
             <span nz-icon nzType="close-circle" class="text-rose-500 text-lg mt-0.5"></span>
             <div class="flex-1 text-xs">
-              <p class="font-semibold text-rose-900 m-0">Out of Stock & Shortages (8 Items)</p>
+              <p class="font-semibold text-rose-900 m-0">Out of Stock & Shortages ({{ summary()?.low_stock_items_count || 0 }} Items)</p>
               <p class="text-rose-700 mt-0.5 m-0">
-                8 high-demand items are currently below minimum reorder threshold.
+                {{ summary()?.low_stock_items_count || 0 }} high-demand items are currently below minimum reorder threshold.
               </p>
             </div>
             <a routerLink="/products/requisition" nz-button nzSize="small" nzType="primary" nzDanger class="text-xs font-medium">
@@ -358,59 +360,33 @@ interface TopProduct {
     </div>
   `,
 })
-export class DashboardComponent {
-  readonly authService = inject(AuthService);
+export class DashboardComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly dashboardService = inject(DashboardService);
   readonly businessModes = BUSINESS_MODE_OPTIONS;
   selectedMode: number = BusinessMode.Retail;
   selectedBranch = 'all';
 
-  readonly kpiStats: readonly KpiStat[] = [
-    { title: 'Current Cash Balance', value: '৳ 84,250', icon: 'dollar', colorClass: 'theme-avatar', change: '↑ 12.4%', isPositive: true },
-    { title: 'Bank Balance', value: '৳ 3,42,000', icon: 'bank', colorClass: 'bg-blue-50 text-blue-600' },
-    { title: 'MFS Balance', value: '৳ 18,750', icon: 'swap', colorClass: 'bg-purple-50 text-purple-600' },
-    { title: "Today's Sale", value: '৳ 24,380', icon: 'fund', colorClass: 'bg-emerald-50 text-emerald-600', change: '↑ 8.2%', isPositive: true },
-    { title: "Today's Purchase", value: '৳ 17,900', icon: 'shopping-cart', colorClass: 'bg-amber-50 text-amber-600' },
-    { title: 'Full Inventory Cost', value: '৳ 12,84,600', icon: 'shop', colorClass: 'theme-avatar' },
-    { title: 'Total Items (SKU)', value: '1,248', subtext: 'Distinct products', icon: 'medicine-box', colorClass: 'bg-pink-50 text-pink-600' },
-    { title: 'Total Product Count', value: '48,320', subtext: 'Physical units', icon: 'barcode', colorClass: 'theme-avatar' },
-  ];
+  summary = signal<DashboardSummary | null>(null);
+  branchOptions = signal<{ value: string; label: string }[]>([]);
 
-  readonly topSelling: readonly TopProduct[] = [
-    { name: 'Napa 500mg Tablet', generic: 'Paracetamol', qty: 1240, total: '৳ 1,240' },
-    { name: 'Seclo 20mg Capsule', generic: 'Omeprazole', qty: 860, total: '৳ 4,300' },
-    { name: 'Amoxi 500mg Capsule', generic: 'Amoxicillin', qty: 720, total: '৳ 5,760' },
-    { name: 'Metformin 500mg Tab', generic: 'Metformin HCl', qty: 640, total: '৳ 2,560' },
-    { name: 'Cef-3 250mg Capsule', generic: 'Cefixime', qty: 520, total: '৳ 7,800' },
-  ];
+  todayLabel = signal<string>(
+    new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  );
 
-  readonly lowestSelling: readonly TopProduct[] = [
-    { name: 'Rhinocort 64mcg Inhaler', generic: 'Budesonide', qty: 12, total: '৳ 3,600' },
-    { name: 'Sandimmun 25mg Cap', generic: 'Cyclosporine', qty: 8, total: '৳ 2,400' },
-    { name: 'Gleevec 100mg Tab', generic: 'Imatinib', qty: 6, total: '৳ 4,200' },
-    { name: 'Enbrel 25mg Injection', generic: 'Etanercept', qty: 3, total: '৳ 8,100' },
-  ];
+  dateRangeLabel = signal<string>((() => {
+    const now = new Date();
+    const week = new Date(now.getTime() - 6 * 86400000);
+    const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    return `${fmt(week)} ~ ${fmt(now)}`;
+  })());
 
-  readonly areaChartData: ChartConfiguration['data'] = {
-    labels: ['Sep 10', 'Sep 11', 'Sep 12', 'Sep 13', 'Sep 14', 'Sep 15', 'Sep 16'],
-    datasets: [
-      {
-        data: [18200, 21500, 16800, 24300, 19700, 22100, 17900],
-        label: 'Buy Price',
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.4
-      },
-      {
-        data: [6400, 7100, 5900, 8200, 7600, 8800, 6700],
-        label: 'Gross Profit',
-        borderColor: '#0d9488',
-        backgroundColor: 'rgba(13, 148, 136, 0.1)',
-        fill: true,
-        tension: 0.4
-      }
-    ]
-  };
+  kpiStats: KpiStat[] = [];
+  topSelling: TopProduct[] = [];
+  lowestSelling: TopProduct[] = [];
+
+  areaChartData: ChartConfiguration['data'] = { labels: [], datasets: [] };
+  barChartData: ChartConfiguration['data'] = { labels: [], datasets: [] };
 
   readonly areaChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -419,26 +395,73 @@ export class DashboardComponent {
     scales: { y: { beginAtZero: true } }
   };
 
-  readonly barChartData: ChartConfiguration['data'] = {
-    labels: ['Sep 10', 'Sep 11', 'Sep 12', 'Sep 13', 'Sep 14', 'Sep 15', 'Sep 16'],
-    datasets: [
-      {
-        data: [4200, 5100, 3900, 6200, 5600, 6800, 4700],
-        label: 'Net Profit',
-        backgroundColor: '#0d9488'
-      },
-      {
-        data: [2200, 2000, 2000, 2000, 2000, 2000, 2000],
-        label: 'Op Cost',
-        backgroundColor: '#f59e0b'
-      }
-    ]
-  };
-
   readonly barChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'top' } },
     scales: { y: { beginAtZero: true, stacked: true }, x: { stacked: true } }
   };
+
+  ngOnInit(): void {
+    this.loadSummary();
+    this.loadAnalytics();
+  }
+
+  private loadSummary(): void {
+    this.dashboardService.getSummary().subscribe({
+      next: res => {
+        if (res.data) {
+          this.summary.set(res.data);
+          this.buildKpiStats(res.data);
+        }
+      }
+    });
+  }
+
+  private loadAnalytics(): void {
+    this.dashboardService.getAnalytics(5).subscribe({
+      next: res => {
+        if (res.data) {
+          this.topSelling = res.data.map(p => ({
+            name: p.product_name,
+            generic: '',
+            qty: p.total_sold_pcs,
+            total: `৳ ${this.formatBd(p.total_revenue)}`
+          }));
+        }
+      }
+    });
+
+    // Lowest selling — get bottom 5
+    this.dashboardService.getAnalytics(100).subscribe({
+      next: res => {
+        if (res.data && res.data.length > 0) {
+          const bottom = res.data.slice(-4);
+          this.lowestSelling = bottom.map(p => ({
+            name: p.product_name,
+            generic: '',
+            qty: p.total_sold_pcs,
+            total: `৳ ${this.formatBd(p.total_revenue)}`
+          }));
+        }
+      }
+    });
+  }
+
+  private buildKpiStats(s: DashboardSummary): void {
+    this.kpiStats = [
+      { title: 'Current Cash Balance', value: `৳ ${this.formatBd(s.today_cash_collected)}`, icon: 'dollar', colorClass: 'theme-avatar' },
+      { title: 'Bank Balance', value: '৳ 0', icon: 'bank', colorClass: 'bg-blue-50 text-blue-600' },
+      { title: 'MFS Balance', value: '৳ 0', icon: 'swap', colorClass: 'bg-purple-50 text-purple-600' },
+      { title: "Today's Sale", value: `৳ ${this.formatBd(s.today_sales)}`, icon: 'fund', colorClass: 'bg-emerald-50 text-emerald-600', subtext: `${s.today_sales_count} invoices` },
+      { title: "Today's Purchase", value: `৳ ${this.formatBd(s.today_purchases)}`, icon: 'shopping-cart', colorClass: 'bg-amber-50 text-amber-600' },
+      { title: 'Full Inventory Cost', value: `৳ ${this.formatBd(s.total_inventory_valuation)}`, icon: 'shop', colorClass: 'theme-avatar' },
+      { title: 'Total Items (SKU)', value: s.total_products_count.toLocaleString('en-IN'), subtext: 'Distinct products', icon: 'medicine-box', colorClass: 'bg-pink-50 text-pink-600' },
+      { title: 'Expired Batches', value: s.expired_items_count.toLocaleString('en-IN'), subtext: 'Need attention', icon: 'barcode', colorClass: 'theme-avatar' },
+    ];
+  }
+
+  formatBd(val: number): string {
+    return val.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
 }

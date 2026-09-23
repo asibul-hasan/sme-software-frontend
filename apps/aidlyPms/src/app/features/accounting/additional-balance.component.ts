@@ -1,21 +1,26 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { AccountingService } from '../../core/services/accounting.service';
+import { AccAdditionalBalance, AccTransactionAccount } from '../../core/models/accounting.models';
 
 interface BalanceEntry {
   id: string;
+  additionalBalanceNo: number;
   ref: string;
   user: string;
   amount: number;
+  account: string;
   note: string;
   date: string;
 }
@@ -29,6 +34,7 @@ interface BalanceEntry {
     RouterModule,
     NzInputModule,
     NzButtonModule,
+    NzSelectModule,
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
@@ -43,8 +49,8 @@ interface BalanceEntry {
         [breadcrumbs]="[{ label: 'Accounting', url: '/accounting/transaction' }, { label: 'Additional Balance' }]"
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <input type="date" nz-input [(ngModel)]="fromDate" class="w-32 shrink-0 rounded-md" />
-          <input type="date" nz-input [(ngModel)]="toDate" class="w-32 shrink-0 rounded-md" />
+          <input type="date" nz-input [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
+          <input type="date" nz-input [(ngModel)]="toDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
           <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
@@ -63,17 +69,22 @@ interface BalanceEntry {
             <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
               <tr>
                 <th class="p-3">Details</th>
+                <th class="p-3">Target Account</th>
                 <th class="p-3 text-right">Amount</th>
                 <th class="p-3">Note / Source</th>
                 <th class="p-3 text-center w-24">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
-              @for (b of filteredBalances(); track b.id) {
+              @for (b of balances(); track b.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="p-3">
                     <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ b.ref }}</p>
                     <p class="text-xs text-slate-400 mb-0">{{ b.date }} · {{ b.user }}</p>
+                  </td>
+
+                  <td class="p-3 text-xs font-semibold text-slate-700">
+                    {{ b.account }}
                   </td>
 
                   <td class="p-3 text-right font-mono text-sm font-bold theme-total-text">
@@ -109,7 +120,7 @@ interface BalanceEntry {
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="4" class="p-8 text-center text-slate-400 text-xs">
+                  <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
                     No additional capital injections recorded.
                   </td>
                 </tr>
@@ -121,7 +132,7 @@ interface BalanceEntry {
         <!-- Sticky Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
-            <span>Capital Injections: <strong class="text-slate-900 font-semibold font-mono">{{ filteredBalances().length }}</strong></span>
+            <span>Capital Injections: <strong class="text-slate-900 font-semibold font-mono">{{ balances().length }}</strong></span>
             <span class="text-slate-300">|</span>
             <span class="font-semibold text-slate-700">Total Capital: <strong class="theme-total-text font-mono text-sm">৳ {{ totalCapitalAmount() | number: '1.2-2' }}</strong></span>
           </div>
@@ -144,6 +155,15 @@ interface BalanceEntry {
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
             <input type="date" nz-input [(ngModel)]="form.date" class="rounded-md" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Target Deposit Account *</label>
+            <nz-select [(ngModel)]="form.account_no" class="w-full" nzPlaceHolder="Select Account">
+              @for (acc of accounts(); track acc.account_no) {
+                <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
+              }
+            </nz-select>
           </div>
 
           <div>
@@ -174,40 +194,86 @@ interface BalanceEntry {
     </nz-modal>
   `,
 })
-export class AdditionalBalanceComponent {
+export class AdditionalBalanceComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly accountingService = inject(AccountingService);
 
   fromDate = '';
   toDate = '';
 
-  balances = signal<BalanceEntry[]>([
-    { id: '1', ref: 'ADD-2026-004', user: 'Admin', amount: 50000, note: 'Owner capital injection — September', date: '01-09-2026' },
-    { id: '2', ref: 'ADD-2026-003', user: 'Admin', amount: 100000, note: 'Business expansion capital', date: '01-08-2026' },
-  ]);
+  balances = signal<BalanceEntry[]>([]);
+  accounts = signal<AccTransactionAccount[]>([]);
 
-  filteredBalances = computed(() => {
-    return this.balances();
-  });
-
-  totalCapitalAmount = computed(() => this.filteredBalances().reduce((sum, b) => sum + (b.amount || 0), 0));
+  totalCapitalAmount = computed(() => this.balances().reduce((sum, b) => sum + (b.amount || 0), 0));
 
   isModalOpen = false;
   form = {
     date: new Date().toISOString().split('T')[0],
     amount: 0,
+    account_no: null as number | null,
     note: '',
   };
+
+  ngOnInit(): void {
+    this.loadAccounts();
+    this.loadBalances();
+  }
+
+  loadAccounts(): void {
+    this.accountingService.getAccounts().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.accounts.set(res.data);
+          if (!this.form.account_no && res.data.length > 0) {
+            this.form.account_no = res.data[0].account_no;
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  loadBalances(): void {
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 100,
+    };
+    if (this.fromDate) params['fromDate'] = this.fromDate;
+    if (this.toDate) params['toDate'] = this.toDate;
+
+    this.accountingService.getAdditionalBalances(params).subscribe({
+      next: (res) => {
+        const rawItems = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+        const rows: BalanceEntry[] = rawItems.map((item: any) => ({
+          id: (item.additional_balance_no || item.additionalBalanceNo || Math.random()).toString(),
+          additionalBalanceNo: item.additional_balance_no || item.additionalBalanceNo,
+          ref: `CAP-${String(item.additional_balance_no || item.additionalBalanceNo || '').padStart(6, '0')}`,
+          user: item.created_by_user_name || 'Admin',
+          amount: Number(item.amount) || 0,
+          account: item.account_name || item.accountName || 'Cash / Deposit Account',
+          note: item.note || 'Owner equity addition',
+          date: item.entry_date ? new Date(item.entry_date).toLocaleDateString('en-GB') : '-',
+        }));
+        this.balances.set(rows);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to load capital balance entries');
+      },
+    });
+  }
 
   resetFilters(): void {
     this.fromDate = '';
     this.toDate = '';
+    this.loadBalances();
   }
 
   openAddModal(): void {
     this.form = {
       date: new Date().toISOString().split('T')[0],
       amount: 0,
+      account_no: this.accounts().length > 0 ? this.accounts()[0].account_no : null,
       note: '',
     };
     this.isModalOpen = true;
@@ -219,18 +285,23 @@ export class AdditionalBalanceComponent {
       return;
     }
 
-    const newBal: BalanceEntry = {
-      id: Date.now().toString(),
-      ref: `ADD-2026-00${this.balances().length + 5}`,
-      user: 'Admin',
+    const payload: Partial<AccAdditionalBalance> = {
       amount: Number(this.form.amount),
-      note: this.form.note.trim() || 'Owner equity addition',
-      date: this.form.date,
+      account_no: this.form.account_no || 1,
+      entry_date: this.form.date ? new Date(this.form.date).toISOString() : new Date().toISOString(),
+      note: this.form.note.trim() || undefined,
     };
 
-    this.balances.update(list => [newBal, ...list]);
-    this.msg.success(`Capital of ৳ ${newBal.amount.toLocaleString()} added to pharmacy accounts!`);
-    this.isModalOpen = false;
+    this.accountingService.createAdditionalBalance(payload).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Capital of ৳ ${payload.amount?.toLocaleString()} added to pharmacy accounts!`);
+        this.isModalOpen = false;
+        this.loadBalances();
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add capital balance');
+      },
+    });
   }
 
   viewDetails(b: BalanceEntry): void {
@@ -245,8 +316,15 @@ export class AdditionalBalanceComponent {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.balances.update(list => list.filter(item => item.id !== b.id));
-        this.msg.success(`Entry "${b.ref}" deleted`);
+        this.accountingService.deleteAdditionalBalance(b.additionalBalanceNo).subscribe({
+          next: () => {
+            this.msg.success(`Entry "${b.ref}" deleted`);
+            this.loadBalances();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete capital entry');
+          },
+        });
       }
     });
   }

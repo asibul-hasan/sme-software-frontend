@@ -24,7 +24,7 @@ import {
   DEFAULT_GENERICS,
   DEFAULT_RAKS,
 } from '../../shared/constants/label-values.constant';
-import { ProdProduct } from '../../core/models';
+import { ProdProduct, ProdCompany, ProdGeneric } from '../../core/models';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 
@@ -677,128 +677,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   isAddRakModalVisible = false;
   newRakLocation = '';
 
-  products: ProductRow[] = [
-    {
-      product_no: 1001,
-      uuid: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
-      pharmacy_no: 1,
-      company_no: 1,
-      generic_no: 1,
-      product_name: 'Napa 500mg',
-      brand_name: 'Napa 500mg',
-      strength: '500mg',
-      volume: 'Tablet',
-      medicine_type: 1, // Tablet
-      unit_type: 2,     // STRIP
-      quantity_per_box: 50,
-      cost_per_box: 40.0,
-      sale_price_per_box: 60.0,
-      avg_purchase_price_per_piece: 0.8,
-      purchase_price_per_piece: 0.8,
-      sale_price_per_piece: 1.2,
-      country_of_origin: 'Bangladesh',
-      barcode_value: '89411001001',
-      is_medicine: true,
-      min_stock_qty_pcs: 200,
-      rak_number: 'A-01',
-      stock_qty: 1250,
-      is_active: true,
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-03-01T00:00:00Z',
-      generic_name: 'Paracetamol',
-      company_name: 'Beximco Pharma Ltd.',
-    },
-    {
-      product_no: 1002,
-      uuid: '8c2deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6e',
-      pharmacy_no: 1,
-      company_no: 2,
-      generic_no: 2,
-      product_name: 'Seclo 20mg',
-      brand_name: 'Seclo 20mg',
-      strength: '20mg',
-      volume: 'Capsule',
-      medicine_type: 2, // Capsule
-      unit_type: 2,     // STRIP
-      quantity_per_box: 30,
-      cost_per_box: 126.0,
-      sale_price_per_box: 165.0,
-      avg_purchase_price_per_piece: 4.2,
-      purchase_price_per_piece: 4.2,
-      sale_price_per_piece: 5.5,
-      country_of_origin: 'Bangladesh',
-      barcode_value: '89411001002',
-      is_medicine: true,
-      min_stock_qty_pcs: 100,
-      rak_number: 'B-04',
-      stock_qty: 480,
-      is_active: true,
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-03-01T00:00:00Z',
-      generic_name: 'Omeprazole',
-      company_name: 'Square Pharmaceuticals Ltd.',
-    },
-    {
-      product_no: 1003,
-      uuid: '7b3deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6f',
-      pharmacy_no: 1,
-      company_no: 3,
-      generic_no: 3,
-      product_name: 'Amoxi 500mg',
-      brand_name: 'Amoxi 500mg',
-      strength: '500mg',
-      volume: 'Capsule',
-      medicine_type: 2, // Capsule
-      unit_type: 2,     // STRIP
-      quantity_per_box: 20,
-      cost_per_box: 130.0,
-      sale_price_per_box: 160.0,
-      avg_purchase_price_per_piece: 6.5,
-      purchase_price_per_piece: 6.5,
-      sale_price_per_piece: 8.0,
-      country_of_origin: 'Bangladesh',
-      barcode_value: '89411001003',
-      is_medicine: true,
-      min_stock_qty_pcs: 80,
-      rak_number: 'A-09',
-      stock_qty: 320,
-      is_active: true,
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-03-01T00:00:00Z',
-      generic_name: 'Amoxicillin',
-      company_name: 'Incepta Pharmaceuticals Ltd.',
-    },
-    {
-      product_no: 1004,
-      uuid: '6a4deb4d-3b7d-4bad-9bdd-2b0d7b3dcb70',
-      pharmacy_no: 1,
-      company_no: 1,
-      generic_no: 4,
-      product_name: 'Tuspel Cough Syrup 100ml',
-      brand_name: 'Tuspel Cough Syrup 100ml',
-      strength: '100ml',
-      volume: 'Syrup Bottle',
-      medicine_type: 3, // Syrup
-      unit_type: 4,     // BOTTLE
-      quantity_per_box: 1,
-      cost_per_box: 65.0,
-      sale_price_per_box: 85.0,
-      avg_purchase_price_per_piece: 65.0,
-      purchase_price_per_piece: 65.0,
-      sale_price_per_piece: 85.0,
-      country_of_origin: 'Bangladesh',
-      barcode_value: '89411001004',
-      is_medicine: true,
-      min_stock_qty_pcs: 20,
-      rak_number: 'C-02',
-      stock_qty: 45,
-      is_active: true,
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-03-01T00:00:00Z',
-      generic_name: 'Dextromethorphan',
-      company_name: 'Beximco Pharma Ltd.',
-    },
-  ];
+  products: ProductRow[] = [];
 
   filteredProducts: ProductRow[] = [];
   columns: TableColumn<ProductRow>[] = [];
@@ -817,6 +696,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
   companies: string[] = [...DEFAULT_COMPANIES];
   generics: string[] = [...DEFAULT_GENERICS];
   raks: string[] = [...DEFAULT_RAKS];
+  companiesList: ProdCompany[] = [];
+  genericsList: ProdGeneric[] = [];
+  isLoading = false;
 
   formModel = {
     product_no: 0,
@@ -924,12 +806,33 @@ export class ProductListComponent implements OnInit, OnDestroy {
     ];
 
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
-      this.applyFilters();
       this.loadProductsFromService();
     });
 
-    this.refreshTable();
+    this.loadDropdownData();
     this.loadProductsFromService();
+  }
+
+  loadDropdownData(): void {
+    this.productService.getCompanies({ pageSize: 200 }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.companiesList = res.data;
+          const names = res.data.map(c => c.name).filter(Boolean);
+          this.companies = Array.from(new Set([...names, ...DEFAULT_COMPANIES]));
+        }
+      },
+    });
+
+    this.productService.getGenerics({ pageSize: 200 }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.genericsList = res.data;
+          const names = res.data.map(g => g.name).filter(Boolean);
+          this.generics = Array.from(new Set([...names, ...DEFAULT_GENERICS]));
+        }
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -951,12 +854,22 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.msg.error('Company Name is required');
       return;
     }
-    if (!this.companies.includes(val)) {
-      this.companies = [...this.companies, val];
-    }
-    this.formModel.company_name = val;
-    this.msg.success(`Company ${val} added successfully`);
-    this.isAddCompanyModalVisible = false;
+    this.productService.createCompany({ name: val }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.companiesList = [...this.companiesList, res.data];
+          if (!this.companies.includes(val)) {
+            this.companies = [...this.companies, val];
+          }
+          this.formModel.company_name = val;
+          this.msg.success(`Company ${val} added successfully`);
+          this.isAddCompanyModalVisible = false;
+        } else {
+          this.msg.error(res.message || 'Failed to add company');
+        }
+      },
+      error: (err) => this.msg.error(err?.error?.message || 'Failed to add company'),
+    });
   }
 
   saveNewGeneric(): void {
@@ -965,12 +878,22 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.msg.error('Generic name is required');
       return;
     }
-    if (!this.generics.includes(val)) {
-      this.generics = [...this.generics, val];
-    }
-    this.formModel.generic_name = val;
-    this.isAddGenericModalVisible = false;
-    this.msg.success(`Generic "${val}" set!`);
+    this.productService.createGeneric({ name: val }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.genericsList = [...this.genericsList, res.data];
+          if (!this.generics.includes(val)) {
+            this.generics = [...this.generics, val];
+          }
+          this.formModel.generic_name = val;
+          this.msg.success(`Generic "${val}" set!`);
+          this.isAddGenericModalVisible = false;
+        } else {
+          this.msg.error(res.message || 'Failed to add generic');
+        }
+      },
+      error: (err) => this.msg.error(err?.error?.message || 'Failed to add generic'),
+    });
   }
 
   saveNewMedicineType(): void {
@@ -1080,7 +1003,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   loadProductsFromService(): void {
-    const params: Record<string, unknown> = {};
+    this.isLoading = true;
+    const params: Record<string, unknown> = { pageSize: 200 };
     if (this.searchQuery.trim()) {
       params['search'] = this.searchQuery.trim();
     }
@@ -1090,7 +1014,24 @@ export class ProductListComponent implements OnInit, OnDestroy {
     if (this.selectedType !== null) {
       params['type'] = this.selectedType;
     }
-    this.productService.getProducts(params).subscribe();
+    this.productService.getProducts(params).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res.success && res.data) {
+          this.products = (res.data.items || []).map((p: any) => ({
+            ...p,
+            generic_name: p.generic_name || 'Generic Formulation',
+            company_name: p.company_name || 'Pharmaceuticals Ltd.',
+            medicine_type_label: getOptionLabel(MEDICINE_TYPE_OPTIONS, p.medicine_type),
+            unit_type_label: getOptionLabel(UNIT_TYPE_OPTIONS, p.unit_type),
+          }));
+          this.applyFilters();
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+      },
+    });
   }
 
   get totalStockQty(): number {
@@ -1186,91 +1127,84 @@ export class ProductListComponent implements OnInit, OnDestroy {
       return;
     }
 
+    let companyNo = 1;
+    const matchedComp = this.companiesList.find(
+      c => c.name.toLowerCase() === this.formModel.company_name.toLowerCase()
+    );
+    if (matchedComp) {
+      companyNo = matchedComp.company_no;
+    }
+
+    let genericNo = 1;
+    const matchedGen = this.genericsList.find(
+      g => g.name.toLowerCase() === this.formModel.generic_name.toLowerCase()
+    );
+    if (matchedGen) {
+      genericNo = matchedGen.generic_no;
+    }
+
+    const payload: Partial<ProdProduct> = {
+      product_name: this.formModel.product_name.trim(),
+      company_no: companyNo,
+      generic_no: genericNo,
+      strength: this.formModel.strength.trim(),
+      volume: this.formModel.volume.trim(),
+      medicine_type: this.formModel.medicine_type,
+      unit_type: this.formModel.unit_type,
+      quantity_per_box: this.formModel.quantity_per_box,
+      cost_per_box: this.formModel.cost_per_box,
+      sale_price_per_box: this.formModel.sale_price_per_box,
+      avg_purchase_price_per_piece: this.formModel.cost_per_box / (this.formModel.quantity_per_box || 1),
+      purchase_price_per_piece: this.formModel.cost_per_box / (this.formModel.quantity_per_box || 1),
+      sale_price_per_piece:
+        this.formModel.sale_price_per_piece ||
+        this.formModel.sale_price_per_box / (this.formModel.quantity_per_box || 1),
+      rak_number: this.formModel.rak_number,
+      min_stock_qty_pcs: this.formModel.min_stock_qty_pcs,
+      barcode_value: this.formModel.barcode_value,
+      is_medicine: this.formModel.is_medicine,
+      country_of_origin: 'Bangladesh',
+      is_active: true,
+      stock_qty: this.formModel.stock_qty || 0,
+    };
+
     this.isSaving = true;
 
-    setTimeout(() => {
-      this.isSaving = false;
-
-      if (this.modalMode === 'create') {
-        const nextNo =
-          this.products.length > 0
-            ? Math.max(...this.products.map(p => p.product_no)) + 1
-            : 1001;
-
-        const newProduct: ProductRow = {
-          product_no: nextNo,
-          uuid: crypto.randomUUID(),
-          pharmacy_no: 1,
-          company_no: 1,
-          generic_no: 1,
-          product_name: this.formModel.product_name.trim(),
-          brand_name: this.formModel.product_name.trim(),
-          strength: this.formModel.strength.trim(),
-          volume: this.formModel.volume.trim(),
-          medicine_type: this.formModel.medicine_type,
-          unit_type: this.formModel.unit_type,
-          quantity_per_box: this.formModel.quantity_per_box,
-          cost_per_box: this.formModel.cost_per_box,
-          sale_price_per_box: this.formModel.sale_price_per_box,
-          avg_purchase_price_per_piece:
-            this.formModel.cost_per_box / (this.formModel.quantity_per_box || 1),
-          purchase_price_per_piece:
-            this.formModel.cost_per_box / (this.formModel.quantity_per_box || 1),
-          sale_price_per_piece:
-            this.formModel.sale_price_per_piece ||
-            this.formModel.sale_price_per_box / (this.formModel.quantity_per_box || 1),
-          country_of_origin: 'Bangladesh',
-          barcode_value: this.formModel.barcode_value || `894${nextNo}`,
-          is_medicine: this.formModel.is_medicine,
-          min_stock_qty_pcs: this.formModel.min_stock_qty_pcs,
-          rak_number: this.formModel.rak_number,
-          stock_qty: this.formModel.stock_qty || 0,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          generic_name: this.formModel.generic_name || 'Generic Formulation',
-          company_name: this.formModel.company_name || 'Pharmaceuticals Ltd.',
-        };
-
-        this.products = [newProduct, ...this.products];
-        this.msg.success(`Medicine "${newProduct.product_name}" added successfully!`);
-      } else {
-        // Edit Mode: update existing row in-place
-        const index = this.products.findIndex(
-          p => p.product_no === this.formModel.product_no
-        );
-
-        if (index > -1) {
-          const existing = this.products[index];
-          this.products[index] = {
-            ...existing,
-            product_name: this.formModel.product_name.trim(),
-            brand_name: this.formModel.product_name.trim(),
-            strength: this.formModel.strength.trim(),
-            volume: this.formModel.volume.trim(),
-            medicine_type: this.formModel.medicine_type,
-            unit_type: this.formModel.unit_type,
-            quantity_per_box: this.formModel.quantity_per_box,
-            cost_per_box: this.formModel.cost_per_box,
-            sale_price_per_box: this.formModel.sale_price_per_box,
-            sale_price_per_piece: this.formModel.sale_price_per_piece,
-            rak_number: this.formModel.rak_number,
-            min_stock_qty_pcs: this.formModel.min_stock_qty_pcs,
-            barcode_value: this.formModel.barcode_value,
-            is_medicine: this.formModel.is_medicine,
-            generic_name: this.formModel.generic_name,
-            company_name: this.formModel.company_name,
-            updated_at: new Date().toISOString(),
-          };
-          this.msg.success(
-            `Medicine "${this.formModel.product_name}" updated successfully!`
-          );
-        }
-      }
-
-      this.refreshTable();
-      this.isModalVisible = false;
-    }, 300);
+    if (this.modalMode === 'create') {
+      this.productService.createProduct(payload).subscribe({
+        next: (res) => {
+          this.isSaving = false;
+          if (res.success) {
+            this.msg.success(`Medicine "${this.formModel.product_name}" added successfully!`);
+            this.isModalVisible = false;
+            this.loadProductsFromService();
+          } else {
+            this.msg.error(res.message || 'Failed to create product');
+          }
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.msg.error(err?.error?.message || 'Failed to create product');
+        },
+      });
+    } else {
+      this.productService.updateProduct(this.formModel.product_no, payload).subscribe({
+        next: (res) => {
+          this.isSaving = false;
+          if (res.success) {
+            this.msg.success(`Medicine "${this.formModel.product_name}" updated successfully!`);
+            this.isModalVisible = false;
+            this.loadProductsFromService();
+          } else {
+            this.msg.error(res.message || 'Failed to update product');
+          }
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.msg.error(err?.error?.message || 'Failed to update product');
+        },
+      });
+    }
   }
 
   deleteProduct(product: ProductRow): void {
@@ -1278,9 +1212,19 @@ export class ProductListComponent implements OnInit, OnDestroy {
       .confirmDelete(product.product_name, `Are you sure you want to remove "${product.product_name}" from the catalog?`)
       .subscribe(confirmed => {
         if (confirmed) {
-          this.products = this.products.filter(p => p.product_no !== product.product_no);
-          this.refreshTable();
-          this.msg.success(`Medicine "${product.product_name}" deleted.`);
+          this.productService.deleteProduct(product.product_no).subscribe({
+            next: (res) => {
+              if (res.success) {
+                this.msg.success(`Medicine "${product.product_name}" deleted.`);
+                this.loadProductsFromService();
+              } else {
+                this.msg.error(res.message || 'Failed to delete product');
+              }
+            },
+            error: (err) => {
+              this.msg.error(err?.error?.message || 'Failed to delete product');
+            },
+          });
         }
       });
   }

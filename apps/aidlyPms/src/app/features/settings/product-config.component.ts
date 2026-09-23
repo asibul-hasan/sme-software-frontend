@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-product-config',
@@ -58,12 +59,34 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </div>
   `,
 })
-export class ProductConfigComponent {
+export class ProductConfigComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly settingsService = inject(SettingsService);
 
   expiryDays = 90;
 
+  ngOnInit(): void {
+    this.settingsService.getProductConfig().subscribe({
+      next: (res) => {
+        if (res.data) {
+          const days = (res.data as any).expired_notification_days ?? (res.data as any).expiredNotificationDays;
+          if (days) this.expiryDays = days;
+        }
+      },
+      error: () => {},
+    });
+  }
+
   saveConfig(): void {
-    this.msg.success(`Expiry alert threshold set to ${this.expiryDays} days!`);
+    this.settingsService.updateProductConfig({
+      expired_notification_days: Number(this.expiryDays) || 90,
+    }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Expiry alert threshold set to ${this.expiryDays} days!`);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to update product settings');
+      },
+    });
   }
 }

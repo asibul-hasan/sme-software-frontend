@@ -16,6 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/accounting.models';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 
 interface ExpenseRow {
@@ -86,8 +87,8 @@ interface ExpenseRow {
               nzAllowClear
             >
               <nz-option nzValue="" nzLabel="All Categories"></nz-option>
-              @for (cat of categories; track cat) {
-                <nz-option [nzValue]="cat" [nzLabel]="cat"></nz-option>
+              @for (cat of categoriesList(); track cat.expense_category_no) {
+                <nz-option [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
               }
             </nz-select>
           </div>
@@ -226,8 +227,8 @@ interface ExpenseRow {
               </label>
               <div class="flex gap-1.5">
                 <nz-select [(ngModel)]="form.category" class="flex-1">
-                  @for (cat of categories; track cat) {
-                    <nz-option [nzValue]="cat" [nzLabel]="cat"></nz-option>
+                  @for (cat of categoriesList(); track cat.expense_category_no) {
+                    <nz-option [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
                   }
                 </nz-select>
                 <button
@@ -261,8 +262,8 @@ interface ExpenseRow {
               </label>
               <div class="flex gap-1.5">
                 <nz-select [(ngModel)]="form.account" class="flex-1">
-                  @for (acc of accounts; track acc) {
-                    <nz-option [nzValue]="acc" [nzLabel]="acc"></nz-option>
+                  @for (acc of accountsList(); track acc.account_no) {
+                    <nz-option [nzValue]="acc.account_name" [nzLabel]="acc.account_name"></nz-option>
                   }
                 </nz-select>
                 <button
@@ -362,14 +363,9 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   filterCategory = '';
   filterPayment = '';
 
-  categories: string[] = ['Rent', 'Salary', 'Utilities', 'Maintenance', 'Tea & Refreshment', 'Stationery'];
-  accounts: string[] = ['Counter Cash', 'Islami Bank', 'bKash Merchant', 'BRAC Bank', 'Dutch-Bangla Bank'];
-
-  expenses = signal<ExpenseRow[]>([
-    { id: '1', voucher: 'EXP-2026-042', date: '16-09-2026 09:00', creator: 'Admin', note: 'Monthly shop rent', category: 'Rent', account: 'Counter Cash', amount: 8000, payment: 'Cash' },
-    { id: '2', voucher: 'EXP-2026-041', date: '15-09-2026 11:30', creator: 'Admin', note: 'Electricity bill August', category: 'Utilities', account: 'Islami Bank', amount: 1200, payment: 'Bank' },
-    { id: '3', voucher: 'EXP-2026-040', date: '14-09-2026 14:00', creator: 'Sumon', note: 'Staff salary — Sep advance', category: 'Salary', account: 'bKash Merchant', amount: 22000, payment: 'MFS' },
-  ]);
+  categoriesList = signal<AccExpenseCategory[]>([]);
+  accountsList = signal<AccTransactionAccount[]>([]);
+  expenses = signal<ExpenseRow[]>([]);
 
   filteredExpenses = computed(() => {
     const cat = this.filterCategory;
@@ -395,8 +391,8 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   form = {
     id: '',
     voucher: '',
-    category: 'Rent',
-    account: 'Counter Cash',
+    category: '',
+    account: '',
     amount: 0,
     note: '',
   };
@@ -408,13 +404,19 @@ export class ExpensesComponent implements OnInit, OnDestroy {
 
     this.accountingService.getExpenseCategories().subscribe(res => {
       if (res.data?.length) {
-        this.categories = res.data.map(c => c.name);
+        this.categoriesList.set(res.data);
+        if (!this.form.category) {
+          this.form.category = res.data[0].name;
+        }
       }
     });
 
     this.accountingService.getAccounts().subscribe(res => {
       if (res.data?.length) {
-        this.accounts = res.data.map(a => a.account_name);
+        this.accountsList.set(res.data);
+        if (!this.form.account) {
+          this.form.account = res.data[0].account_name;
+        }
       }
     });
 
@@ -431,14 +433,29 @@ export class ExpensesComponent implements OnInit, OnDestroy {
 
   loadExpenses(): void {
     this.isLoading.set(true);
-    const params = {
-      fromDate: this.fromDate,
-      toDate: this.toDate,
-      category: this.filterCategory,
-      paymentType: this.filterPayment,
+    const params: Record<string, unknown> = {
+      pageIndex: 1,
+      pageSize: 50,
     };
+    if (this.fromDate) params['fromDate'] = this.fromDate;
+    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.filterCategory) params['search'] = this.filterCategory;
+    if (this.filterPayment) params['paymentType'] = this.filterPayment;
+
     this.accountingService.getExpenses(params).subscribe({
-      next: () => {
+      next: (res) => {
+        const items = res.data?.items || [];
+        this.expenses.set(items.map(e => ({
+          id: e.expense_no.toString(),
+          voucher: e.voucher_no || `EXP-${e.expense_no}`,
+          date: e.expense_date ? new Date(e.expense_date).toLocaleString('en-GB') : '',
+          creator: 'Admin',
+          note: e.note || 'Expense',
+          category: e.category_name || 'General Expense',
+          account: e.account_name || 'Cash',
+          amount: Number(e.amount) || 0,
+          payment: e.payment_method === 2 ? 'Bank' : e.payment_method === 4 ? 'MFS' : 'Cash',
+        })));
         this.isLoading.set(false);
       },
       error: () => {
@@ -461,9 +478,9 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     this.form = {
       id: '',
       voucher: '',
-      category: 'Utilities',
+      category: this.categoriesList().length > 0 ? this.categoriesList()[0].name : 'General',
       amount: 0,
-      account: 'Counter Cash',
+      account: this.accountsList().length > 0 ? this.accountsList()[0].account_name : 'Counter Cash',
       note: '',
     };
     this.isAddOpen = true;
@@ -474,25 +491,30 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       this.msg.error('Please enter a valid expense amount');
       return;
     }
-    const paymentType = this.form.account === 'Counter Cash' ? 'Cash' : this.form.account.includes('Bank') ? 'Bank' : 'MFS';
 
-    if (this.modalMode === 'create') {
-      const nextVoucher = `EXP-2026-0${this.expenses().length + 43}`;
-      const newExp: ExpenseRow = {
-        id: Date.now().toString(),
-        voucher: nextVoucher,
-        date: new Date().toLocaleDateString('en-GB') + ' 12:00',
-        creator: 'Admin',
-        note: this.form.note.trim() || 'General Expense',
-        category: this.form.category,
-        account: this.form.account,
-        amount: Number(this.form.amount),
-        payment: paymentType,
-      };
-      this.expenses.update(list => [newExp, ...list]);
-      this.msg.success(`Expense ${newExp.voucher} for ৳ ${newExp.amount.toLocaleString()} recorded!`);
-    }
-    this.isAddOpen = false;
+    const selectedCat = this.categoriesList().find(c => c.name === this.form.category);
+    const selectedAcc = this.accountsList().find(a => a.account_name === this.form.account);
+
+    const catNo = selectedCat ? selectedCat.expense_category_no : 1;
+    const accNo = selectedAcc ? selectedAcc.account_no : 1;
+    const methodCode = this.form.account.toLowerCase().includes('bank') ? 2 : this.form.account.toLowerCase().includes('bkash') ? 4 : 1;
+
+    this.accountingService.createExpense({
+      expense_category_no: catNo,
+      account_no: accNo,
+      amount: Number(this.form.amount),
+      note: this.form.note.trim() || undefined,
+      payment_method: methodCode,
+    }).subscribe({
+      next: () => {
+        this.msg.success(`Expense for ৳ ${Number(this.form.amount).toLocaleString()} recorded!`);
+        this.isAddOpen = false;
+        this.loadExpenses();
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to record expense');
+      },
+    });
   }
 
   openCatModal(): void {
@@ -506,12 +528,20 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       this.msg.error('Please enter category name');
       return;
     }
-    if (!this.categories.includes(name)) {
-      this.categories.push(name);
-      this.msg.success(`Expense category "${name}" added!`);
-    }
-    this.form.category = name;
-    this.isCatOpen = false;
+    this.accountingService.createExpenseCategory({ name }).subscribe({
+      next: (res) => {
+        const createdCategory = res.data;
+        if (createdCategory) {
+          this.categoriesList.update(list => [...list, createdCategory]);
+          this.form.category = createdCategory.name;
+          this.msg.success(`Expense category "${name}" added!`);
+        }
+        this.isCatOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add category');
+      },
+    });
   }
 
   saveAccount(): void {
@@ -520,12 +550,23 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       this.msg.error('Please enter account name');
       return;
     }
-    if (!this.accounts.includes(name)) {
-      this.accounts.push(name);
-      this.msg.success(`Account "${name}" added!`);
-    }
-    this.form.account = name;
-    this.isAccountOpen = false;
+    this.accountingService.createAccount({
+      account_name: name,
+      account_type: 2,
+    }).subscribe({
+      next: (res) => {
+        const createdAccount = res.data;
+        if (createdAccount) {
+          this.accountsList.update(list => [...list, createdAccount]);
+          this.form.account = createdAccount.account_name;
+          this.msg.success(`Account "${name}" added!`);
+        }
+        this.isAccountOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to add account');
+      },
+    });
   }
 
   viewExpense(e: ExpenseRow): void {

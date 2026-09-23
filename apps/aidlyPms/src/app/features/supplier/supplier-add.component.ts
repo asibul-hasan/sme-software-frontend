@@ -8,6 +8,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SupplierService } from '../../core/services/supplier.service';
 
 @Component({
   selector: 'app-supplier-add',
@@ -144,6 +145,7 @@ export class SupplierAddComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly supplierService = inject(SupplierService);
 
   name = '';
   phone = '';
@@ -170,7 +172,21 @@ export class SupplierAddComponent {
       return;
     }
 
-    this.msg.success(`Supplier "${this.name}" created successfully!`);
-    this.router.navigate(['/supplier/list']);
+    const fullPhone = `+880 ${this.phone.trim()}`;
+    const balance = this.dueEnabled ? Number(this.openingDue) || 0 : 0;
+    this.supplierService.createSupplier({
+      name: this.name.trim(),
+      phone: fullPhone,
+      current_due_balance: balance,
+      note: this.note.trim(),
+    }).subscribe({
+      next: () => {
+        this.msg.success(`Supplier "${this.name}" created successfully!`);
+        this.router.navigate(['/supplier/list']);
+      },
+      error: (err: any) => {
+        this.msg.error(err?.error?.message || 'Failed to create supplier');
+      },
+    });
   }
 }

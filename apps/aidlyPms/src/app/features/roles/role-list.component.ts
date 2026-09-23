@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -12,11 +12,14 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
+import { RoleService, SysRole } from '../../core/services/role.service';
 
 interface RoleRow {
   id: number;
   alias: string;
+  isSystem: boolean;
   permsCount: number;
+  permissions?: string[];
 }
 
 const MODULES = [
@@ -111,10 +114,15 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
               @for (r of filteredRoles(); track r.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="p-3 text-center font-mono text-xs text-slate-400">#{{ r.id }}</td>
-                  <td class="p-3 font-semibold text-slate-900">{{ r.alias }}</td>
+                  <td class="p-3 font-semibold text-slate-900">
+                    {{ r.alias }}
+                    @if (r.isSystem) {
+                      <nz-tag nzColor="blue" class="text-[10px] ml-2 font-mono">System</nz-tag>
+                    }
+                  </td>
                   <td class="p-3 text-center">
                     <nz-tag nzColor="cyan" class="font-mono text-xs font-semibold">
-                      {{ r.permsCount }} modules enabled
+                      {{ r.permsCount }} permissions enabled
                     </nz-tag>
                   </td>
                   <td class="p-3 text-center">
@@ -137,7 +145,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                       >
                         <span nz-icon nzType="copy"></span>
                       </button>
-                      @if (r.id > 3) {
+                      @if (!r.isSystem) {
                         <button
                           type="button"
                           (click)="deleteRole(r)"
@@ -151,6 +159,12 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                     </div>
                   </td>
                 </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="p-8 text-center text-slate-400 text-xs">
+                    No roles match your search query.
+                  </td>
+                </tr>
               }
             </tbody>
           </table>
@@ -159,127 +173,122 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
         <!-- Sticky Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
-            <span>System Roles: <strong class="text-slate-900 font-semibold font-mono">{{ filteredRoles().length }}</strong></span>
+            <span>Configured Roles: <strong class="text-slate-900 font-semibold font-mono">{{ filteredRoles().length }}</strong></span>
           </div>
-          <span class="text-slate-400 font-mono text-[11px]">RBAC Security Profiles</span>
+          <span class="text-slate-400 font-mono text-[11px]">Granular User Permission Control</span>
         </div>
       </div>
     </div>
 
-    <!-- Unified Add / Edit Role Modal with Permissions Matrix -->
+    <!-- Quick Add/Edit Role Modal -->
     <nz-modal
       [(nzVisible)]="isModalOpen"
-      [nzTitle]="modalMode === 'create' ? 'Add Role (SCR-39)' : ('Edit Role — ' + roleAlias)"
-      [nzOkText]="modalMode === 'create' ? 'Submit Role' : 'Save Changes'"
+      [nzTitle]="modalMode === 'create' ? 'Add Role' : 'Edit Role'"
+      [nzOkText]="modalMode === 'create' ? 'Create Role' : 'Save Changes'"
       (nzOnCancel)="isModalOpen = false"
       (nzOnOk)="saveRole()"
-      nzWidth="740px"
+      nzWidth="680px"
     >
       <ng-container *nzModalContent>
-        <div class="space-y-4 py-1 max-h-[70vh] overflow-y-auto pr-2">
+        <div class="space-y-4 py-1">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
-              Role Alias <span class="text-rose-500">*</span>
+              Role Alias / Name <span class="text-rose-500">*</span>
             </label>
             <input
               type="text"
               nz-input
-              placeholder="e.g. PMS Store Manager"
+              placeholder="e.g. Lead Pharmacist, Billing Associate"
               [(ngModel)]="roleAlias"
-              class="rounded-md max-w-sm"
+              class="rounded-md"
             />
           </div>
 
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">
-              Permissions Matrix
-            </span>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                (click)="grantAll()"
-                class="px-2 py-0.5 text-xs theme-btn-soft rounded border-0 cursor-pointer"
-              >
-                Select All Modules
-              </button>
-              <button
-                type="button"
-                (click)="revokeAll()"
-                class="px-2 py-0.5 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded border-0 cursor-pointer"
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            @for (mod of modules; track mod) {
-              <div class="border border-slate-200 rounded-lg overflow-hidden">
-                <div
-                  class="flex items-center justify-between px-3 py-2 cursor-pointer transition-colors"
-                  [ngClass]="hasAnyPermission(mod) ? 'theme-active-row' : 'bg-slate-50'"
-                  (click)="toggleGroup(mod)"
+          <div class="border-t border-slate-100 pt-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-semibold text-slate-800 text-xs">Permissions Matrix</span>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  (click)="grantAll()"
+                  class="px-2 py-0.5 text-xs theme-btn-soft rounded border-0 cursor-pointer"
                 >
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="w-2 h-2 rounded-full"
-                      [ngClass]="hasAllPermission(mod) ? 'theme-indicator-active' : hasAnyPermission(mod) ? 'bg-amber-400' : 'bg-slate-300'"
-                    ></span>
-                    <span class="text-xs font-semibold text-slate-700 font-mono">{{ mod }}</span>
-                  </div>
-
-                  <div class="flex items-center gap-3">
-                    <button
-                      type="button"
-                      (click)="$event.stopPropagation(); toggleModuleAll(mod)"
-                      class="text-xs theme-link border-0 bg-transparent cursor-pointer font-medium"
-                    >
-                      {{ hasAllPermission(mod) ? 'None' : 'All' }}
-                    </button>
-                    <span class="text-xs text-slate-400">
-                      {{ openGroups[mod] ? '▲' : '▼' }}
-                    </span>
-                  </div>
-                </div>
-
-                @if (openGroups[mod]) {
-                  <div class="px-4 py-2.5 bg-white grid grid-cols-4 gap-3 border-t border-slate-100">
-                    @for (op of ops; track op) {
-                      <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
-                        <input
-                          type="checkbox"
-                          [checked]="perms[mod][op]"
-                          (change)="toggleOp(mod, op)"
-                          class="theme-checkbox rounded"
-                        />
-                        <span>{{ op }}</span>
-                      </label>
-                    }
-                  </div>
-                }
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  (click)="revokeAll()"
+                  class="px-2 py-0.5 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded border-0 cursor-pointer"
+                >
+                  Clear All
+                </button>
               </div>
-            }
+            </div>
+
+            <div class="space-y-1.5 max-h-72 overflow-auto pr-1">
+              @for (mod of modules; track mod) {
+                <div class="border border-slate-200 rounded-md overflow-hidden text-xs">
+                  <div
+                    class="flex items-center justify-between px-3 py-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors"
+                    (click)="toggleGroup(mod)"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="w-2 h-2 rounded-full"
+                        [ngClass]="hasAllPermission(mod) ? 'theme-indicator-active' : hasAnyPermission(mod) ? 'bg-amber-400' : 'bg-slate-300'"
+                      ></span>
+                      <span class="font-medium text-slate-700 font-mono">{{ mod }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="$event.stopPropagation(); toggleModuleAll(mod)"
+                        class="text-[11px] theme-link border-0 bg-transparent cursor-pointer font-medium"
+                      >
+                        {{ hasAllPermission(mod) ? 'None' : 'All' }}
+                      </button>
+                      <span class="text-slate-400 text-[10px]">
+                        {{ openGroups[mod] ? '▲' : '▼' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (openGroups[mod]) {
+                    <div class="px-3 py-2 bg-white grid grid-cols-4 gap-2 border-t border-slate-100">
+                      @for (op of ops; track op) {
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-600">
+                          <input
+                            type="checkbox"
+                            [checked]="perms[mod][op]"
+                            (change)="toggleOp(mod, op)"
+                            class="theme-checkbox rounded"
+                          />
+                          <span>{{ op }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
         </div>
       </ng-container>
     </nz-modal>
   `,
 })
-export class RoleListComponent {
+export class RoleListComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
+  private readonly roleService = inject(RoleService);
 
   modules = MODULES;
   ops = OPS;
 
-  roles = signal<RoleRow[]>([
-    { id: 1, alias: 'PMS Manager', permsCount: 20 },
-    { id: 2, alias: 'PMS Salesman', permsCount: 8 },
-    { id: 3, alias: 'PMS Cashier', permsCount: 6 },
-    { id: 4, alias: 'Accountant', permsCount: 12 },
-  ]);
-
+  roles = signal<RoleRow[]>([]);
   searchQuery = signal('');
+
   filteredRoles = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return this.roles();
@@ -296,6 +305,30 @@ export class RoleListComponent {
 
   constructor() {
     this.initPerms();
+  }
+
+  ngOnInit(): void {
+    this.loadRoles();
+  }
+
+  loadRoles(): void {
+    this.roleService.getRoles().subscribe({
+      next: (res) => {
+        if (res.data) {
+          const rows: RoleRow[] = res.data.map(r => ({
+            id: r.role_no,
+            alias: r.alias,
+            isSystem: r.is_system,
+            permsCount: r.permissions?.length || 0,
+            permissions: r.permissions,
+          }));
+          this.roles.set(rows);
+        }
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to load roles');
+      },
+    });
   }
 
   private initPerms(): void {
@@ -359,13 +392,17 @@ export class RoleListComponent {
     this.selectedRoleId = r.id;
     this.roleAlias = r.alias;
     this.initPerms();
-    // mock some active perms for edit view
-    const count = r.permsCount;
-    for (let i = 0; i < count && i < MODULES.length; i++) {
-      const m = MODULES[i];
-      this.perms[m]['VIEW'] = true;
-      this.perms[m]['CREATE'] = true;
-      this.perms[m]['UPDATE'] = true;
+    if (r.permissions && r.permissions.length > 0) {
+      for (const pCode of r.permissions) {
+        const parts = pCode.split('_');
+        const op = parts[parts.length - 1];
+        for (const m of MODULES) {
+          const prefix = m.toUpperCase().replace(/-/g, '_');
+          if (pCode.startsWith(prefix) && this.perms[m]) {
+            this.perms[m][op] = true;
+          }
+        }
+      }
     }
     this.isModalOpen = true;
   }
@@ -376,50 +413,76 @@ export class RoleListComponent {
       return;
     }
 
-    let activeModules = 0;
+    const selectedCodes: string[] = [];
     for (const m of MODULES) {
-      if (this.hasAnyPermission(m)) activeModules++;
+      for (const op of OPS) {
+        if (this.perms[m]?.[op]) {
+          selectedCodes.push(`${m.toUpperCase().replace(/-/g, '_')}_${op}`);
+        }
+      }
     }
 
     if (this.modalMode === 'create') {
-      const nextId = Math.max(...this.roles().map(x => x.id), 0) + 1;
-      const newRole: RoleRow = {
-        id: nextId,
+      this.roleService.createRole({
         alias: this.roleAlias.trim(),
-        permsCount: activeModules || 5,
-      };
-      this.roles.update(list => [...list, newRole]);
-      this.msg.success(`Role "${newRole.alias}" created successfully!`);
+        is_system: false,
+        permissions: selectedCodes,
+      }).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Role "${this.roleAlias}" created successfully!`);
+          this.isModalOpen = false;
+          this.loadRoles();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to create role');
+        },
+      });
     } else {
-      this.roles.update(list =>
-        list.map(x =>
-          x.id === this.selectedRoleId
-            ? { ...x, alias: this.roleAlias.trim(), permsCount: activeModules }
-            : x
-        )
-      );
-      this.msg.success(`Role "${this.roleAlias}" updated!`);
+      this.roleService.updateRole(this.selectedRoleId, {
+        alias: this.roleAlias.trim(),
+        permissions: selectedCodes,
+      }).subscribe({
+        next: (res) => {
+          this.msg.success(res.message || `Role "${this.roleAlias}" updated!`);
+          this.isModalOpen = false;
+          this.loadRoles();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to update role');
+        },
+      });
     }
-    this.isModalOpen = false;
   }
 
   deleteRole(r: RoleRow): void {
     this.modal.confirmDelete(`Role "${r.alias}"`, 'This will delete the role definition.').subscribe(ok => {
       if (ok) {
-        this.roles.update(list => list.filter(item => item.id !== r.id));
-        this.msg.success(`Role "${r.alias}" removed.`);
+        this.roleService.deleteRole(r.id).subscribe({
+          next: () => {
+            this.msg.success(`Role "${r.alias}" removed.`);
+            this.loadRoles();
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete role');
+          },
+        });
       }
     });
   }
 
   cloneRole(r: RoleRow): void {
-    const nextId = Math.max(...this.roles().map(x => x.id), 0) + 1;
-    const clonedRole: RoleRow = {
-      id: nextId,
+    this.roleService.createRole({
       alias: r.alias + ' (Clone)',
-      permsCount: r.permsCount,
-    };
-    this.roles.update(list => [...list, clonedRole]);
-    this.msg.success(`Role "${r.alias}" cloned successfully!`);
+      is_system: false,
+      permissions: r.permissions || [],
+    }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Role "${r.alias}" cloned successfully!`);
+        this.loadRoles();
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to clone role');
+      },
+    });
   }
 }

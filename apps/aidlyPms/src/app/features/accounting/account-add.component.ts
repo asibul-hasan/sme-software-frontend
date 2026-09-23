@@ -8,6 +8,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { AccountingService } from '../../core/services/accounting.service';
 
 @Component({
   selector: 'app-account-add',
@@ -120,6 +121,7 @@ export class AccountAddComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
+  private readonly accountingService = inject(AccountingService);
 
   name = '';
   phone = '';
@@ -139,7 +141,35 @@ export class AccountAddComponent {
       this.msg.error('Please enter account name');
       return;
     }
-    this.msg.success(`Account "${this.name}" created successfully!`);
-    this.router.navigate(['/accounting/transaction']);
+
+    const typeCode = this.accountType.includes('Cash')
+      ? 1
+      : this.accountType.includes('Bank')
+      ? 2
+      : this.accountType.includes('bKash')
+      ? 4
+      : this.accountType.includes('Nagad')
+      ? 5
+      : 7;
+
+    const fullPhone = this.phone.trim() ? `+880 ${this.phone.trim()}` : undefined;
+
+    this.accountingService.createAccount({
+      account_name: this.name.trim(),
+      account_type: typeCode,
+      bank_name: this.accountType,
+      bank_account_number: this.accountType.includes('Bank') ? fullPhone : undefined,
+      phone_number: !this.accountType.includes('Bank') ? fullPhone : undefined,
+      opening_balance: Number(this.initialBalance) || 0,
+      current_balance: Number(this.initialBalance) || 0,
+    }).subscribe({
+      next: () => {
+        this.msg.success(`Account "${this.name}" created successfully!`);
+        this.router.navigate(['/accounting/transaction']);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to create account');
+      },
+    });
   }
 }

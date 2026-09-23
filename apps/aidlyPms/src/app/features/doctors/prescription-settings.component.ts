@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { DoctorService } from '../../core/services/doctor.service';
 
 @Component({
   selector: 'app-prescription-settings',
@@ -39,7 +40,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             class="theme-dropzone rounded-lg p-8 text-center cursor-pointer bg-slate-50"
           >
             @if (hasLogo) {
-              <p class="text-sm font-semibold theme-total-text mb-0">✓ Pharmacy Logo Uploaded: pharmacy_brand_logo.png</p>
+              <p class="text-sm font-semibold theme-total-text mb-0">✓ Pharmacy Logo Configured: pharmacy_brand_logo.png</p>
             } @else {
               <p class="text-sm text-slate-600 mb-1 font-medium">🖼 Click to upload pharmacy logo</p>
               <p class="text-xs text-slate-400 mb-0">PNG or JPG up to 2MB</p>
@@ -74,12 +75,29 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     </div>
   `,
 })
-export class PrescriptionSettingsComponent {
+export class PrescriptionSettingsComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
+  private readonly doctorService = inject(DoctorService);
 
   hasLogo = false;
   bottomText =
     'Working Hours: Sat–Thu 8am–10pm, Fri 4pm–10pm\nHotline: +880 1711-234567\nDrugs once sold cannot be refunded. Prescription required for scheduled narcotics & antibiotics.';
+
+  ngOnInit(): void {
+    this.doctorService.getPrescriptionSettings().subscribe({
+      next: (res) => {
+        if (res.data) {
+          if (res.data.prescription_bottom_row_text || (res.data as any).prescriptionBottomRowText) {
+            this.bottomText = res.data.prescription_bottom_row_text || (res.data as any).prescriptionBottomRowText;
+          }
+          if (res.data.clinic_logo_url || (res.data as any).clinicLogoUrl) {
+            this.hasLogo = true;
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
 
   resetDefault(): void {
     this.bottomText =
@@ -88,6 +106,16 @@ export class PrescriptionSettingsComponent {
   }
 
   saveSettings(): void {
-    this.msg.success('Prescription template settings saved successfully!');
+    this.doctorService.updatePrescriptionSettings({
+      prescription_bottom_row_text: this.bottomText,
+      clinic_logo_url: this.hasLogo ? 'assets/pharmacy_brand_logo.png' : undefined,
+    }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || 'Prescription template settings saved successfully!');
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to save prescription settings');
+      },
+    });
   }
 }

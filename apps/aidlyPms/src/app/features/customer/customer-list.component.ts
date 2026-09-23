@@ -16,6 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { CustomerService } from '../../core/services/customer.service';
+import { CustCustomer } from '../../core/models';
 
 interface CustomerRow {
   customer_no: number;
@@ -512,13 +513,7 @@ export class CustomerListComponent implements OnInit, OnDestroy {
     this.msg.success(`Customer type "${val}" added!`);
   }
 
-  customers = signal<CustomerRow[]>([
-    { customer_no: 1, name: 'Rafiqul Islam', phone: '+880 1711-234567', type: 'Regular', address: 'Cumilla Sadar', balance: 2400, points: 48, dueDate: '30-09-2026', gender: 'Male', isLoyalty: true },
-    { customer_no: 2, name: 'Dr. Karim Ahmed', phone: '+880 1811-345678', type: 'Doctor Referral', address: 'Dhaka, Gulshan', balance: 0, points: 120, dueDate: '—', gender: 'Male', isLoyalty: true },
-    { customer_no: 3, name: 'Meena Begum', phone: '+880 1611-456789', type: 'VIP', address: 'Cumilla, Muradnagar', balance: 5800, points: 210, dueDate: '15-10-2026', gender: 'Female', isLoyalty: true },
-    { customer_no: 4, name: 'Al-Amin Hossain', phone: '+880 1511-567890', type: 'Wholesale Client', address: 'Cumilla, Chandina', balance: 0, points: 0, dueDate: '—', gender: 'Male', isLoyalty: false },
-    { customer_no: 5, name: 'Shapna Akter', phone: '+880 1711-678901', type: 'Regular', address: 'Cumilla Sadar', balance: 800, points: 22, dueDate: '20-09-2026', gender: 'Female', isLoyalty: false },
-  ]);
+  customers = signal<CustomerRow[]>([]);
 
   filteredCustomers = computed(() => {
     const qName = this.searchName.trim().toLowerCase();
@@ -584,15 +579,33 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   loadCustomers(): void {
     this.isLoading.set(true);
-    const params: Record<string, unknown> = {};
+    const params: Record<string, unknown> = { pageSize: 100 };
     if (this.searchName.trim()) params['search'] = this.searchName.trim();
     if (this.searchPhone.trim()) params['phone'] = this.searchPhone.trim();
     if (this.filterType) params['type'] = this.filterType;
     if (this.dueOnly) params['dueOnly'] = true;
 
     this.customerService.getCustomers(params).subscribe({
-      next: () => {
+      next: (res) => {
         this.isLoading.set(false);
+        if (res.success && res.data) {
+          const mapped: CustomerRow[] = (res.data.items || []).map((c: any) => ({
+            customer_no: c.customer_no,
+            name: c.name,
+            phone: c.phone || '',
+            type: c.customer_type ? (c.customer_type === 2 ? 'Doctor Referral' : (c.customer_type === 3 ? 'VIP' : (c.customer_type === 4 ? 'Wholesale Client' : 'Regular'))) : 'Regular',
+            address: c.address || 'Local Area',
+            balance: c.total_due || 0,
+            points: c.loyalty_points || 0,
+            dueDate: c.due_date || '—',
+            gender: c.gender === 2 ? 'Female' : 'Male',
+            discountPercent: c.discount_percent || 0,
+            email: c.email || '',
+            note: c.notes || '',
+            isLoyalty: c.is_loyalty_member || false,
+          }));
+          this.customers.set(mapped);
+        }
       },
       error: () => {
         this.isLoading.set(false);
@@ -661,51 +674,50 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
     const fullPhone = `+880 ${this.form.phoneSuffix.trim()}`;
     const bal = this.form.dueEnabled ? Number(this.form.balance) || 0 : 0;
-    const due = this.form.dueEnabled && this.form.dueDate ? this.form.dueDate : '—';
+
+    const typeCode = this.form.type === 'Doctor Referral' ? 2 : (this.form.type === 'VIP' ? 3 : (this.form.type === 'Wholesale Client' ? 4 : 1));
+
+    const payload: Partial<CustCustomer> = {
+      name: this.form.name.trim(),
+      phone: fullPhone,
+      customer_type: typeCode,
+      address: this.form.address.trim() || 'Local Area',
+      total_due: bal,
+      gender: this.form.gender === 'Female' ? 2 : 1,
+      discount_percent: this.form.discountPercent,
+      email: this.form.email,
+      notes: this.form.note,
+      is_loyalty_member: this.form.isLoyalty,
+      is_active: true,
+    };
 
     if (this.modalMode === 'create') {
-      const nextId = Math.max(...this.customers().map(c => c.customer_no), 0) + 1;
-      const newCustomer: CustomerRow = {
-        customer_no: nextId,
-        name: this.form.name.trim(),
-        phone: fullPhone,
-        type: this.form.type,
-        address: this.form.address.trim() || 'Local Area',
-        balance: bal,
-        points: this.form.isLoyalty ? 10 : 0,
-        dueDate: due,
-        gender: this.form.gender,
-        discountPercent: this.form.discountPercent,
-        email: this.form.email,
-        note: this.form.note,
-        isLoyalty: this.form.isLoyalty,
-      };
-      this.customers.update(list => [...list, newCustomer]);
-      this.msg.success(`Customer "${newCustomer.name}" created!`);
+      this.customerService.createCustomer(payload).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.msg.success(`Customer "${this.form.name}" created!`);
+            this.isModalVisible = false;
+            this.loadCustomers();
+          } else {
+            this.msg.error(res.message || 'Failed to create customer');
+          }
+        },
+        error: (err) => this.msg.error(err?.error?.message || 'Failed to create customer'),
+      });
     } else {
-      this.customers.update(list =>
-        list.map(c =>
-          c.customer_no === this.form.customer_no
-            ? {
-                ...c,
-                name: this.form.name.trim(),
-                phone: fullPhone,
-                type: this.form.type,
-                address: this.form.address.trim(),
-                balance: bal,
-                dueDate: due,
-                gender: this.form.gender,
-                discountPercent: this.form.discountPercent,
-                email: this.form.email,
-                note: this.form.note,
-                isLoyalty: this.form.isLoyalty,
-              }
-            : c
-        )
-      );
-      this.msg.success(`Customer "${this.form.name}" updated!`);
+      this.customerService.updateCustomer(this.form.customer_no, payload).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.msg.success(`Customer "${this.form.name}" updated!`);
+            this.isModalVisible = false;
+            this.loadCustomers();
+          } else {
+            this.msg.error(res.message || 'Failed to update customer');
+          }
+        },
+        error: (err) => this.msg.error(err?.error?.message || 'Failed to update customer'),
+      });
     }
-    this.isModalVisible = false;
   }
 
   viewLedger(c: CustomerRow): void {
@@ -724,7 +736,6 @@ export class CustomerListComponent implements OnInit, OnDestroy {
       this.msg.error('Please enter a valid collection amount');
       return;
     }
-    const cId = this.activeCustomer.customer_no;
     const paid = this.collectAmount;
     const custName = this.activeCustomer.name;
     const custPhone = this.activeCustomer.phone;
@@ -738,15 +749,17 @@ export class CustomerListComponent implements OnInit, OnDestroy {
         note: `Counter collection from ${custName}`,
       })
       .subscribe({
-        next: () => {
-          this.customers.update(list =>
-            list.map(c => (c.customer_no === cId ? { ...c, balance: Math.max(0, c.balance - paid) } : c))
-          );
-          this.msg.success(`Collected ৳ ${paid.toLocaleString()} from ${custName}`);
-          this.isCollectOpen = false;
+        next: (res) => {
+          if (res.success) {
+            this.msg.success(`Collected ৳ ${paid.toLocaleString()} from ${custName}`);
+            this.isCollectOpen = false;
+            this.loadCustomers();
+          } else {
+            this.msg.error(res.message || 'Failed to record collection');
+          }
         },
-        error: () => {
-          this.msg.error('Failed to record collection');
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to record collection');
         },
       });
   }
@@ -759,8 +772,17 @@ export class CustomerListComponent implements OnInit, OnDestroy {
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.customers.update(list => list.filter(item => item.customer_no !== c.customer_no));
-        this.msg.success(`Customer "${c.name}" deleted successfully`);
+        this.customerService.deleteCustomer(c.customer_no).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.msg.success(`Customer "${c.name}" deleted successfully`);
+              this.loadCustomers();
+            } else {
+              this.msg.error(res.message || 'Failed to delete customer');
+            }
+          },
+          error: (err) => this.msg.error(err?.error?.message || 'Failed to delete customer'),
+        });
       }
     });
   }
