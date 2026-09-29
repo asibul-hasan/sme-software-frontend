@@ -84,4 +84,9 @@ export class SupplierService {
   createSupplierPayment(payload: { supplier_no: number; amount: number; payment_method: number; note?: string; account_no?: number }): Observable<ApiResponse<PurSupplierPayment>> {
     return this.api.post<PurSupplierPayment>('pur/payments', payload);
   }
+
+  getSupplierLedger(supplierNo: number): Observable<ApiResponse<any>> {
+    return this.api.get<any>(`pur/suppliers/${supplierNo}/ledger`);
+  }
 }
+

@@ -112,6 +112,9 @@ interface CustomerRow {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportCustomersCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="default" routerLink="/customer/add" class="rounded-md">
             <span nz-icon nzType="user-add"></span> Customer Form
           </a>
@@ -119,6 +122,7 @@ interface CustomerRow {
             <span nz-icon nzType="plus"></span> Add Customer (F2)
           </button>
         </div>
+
       </app-page-header>
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
@@ -480,7 +484,95 @@ interface CustomerRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Customer Ledger Modal -->
+    <nz-modal
+      [(nzVisible)]="isLedgerModalVisible"
+      [nzTitle]="'Customer Ledger: ' + (activeLedgerCustomer?.name || '')"
+      [nzFooter]="ledgerFooter"
+      (nzOnCancel)="isLedgerModalVisible = false"
+      nzWidth="780px"
+    >
+      <ng-container *nzModalContent>
+        @if (activeLedgerCustomer) {
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
+              <div>
+                <span class="text-slate-400 block">Phone:</span>
+                <span class="font-bold text-slate-800">{{ activeLedgerCustomer.phone }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Customer Type:</span>
+                <nz-tag nzColor="blue">{{ activeLedgerCustomer.type || 'Regular' }}</nz-tag>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Current Due:</span>
+                <span class="font-bold text-rose-600 font-mono text-sm">৳ {{ (activeLedgerCustomer.balance || 0) | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Loyalty Points:</span>
+                <span class="font-bold text-amber-600 font-mono text-sm">{{ activeLedgerCustomer.points || 0 }} pts</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-xs text-slate-700 uppercase tracking-wider">Statement of Accounts</span>
+                <span class="text-xs text-slate-400">{{ customerLedgerEntries.length }} transaction(s)</span>
+              </div>
+              <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto">
+                <table class="w-full text-xs text-left">
+                  <thead class="sticky top-0 bg-slate-100 text-slate-600 font-semibold border-b border-slate-200 shadow-xs">
+                    <tr>
+                      <th class="p-2">Date</th>
+                      <th class="p-2">Doc #</th>
+                      <th class="p-2">Type</th>
+                      <th class="p-2 text-right">Debit (৳)</th>
+                      <th class="p-2 text-right">Credit (৳)</th>
+                      <th class="p-2 text-right">Balance (৳)</th>
+                      <th class="p-2">Method / Note</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (entry of customerLedgerEntries; track (entry.doc_no + entry.doc_date)) {
+                      <tr>
+                        <td class="p-2 text-slate-600 font-mono">{{ entry.doc_date | date:'dd/MM/yy hh:mm a' }}</td>
+                        <td class="p-2 font-mono font-semibold text-slate-800">{{ entry.doc_no }}</td>
+                        <td class="p-2">
+                          <nz-tag [nzColor]="entry.doc_type === 'Sale Invoice' ? 'orange' : 'green'">
+                            {{ entry.doc_type }}
+                          </nz-tag>
+                        </td>
+                        <td class="p-2 text-right font-mono">{{ entry.debit > 0 ? (entry.debit | number:'1.2-2') : '—' }}</td>
+                        <td class="p-2 text-right font-mono text-emerald-600 font-semibold">{{ entry.credit > 0 ? (entry.credit | number:'1.2-2') : '—' }}</td>
+                        <td class="p-2 text-right font-mono font-bold" [ngClass]="entry.balance > 0 ? 'text-rose-600' : 'text-emerald-700'">
+                          ৳ {{ entry.balance | number:'1.2-2' }}
+                        </td>
+                        <td class="p-2 text-slate-500 text-[11px] truncate max-w-[150px]">{{ entry.note || entry.payment_method || '—' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" class="p-6 text-center text-slate-400">
+                          {{ isLoadingLedger ? 'Loading ledger transactions...' : 'No ledger transactions recorded for this customer.' }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #ledgerFooter>
+        <button nz-button nzType="default" (click)="isLedgerModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="printCustomerStatement()">
+          <span nz-icon nzType="printer"></span> Print Statement
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
+
 })
 export class CustomerListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
@@ -495,6 +587,11 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   filterType = '';
   dueOnly = false;
   customerTypes = ['Regular', 'Wholesale Client', 'VIP', 'Staff', 'Doctor Referral'];
+
+  activeLedgerCustomer: CustomerRow | null = null;
+  customerLedgerEntries: any[] = [];
+  isLoadingLedger = false;
+  isLedgerModalVisible = false;
 
   isAddCustomerTypeOpen = false;
   newCustomerTypeName = '';
@@ -721,7 +818,53 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   viewLedger(c: CustomerRow): void {
-    this.msg.info(`Viewing customer ledger for ${c.name}`);
+    this.activeLedgerCustomer = c;
+    this.isLedgerModalVisible = true;
+    this.isLoadingLedger = true;
+    this.customerLedgerEntries = [];
+    this.customerService.getCustomerLedger(c.customer_no).subscribe({
+      next: (res) => {
+        this.isLoadingLedger = false;
+        if (res.success && res.data?.ledger) {
+          this.customerLedgerEntries = res.data.ledger;
+        }
+      },
+      error: () => {
+        this.isLoadingLedger = false;
+      }
+    });
+  }
+
+  printCustomerStatement(): void {
+    window.print();
+  }
+
+  exportCustomersCsv(): void {
+    const list = this.filteredCustomers();
+    if (!list.length) {
+      this.msg.warning('No customer records to export.');
+      return;
+    }
+    const headers = ['Customer Name', 'Phone', 'Type', 'Address', 'Current Due (৳)', 'Loyalty Points'];
+    const rows = list.map(c => [
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${c.phone || ''}"`,
+      `"${c.type || ''}"`,
+      `"${(c.address || '').replace(/"/g, '""')}"`,
+      (c.balance || 0).toFixed(2),
+      c.points || 0
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `customer_directory_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} customers to CSV`);
   }
 
   openCollectModal(c: CustomerRow): void {

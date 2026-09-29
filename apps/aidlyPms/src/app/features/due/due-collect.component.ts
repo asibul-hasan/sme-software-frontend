@@ -101,6 +101,11 @@ interface PaidRecord {
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
+        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportDueCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
+        </div>
       </app-page-header>
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
@@ -360,6 +365,61 @@ interface PaidRecord {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Money Receipt Modal for Due Settlement -->
+    <nz-modal
+      [(nzVisible)]="isReceiptModalOpen"
+      nzTitle="Due Collection Money Receipt"
+      [nzFooter]="receiptFooter"
+      (nzOnCancel)="isReceiptModalOpen = false"
+      nzWidth="550px"
+      [nzStyle]="{ top: '30px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedPaid) {
+          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+            <div class="text-center border-b pb-3 border-slate-200">
+              <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
+              <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
+              <div class="inline-block mt-1 px-3 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded border border-emerald-200">
+                CUSTOMER DUE SETTLEMENT RECEIPT
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Money Receipt #:</span> <strong class="font-mono text-slate-900 ml-1">{{ selectedPaid.receipt }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Date:</span> <span class="font-mono text-slate-800 ml-1">{{ todayFormatted }}</span></div>
+              <div><span class="text-slate-400">Customer:</span> <strong class="text-slate-900 ml-1">{{ selectedPaid.customer }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Phone:</span> <span class="font-mono text-slate-800 ml-1">{{ selectedPaid.phone }}</span></div>
+              <div><span class="text-slate-400">Payment Mode:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedPaid.method }}</span></div>
+              <div class="text-right"><span class="text-slate-400">Status:</span> <span class="text-emerald-600 font-bold ml-1">Collected & Settled</span></div>
+              <div class="col-span-2"><span class="text-slate-400">Narration:</span> <span class="text-slate-800 ml-1">{{ selectedPaid.note }}</span></div>
+            </div>
+
+            <div class="bg-emerald-50/50 border border-emerald-200 rounded-md p-3 flex justify-between items-center">
+              <div>
+                <span class="text-xs font-semibold uppercase text-emerald-800 block">Total Due Collected</span>
+                <span class="text-xs text-slate-500 italic">Balance cleared against customer profile</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xl font-bold font-mono text-emerald-700">৳ {{ selectedPaid.amount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 pt-8 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Customer Signature</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Authorized Cashier Signature</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #receiptFooter>
+        <button nz-button nzType="default" (click)="isReceiptModalOpen = false">Close</button>
+        <button nz-button nzType="primary" (click)="triggerPrint()">
+          <span nz-icon nzType="printer"></span> Print Receipt
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class DueCollectComponent implements OnInit, OnDestroy {
@@ -575,7 +635,72 @@ export class DueCollectComponent implements OnInit, OnDestroy {
     this.isSmsOpen = false;
   }
 
+  isReceiptModalOpen = false;
+  selectedPaid: PaidRecord | null = null;
+  todayFormatted = new Date().toLocaleDateString('en-GB');
+
   printPaidReceipt(p: PaidRecord): void {
-    this.msg.success(`Printing money receipt for ${p.receipt}`);
+    this.selectedPaid = p;
+    this.isReceiptModalOpen = true;
+  }
+
+  triggerPrint(): void {
+    window.print();
+  }
+
+  exportDueCsv(): void {
+    if (this.activeTab === 3) {
+      // Export Paid List
+      const list = this.filteredPaid();
+      if (!list.length) {
+        this.msg.warning('No paid records to export.');
+        return;
+      }
+      const headers = ['SL', 'Customer', 'Phone', 'Receipt #', 'Payment Method', 'Amount (BDT)', 'Note'];
+      const rows = list.map((p, i) => [
+        i + 1,
+        `"${p.customer}"`,
+        `"${p.phone}"`,
+        `"${p.receipt}"`,
+        `"${p.method}"`,
+        p.amount.toFixed(2),
+        `"${(p.note || '').replace(/"/g, '""')}"`
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `due_collections_paid_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      this.msg.success(`Exported ${list.length} payment receipts.`);
+    } else {
+      // Export Due List
+      const list = this.filteredDue();
+      if (!list.length) {
+        this.msg.warning('No outstanding due records to export.');
+        return;
+      }
+      const headers = ['SL', 'Customer', 'Phone', 'Invoice #', 'Sale Date', 'Due Date', 'Outstanding Due (BDT)'];
+      const rows = list.map((d, i) => [
+        i + 1,
+        `"${d.customer}"`,
+        `"${d.phone}"`,
+        `"${d.inv}"`,
+        `"${d.saleDate}"`,
+        `"${d.dueDate}"`,
+        d.amount.toFixed(2)
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `customer_due_outstanding_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      this.msg.success(`Exported ${list.length} overdue records.`);
+    }
   }
 }

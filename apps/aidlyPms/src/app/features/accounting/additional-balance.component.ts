@@ -56,6 +56,9 @@ interface BalanceEntry {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportBalancesCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Balance
           </button>
@@ -192,6 +195,59 @@ interface BalanceEntry {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Capital Voucher Modal -->
+    <nz-modal
+      [(nzVisible)]="isVoucherModalOpen"
+      nzTitle="Owner Capital Investment Voucher"
+      [nzFooter]="voucherFooter"
+      (nzOnCancel)="isVoucherModalOpen = false"
+      nzWidth="580px"
+      [nzStyle]="{ top: '30px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedBalance) {
+          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+            <div class="text-center border-b pb-3 border-slate-200">
+              <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
+              <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
+              <div class="inline-block mt-1 px-3 py-0.5 bg-purple-50 text-purple-700 font-bold text-xs rounded border border-purple-200">
+                CAPITAL INJECTION / CREDIT VOUCHER
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Voucher Ref:</span> <strong class="font-mono text-slate-900 ml-1">{{ selectedBalance.ref }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Date:</span> <span class="font-mono text-slate-800 ml-1">{{ selectedBalance.date }}</span></div>
+              <div><span class="text-slate-400">Target Account:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedBalance.account }}</span></div>
+              <div class="text-right"><span class="text-slate-400">Recorded By:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedBalance.user }}</span></div>
+              <div class="col-span-2"><span class="text-slate-400">Narration / Note:</span> <span class="text-slate-800 ml-1">{{ selectedBalance.note }}</span></div>
+            </div>
+
+            <div class="bg-purple-50/50 border border-purple-200 rounded-md p-3 flex justify-between items-center">
+              <div>
+                <span class="text-xs font-semibold uppercase text-purple-800 block">Total Capital Injected</span>
+                <span class="text-xs text-slate-400 italic">Credited into {{ selectedBalance.account }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xl font-bold font-mono text-purple-700">৳ {{ selectedBalance.amount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 pt-8 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Investor / Owner Signature</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Managing Pharmacist Signature</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #voucherFooter>
+        <button nz-button nzType="default" (click)="isVoucherModalOpen = false">Close</button>
+        <button nz-button nzType="primary" (click)="triggerPrint()">
+          <span nz-icon nzType="printer"></span> Print Voucher
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class AdditionalBalanceComponent implements OnInit {
@@ -304,8 +360,43 @@ export class AdditionalBalanceComponent implements OnInit {
     });
   }
 
+  isVoucherModalOpen = false;
+  selectedBalance: BalanceEntry | null = null;
+
   viewDetails(b: BalanceEntry): void {
-    this.msg.info(`${b.ref}: ৳ ${b.amount.toLocaleString()} (${b.note})`);
+    this.selectedBalance = b;
+    this.isVoucherModalOpen = true;
+  }
+
+  triggerPrint(): void {
+    window.print();
+  }
+
+  exportBalancesCsv(): void {
+    const list = this.balances();
+    if (!list.length) {
+      this.msg.warning('No capital injection entries to export.');
+      return;
+    }
+    const headers = ['SL', 'Voucher Ref', 'Date', 'Target Account', 'Recorded By', 'Amount (BDT)', 'Note'];
+    const rows = list.map((b, i) => [
+      i + 1,
+      `"${b.ref}"`,
+      `"${b.date}"`,
+      `"${b.account}"`,
+      `"${b.user}"`,
+      b.amount.toFixed(2),
+      `"${(b.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `capital_injections_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} capital entries.`);
   }
 
   deleteEntry(b: BalanceEntry): void {

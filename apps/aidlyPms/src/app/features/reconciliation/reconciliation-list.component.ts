@@ -106,6 +106,9 @@ interface ReconcileRecord {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportTransfersCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="default" routerLink="/reconciliation/add" class="rounded-md">
             <span nz-icon nzType="plus"></span> Transfer Form
           </a>
@@ -262,6 +265,76 @@ interface ReconcileRecord {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Fund Transfer Voucher Modal -->
+    <nz-modal
+      [(nzVisible)]="isVoucherModalOpen"
+      nzTitle="Fund Transfer & Reconciliation Voucher"
+      [nzFooter]="voucherFooter"
+      (nzOnCancel)="isVoucherModalOpen = false"
+      nzWidth="600px"
+      [nzStyle]="{ top: '30px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedRecord) {
+          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+            <div class="text-center border-b pb-3 border-slate-200">
+              <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
+              <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
+              <div class="inline-block mt-1 px-3 py-0.5 bg-blue-50 text-blue-700 font-bold text-xs rounded border border-blue-200">
+                INTER-ACCOUNT TRANSFER VOUCHER
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Voucher No:</span> <strong class="font-mono text-slate-900 ml-1">{{ selectedRecord.voucher }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Date:</span> <span class="font-mono text-slate-800 ml-1">{{ selectedRecord.date }}</span></div>
+              <div><span class="text-slate-400">Transferred By:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedRecord.by }}</span></div>
+              <div class="text-right"><span class="text-slate-400">Status:</span> <span class="text-emerald-600 font-bold ml-1">Settled & Balanced</span></div>
+            </div>
+
+            <!-- Transfer Direction Box -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <div>
+                  <span class="text-[10px] uppercase font-semibold text-rose-600 block">Debited From (Source)</span>
+                  <strong class="text-slate-900 text-sm">{{ selectedRecord.from }}</strong>
+                </div>
+                <div class="text-slate-400 px-3">
+                  <span nz-icon nzType="arrow-right" class="text-lg text-blue-600"></span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] uppercase font-semibold text-emerald-600 block">Credited To (Destination)</span>
+                  <strong class="text-slate-900 text-sm">{{ selectedRecord.to }}</strong>
+                </div>
+              </div>
+              <div class="border-t border-slate-200 pt-2 flex justify-between items-center">
+                <span class="text-xs text-slate-500">Transfer Amount:</span>
+                <span class="text-lg font-bold font-mono text-blue-700">৳ {{ selectedRecord.amount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            @if (selectedRecord.note) {
+              <div class="text-xs bg-amber-50/50 p-2.5 rounded border border-amber-200/50">
+                <span class="text-amber-800 font-semibold">Note / Remarks:</span>
+                <span class="text-slate-700 ml-1">{{ selectedRecord.note }}</span>
+              </div>
+            }
+
+            <div class="grid grid-cols-2 gap-8 pt-8 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Transferred By Signature</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Verified & Approved By</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #voucherFooter>
+        <button nz-button nzType="default" (click)="isVoucherModalOpen = false">Close</button>
+        <button nz-button nzType="primary" (click)="triggerPrint()">
+          <span nz-icon nzType="printer"></span> Print Voucher
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class ReconciliationListComponent implements OnInit {
@@ -398,12 +471,52 @@ export class ReconciliationListComponent implements OnInit {
     });
   }
 
+  isVoucherModalOpen = false;
+  selectedRecord: ReconcileRecord | null = null;
+
   viewVoucher(r: ReconcileRecord): void {
-    this.msg.info(`${r.voucher}: ${r.from} -> ${r.to} (৳ ${r.amount.toLocaleString()})`);
+    this.selectedRecord = r;
+    this.isVoucherModalOpen = true;
   }
 
   printVoucher(r: ReconcileRecord): void {
-    this.msg.success(`Printing reconciliation voucher ${r.voucher}`);
+    this.selectedRecord = r;
+    this.isVoucherModalOpen = true;
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  }
+
+  triggerPrint(): void {
+    window.print();
+  }
+
+  exportTransfersCsv(): void {
+    const list = this.records();
+    if (!list.length) {
+      this.msg.warning('No reconciliation transfers to export.');
+      return;
+    }
+    const headers = ['SL', 'Voucher #', 'Date', 'Transferred By', 'Source Account', 'Destination Account', 'Amount (BDT)', 'Note'];
+    const rows = list.map((r, i) => [
+      i + 1,
+      `"${r.voucher}"`,
+      `"${r.date}"`,
+      `"${r.by}"`,
+      `"${r.from}"`,
+      `"${r.to}"`,
+      r.amount.toFixed(2),
+      `"${(r.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transfers_reconciliation_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} reconciliation vouchers.`);
   }
 
   deleteVoucher(r: ReconcileRecord): void {

@@ -64,4 +64,9 @@ export class PosSaleService {
   getSaleReturns(params?: Record<string, unknown> | RequestOptions): Observable<ApiResponse<PagedResult<SaleReturnRecord>>> {
     return this.api.getPaged<SaleReturnRecord>('pos/sales/returns', params);
   }
+
+  voidSale(saleInvoiceNo: number): Observable<ApiResponse<boolean>> {
+    return this.api.delete<boolean>(`pos/sales/${saleInvoiceNo}`);
+  }
 }
+

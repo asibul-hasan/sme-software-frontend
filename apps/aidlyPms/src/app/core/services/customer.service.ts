@@ -56,4 +56,9 @@ export class CustomerService {
   getDueHistory(params?: Record<string, unknown>): Observable<ApiResponse<Record<string, unknown>[]>> {
     return this.api.get<Record<string, unknown>[]>('cust/dues/history', params);
   }
+
+  getCustomerLedger(customerNo: number): Observable<ApiResponse<any>> {
+    return this.api.get<any>(`cust/customers/${customerNo}/ledger`);
+  }
 }
+

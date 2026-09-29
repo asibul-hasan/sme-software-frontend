@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy, HostListener, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -27,6 +27,7 @@ import { PosSaleService } from '../../core/services/pos-sale.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 
 interface CartItem {
+  cart_item_id?: number;
   product_no: number;
   product_name: string;
   generic_name: string;
@@ -38,6 +39,25 @@ interface CartItem {
   discount: number;
   discount_type: number; // 1: %, 2: Flat
   total: number;
+  stock?: number;
+  rak?: string;
+  barcode?: string;
+}
+
+interface CatalogProduct {
+  id: number;
+  name: string;
+  generic: string;
+  manufacturer: string;
+  cost: number;
+  saleRetail: number;
+  saleWholesale: number;
+  pcsPerBox: number;
+  stock: number;
+  minStock: number;
+  rak: string;
+  barcode: string;
+  strength: string;
 }
 
 interface SplitPayment {
@@ -82,6 +102,27 @@ interface CustomerOption {
     NzTooltipModule,
     PageHeaderComponent,
   ],
+  styles: [`
+    ::ng-deep .product-search-dropdown {
+      min-width: 480px !important;
+    }
+    ::ng-deep .product-search-dropdown .cdk-virtual-scroll-viewport {
+      min-height: 280px !important;
+      max-height: 320px !important;
+      height: 285px !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item {
+      min-height: 56px !important;
+      height: 56px !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      align-items: center !important;
+      padding: 4px 10px !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-content {
+      width: 100% !important;
+    }
+  `],
   template: `
     <div class="h-[calc(100vh-100px)] flex flex-col space-y-3">
       <!-- Header Bar -->
@@ -183,28 +224,109 @@ interface CustomerOption {
         <!-- LEFT PANEL: Entry Card + Cart Items Table -->
         <div class="lg:col-span-8 flex flex-col gap-3 min-h-0">
           
+          <!-- Fast-Moving OTC Quick-Pick Bar -->
+          @if (fastMovingProducts().length > 0) {
+            <div class="bg-white rounded-xl border border-slate-200 shadow-2xs px-3.5 py-2 flex items-center gap-2 overflow-x-auto">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 shrink-0">
+                <span nz-icon nzType="thunderbolt" class="text-amber-500"></span>
+                <span>Fast Pick OTC:</span>
+              </div>
+              <div class="flex items-center gap-1.5 flex-nowrap">
+                @for (otc of fastMovingProducts(); track otc.id) {
+                  <button
+                    type="button"
+                    (click)="quickAddProductToCart(otc)"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 transition-all cursor-pointer shrink-0 group select-none"
+                    nz-tooltip
+                    [nzTooltipTitle]="'Available: ' + getAvailableStock(otc) + ' pcs (Total: ' + otc.stock + ')' + ' | Rak: ' + (otc.rak || 'N/A') + ' | Click to add 1 pcs'"
+                  >
+                    <span class="font-semibold text-slate-900 group-hover:text-indigo-600">{{ otc.name }}</span>
+                    @if (otc.strength) {
+                      <span class="text-[10px] text-slate-400 font-normal">({{ otc.strength }})</span>
+                    }
+                    <span class="font-mono text-[11px] font-bold text-emerald-700">৳{{ isWholesale() ? otc.saleWholesale : otc.saleRetail }}</span>
+                    <span
+                      class="text-[10px] px-1.5 py-0.2 rounded font-bold"
+                      [class.bg-emerald-100]="getAvailableStock(otc) > otc.minStock"
+                      [class.text-emerald-800]="getAvailableStock(otc) > otc.minStock"
+                      [class.bg-amber-100]="getAvailableStock(otc) > 0 && getAvailableStock(otc) <= otc.minStock"
+                      [class.text-amber-800]="getAvailableStock(otc) > 0 && getAvailableStock(otc) <= otc.minStock"
+                      [class.bg-rose-100]="getAvailableStock(otc) <= 0"
+                      [class.text-rose-800]="getAvailableStock(otc) <= 0"
+                    >
+                      {{ getAvailableStock(otc) }} pcs
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Product Entry Card -->
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3.5">
             <div class="grid grid-cols-12 gap-3 items-end">
               <!-- Product Search / Select -->
               <div class="col-span-12 md:col-span-4">
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                  Product <span class="text-rose-500">*</span>
-                </label>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs font-semibold text-slate-700">
+                    Product / Medicine <span class="text-rose-500">*</span>
+                  </label>
+                  <span class="text-[10px] text-slate-400 font-medium">Press F1 to search</span>
+                </div>
                 <nz-select
                   nzShowSearch
-                  nzPlaceHolder="Select Product..."
+                  nzPlaceHolder="Search name, generic, barcode (F1)..."
                   [(ngModel)]="selectedProductText"
                   (ngModelChange)="onProductPicked($event)"
                   (nzOnSearch)="onProductSearch($event)"
                   (keyup.enter)="onProductEnterKey()"
+                  [nzOptionHeightPx]="56"
+                  [nzOptionOverflowSize]="5"
+                  nzDropdownClassName="product-search-dropdown"
+                  [nzDropdownStyle]="{ 'min-height': '280px', 'max-height': '320px' }"
                   class="w-full"
                 >
-                  @for (p of catalogProducts; track p.id) {
+                  @for (p of catalogProducts(); track p.id) {
                     <nz-option
                       [nzValue]="p.name"
-                      [nzLabel]="p.name + ' (' + p.generic + ')'"
-                    ></nz-option>
+                      [nzLabel]="p.name + (p.strength ? ' ' + p.strength : '') + ' • Avail: ' + getAvailableStock(p) + ' pcs' + (p.rak ? ' [Rak: ' + p.rak + ']' : '')"
+                      nzCustomContent
+                    >
+                      <div class="h-[48px] flex items-center justify-between border-b border-slate-100 last:border-0 w-full">
+                        <div class="flex-1 min-w-0 pr-2">
+                          <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs truncate">
+                            <span>{{ p.name }}</span>
+                            @if (p.strength) {
+                              <span class="text-[10px] text-slate-500 font-normal">({{ p.strength }})</span>
+                            }
+                          </div>
+                          <div class="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                            <span class="truncate">{{ p.generic }}</span>
+                            @if (p.rak) {
+                              <span class="text-indigo-600 bg-indigo-50 px-1 rounded text-[10px] font-medium shrink-0">📍 Rak: {{ p.rak }}</span>
+                            }
+                          </div>
+                        </div>
+                        <div class="text-right shrink-0 flex flex-col items-end">
+                          <div class="font-mono font-bold text-xs text-slate-800">
+                            ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
+                          </div>
+                          @if (getAvailableStock(p) <= 0) {
+                            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-800">
+                              Out of Stock
+                            </span>
+                          } @else if (getAvailableStock(p) <= p.minStock) {
+                            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                              Low: {{ getAvailableStock(p) }} pcs
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              Avail: {{ getAvailableStock(p) }} pcs
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </nz-option>
                   }
                 </nz-select>
               </div>
@@ -292,6 +414,57 @@ interface CustomerOption {
                   }
                 </button>
               </div>
+
+              <!-- Selected Product Live Stock & Location Info Banner -->
+              @if (selectedProductObj) {
+                <div
+                  class="col-span-12 mt-1 p-2.5 rounded-lg border flex flex-wrap items-center justify-between gap-2 text-xs transition-all"
+                  [class.bg-emerald-50/60]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
+                  [class.border-emerald-200]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
+                  [class.bg-amber-50/60]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
+                  [class.border-amber-200]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
+                  [class.bg-rose-50/60]="getAvailableStock(selectedProductObj) <= 0"
+                  [class.border-rose-200]="getAvailableStock(selectedProductObj) <= 0"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-900">{{ selectedProductObj.name }}</span>
+                    @if (selectedProductObj.strength) {
+                      <span class="text-slate-500 font-medium">({{ selectedProductObj.strength }})</span>
+                    }
+                    <span class="text-slate-500">• {{ selectedProductObj.generic }}</span>
+                    @if (selectedProductObj.rak) {
+                      <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded text-[11px]">
+                        📍 Shelf / Rak: {{ selectedProductObj.rak }}
+                      </span>
+                    }
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-600 font-medium">Available Stock:</span>
+                      <span
+                        class="font-mono font-black text-sm"
+                        [class.text-emerald-700]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
+                        [class.text-amber-700]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
+                        [class.text-rose-700]="getAvailableStock(selectedProductObj) <= 0"
+                      >
+                        {{ getAvailableStock(selectedProductObj) }} pcs
+                      </span>
+                      <span class="text-[11px] text-slate-500">
+                        ({{ Math.floor(getAvailableStock(selectedProductObj) / (selectedProductObj.pcsPerBox || 10)) }} box + {{ getAvailableStock(selectedProductObj) % (selectedProductObj.pcsPerBox || 10) }} pcs)
+                      </span>
+                    </div>
+                    @if (getAvailableStock(selectedProductObj) <= 0) {
+                      <span class="bg-rose-600 text-white font-bold text-[10px] px-2 py-0.5 rounded">
+                        ⚠️ OUT OF STOCK
+                      </span>
+                    } @else if (entryQty > getAvailableStock(selectedProductObj)) {
+                      <span class="bg-amber-500 text-white font-bold text-[10px] px-2 py-0.5 rounded">
+                        ⚠️ Requested qty ({{ entryQty }}) exceeds available ({{ getAvailableStock(selectedProductObj) }} pcs)
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
             </div>
           </div>
 
@@ -358,7 +531,7 @@ interface CustomerOption {
 
                   <!-- Table Body -->
                   <tbody class="divide-y divide-slate-100 text-slate-800">
-                    @for (item of cart(); track item.product_no; let idx = $index) {
+                    @for (item of cart(); track (item.cart_item_id || item.product_no); let idx = $index) {
                       <tr
                         class="hover:bg-slate-50/70 transition-colors"
                         [class.bg-rose-50/30]="isWholesale()"
@@ -366,10 +539,23 @@ interface CustomerOption {
                         <!-- Details -->
                         <td class="p-3">
                           <p class="font-bold text-slate-900 m-0 text-xs">{{ item.product_name }}</p>
-                          <div class="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                          <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
                             <span>{{ item.generic_name }}</span>
                             @if (item.manufacturer) {
                               <span>• {{ item.manufacturer }}</span>
+                            }
+                            @if (item.rak) {
+                              <span class="text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-medium text-[10px]">
+                                📍 Rak: {{ item.rak }}
+                              </span>
+                            }
+                            <span class="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded text-[10px]">
+                              Stock: {{ item.stock ?? 0 }} pcs → Left: {{ Math.max(0, (item.stock ?? 0) - (isWholesale() ? Math.round(item.qty * (item.pcs_per_box || 10)) : Math.round(item.qty))) }} pcs
+                            </span>
+                            @if ((item.stock ?? 0) < (isWholesale() ? Math.round(item.qty * (item.pcs_per_box || 10)) : Math.round(item.qty))) {
+                              <span class="bg-rose-100 text-rose-800 border border-rose-200 px-1.5 py-0.2 rounded font-bold text-[10px] animate-pulse">
+                                ⚠️ Exceeds stock (avail: {{ item.stock ?? 0 }} pcs)
+                              </span>
                             }
                           </div>
                         </td>
@@ -495,7 +681,7 @@ interface CustomerOption {
           
           <!-- Summary Header -->
           <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-            <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Checkout</span>
+            <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Fast Checkout</span>
             <span class="text-xs font-mono font-semibold text-slate-500">
               Total items: {{ cart().length }}
             </span>
@@ -503,14 +689,14 @@ interface CustomerOption {
 
           <!-- Total price -->
           <div class="flex justify-between text-xs">
-            <span class="text-slate-600 font-medium">Total price:</span>
+            <span class="text-slate-600 font-medium">Subtotal:</span>
             <span class="font-mono font-bold text-slate-900">
               ৳ {{ subtotal() | number: '1.2-2' }}
             </span>
           </div>
 
           <!-- Global Discount Section (Single Line, Full Width) -->
-          <div class="flex items-center gap-2 pt-1">
+          <div class="flex items-center gap-2 pt-0.5">
             <span class="text-xs font-semibold text-slate-700 shrink-0 w-16">Discount:</span>
             <div class="flex items-center gap-1.5 flex-1">
               <div class="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
@@ -545,142 +731,558 @@ interface CustomerOption {
             </div>
           </div>
 
-          <!-- Card Commission Checkbox -->
-          <div class="flex items-center justify-between pt-1">
-            <label
-              nz-checkbox
-              [ngModel]="cardCommission()"
-              (ngModelChange)="onCardCommissionToggle($event)"
-              class="text-xs font-medium text-slate-700"
-            >
-              Card Commission ({{ cardCommissionRate() }}%):
-            </label>
-            @if (cardCommission()) {
-              <span class="font-mono text-xs text-slate-800 font-bold">
-                + ৳ {{ cardFee() | number: '1.2-2' }}
-              </span>
-            }
-          </div>
-
-          <!-- Final Price Banner (Prominent display matching reference images) -->
-          <div
-            class="rounded-xl p-4 text-center shadow-xs theme-shell-banner"
-          >
-            <div class="text-[11px] font-medium tracking-wider uppercase opacity-90 mb-1">
-              Final Price:
+          <!-- Card Commission Checkbox (if card payment or custom check) -->
+          @if (selectedPaymentType() === 6 || cardCommission()) {
+            <div class="flex items-center justify-between pt-0.5">
+              <label
+                nz-checkbox
+                [ngModel]="cardCommission()"
+                (ngModelChange)="onCardCommissionToggle($event)"
+                class="text-xs font-medium text-slate-700"
+              >
+                Card Commission ({{ cardCommissionRate() }}%):
+              </label>
+              @if (cardCommission()) {
+                <span class="font-mono text-xs text-slate-800 font-bold">
+                  + ৳ {{ cardFee() | number: '1.2-2' }}
+                </span>
+              }
             </div>
-            <div class="text-2xl font-black font-mono">
+          }
+
+          <!-- Net Payable Banner -->
+          <div class="rounded-xl p-3.5 text-center shadow-xs theme-shell-banner">
+            <div class="text-[11px] font-medium tracking-wider uppercase opacity-90 mb-0.5">
+              Net Payable
+            </div>
+            <div class="text-3xl font-black font-mono">
               ৳ {{ finalPrice() | number: '1.2-2' }}
             </div>
             @if (discountAmount() > 0) {
-              <div class="text-[10px] text-emerald-300 mt-1 font-medium">
-                Savings: ৳ {{ discountAmount() | number: '1.2-2' }}
+              <div class="text-[10px] text-emerald-300 mt-0.5 font-medium">
+                Total Savings: ৳ {{ discountAmount() | number: '1.2-2' }}
               </div>
             }
           </div>
 
-          <!-- Split Payment Tender Chips (matching reference image) -->
-          <div class="space-y-1.5 pt-1">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-700">Split Payment / Tender:</span>
-              <div class="flex gap-1">
+          <!-- Payment Method Segmented Tabs -->
+          <div class="space-y-1 pt-1">
+            <label class="text-xs font-bold text-slate-700 block">Payment Method:</label>
+            <div class="grid grid-cols-5 gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200">
+              <button
+                type="button"
+                (click)="setPaymentMethod(1)"
+                class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                [class.bg-white]="selectedPaymentType() === 1"
+                [class.text-indigo-700]="selectedPaymentType() === 1"
+                [class.shadow-xs]="selectedPaymentType() === 1"
+                [class.text-slate-600]="selectedPaymentType() !== 1"
+                [class.bg-transparent]="selectedPaymentType() !== 1"
+              >
+                <span class="text-xs">💵</span>
+                <span>Cash</span>
+              </button>
+              <button
+                type="button"
+                (click)="setPaymentMethod(6)"
+                class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                [class.bg-white]="selectedPaymentType() === 6"
+                [class.text-indigo-700]="selectedPaymentType() === 6"
+                [class.shadow-xs]="selectedPaymentType() === 6"
+                [class.text-slate-600]="selectedPaymentType() !== 6"
+                [class.bg-transparent]="selectedPaymentType() !== 6"
+              >
+                <span class="text-xs">💳</span>
+                <span>Card</span>
+              </button>
+              <button
+                type="button"
+                (click)="setPaymentMethod(3)"
+                class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                [class.bg-white]="selectedPaymentType() === 3"
+                [class.text-indigo-700]="selectedPaymentType() === 3"
+                [class.shadow-xs]="selectedPaymentType() === 3"
+                [class.text-slate-600]="selectedPaymentType() !== 3"
+                [class.bg-transparent]="selectedPaymentType() !== 3"
+              >
+                <span class="text-xs">📱</span>
+                <span>MFS</span>
+              </button>
+              <button
+                type="button"
+                (click)="setPaymentMethod(8)"
+                class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                [class.bg-white]="selectedPaymentType() === 8"
+                [class.text-indigo-700]="selectedPaymentType() === 8"
+                [class.shadow-xs]="selectedPaymentType() === 8"
+                [class.text-slate-600]="selectedPaymentType() !== 8"
+                [class.bg-transparent]="selectedPaymentType() !== 8"
+              >
+                <span class="text-xs">🔀</span>
+                <span>Split</span>
+              </button>
+              <button
+                type="button"
+                (click)="setPaymentMethod(4)"
+                class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                [class.bg-white]="selectedPaymentType() === 4"
+                [class.text-rose-700]="selectedPaymentType() === 4"
+                [class.shadow-xs]="selectedPaymentType() === 4"
+                [class.text-slate-600]="selectedPaymentType() !== 4"
+                [class.bg-transparent]="selectedPaymentType() !== 4"
+              >
+                <span class="text-xs">📝</span>
+                <span>Due</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Split Payment Multi-Tender Box (When Split Tab is Selected) -->
+          @if (selectedPaymentType() === 8) {
+            <div class="space-y-2.5 pt-1">
+              <!-- Allocation Summary Header Card -->
+              <div
+                class="p-2.5 rounded-xl border flex items-center justify-between shadow-2xs"
+                [class.bg-emerald-50]="splitRemaining() === 0 && splitOverpaid() === 0"
+                [class.border-emerald-300]="splitRemaining() === 0 && splitOverpaid() === 0"
+                [class.bg-amber-50]="splitRemaining() > 0"
+                [class.border-amber-300]="splitRemaining() > 0"
+                [class.bg-blue-50]="splitOverpaid() > 0"
+                [class.border-blue-300]="splitOverpaid() > 0"
+              >
+                <div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Split Allocation
+                  </div>
+                  <div class="text-base font-black font-mono text-slate-900">
+                    ৳ {{ splitTotal() | number: '1.2-2' }}
+                    <span class="text-xs font-normal text-slate-500">/ ৳ {{ finalPrice() | number: '1.2-2' }}</span>
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  @if (splitRemaining() > 0) {
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-200 text-amber-900 font-bold text-xs shadow-2xs">
+                      <span>Rest: ৳ {{ splitRemaining() | number: '1.2-2' }}</span>
+                    </div>
+                  } @else if (splitOverpaid() > 0) {
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-200 text-blue-900 font-bold text-xs shadow-2xs">
+                      <span>Change: ৳ {{ splitOverpaid() | number: '1.2-2' }}</span>
+                    </div>
+                  } @else {
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-200 text-emerald-900 font-bold text-xs shadow-2xs">
+                      <span nz-icon nzType="check-circle"></span>
+                      <span>Balanced 100%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- 3 Clear Payment Channel Cards -->
+              <div class="space-y-2">
+                <!-- Channel 1: Card -->
+                <div
+                  class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
+                  [class.border-indigo-400]="splitCard() > 0"
+                  [class.bg-indigo-50/20]="splitCard() > 0"
+                  [class.border-slate-200]="splitCard() <= 0"
+                >
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
+                      <span>💳</span> Card Payment
+                    </span>
+                    <div class="flex items-center gap-1">
+                      @if (splitRemaining() > 0) {
+                        <button
+                          type="button"
+                          (click)="fillRemainingTo('card')"
+                          class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
+                        >
+                          ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="setSplitFull('card')"
+                        class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
+                      >
+                        All
+                      </button>
+                      @if (splitCard() > 0) {
+                        <button
+                          type="button"
+                          (click)="clearSplitChannel('card')"
+                          class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
+                    <input
+                      type="number"
+                      nz-input
+                      [ngModel]="splitCard() || ''"
+                      (ngModelChange)="onSplitChannelChange('card', $event)"
+                      placeholder="0.00"
+                      min="0"
+                      class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
+                    />
+                  </div>
+                </div>
+
+                <!-- Channel 2: Cash -->
+                <div
+                  class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
+                  [class.border-indigo-400]="splitCash() > 0"
+                  [class.bg-indigo-50/20]="splitCash() > 0"
+                  [class.border-slate-200]="splitCash() <= 0"
+                >
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
+                      <span>💵</span> Cash Payment
+                    </span>
+                    <div class="flex items-center gap-1">
+                      @if (splitRemaining() > 0) {
+                        <button
+                          type="button"
+                          (click)="fillRemainingTo('cash')"
+                          class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
+                        >
+                          ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="setSplitFull('cash')"
+                        class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
+                      >
+                        All
+                      </button>
+                      @if (splitCash() > 0) {
+                        <button
+                          type="button"
+                          (click)="clearSplitChannel('cash')"
+                          class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
+                    <input
+                      type="number"
+                      nz-input
+                      [ngModel]="splitCash() || ''"
+                      (ngModelChange)="onSplitChannelChange('cash', $event)"
+                      placeholder="0.00"
+                      min="0"
+                      class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
+                    />
+                  </div>
+                </div>
+
+                <!-- Channel 3: MFS -->
+                <div
+                  class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
+                  [class.border-indigo-400]="splitMfs() > 0"
+                  [class.bg-indigo-50/20]="splitMfs() > 0"
+                  [class.border-slate-200]="splitMfs() <= 0"
+                >
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
+                      <span>📱</span> MFS (bKash / Nagad)
+                    </span>
+                    <div class="flex items-center gap-1">
+                      @if (splitRemaining() > 0) {
+                        <button
+                          type="button"
+                          (click)="fillRemainingTo('mfs')"
+                          class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
+                        >
+                          ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="setSplitFull('mfs')"
+                        class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
+                      >
+                        All
+                      </button>
+                      @if (splitMfs() > 0) {
+                        <button
+                          type="button"
+                          (click)="clearSplitChannel('mfs')"
+                          class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
+                    <input
+                      type="number"
+                      nz-input
+                      [ngModel]="splitMfs() || ''"
+                      (ngModelChange)="onSplitChannelChange('mfs', $event)"
+                      placeholder="0.00"
+                      min="0"
+                      class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Presets Toolbar -->
+              <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+                <div class="flex items-center gap-1">
+                  <button
+                    type="button"
+                    (click)="splitHalfAndHalf('cash', 'card')"
+                    class="text-[10px] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded border border-indigo-200 cursor-pointer"
+                  >
+                    50% Cash + 50% Card
+                  </button>
+                  <button
+                    type="button"
+                    (click)="splitHalfAndHalf('cash', 'mfs')"
+                    class="text-[10px] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded border border-indigo-200 cursor-pointer"
+                  >
+                    50% Cash + 50% MFS
+                  </button>
+                </div>
                 <button
                   type="button"
-                  (click)="addSplitPayment('Cash')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
+                  (click)="resetAllSplit()"
+                  class="text-[10px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer"
                 >
-                  + Cash
-                </button>
-                <button
-                  type="button"
-                  (click)="addSplitPayment('MFS')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
-                >
-                  + MFS
-                </button>
-                <button
-                  type="button"
-                  (click)="addSplitPayment('Card')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
-                >
-                  + Card
+                  Reset All
                 </button>
               </div>
             </div>
+          } @else if (selectedPaymentType() !== 4) {
+            <div class="space-y-2 pt-1">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-slate-800">Tendered / Pay Amount:</span>
+                  @if (!isManualTender()) {
+                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                      ⚡ Auto-Exact
+                    </span>
+                  }
+                </div>
+                <button
+                  type="button"
+                  (click)="setQuickExact()"
+                  class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 cursor-pointer transition-colors"
+                  nz-tooltip
+                  nzTooltipTitle="Press F4 to sync exact payable"
+                >
+                  ⚡ Exact (৳{{ finalPrice() | number: '1.2-2' }})
+                </button>
+              </div>
 
-            <!-- Active Split Payment Chips -->
-            <div class="flex flex-wrap gap-1.5">
-              @for (split of splitPayments(); track split.method; let sIdx = $index) {
-                <div class="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2 py-1 rounded-md text-xs font-medium text-slate-800">
-                  <span class="font-bold theme-highlight-title">{{ split.method }}</span>
-                  <span class="font-mono font-semibold">৳ {{ split.amount | number: '1.2-2' }}</span>
+              <!-- Big Stepper & Tender Input -->
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  nz-button
+                  nzType="default"
+                  (click)="stepTendered(-10)"
+                  class="h-10 w-10 rounded-lg text-base font-bold"
+                >
+                  −
+                </button>
+                <div class="relative flex-1">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">৳</span>
+                  <input
+                    type="number"
+                    nz-input
+                    [ngModel]="tendered()"
+                    (ngModelChange)="onTenderedChange($event)"
+                    class="w-full text-center font-mono font-black text-lg h-10 rounded-lg border-2 shadow-2xs"
+                    [class.border-indigo-400]="!isManualTender()"
+                    [class.border-slate-300]="isManualTender()"
+                    min="0"
+                    step="10"
+                  />
+                </div>
+                <button
+                  type="button"
+                  nz-button
+                  nzType="default"
+                  (click)="stepTendered(10)"
+                  class="h-10 w-10 rounded-lg text-base font-bold"
+                >
+                  +
+                </button>
+              </div>
+
+              <!-- 1-Touch Cash Banknote Denominations Grid -->
+              <div class="space-y-1">
+                <div class="text-[11px] font-semibold text-slate-500 flex justify-between items-center">
+                  <span>1-Touch Cash Notes:</span>
                   <button
                     type="button"
-                    (click)="removeSplitPayment(sIdx)"
-                    class="text-rose-500 hover:text-rose-700 ml-1 border-0 bg-transparent cursor-pointer font-bold"
+                    (click)="resetTenderToExact()"
+                    class="text-[10px] text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer"
                   >
-                    ✕
+                    Reset to Exact
                   </button>
                 </div>
-              }
-            </div>
-          </div>
+                <div class="grid grid-cols-4 gap-1.5">
+                  <button
+                    type="button"
+                    (click)="setQuickCash(nextRoundTender())"
+                    class="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                    nz-tooltip
+                    nzTooltipTitle="Next round banknote"
+                  >
+                    ৳{{ nextRoundTender() }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setQuickCash(50)"
+                    class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    ৳50
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setQuickCash(100)"
+                    class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    ৳100
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setQuickCash(200)"
+                    class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    ৳200
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setQuickCash(500)"
+                    class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    ৳500
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setQuickCash(1000)"
+                    class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    ৳1000
+                  </button>
+                  <button
+                    type="button"
+                    (click)="addQuickCash(50)"
+                    class="py-1.5 px-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    +৳50
+                  </button>
+                  <button
+                    type="button"
+                    (click)="addQuickCash(100)"
+                    class="py-1.5 px-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
+                  >
+                    +৳100
+                  </button>
+                </div>
+              </div>
 
-          <!-- Customer will pay section -->
-          <div class="space-y-1 pt-1">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-semibold text-slate-700">Customer will pay:</span>
-              <button
-                type="button"
-                (click)="setExactPayment()"
-                class="text-[11px] theme-link font-semibold bg-transparent border-0 cursor-pointer"
-              >
-                Exact (৳ {{ finalPrice() | number: '1.2-2' }})
-              </button>
-            </div>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                nz-button
-                nzType="default"
-                (click)="stepTendered(-10)"
-                class="rounded-md"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                nz-input
-                [ngModel]="tendered()"
-                (ngModelChange)="onTenderedChange($event)"
-                class="flex-1 text-center font-mono font-bold text-base rounded-md"
-                min="0"
-                step="10"
-              />
-              <button
-                type="button"
-                nz-button
-                nzType="default"
-                (click)="stepTendered(10)"
-                class="rounded-md"
-              >
-                +
-              </button>
-            </div>
-          </div>
+              <!-- Split Payment Chips (if used) -->
+              <div class="pt-1">
+                <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                  <span>Split Tender:</span>
+                  <div class="flex gap-1">
+                    <button
+                      type="button"
+                      (click)="addSplitPayment('Cash')"
+                      class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
+                    >
+                      + Cash
+                    </button>
+                    <button
+                      type="button"
+                      (click)="addSplitPayment('MFS')"
+                      class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
+                    >
+                      + MFS
+                    </button>
+                    <button
+                      type="button"
+                      (click)="addSplitPayment('Card')"
+                      class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
+                    >
+                      + Card
+                    </button>
+                  </div>
+                </div>
 
-          <!-- Advance vs Due Indicator Banner -->
-          <div
-            class="rounded-lg p-2.5 flex justify-between items-center text-xs font-bold border transition-colors"
-            [ngClass]="isAdvance() ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'"
-          >
-            <span class="uppercase tracking-wider">
-              {{ isAdvance() ? 'Advance' : 'Due' }}
-            </span>
-            <span class="font-mono text-base font-black">
-              ৳ {{ (isAdvance() ? changeDue() : ticketDue()) | number: '1.2-2' }}
-            </span>
-          </div>
+                @if (splitPayments().length > 0) {
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (split of splitPayments(); track split.method; let sIdx = $index) {
+                      <div class="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded-md text-xs font-medium text-slate-800">
+                        <span class="font-bold theme-highlight-title">{{ split.method }}</span>
+                        <span class="font-mono font-semibold">৳ {{ split.amount | number: '1.2-2' }}</span>
+                        <button
+                          type="button"
+                          (click)="removeSplitPayment(sIdx)"
+                          class="text-rose-500 hover:text-rose-700 ml-1 border-0 bg-transparent cursor-pointer font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Prominent High-Contrast Change / Due Banner -->
+          @if (selectedPaymentType() === 4) {
+            <div class="bg-rose-50 border border-rose-300 text-rose-900 rounded-xl p-3 text-center">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center justify-center gap-1">
+                <span nz-icon nzType="warning"></span> SALE ON FULL CREDIT (DUE)
+              </div>
+              <div class="text-2xl font-black font-mono text-rose-700 mt-0.5">
+                ৳ {{ finalPrice() | number: '1.2-2' }}
+              </div>
+            </div>
+          } @else if (changeDue() > 0) {
+            <div class="bg-emerald-600 text-white rounded-xl p-3 shadow-md text-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-100 flex items-center justify-center gap-1.5">
+                <span nz-icon nzType="check-circle"></span> CHANGE TO RETURN
+              </div>
+              <div class="text-3xl font-black font-mono tracking-tight text-white mt-0.5">
+                ৳ {{ changeDue() | number: '1.2-2' }}
+              </div>
+            </div>
+          } @else if (ticketDue() > 0) {
+            <div class="bg-rose-50 border border-rose-300 text-rose-900 rounded-xl p-3 text-center">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center justify-center gap-1">
+                <span nz-icon nzType="warning"></span> DUE / SHORTAGE AMOUNT
+              </div>
+              <div class="text-2xl font-black font-mono text-rose-700 mt-0.5">
+                ৳ {{ ticketDue() | number: '1.2-2' }}
+              </div>
+            </div>
+          } @else {
+            <div class="bg-slate-100 border border-slate-200 text-slate-700 rounded-xl p-2.5 text-center flex items-center justify-center gap-2 text-xs font-semibold">
+              <span nz-icon nzType="check-circle" class="text-emerald-600"></span>
+              <span>Bill Settled (Exact Amount • No Change Due)</span>
+            </div>
+          }
 
           <!-- Customer Info Section -->
           <div class="pt-2 border-t border-slate-100 space-y-2">
@@ -720,30 +1322,9 @@ interface CustomerOption {
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700 block mb-1">Payment type:</label>
-              <nz-select class="w-full" [ngModel]="selectedPaymentType()" (ngModelChange)="onPaymentTypeChange($event)">
-                @for (m of paymentMethods; track m.value) {
-                  <nz-option [nzValue]="m.value" [nzLabel]="m.label"></nz-option>
-                }
-              </nz-select>
-            </div>
-
-            <!-- Cash Received Checkbox -->
-            <div class="pt-1">
-              <label
-                nz-checkbox
-                [ngModel]="cashReceived()"
-                (ngModelChange)="toggleCashReceived($event)"
-                class="text-xs font-semibold text-slate-700"
-              >
-                Cash Received
-              </label>
-            </div>
-
-            <div>
               <textarea
                 nz-input
-                placeholder="Note / remark..."
+                placeholder="Order note / remark..."
                 [(ngModel)]="orderNote"
                 rows="2"
                 class="rounded-md text-xs"
@@ -752,26 +1333,39 @@ interface CustomerOption {
           </div>
 
           <!-- Bottom Action Buttons -->
-          <div class="grid grid-cols-2 gap-2 pt-2">
-            <button
-              type="button"
-              nz-button
-              nzType="default"
-              (click)="printInvoice()"
-              class="rounded-lg font-medium h-10"
-            >
-              <span nz-icon nzType="printer"></span> Print
-            </button>
+          <div class="flex flex-col gap-2 pt-2">
             <button
               type="button"
               nz-button
               nzType="primary"
               [disabled]="cart().length === 0"
               (click)="confirmCheckout()"
-              class="rounded-lg font-bold h-10"
+              class="w-full rounded-xl font-bold h-12 text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer"
             >
-              Create Sale
+              <span nz-icon nzType="check"></span>
+              <span>COMPLETE SALE (Enter / F10)</span>
+              <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-xs">৳ {{ finalPrice() | number: '1.2-2' }}</span>
             </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                nz-button
+                nzType="default"
+                (click)="printInvoice()"
+                class="rounded-lg font-medium h-9 text-xs"
+              >
+                <span nz-icon nzType="printer"></span> Print Receipt
+              </button>
+              <button
+                type="button"
+                nz-button
+                nzType="default"
+                (click)="startNewInvoice()"
+                class="rounded-lg font-medium h-9 text-xs text-rose-600 hover:text-rose-700"
+              >
+                <span nz-icon nzType="clear"></span> Clear Basket
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1083,7 +1677,7 @@ interface CustomerOption {
               </tr>
             </thead>
             <tbody>
-              @for (item of lastPrintedItems; track item.product_no) {
+              @for (item of lastPrintedItems; track (item.cart_item_id || item.product_no)) {
                 <tr>
                   <td class="py-0.5 pr-1 truncate max-w-[120px]">{{ item.product_name }}</td>
                   <td class="text-center">{{ item.qty }}</td>
@@ -1105,8 +1699,18 @@ interface CustomerOption {
               <span>Net Payable:</span>
               <span>৳ {{ (lastPrintedInvoice?.final_price || 0) | number: '1.2-2' }}</span>
             </div>
-            <div class="flex justify-between pt-1"><span>Paid:</span><span>৳ {{ (lastPrintedInvoice?.customer_will_pay || 0) | number: '1.2-2' }}</span></div>
             <div class="flex justify-between"><span>Change:</span><span>৳ {{ (lastPrintedInvoice?.change_amount || 0) | number: '1.2-2' }}</span></div>
+            @if (lastPrintedPayments.length > 0) {
+              <div class="border-t border-dashed border-slate-300 pt-1 mt-1 text-[10px]">
+                <div class="font-bold text-slate-700 mb-0.5">Tender Breakdown:</div>
+                @for (pay of lastPrintedPayments; track pay.method) {
+                  <div class="flex justify-between text-slate-600">
+                    <span>{{ pay.method }}:</span>
+                    <span class="font-mono font-medium">৳ {{ pay.amount | number: '1.2-2' }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
           <div class="text-center pt-3 text-[10px] text-slate-500 border-t border-dashed border-slate-400 mt-2">
             <div>*** Thank You for Shopping! ***</div>
@@ -1145,21 +1749,12 @@ export class PosTerminalComponent implements OnInit {
   quickPrint = true;
 
   // Catalog Products for fast search & selection
-  catalogProducts: Array<{
-    id: number;
-    name: string;
-    generic: string;
-    manufacturer: string;
-    cost: number;
-    saleRetail: number;
-    saleWholesale: number;
-    pcsPerBox: number;
-  }> = [];
+  catalogProducts = signal<CatalogProduct[]>([]);
 
   // Entry Form State
   selectedProductText = '';
   currentSearchTerm = '';
-  selectedProductObj: (typeof this.catalogProducts)[0] | null = null;
+  selectedProductObj: CatalogProduct | null = null;
   entryQty = 1;
   entryPrice = 0;
   entryDiscountType: number = DiscountType.Percentage;
@@ -1167,7 +1762,7 @@ export class PosTerminalComponent implements OnInit {
 
   // Checkout State as Signals
   selectedCustomer = signal<string>('1');
-  selectedPaymentType = signal<number>(1); // Cash
+  selectedPaymentType = signal<number>(1); // 1: Cash, 6: Card, 3: MFS, 8: Split, 4: Due
   cashReceived = signal<boolean>(true);
   orderNote = '';
 
@@ -1178,8 +1773,29 @@ export class PosTerminalComponent implements OnInit {
   cardCommissionRate = signal<number>(1.5);
 
   tendered = signal<number>(0);
+  isManualTender = signal<boolean>(false);
 
-  // Split Payment List
+  // Dedicated Split Tender Channels (Card, Cash, MFS)
+  splitCash = signal<number>(0);
+  splitCard = signal<number>(0);
+  splitMfs = signal<number>(0);
+  lastPrintedPayments: { method: string; amount: number }[] = [];
+
+  readonly splitTotal = computed(() => {
+    return Math.round((this.splitCash() + this.splitCard() + this.splitMfs()) * 100) / 100;
+  });
+
+  readonly splitRemaining = computed(() => {
+    const rem = this.finalPrice() - this.splitTotal();
+    return rem > 0 ? Math.round(rem * 100) / 100 : 0;
+  });
+
+  readonly splitOverpaid = computed(() => {
+    const over = this.splitTotal() - this.finalPrice();
+    return over > 0 ? Math.round(over * 100) / 100 : 0;
+  });
+
+  // Legacy Split Payment List
   splitPayments = signal<SplitPayment[]>([]);
 
   // Held Orders State (F9)
@@ -1191,6 +1807,20 @@ export class PosTerminalComponent implements OnInit {
   ];
 
   cart = signal<CartItem[]>([]);
+
+  constructor() {
+    // Auto-sync tender amount with finalPrice unless cashier explicitly entered cash notes or switched to credit/split
+    effect(() => {
+      const finalAmt = this.finalPrice();
+      const isManual = this.isManualTender();
+      const isCash = this.cashReceived();
+      const payType = this.selectedPaymentType();
+
+      if (!isManual && isCash && payType !== 4 && payType !== 8) {
+        this.tendered.set(finalAmt);
+      }
+    }, { allowSignalWrites: true });
+  }
 
   // Computed Values
   readonly subtotal = computed(() => {
@@ -1221,7 +1851,10 @@ export class PosTerminalComponent implements OnInit {
   });
 
   readonly totalPaid = computed(() => {
-    if (!this.cashReceived()) return 0;
+    if (!this.cashReceived() && this.selectedPaymentType() === 4) return 0;
+    if (this.selectedPaymentType() === 8) {
+      return this.splitTotal();
+    }
     if (this.splitPayments().length > 0) {
       return Math.round(this.splitPayments().reduce((s, p) => s + p.amount, 0) * 100) / 100;
     }
@@ -1250,6 +1883,36 @@ export class PosTerminalComponent implements OnInit {
     return Math.round((this.previousDue() + this.ticketDue()) * 100) / 100;
   });
 
+  readonly nextRoundTender = computed(() => {
+    const total = this.finalPrice();
+    if (total <= 0) return 0;
+    const notes = [20, 50, 100, 200, 500, 1000];
+    for (const note of notes) {
+      if (note >= total) return note;
+    }
+    return Math.ceil(total / 500) * 500;
+  });
+
+  readonly fastMovingProducts = computed(() => {
+    const list = this.catalogProducts();
+    const inStock = list.filter(p => p.stock > 0);
+    return inStock.length > 0 ? inStock.slice(0, 8) : list.slice(0, 8);
+  });
+
+  getCartPcsForProduct(productNo: number, productName?: string): number {
+    const isWs = this.isWholesale();
+    return this.cart()
+      .filter(i => i.product_no === productNo || (productName && i.product_name === productName))
+      .reduce((sum, i) => {
+        const pcs = isWs ? Math.round(i.qty * (i.pcs_per_box || 10)) : Math.round(i.qty);
+        return sum + pcs;
+      }, 0);
+  }
+
+  getAvailableStock(p: CatalogProduct): number {
+    return Math.max(0, (p.stock ?? 0) - this.getCartPcsForProduct(p.id, p.name));
+  }
+
   // Modals State
   isCustomerModalVisible = false;
   customerModalMode: 'create' | 'edit' = 'create';
@@ -1263,30 +1926,55 @@ export class PosTerminalComponent implements OnInit {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.key === 'F2') {
+    if (event.key === 'F1') {
+      event.preventDefault();
+      const inputEl = document.querySelector('nz-select input') as HTMLElement;
+      if (inputEl) inputEl.focus();
+    } else if (event.key === 'F2') {
       event.preventDefault();
       this.openQuickAddProduct();
+    } else if (event.key === 'F4') {
+      event.preventDefault();
+      this.setQuickExact();
+      this.msg.info('Set exact pay amount (F4)');
     } else if (event.key === 'F9') {
       event.preventDefault();
       this.handleHoldAction();
+    } else if (event.key === 'F10' || (event.ctrlKey && event.key === 'Enter')) {
+      event.preventDefault();
+      this.confirmCheckout();
     }
   }
 
-  ngOnInit(): void {
+  loadProducts(): void {
     this.productService.getProducts({ pageSize: 200 }).subscribe(res => {
       if (res.data?.items?.length) {
-        this.catalogProducts = res.data.items.map(p => ({
+        const mapped: CatalogProduct[] = res.data.items.map(p => ({
           id: p.product_no,
           name: p.product_name,
           generic: p.generic_name || p.generic?.name || 'General',
-          manufacturer: p.company?.name || 'Local Pharma',
+          manufacturer: p.company_name || p.company?.name || 'Local Pharma',
           cost: p.purchase_price_per_piece || 0,
           saleRetail: p.sale_price_per_piece || 0,
           saleWholesale: p.wholesale_price_per_piece || (p.sale_price_per_piece * 0.9),
           pcsPerBox: p.quantity_per_box || 10,
+          stock: p.stock_qty ?? 0,
+          minStock: p.min_stock_qty_pcs || 10,
+          rak: p.rak_number || '',
+          barcode: p.barcode_value || '',
+          strength: p.strength || '',
         }));
+        this.catalogProducts.set(mapped);
+        if (this.selectedProductObj) {
+          const fresh = mapped.find(p => p.id === this.selectedProductObj?.id);
+          if (fresh) this.selectedProductObj = fresh;
+        }
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.loadProducts();
 
     this.customerService.getCustomers({ pageSize: 100 }).subscribe(res => {
       if (res.data?.items?.length) {
@@ -1335,7 +2023,7 @@ export class PosTerminalComponent implements OnInit {
   onProductEnterKey(): void {
     if (!this.selectedProductText && this.currentSearchTerm) {
       const term = this.currentSearchTerm.toLowerCase().trim();
-      const match = this.catalogProducts.find(p =>
+      const match = this.catalogProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
         String(p.id) === term
@@ -1354,7 +2042,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   onProductPicked(name: string): void {
-    const found = this.catalogProducts.find(p => p.name === name);
+    const found = this.catalogProducts().find(p => p.name === name);
     if (found) {
       this.selectedProductObj = found;
       this.entryPrice = this.isWholesale() ? found.saleWholesale : found.saleRetail;
@@ -1375,13 +2063,23 @@ export class PosTerminalComponent implements OnInit {
     return Math.round(Math.max(0, gross - disc) * 100) / 100;
   }
 
+  quickAddProductToCart(product: CatalogProduct): void {
+    this.selectedProductObj = product;
+    this.selectedProductText = product.name;
+    this.entryPrice = this.isWholesale() ? product.saleWholesale : product.saleRetail;
+    this.entryQty = 1;
+    this.entryDiscountValue = 0;
+    this.addEntryToCart();
+  }
+
   addEntryToCart(): void {
     // Fallback: If selectedProductText is empty but cashier typed in the search box
     if (!this.selectedProductText.trim() && this.currentSearchTerm.trim()) {
       const term = this.currentSearchTerm.toLowerCase().trim();
-      const match = this.catalogProducts.find(p =>
+      const match = this.catalogProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
+        (p.barcode && p.barcode.toLowerCase() === term) ||
         String(p.id) === term
       );
       if (match) {
@@ -1399,14 +2097,22 @@ export class PosTerminalComponent implements OnInit {
       this.msg.warning('Please select a product first.');
       return;
     }
-    const product = this.selectedProductObj;
-    const name = product ? product.name : this.selectedProductText;
-    const generic = product ? product.generic : 'General';
-    const manufacturer = product ? product.manufacturer : 'Local Pharma';
-    const cost = product ? product.cost : (this.entryPrice * 0.8);
-    const price = Number(this.entryPrice) || (this.isWholesale() ? 50 : 10);
+    const product = this.selectedProductObj || this.catalogProducts().find(p =>
+      p.name.toLowerCase() === this.selectedProductText.toLowerCase().trim() ||
+      String(p.id) === this.selectedProductText.trim()
+    );
+    const targetProd = product || this.catalogProducts()[0];
+    const targetProdNo = targetProd ? targetProd.id : 1;
+    const name = product ? product.name : (targetProd ? targetProd.name : this.selectedProductText);
+    const generic = product ? product.generic : (targetProd ? targetProd.generic : 'General');
+    const manufacturer = product ? product.manufacturer : (targetProd ? targetProd.manufacturer : 'Local Pharma');
+    const cost = product ? product.cost : (targetProd ? targetProd.cost : (this.entryPrice * 0.8));
+    const price = Number(this.entryPrice) || (targetProd ? (this.isWholesale() ? targetProd.saleWholesale : targetProd.saleRetail) : (this.isWholesale() ? 50 : 10));
     const qty = Number(this.entryQty) || 1;
-    const pcsPerBox = product ? product.pcsPerBox : 10;
+    const pcsPerBox = product ? product.pcsPerBox : (targetProd ? targetProd.pcsPerBox : 10);
+    const availStock = product ? this.getAvailableStock(product) : (targetProd ? this.getAvailableStock(targetProd) : 0);
+    const rakLocation = product ? product.rak : (targetProd ? targetProd.rak : '');
+    const barcodeVal = product ? product.barcode : (targetProd ? targetProd.barcode : '');
 
     let lineDiscount = 0;
     const discountVal = Number(this.entryDiscountValue) || 0;
@@ -1420,8 +2126,14 @@ export class PosTerminalComponent implements OnInit {
     lineDiscount = Math.round(lineDiscount * 100) / 100;
     const lineTotal = Math.round(Math.max(0, (price * qty) - lineDiscount) * 100) / 100;
 
-    // Check if item already exists in cart with same unit price
-    const existingIndex = this.cart().findIndex(i => i.product_name === name && i.unit_price === price);
+    if (availStock <= 0) {
+      this.msg.warning(`Notice: ${name} is out of stock in inventory.`);
+    } else if (qty > availStock) {
+      this.msg.warning(`Notice: Requested ${qty} exceeds available stock (${availStock} pcs).`);
+    }
+
+    // Check if item already exists in cart with same product_no or name and same unit price
+    const existingIndex = this.cart().findIndex(i => (i.product_no === targetProdNo || i.product_name === name) && i.unit_price === price);
     if (existingIndex > -1) {
       this.cart.update(items => items.map((item, idx) => {
         if (idx === existingIndex) {
@@ -1439,6 +2151,8 @@ export class PosTerminalComponent implements OnInit {
             qty: newQty,
             discount: newDisc,
             total: newTot,
+            stock: item.stock ?? availStock,
+            rak: item.rak || rakLocation,
           };
         }
         return item;
@@ -1446,7 +2160,8 @@ export class PosTerminalComponent implements OnInit {
       this.msg.success(`Updated ${name} quantity in basket`);
     } else {
       const newItem: CartItem = {
-        product_no: Date.now(),
+        cart_item_id: Date.now(),
+        product_no: targetProdNo,
         product_name: name,
         generic_name: generic,
         manufacturer,
@@ -1457,11 +2172,15 @@ export class PosTerminalComponent implements OnInit {
         discount: lineDiscount,
         discount_type: this.entryDiscountType,
         total: lineTotal,
+        stock: availStock,
+        rak: rakLocation,
+        barcode: barcodeVal,
       };
       this.cart.update(list => [newItem, ...list]);
       this.msg.success(`Added ${newItem.product_name} to cart`);
     }
 
+    this.isManualTender.set(false); // Reset to auto-tender for new cart state!
     this.selectedProductText = '';
     this.selectedProductObj = null;
     this.currentSearchTerm = '';
@@ -1474,12 +2193,19 @@ export class PosTerminalComponent implements OnInit {
     const step = this.isWholesale() ? 0.25 : 1;
     const currentQty = Number(item.qty) || 0;
     const newQty = Math.max(step, Math.round((currentQty + delta) * 100) / 100);
+    if (item.stock && newQty > item.stock && delta > 0) {
+      this.msg.warning(`Requested ${newQty} exceeds available stock (${item.stock} pcs)`);
+    }
     this.applyItemQty(item, newQty);
   }
 
   setItemQty(item: CartItem, newQtyRaw: number | string): void {
     const val = Math.max(0.01, Number(newQtyRaw) || 0.01);
-    this.applyItemQty(item, Math.round(val * 100) / 100);
+    const newQty = Math.round(val * 100) / 100;
+    if (item.stock && newQty > item.stock) {
+      this.msg.warning(`Requested ${newQty} exceeds available stock (${item.stock} pcs)`);
+    }
+    this.applyItemQty(item, newQty);
   }
 
   private applyItemQty(item: CartItem, newQty: number): void {
@@ -1491,7 +2217,8 @@ export class PosTerminalComponent implements OnInit {
     const newTotal = Math.round(Math.max(0, (item.unit_price * newQty) - newDisc) * 100) / 100;
 
     this.cart.update(list => list.map(i => {
-      if (i.product_no === item.product_no) {
+      const match = (item.cart_item_id && i.cart_item_id) ? (i.cart_item_id === item.cart_item_id) : (i.product_no === item.product_no);
+      if (match) {
         return {
           ...i,
           qty: newQty,
@@ -1504,7 +2231,10 @@ export class PosTerminalComponent implements OnInit {
   }
 
   removeItem(item: CartItem): void {
-    this.cart.update(list => list.filter(i => i.product_no !== item.product_no));
+    this.cart.update(list => list.filter(i => {
+      if (item.cart_item_id && i.cart_item_id) return i.cart_item_id !== item.cart_item_id;
+      return i.product_no !== item.product_no;
+    }));
   }
 
   openEditItemModal(item: CartItem): void {
@@ -1531,7 +2261,10 @@ export class PosTerminalComponent implements OnInit {
     updated.discount = disc;
     updated.total = Math.round(Math.max(0, (price * qty) - disc) * 100) / 100;
 
-    this.cart.update(list => list.map(i => i.product_no === updated.product_no ? updated : i));
+    this.cart.update(list => list.map(i => {
+      const match = (updated.cart_item_id && i.cart_item_id) ? (i.cart_item_id === updated.cart_item_id) : (i.product_no === updated.product_no);
+      return match ? updated : i;
+    }));
     this.isEditItemModalVisible = false;
     this.msg.success('Item updated');
   }
@@ -1601,6 +2334,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   setExactPayment(): void {
+    this.isManualTender.set(false);
     this.cashReceived.set(true);
     this.tendered.set(this.finalPrice());
     if (this.splitPayments().length > 0) {
@@ -1608,7 +2342,117 @@ export class PosTerminalComponent implements OnInit {
     }
   }
 
+  setQuickExact(): void {
+    this.setExactPayment();
+  }
+
+  resetTenderToExact(): void {
+    this.isManualTender.set(false);
+    this.tendered.set(this.finalPrice());
+  }
+
+  setQuickCash(amount: number): void {
+    this.isManualTender.set(true);
+    this.cashReceived.set(true);
+    this.tendered.set(amount);
+    if (this.splitPayments().length > 0) {
+      this.splitPayments.set([]);
+    }
+  }
+
+  addQuickCash(extra: number): void {
+    this.isManualTender.set(true);
+    this.cashReceived.set(true);
+    const curr = Number(this.tendered()) || 0;
+    this.tendered.set(curr + extra);
+    if (this.splitPayments().length > 0) {
+      this.splitPayments.set([]);
+    }
+  }
+
+  setPaymentMethod(type: number): void {
+    this.selectedPaymentType.set(type);
+    if (type === 4) { // Due / Credit
+      this.cashReceived.set(false);
+      this.tendered.set(0);
+      this.cardCommission.set(false);
+      this.splitPayments.set([]);
+    } else if (type === 8) { // Split / Multi-Tender
+      this.cashReceived.set(true);
+      this.cardCommission.set(false);
+      this.isManualTender.set(true);
+      // If split channels are not initialized, leave at 0 so cashier can enter each channel
+      if (this.splitTotal() === 0 && this.tendered() > 0 && this.tendered() < this.finalPrice()) {
+        this.splitCash.set(this.tendered());
+      }
+    } else if (type === 6 || type === 2) { // Card
+      this.cashReceived.set(true);
+      this.cardCommission.set(true);
+      this.isManualTender.set(false);
+      this.tendered.set(this.finalPrice());
+    } else { // Cash (1) or MFS (3)
+      this.cashReceived.set(true);
+      this.cardCommission.set(false);
+      this.isManualTender.set(false);
+      this.tendered.set(this.finalPrice());
+    }
+  }
+
+  onSplitChannelChange(channel: 'cash' | 'card' | 'mfs', val: number | string): void {
+    const num = Math.max(0, Number(val) || 0);
+    const rounded = Math.round(num * 100) / 100;
+    if (channel === 'cash') this.splitCash.set(rounded);
+    else if (channel === 'card') this.splitCard.set(rounded);
+    else if (channel === 'mfs') this.splitMfs.set(rounded);
+  }
+
+  fillRemainingTo(channel: 'cash' | 'card' | 'mfs'): void {
+    const rem = this.splitRemaining();
+    if (rem <= 0) return;
+    if (channel === 'cash') {
+      this.splitCash.set(Math.round((this.splitCash() + rem) * 100) / 100);
+    } else if (channel === 'card') {
+      this.splitCard.set(Math.round((this.splitCard() + rem) * 100) / 100);
+    } else if (channel === 'mfs') {
+      this.splitMfs.set(Math.round((this.splitMfs() + rem) * 100) / 100);
+    }
+  }
+
+  setSplitFull(channel: 'cash' | 'card' | 'mfs'): void {
+    this.splitCash.set(0);
+    this.splitCard.set(0);
+    this.splitMfs.set(0);
+    const full = this.finalPrice();
+    if (channel === 'cash') this.splitCash.set(full);
+    else if (channel === 'card') this.splitCard.set(full);
+    else if (channel === 'mfs') this.splitMfs.set(full);
+  }
+
+  clearSplitChannel(channel: 'cash' | 'card' | 'mfs'): void {
+    if (channel === 'cash') this.splitCash.set(0);
+    else if (channel === 'card') this.splitCard.set(0);
+    else if (channel === 'mfs') this.splitMfs.set(0);
+  }
+
+  resetAllSplit(): void {
+    this.splitCash.set(0);
+    this.splitCard.set(0);
+    this.splitMfs.set(0);
+  }
+
+  splitHalfAndHalf(chan1: 'cash' | 'card', chan2: 'card' | 'mfs'): void {
+    const half = Math.round((this.finalPrice() / 2) * 100) / 100;
+    const remainder = Math.round((this.finalPrice() - half) * 100) / 100;
+    this.resetAllSplit();
+    if (chan1 === 'cash') this.splitCash.set(half);
+    else if (chan1 === 'card') this.splitCard.set(half);
+
+    if (chan2 === 'card') this.splitCard.set(remainder);
+    else if (chan2 === 'mfs') this.splitMfs.set(remainder);
+  }
+
   stepTendered(delta: number): void {
+    this.isManualTender.set(true);
     this.cashReceived.set(true);
     const curr = Number(this.tendered()) || 0;
     const next = Math.max(0, curr + delta);
@@ -1619,6 +2463,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   onTenderedChange(val: number | string): void {
+    this.isManualTender.set(true);
     this.cashReceived.set(true);
     this.tendered.set(Math.max(0, Number(val) || 0));
     if (this.splitPayments().length > 0) {
@@ -1627,21 +2472,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   onPaymentTypeChange(type: number): void {
-    this.selectedPaymentType.set(type);
-    if (type === 4) { // Due / Credit
-      this.cashReceived.set(false);
-      this.tendered.set(0);
-      this.splitPayments.set([]);
-    } else if (type === 2) { // Card
-      this.cashReceived.set(true);
-      this.cardCommission.set(true);
-      this.tendered.set(this.finalPrice());
-    } else { // Cash or MFS
-      this.cashReceived.set(true);
-      if (this.tendered() === 0) {
-        this.tendered.set(this.finalPrice());
-      }
-    }
+    this.setPaymentMethod(type);
   }
 
   toggleCashReceived(checked: boolean): void {
@@ -1650,6 +2481,7 @@ export class PosTerminalComponent implements OnInit {
       this.tendered.set(0);
       this.splitPayments.set([]);
     } else {
+      this.isManualTender.set(false);
       this.tendered.set(this.finalPrice());
     }
   }
@@ -1675,8 +2507,12 @@ export class PosTerminalComponent implements OnInit {
         .subscribe(confirmed => {
           if (confirmed) {
             this.cart.set([]);
+            this.isManualTender.set(false);
             this.tendered.set(0);
             this.splitPayments.set([]);
+            this.splitCash.set(0);
+            this.splitCard.set(0);
+            this.splitMfs.set(0);
             this.globalDiscountValue.set(0);
             this.cardCommission.set(false);
           }
@@ -1800,7 +2636,7 @@ export class PosTerminalComponent implements OnInit {
 
     this.productService.createProduct(prodPayload).subscribe(res => {
       if (res.data) {
-        const newProd = {
+        const newProd: CatalogProduct = {
           id: res.data.product_no,
           name: res.data.product_name,
           generic: this.quickProductForm.generic_name || 'General',
@@ -1809,8 +2645,13 @@ export class PosTerminalComponent implements OnInit {
           saleRetail: res.data.sale_price_per_piece,
           saleWholesale: res.data.wholesale_price_per_piece || (res.data.sale_price_per_piece * 0.9),
           pcsPerBox: res.data.quantity_per_box,
+          stock: 0,
+          minStock: res.data.min_stock_qty_pcs || 10,
+          rak: '',
+          barcode: '',
+          strength: res.data.strength || '',
         };
-        this.catalogProducts.unshift(newProd);
+        this.catalogProducts.update(prods => [newProd, ...prods]);
         this.selectedProductText = name;
         this.onProductPicked(name);
         this.msg.success(`Product "${name}" registered successfully!`);
@@ -1861,19 +2702,35 @@ export class PosTerminalComponent implements OnInit {
         cash_received_status: this.cashReceived() ? 2 : 1,
         is_quick_printed: this.quickPrint,
       },
-      items: this.cart().map(item => ({
-        product_no: item.product_no,
-        sale_mode: this.businessMode(),
-        sale_qty: Math.round(item.qty),
-        box_qty: this.isWholesale() ? Math.round(item.qty) : 1,
-        pcs_per_box: item.pcs_per_box || 10,
-        unit_cost_price: item.cost_price,
-        unit_sale_price: item.unit_price,
-        discount_amount: item.discount,
-        net_amount: item.total,
-        total_price: item.total,
-      })),
-      payments: this.splitPayments().length > 0
+      items: this.cart().map(item => {
+        const pcsPerBox = item.pcs_per_box || 10;
+        const totalPcs = this.isWholesale()
+          ? Math.max(1, Math.round(item.qty * pcsPerBox))
+          : Math.max(1, Math.round(item.qty));
+        const boxQty = this.isWholesale()
+          ? Math.max(1, Math.round(item.qty))
+          : Math.floor(totalPcs / pcsPerBox);
+
+        return {
+          product_no: item.product_no,
+          sale_mode: this.businessMode(),
+          sale_qty: totalPcs,
+          box_qty: boxQty,
+          pcs_per_box: pcsPerBox,
+          unit_cost_price: item.cost_price,
+          unit_sale_price: item.unit_price,
+          discount_amount: item.discount,
+          net_amount: item.total,
+          total_price: item.total,
+        };
+      }),
+      payments: this.selectedPaymentType() === 8
+        ? [
+            ...(this.splitCard() > 0 ? [{ account_no: 1, payment_method: 6, amount: this.splitCard() }] : []),
+            ...(this.splitCash() > 0 ? [{ account_no: 1, payment_method: 1, amount: this.splitCash() }] : []),
+            ...(this.splitMfs() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitMfs() }] : []),
+          ]
+        : this.splitPayments().length > 0
         ? this.splitPayments().map(p => ({
             account_no: 1,
             payment_method: p.method === 'Cash' ? 1 : p.method === 'Card' ? 6 : 3,
@@ -1888,21 +2745,63 @@ export class PosTerminalComponent implements OnInit {
           ],
     };
 
+    // If split mode was selected but all amounts were 0, default to cash full
+    if (this.selectedPaymentType() === 8 && salePayload.payments.length === 0) {
+      salePayload.payments = [
+        { account_no: 1, payment_method: 1, amount: this.finalPrice() }
+      ];
+    }
+
     this.posSaleService.createSale(salePayload).subscribe({
       next: res => {
         if (res.success && res.data) {
+          const soldCart = [...this.cart()];
+          const wasWholesale = this.isWholesale();
           this.lastPrintedInvoice = res.data;
-          this.lastPrintedItems = [...this.cart()];
+          this.lastPrintedItems = soldCart;
+
+          // Set tender breakdown for receipt
+          if (this.selectedPaymentType() === 8) {
+            this.lastPrintedPayments = [
+              ...(this.splitCard() > 0 ? [{ method: 'Card', amount: this.splitCard() }] : []),
+              ...(this.splitCash() > 0 ? [{ method: 'Cash', amount: this.splitCash() }] : []),
+              ...(this.splitMfs() > 0 ? [{ method: 'MFS (bKash/Nagad)', amount: this.splitMfs() }] : []),
+            ];
+          } else {
+            const methodLabel = this.selectedPaymentType() === 1 ? 'Cash'
+              : this.selectedPaymentType() === 6 ? 'Card'
+              : this.selectedPaymentType() === 3 ? 'MFS'
+              : this.selectedPaymentType() === 4 ? 'Due' : 'Cash';
+            this.lastPrintedPayments = [{ method: methodLabel, amount: this.totalPaid() }];
+          }
+
           this.msg.success(`Sale ${res.data.sales_number} completed! Total: ৳ ${this.finalPrice().toFixed(2)}`);
 
           if (this.quickPrint) {
             this.isReceiptModalVisible = true;
           }
 
+          // Immediately deduct sold quantities in local catalog signal
+          this.catalogProducts.update(list =>
+            list.map(p => {
+              const soldPcs = soldCart
+                .filter(i => i.product_no === p.id || i.product_name === p.name)
+                .reduce((sum, i) => sum + (wasWholesale ? Math.round(i.qty * (i.pcs_per_box || p.pcsPerBox || 10)) : Math.round(i.qty)), 0);
+              return soldPcs > 0 ? { ...p, stock: Math.max(0, p.stock - soldPcs) } : p;
+            })
+          );
+
           this.cart.set([]);
+          this.isManualTender.set(false);
           this.tendered.set(0);
           this.splitPayments.set([]);
+          this.splitCash.set(0);
+          this.splitCard.set(0);
+          this.splitMfs.set(0);
           this.globalDiscountValue.set(0);
+
+          // Refresh authoritative product stock from backend
+          this.loadProducts();
         } else {
           this.msg.error(res.message || 'Failed to complete sale');
         }

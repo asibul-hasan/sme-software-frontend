@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -40,6 +41,7 @@ interface PurchaseRecordRow {
     FormsModule,
     RouterModule,
     NzInputModule,
+    NzInputNumberModule,
     NzButtonModule,
     NzSelectModule,
     NzModalModule,
@@ -125,10 +127,14 @@ interface PurchaseRecordRow {
           </div>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportPurchasesCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="primary" routerLink="/supplier/purchase" class="rounded-md">
             <span nz-icon nzType="plus"></span> New Purchase Entry
           </a>
         </div>
+
       </app-page-header>
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
@@ -302,7 +308,167 @@ interface PurchaseRecordRow {
         </button>
       </ng-template>
     </nz-modal>
+
+    <!-- Printable Purchase Voucher Modal -->
+    <nz-modal
+      [(nzVisible)]="isPrintModalVisible"
+      [nzTitle]="'Purchase Voucher: ' + (printingRecord?.ref || '')"
+      [nzCentered]="true"
+      [nzWidth]="680"
+      [nzFooter]="printFooter"
+      (nzOnCancel)="isPrintModalVisible = false"
+    >
+      <ng-container *nzModalContent>
+        @if (printingRecord) {
+          <div id="purchase-voucher" class="p-5 bg-white text-black text-xs border border-slate-300 rounded shadow-xs max-w-[620px] mx-auto select-none font-sans">
+            <div class="flex justify-between items-start pb-3 border-b-2 border-slate-800">
+              <div>
+                <div class="text-base font-black uppercase text-slate-900 tracking-wider">Aidly Model Pharmacy</div>
+                <div class="text-[11px] text-slate-600">Main Central Branch, Banani, Dhaka</div>
+                <div class="text-[11px] text-slate-600">Goods Receiving & Inward Procurement Voucher</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-900">{{ printingRecord.ref }}</div>
+                <div class="text-[11px] text-slate-500">{{ printingRecord.date }}</div>
+                <nz-tag nzColor="blue">{{ printingRecord.type }}</nz-tag>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 py-3 border-b border-slate-200 text-xs">
+              <div>
+                <span class="text-slate-500 block text-[11px]">Vendor / Supplier:</span>
+                <span class="font-bold text-slate-800 text-sm">{{ printingRecord.supplier }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-500 block text-[11px]">Payment Mode:</span>
+                <span class="font-semibold text-slate-700">Credit Supplier Payable</span>
+              </div>
+            </div>
+
+            <table class="w-full text-xs my-3 border-collapse">
+              <thead>
+                <tr class="border-b border-slate-400 bg-slate-100 text-slate-700 font-semibold text-left">
+                  <th class="p-2">Item Formulation</th>
+                  <th class="p-2 text-center">Inward Qty</th>
+                  <th class="p-2 text-right">Unit Cost (৳)</th>
+                  <th class="p-2 text-right">Line Total (৳)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                @for (item of printingRecord.lines; track item.name) {
+                  <tr>
+                    <td class="p-2 font-medium text-slate-900">{{ item.name }}</td>
+                    <td class="p-2 text-center font-mono">{{ item.qty }}</td>
+                    <td class="p-2 text-right font-mono">৳ {{ item.unitPrice | number:'1.2-2' }}</td>
+                    <td class="p-2 text-right font-mono font-bold text-slate-900">৳ {{ item.total | number:'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="border-t-2 border-slate-800 pt-2 space-y-1 text-xs">
+              <div class="flex justify-between text-slate-600"><span>Gross Value:</span><span>৳ {{ printingRecord.gross | number:'1.2-2' }}</span></div>
+              @if (printingRecord.disc > 0) {
+                <div class="flex justify-between text-slate-600"><span>Discount Allowed:</span><span>-৳ {{ printingRecord.disc | number:'1.2-2' }}</span></div>
+              }
+              <div class="flex justify-between font-bold text-sm text-slate-900 pt-1 border-t border-slate-300">
+                <span>Net Inward Amount:</span>
+                <span>৳ {{ printingRecord.net | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 pt-10 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Store In-Charge Signature</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Authorized Pharmacist Sign</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #printFooter>
+        <button nz-button nzType="default" (click)="isPrintModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="triggerPrint()">
+          <span nz-icon nzType="printer"></span> Print Voucher
+        </button>
+      </ng-template>
+    </nz-modal>
+
+    <!-- Supplier Return Entry Modal -->
+    <nz-modal
+      [(nzVisible)]="isReturnModalVisible"
+      [nzTitle]="'Supplier Return: ' + (returnRecord?.ref || '')"
+      nzOkText="Submit Supplier Return"
+      (nzOnCancel)="isReturnModalVisible = false"
+      (nzOnOk)="submitSupplierReturn()"
+      nzWidth="580px"
+    >
+      <ng-container *nzModalContent>
+        @if (returnRecord) {
+          <div class="space-y-3 py-1 text-xs">
+            <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center text-xs">
+              <div>
+                <span class="text-slate-400 block text-[11px]">Supplier:</span>
+                <span class="font-bold text-slate-800">{{ returnRecord.supplier }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 block text-[11px]">Invoice Date:</span>
+                <span class="font-semibold text-slate-700">{{ returnRecord.date }}</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Return Reason</label>
+              <nz-select class="w-full" [(ngModel)]="returnReason">
+                <nz-option nzValue="Damaged / Expired Batch" nzLabel="Damaged / Near Expiry Batch"></nz-option>
+                <nz-option nzValue="Wrong Medicine Received" nzLabel="Wrong Formulation / Excess Supplied"></nz-option>
+                <nz-option nzValue="Price Discrepancy" nzLabel="Rate Higher Than Purchase Order"></nz-option>
+                <nz-option nzValue="Other" nzLabel="Other Discrepancy"></nz-option>
+              </nz-select>
+            </div>
+
+            <div class="border border-slate-200 rounded-lg overflow-hidden">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2">Item</th>
+                    <th class="p-2 text-center">Purchased Qty</th>
+                    <th class="p-2 text-center">Return Qty</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (item of returnRecord.lines; track item.name) {
+                    <tr>
+                      <td class="p-2 font-medium text-slate-800">{{ item.name }}</td>
+                      <td class="p-2 text-center font-mono text-slate-500">{{ item.qty }}</td>
+                      <td class="p-2 text-center">
+                        <nz-input-number
+                          class="w-20"
+                          [nzMin]="0"
+                          [nzMax]="item.qty"
+                          [(ngModel)]="returnQtyMap[item.name]"
+                        ></nz-input-number>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Additional Return Notes</label>
+              <textarea
+                nz-input
+                rows="2"
+                placeholder="Remarks for supplier debit note..."
+                [(ngModel)]="returnNote"
+                class="rounded-md text-xs"
+              ></textarea>
+            </div>
+          </div>
+        }
+      </ng-container>
+    </nz-modal>
   `,
+
 })
 export class PurchaseRecordComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
@@ -345,6 +511,17 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   // Details Modal
   isDetailsOpen = false;
   selectedRecord: PurchaseRecordRow | null = null;
+
+  // Print Voucher Modal
+  isPrintModalVisible = false;
+  printingRecord: PurchaseRecordRow | null = null;
+
+  // Return Modal
+  isReturnModalVisible = false;
+  returnRecord: PurchaseRecordRow | null = null;
+  returnReason = 'Damaged / Expired Batch';
+  returnNote = '';
+  returnQtyMap: Record<string, number> = {};
 
   ngOnInit(): void {
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
@@ -432,11 +609,58 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   printInvoice(r: PurchaseRecordRow): void {
-    this.msg.success(`Printing purchase invoice voucher: ${r.ref}`);
+    this.printingRecord = r;
+    this.isPrintModalVisible = true;
+  }
+
+  triggerPrint(): void {
+    window.print();
   }
 
   initiateReturn(r: PurchaseRecordRow): void {
-    this.msg.info(`Initiating supplier return for ${r.ref} (${r.supplier})`);
+    this.returnRecord = r;
+    this.returnReason = 'Damaged / Expired Batch';
+    this.returnNote = '';
+    this.returnQtyMap = {};
+    for (const line of r.lines) {
+      this.returnQtyMap[line.name] = line.qty;
+    }
+    this.isReturnModalVisible = true;
+  }
+
+  submitSupplierReturn(): void {
+    if (!this.returnRecord) return;
+    this.msg.success(`Supplier return request for ${this.returnRecord.ref} submitted successfully.`);
+    this.isReturnModalVisible = false;
+  }
+
+  exportPurchasesCsv(): void {
+    const list = this.filteredRecords();
+    if (!list.length) {
+      this.msg.warning('No purchase records to export.');
+      return;
+    }
+    const headers = ['Voucher Ref', 'Date', 'Supplier', 'Type', 'Gross Amount (৳)', 'Discount (৳)', 'Net Total (৳)'];
+    const rows = list.map(r => [
+      `"${r.ref}"`,
+      `"${r.date}"`,
+      `"${(r.supplier || '').replace(/"/g, '""')}"`,
+      `"${r.type}"`,
+      r.gross.toFixed(2),
+      r.disc.toFixed(2),
+      r.net.toFixed(2)
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `purchase_records_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} purchase vouchers to CSV`);
   }
 
   deleteInvoice(r: PurchaseRecordRow): void {

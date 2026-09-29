@@ -114,6 +114,9 @@ interface ExpenseRow {
           </div>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportExpensesCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <button nz-button nzType="dashed" class="rounded-md" (click)="openCatModal()">
             <span nz-icon nzType="folder-add"></span> + Category
           </button>
@@ -344,6 +347,60 @@ interface ExpenseRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Expense Voucher Modal -->
+    <nz-modal
+      [(nzVisible)]="isVoucherModalOpen"
+      nzTitle="Operating Expense Voucher"
+      [nzFooter]="voucherFooter"
+      (nzOnCancel)="isVoucherModalOpen = false"
+      nzWidth="600px"
+      [nzStyle]="{ top: '30px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedVoucher) {
+          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+            <div class="text-center border-b pb-3 border-slate-200">
+              <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
+              <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
+              <div class="inline-block mt-1 px-3 py-0.5 bg-rose-50 text-rose-700 font-bold text-xs rounded border border-rose-200">
+                DEBIT / EXPENSE VOUCHER
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Voucher No:</span> <strong class="font-mono text-slate-900 ml-1">{{ selectedVoucher.voucher }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Date:</span> <span class="font-mono text-slate-800 ml-1">{{ selectedVoucher.date }}</span></div>
+              <div><span class="text-slate-400">Category:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedVoucher.category }}</span></div>
+              <div class="text-right"><span class="text-slate-400">Paid Via:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedVoucher.account }} ({{ selectedVoucher.payment }})</span></div>
+              <div class="col-span-2"><span class="text-slate-400">Narration / Note:</span> <span class="text-slate-800 ml-1">{{ selectedVoucher.note || 'None' }}</span></div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-md p-3 flex justify-between items-center">
+              <div>
+                <span class="text-xs font-semibold uppercase text-slate-500 block">Total Amount Disbursed</span>
+                <span class="text-xs text-slate-400 italic">Paid from {{ selectedVoucher.account }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xl font-bold font-mono text-rose-600">৳ {{ selectedVoucher.amount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 pt-8 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Prepared By</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Checked By</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Receiver Signature</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #voucherFooter>
+        <button nz-button nzType="default" (click)="isVoucherModalOpen = false">Close</button>
+        <button nz-button nzType="primary" (click)="printVoucher()">
+          <span nz-icon nzType="printer"></span> Print Voucher
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class ExpensesComponent implements OnInit, OnDestroy {
@@ -569,16 +626,59 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     });
   }
 
+  isVoucherModalOpen = false;
+  selectedVoucher: ExpenseRow | null = null;
+
   viewExpense(e: ExpenseRow): void {
-    this.msg.info(`Voucher: ${e.voucher} | ${e.category} | ৳ ${e.amount.toLocaleString()}`);
+    this.selectedVoucher = e;
+    this.isVoucherModalOpen = true;
+  }
+
+  printVoucher(): void {
+    window.print();
   }
 
   deleteExpense(e: ExpenseRow): void {
-    this.modal.confirmDelete(`Voucher ${e.voucher}`, 'This will reverse the expense entry.').subscribe(ok => {
+    this.modal.confirmDelete(`Voucher ${e.voucher}`, 'This will permanently remove and reverse this expense entry.').subscribe(ok => {
       if (ok) {
-        this.expenses.update(list => list.filter(item => item.id !== e.id));
-        this.msg.success(`Expense voucher ${e.voucher} removed.`);
+        this.accountingService.deleteExpense(Number(e.id)).subscribe({
+          next: () => {
+            this.expenses.update(list => list.filter(item => item.id !== e.id));
+            this.msg.success(`Expense voucher ${e.voucher} removed and reversed.`);
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to delete expense voucher');
+          }
+        });
       }
     });
+  }
+
+  exportExpensesCsv(): void {
+    const list = this.filteredExpenses();
+    if (!list.length) {
+      this.msg.warning('No expenses to export.');
+      return;
+    }
+    const headers = ['SL', 'Voucher', 'Date', 'Category', 'Account', 'Payment Method', 'Amount (BDT)', 'Note'];
+    const rows = list.map((e, i) => [
+      i + 1,
+      `"${e.voucher}"`,
+      `"${e.date}"`,
+      `"${e.category}"`,
+      `"${e.account}"`,
+      `"${e.payment}"`,
+      e.amount.toFixed(2),
+      `"${(e.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expenses_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} expense vouchers.`);
   }
 }

@@ -169,6 +169,29 @@ nz-select-top-control {
   color: inherit !important;
 }
 
+/* POS Medicine Search Dropdown Styling (Show 5 items comfortably) */
+.product-search-dropdown {
+  min-width: 480px !important;
+}
+
+.product-search-dropdown .cdk-virtual-scroll-viewport {
+  min-height: 280px !important;
+  max-height: 350px !important;
+}
+
+.product-search-dropdown .ant-select-item {
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 2px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+.product-search-dropdown .ant-select-item-option-content {
+  width: 100% !important;
+}
+
 .ant-select-item-option-active:not(.ant-select-item-option-disabled):not(.ant-select-item-option-selected) {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;

@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -21,6 +21,7 @@ import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.models';
 
 interface SaleRecordRow {
+  sale_invoice_no: number;
   inv: string;
   date: string;
   customer: string;
@@ -125,10 +126,14 @@ interface SaleRecordRow {
           </div>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportSalesCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="primary" routerLink="/customer/sale" class="rounded-md">
             <span nz-icon nzType="shopping-cart"></span> Open POS Terminal
           </a>
         </div>
+
       </app-page-header>
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
@@ -317,13 +322,88 @@ interface SaleRecordRow {
         </button>
       </ng-template>
     </nz-modal>
+
+    <!-- 80mm Thermal Receipt Preview Modal -->
+    <nz-modal
+      [(nzVisible)]="isReceiptModalVisible"
+      nzTitle="80mm Thermal POS Receipt Preview"
+      [nzCentered]="true"
+      [nzWidth]="380"
+      [nzFooter]="receiptFooter"
+      (nzOnCancel)="isReceiptModalVisible = false"
+    >
+      <ng-container *nzModalContent>
+        @if (printingSale) {
+          <div id="thermal-receipt" class="p-4 bg-white text-black font-mono text-xs border border-dashed border-slate-300 rounded shadow-xs max-w-[340px] mx-auto select-none">
+            <div class="text-center pb-2 border-b border-dashed border-slate-400">
+              <div class="text-sm font-black uppercase">Aidly Model Pharmacy</div>
+              <div class="text-[10px] text-slate-600">Main Branch (Banani), Dhaka</div>
+              <div class="text-[10px] text-slate-600">Hotline: +880 1700-000000</div>
+              <div class="text-[10px] text-slate-600">DL: DL-2024-DH-8841</div>
+            </div>
+            <div class="py-2 border-b border-dashed border-slate-400 text-[10px] space-y-0.5">
+              <div class="flex justify-between"><span>Bill No:</span><span class="font-bold">{{ printingSale.inv }}</span></div>
+              <div class="flex justify-between"><span>Date:</span><span>{{ printingSale.date }}</span></div>
+              <div class="flex justify-between"><span>Customer:</span><span>{{ printingSale.customer }}</span></div>
+              <div class="flex justify-between"><span>Salesman:</span><span>{{ printingSale.salesman }}</span></div>
+            </div>
+            <table class="w-full text-[10px] my-2 border-collapse">
+              <thead>
+                <tr class="border-b border-slate-400 text-left">
+                  <th class="py-1">Item</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-right">Price</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of printingSale.lines; track item.name) {
+                  <tr>
+                    <td class="py-0.5 pr-1 truncate max-w-[120px]">{{ item.name }}</td>
+                    <td class="text-center">{{ item.qty }}</td>
+                    <td class="text-right">{{ item.price | number: '1.2-2' }}</td>
+                    <td class="text-right">{{ item.total | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="border-t border-dashed border-slate-400 pt-1 text-[10px] space-y-0.5">
+              <div class="flex justify-between"><span>Subtotal:</span><span>৳ {{ printingSale.subtotal | number: '1.2-2' }}</span></div>
+              @if (printingSale.disc > 0) {
+                <div class="flex justify-between"><span>Discount:</span><span>-৳ {{ printingSale.disc | number: '1.2-2' }}</span></div>
+              }
+              <div class="flex justify-between font-bold text-xs pt-1 border-t border-slate-300">
+                <span>Net Payable:</span>
+                <span>৳ {{ printingSale.total | number: '1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between"><span>Paid Amount:</span><span>৳ {{ printingSale.paid | number: '1.2-2' }}</span></div>
+              @if (printingSale.due > 0) {
+                <div class="flex justify-between text-rose-600 font-bold"><span>Due Remaining:</span><span>৳ {{ printingSale.due | number: '1.2-2' }}</span></div>
+              }
+            </div>
+            <div class="text-center pt-3 text-[10px] text-slate-500 border-t border-dashed border-slate-400 mt-2">
+              <div>*** Thank You for Shopping! ***</div>
+              <div class="text-[9px]">Medicines sold cannot be returned without receipt</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #receiptFooter>
+        <button nz-button nzType="default" (click)="isReceiptModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="triggerPrint()">
+          <span nz-icon nzType="printer"></span> Print Receipt
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
+
 })
 export class SaleRecordComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly posSaleService = inject(PosSaleService);
   private readonly customerService = inject(CustomerService);
+  private readonly router = inject(Router);
 
   sales = signal<SaleRecordRow[]>([]);
   customers = signal<Customer[]>([]);
@@ -359,6 +439,9 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
 
   isDetailsOpen = false;
   selectedSale: SaleRecordRow | null = null;
+
+  isReceiptModalVisible = false;
+  printingSale: SaleRecordRow | null = null;
 
   ngOnInit(): void {
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
@@ -405,6 +488,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       next: (res) => {
         const invoices = res.data?.items || [];
         const rows: SaleRecordRow[] = invoices.map(inv => ({
+          sale_invoice_no: inv.sale_invoice_no,
           inv: inv.sales_number || `INV-${inv.sale_invoice_no}`,
           date: inv.sale_timestamp ? new Date(inv.sale_timestamp).toLocaleString('en-GB') : '',
           customer: inv.customer?.name || inv.customer_name || 'Walk-in',
@@ -443,7 +527,12 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   printReceipt(s: SaleRecordRow): void {
-    this.msg.success(`Printing POS sales receipt for ${s.inv}`);
+    this.printingSale = s;
+    this.isReceiptModalVisible = true;
+  }
+
+  triggerPrint(): void {
+    window.print();
   }
 
   viewInvoiceDetails(s: SaleRecordRow): void {
@@ -452,20 +541,68 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   initiateReturn(s: SaleRecordRow): void {
-    this.msg.info(`Redirecting to Return Entry for invoice ${s.inv}`);
+    this.router.navigate(['/customer/returns'], { queryParams: { invoice: s.inv } });
   }
 
   deleteInvoice(s: SaleRecordRow): void {
     this.modal.confirmAction(
       'Void Sale Invoice?',
-      `Are you sure you want to void and reverse sales invoice "${s.inv}" for ${s.customer}? Compensating double-entry ledger reversal will be recorded.`,
+      `Are you sure you want to void and reverse sales invoice "${s.inv}" for ${s.customer}? Sold medicines will be restored back into inventory.`,
       'Void Invoice',
       true
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.sales.update(list => list.filter(item => item.inv !== s.inv));
-        this.msg.success(`Sales invoice "${s.inv}" voided successfully`);
+        this.posSaleService.voidSale(s.sale_invoice_no).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.sales.update(list => list.filter(item => item.inv !== s.inv));
+              this.msg.success(`Sales invoice "${s.inv}" voided and stock restored successfully`);
+              if (this.selectedSale?.inv === s.inv) {
+                this.isDetailsOpen = false;
+              }
+            } else {
+              this.msg.error(res.message || 'Failed to void invoice');
+            }
+          },
+          error: (err) => {
+            this.msg.error(err?.error?.message || 'Failed to void invoice');
+          }
+        });
       }
     });
   }
+
+  exportSalesCsv(): void {
+    const list = this.filteredSales();
+    if (!list.length) {
+      this.msg.warning('No sales records to export.');
+      return;
+    }
+    const headers = ['Invoice No', 'Date', 'Customer', 'Salesman', 'Items Count', 'Payment Method', 'Subtotal (৳)', 'Discount (৳)', 'Net Total (৳)', 'Paid (৳)', 'Due (৳)'];
+    const rows = list.map(s => [
+      `"${s.inv}"`,
+      `"${s.date}"`,
+      `"${(s.customer || '').replace(/"/g, '""')}"`,
+      `"${(s.salesman || '').replace(/"/g, '""')}"`,
+      s.items,
+      `"${s.payment}"`,
+      s.subtotal.toFixed(2),
+      s.disc.toFixed(2),
+      s.total.toFixed(2),
+      s.paid.toFixed(2),
+      s.due.toFixed(2)
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pos_sales_records_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} sales records to CSV`);
+  }
 }
+

@@ -59,6 +59,9 @@ interface AccountRow {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportAccountsCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="default" routerLink="/accounting/transaction/add" class="rounded-md">
             <span nz-icon nzType="plus"></span> Account Form
           </a>
@@ -233,6 +236,84 @@ interface AccountRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Account Statement Modal -->
+    <nz-modal
+      [(nzVisible)]="isStatementModalVisible"
+      nzTitle="Account Statement & Ledger"
+      [nzFooter]="statementFooter"
+      (nzOnCancel)="isStatementModalVisible = false"
+      nzWidth="750px"
+      [nzStyle]="{ top: '24px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedAccount) {
+          <div class="space-y-3 py-1 text-slate-800 text-xs">
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-slate-900 mb-0">{{ selectedAccount.name }}</h3>
+                  <nz-tag [nzColor]="selectedAccount.type === 'Cash' ? 'green' : selectedAccount.type === 'Bank' ? 'blue' : 'gold'">
+                    {{ selectedAccount.type }}
+                  </nz-tag>
+                </div>
+                <p class="text-xs text-slate-500 mb-0">{{ selectedAccount.provider }} · {{ selectedAccount.number }}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-[11px] text-slate-400 uppercase font-semibold block">Current Balance</span>
+                <span class="text-base font-bold font-mono text-emerald-700">৳ {{ selectedAccount.balance | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <!-- Ledger Table -->
+            <div class="max-h-72 overflow-y-auto border border-slate-200 rounded-md">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 sticky top-0 uppercase font-semibold text-[10px]">
+                  <tr>
+                    <th class="p-2">Date</th>
+                    <th class="p-2">Ref / Voucher</th>
+                    <th class="p-2">Narration</th>
+                    <th class="p-2 text-right">Debit (৳)</th>
+                    <th class="p-2 text-right">Credit (৳)</th>
+                    <th class="p-2 text-right">Balance (৳)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (tx of accountTransactions(); track tx.ledger_no) {
+                    <tr class="hover:bg-slate-50">
+                      <td class="p-2 font-mono text-slate-500">{{ tx.transaction_date | date:'short' }}</td>
+                      <td class="p-2 font-mono font-medium text-slate-800">{{ tx.source_document_no || '—' }}</td>
+                      <td class="p-2 text-slate-600">{{ tx.narration || tx.source_document_type }}</td>
+                      <td class="p-2 text-right font-mono text-emerald-600 font-semibold">
+                        {{ tx.debit_amount > 0 ? (tx.debit_amount | number:'1.2-2') : '—' }}
+                      </td>
+                      <td class="p-2 text-right font-mono text-rose-600 font-semibold">
+                        {{ tx.credit_amount > 0 ? (tx.credit_amount | number:'1.2-2') : '—' }}
+                      </td>
+                      <td class="p-2 text-right font-mono font-bold text-slate-900">
+                        ৳ {{ tx.balance_after | number:'1.2-2' }}
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="p-4 text-center text-slate-400">
+                        {{ isLoadingStatement ? 'Loading ledger statement...' : 'No transactions recorded for this account.' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #statementFooter>
+        <button nz-button nzType="default" (click)="isStatementModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="printStatement()">
+          <span nz-icon nzType="printer"></span> Print Statement
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class AccountsComponent implements OnInit {
@@ -372,8 +453,58 @@ export class AccountsComponent implements OnInit {
     }
   }
 
+  isStatementModalVisible = false;
+  selectedAccount: AccountRow | null = null;
+  accountTransactions = signal<any[]>([]);
+  isLoadingStatement = false;
+
   viewStatement(a: AccountRow): void {
-    this.msg.info(`Viewing transactions and ledger for ${a.name}`);
+    this.selectedAccount = a;
+    this.accountTransactions.set([]);
+    this.isLoadingStatement = true;
+    this.isStatementModalVisible = true;
+    this.accountingService.getAccountStatement(a.account_no).subscribe({
+      next: res => {
+        this.isLoadingStatement = false;
+        if (res.success && res.data) {
+          this.accountTransactions.set(res.data.transactions || []);
+        }
+      },
+      error: () => {
+        this.isLoadingStatement = false;
+        this.msg.error('Failed to load account ledger statement.');
+      }
+    });
+  }
+
+  printStatement(): void {
+    window.print();
+  }
+
+  exportAccountsCsv(): void {
+    const list = this.filteredAccounts();
+    if (!list.length) {
+      this.msg.warning('No accounts to export.');
+      return;
+    }
+    const headers = ['SL', 'Account Name', 'Type', 'Provider / Bank', 'Account Number', 'Current Balance (BDT)'];
+    const rows = list.map((a, i) => [
+      i + 1,
+      `"${a.name}"`,
+      `"${a.type}"`,
+      `"${a.provider}"`,
+      `"${a.number}"`,
+      a.balance.toFixed(2)
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `accounts_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} transaction accounts.`);
   }
 
   deleteAccount(a: AccountRow): void {

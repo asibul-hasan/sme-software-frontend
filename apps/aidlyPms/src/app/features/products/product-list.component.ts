@@ -24,7 +24,7 @@ import {
   DEFAULT_GENERICS,
   DEFAULT_RAKS,
 } from '../../shared/constants/label-values.constant';
-import { ProdProduct, ProdCompany, ProdGeneric } from '../../core/models';
+import { ProdProduct, ProdCompany, ProdGeneric, ProdProductBatch } from '../../core/models';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 
@@ -643,7 +643,174 @@ export type ProductRow = ProdProduct & {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- View Product Details & Batches Modal -->
+    <nz-modal
+      [(nzVisible)]="isViewDetailsModalVisible"
+      [nzTitle]="'Product Details: ' + (selectedProductDetails?.product_name || '')"
+      [nzFooter]="viewDetailsFooter"
+      (nzOnCancel)="isViewDetailsModalVisible = false"
+      nzWidth="720px"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedProductDetails) {
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
+              <div>
+                <span class="text-slate-400 block">Manufacturer:</span>
+                <span class="font-bold text-slate-800">{{ selectedProductDetails.company_name || 'N/A' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Generic:</span>
+                <span class="font-semibold text-slate-700">{{ selectedProductDetails.generic_name || 'N/A' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Strength & Form:</span>
+                <span class="font-medium text-slate-700">{{ selectedProductDetails.strength || '' }} ({{ selectedProductDetails.medicine_type_label || 'Tablet' }})</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Shelf / Rak:</span>
+                <nz-tag nzColor="purple">{{ selectedProductDetails.rak_number || 'Unassigned' }}</nz-tag>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Current Stock:</span>
+                <span class="font-bold text-emerald-600 text-sm font-mono">{{ selectedProductDetails.stock_qty || 0 }} pcs</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Qty / Box:</span>
+                <span class="font-semibold text-slate-700 font-mono">{{ selectedProductDetails.quantity_per_box || 1 }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Cost / Box:</span>
+                <span class="font-semibold text-slate-700 font-mono">৳ {{ selectedProductDetails.cost_per_box | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Sale / Box:</span>
+                <span class="font-bold theme-total-text font-mono">৳ {{ selectedProductDetails.sale_price_per_box | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-xs text-slate-700 uppercase tracking-wider">Active Inventory Batches</span>
+                <span class="text-xs text-slate-400">{{ productBatches.length }} batch(es) found</span>
+              </div>
+              <div class="border border-slate-200 rounded-lg overflow-hidden">
+                <table class="w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th class="p-2">Batch #</th>
+                      <th class="p-2">Expiry Date</th>
+                      <th class="p-2 text-center">Box Qty</th>
+                      <th class="p-2 text-center">Pcs</th>
+                      <th class="p-2 text-right">Cost/Box</th>
+                      <th class="p-2 text-right">Sale/Box</th>
+                      <th class="p-2 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (b of productBatches; track b.batch_no) {
+                      <tr>
+                        <td class="p-2 font-mono font-semibold text-slate-800">{{ b.batch_number }}</td>
+                        <td class="p-2 font-mono text-slate-600">{{ b.expiry_date | date:'dd/MM/yyyy' }}</td>
+                        <td class="p-2 text-center font-mono">{{ b.box_quantity }}</td>
+                        <td class="p-2 text-center font-mono font-bold text-slate-900">{{ b.total_quantity_pcs }}</td>
+                        <td class="p-2 text-right font-mono">৳ {{ b.cost_per_box | number:'1.2-2' }}</td>
+                        <td class="p-2 text-right font-mono font-bold theme-total-text">৳ {{ b.sale_price_per_box | number:'1.2-2' }}</td>
+                        <td class="p-2 text-center">
+                          <nz-tag [nzColor]="b.is_expired ? 'error' : (b.total_quantity_pcs > 0 ? 'success' : 'default')">
+                            {{ b.is_expired ? 'Expired' : (b.total_quantity_pcs > 0 ? 'Active' : 'Depleted') }}
+                          </nz-tag>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" class="p-4 text-center text-slate-400">
+                          {{ isLoadingBatches ? 'Loading batches from database...' : 'No batch records found for this product.' }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #viewDetailsFooter>
+        <button nz-button nzType="default" (click)="isViewDetailsModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="isViewDetailsModalVisible = false; adjustStock(selectedProductDetails!)">
+          <span nz-icon nzType="sliders"></span> Adjust Stock
+        </button>
+      </ng-template>
+    </nz-modal>
+
+    <!-- Adjust Stock Modal -->
+    <nz-modal
+      [(nzVisible)]="isAdjustStockModalVisible"
+      [nzTitle]="'Stock Adjustment: ' + (adjustProductItem?.product_name || '')"
+      [nzOkText]="'Save Stock Adjustment'"
+      [nzOkLoading]="isAdjustingStock"
+      (nzOnCancel)="isAdjustStockModalVisible = false"
+      (nzOnOk)="saveStockAdjustment()"
+      nzWidth="480px"
+    >
+      <ng-container *nzModalContent>
+        @if (adjustProductItem) {
+          <div class="space-y-3 py-1 text-xs">
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <span class="text-slate-400 block text-[11px]">Current System Stock:</span>
+                <span class="font-mono font-bold text-slate-800 text-base">{{ adjustProductItem.stock_qty || 0 }} pcs</span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 block text-[11px]">Net Adjustment Diff:</span>
+                <span class="font-mono font-bold text-sm" [ngClass]="(adjustTargetStock - (adjustProductItem.stock_qty || 0)) >= 0 ? 'text-emerald-600' : 'text-rose-600'">
+                  {{ (adjustTargetStock - (adjustProductItem.stock_qty || 0)) > 0 ? '+' : '' }}{{ adjustTargetStock - (adjustProductItem.stock_qty || 0) }} pcs
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">
+                New Physical Stock Count (Pieces) <span class="text-rose-500">*</span>
+              </label>
+              <nz-input-number
+                class="w-full"
+                [nzMin]="0"
+                [nzStep]="1"
+                [(ngModel)]="adjustTargetStock"
+                nzPlaceHolder="Enter audited physical count"
+              ></nz-input-number>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Reason for Adjustment</label>
+              <nz-select class="w-full" [(ngModel)]="adjustReason">
+                <nz-option nzValue="Physical Stock Audit" nzLabel="Physical Stock Audit / Inventory Count"></nz-option>
+                <nz-option nzValue="Damaged Goods" nzLabel="Damaged / Broken Packaging"></nz-option>
+                <nz-option nzValue="Expired Medicine" nzLabel="Expired Medicine Discarded"></nz-option>
+                <nz-option nzValue="Data Entry Correction" nzLabel="Initial Opening Stock Correction"></nz-option>
+                <nz-option nzValue="Other" nzLabel="Other Discrepancy"></nz-option>
+              </nz-select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Remarks / Auditor Note</label>
+              <textarea
+                nz-input
+                rows="2"
+                placeholder="Optional explanation notes for audit ledger..."
+                [(ngModel)]="adjustRemarks"
+                class="rounded-md text-xs"
+              ></textarea>
+            </div>
+          </div>
+        }
+      </ng-container>
+    </nz-modal>
   `,
+
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
@@ -676,6 +843,20 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   isAddRakModalVisible = false;
   newRakLocation = '';
+
+  // View Details Modal State
+  selectedProductDetails: ProductRow | null = null;
+  productBatches: ProdProductBatch[] = [];
+  isLoadingBatches = false;
+  isViewDetailsModalVisible = false;
+
+  // Stock Adjustment Modal State
+  adjustProductItem: ProductRow | null = null;
+  adjustTargetStock = 0;
+  adjustReason = 'Physical Stock Audit';
+  adjustRemarks = '';
+  isAdjustStockModalVisible = false;
+  isAdjustingStock = false;
 
   products: ProductRow[] = [];
 
@@ -840,7 +1021,35 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   downloadStock(): void {
-    this.msg.success('Stock downloaded successfully!');
+    if (!this.filteredProducts.length) {
+      this.msg.warning('No products available to download.');
+      return;
+    }
+    const headers = ['Product Name', 'Generic', 'Manufacturer', 'Type', 'Strength', 'Shelf/Rak', 'Stock (pcs)', 'Cost/Box', 'Sale/Box', 'Retail Price/Pc (৳)', 'Stock Value (৳)'];
+    const rows = this.filteredProducts.map(p => [
+      `"${(p.product_name || '').replace(/"/g, '""')}"`,
+      `"${(p.generic_name || '').replace(/"/g, '""')}"`,
+      `"${(p.company_name || '').replace(/"/g, '""')}"`,
+      `"${p.medicine_type_label || ''}"`,
+      `"${p.strength || ''}"`,
+      `"${p.rak_number || ''}"`,
+      p.stock_qty || 0,
+      p.cost_per_box || 0,
+      p.sale_price_per_box || 0,
+      p.sale_price_per_piece || 0,
+      ((p.stock_qty || 0) * (p.purchase_price_per_piece || 0)).toFixed(2)
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pharmacy_stock_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Downloaded stock inventory (${this.filteredProducts.length} items)`);
   }
 
   openAddCompanyModal(): void {
@@ -937,11 +1146,59 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   viewDetails(item: ProductRow): void {
-    this.msg.info(`Viewing details for ${item.product_name}`);
+    this.selectedProductDetails = item;
+    this.isViewDetailsModalVisible = true;
+    this.isLoadingBatches = true;
+    this.productBatches = [];
+    this.productService.getProductBatches(item.product_no).subscribe({
+      next: (res) => {
+        this.isLoadingBatches = false;
+        if (res.success && res.data) {
+          this.productBatches = res.data;
+        }
+      },
+      error: () => {
+        this.isLoadingBatches = false;
+      }
+    });
   }
 
   adjustStock(item: ProductRow): void {
-    this.msg.info(`Adjusting stock for ${item.product_name}`);
+    this.adjustProductItem = item;
+    this.adjustTargetStock = item.stock_qty || 0;
+    this.adjustReason = 'Physical Stock Audit';
+    this.adjustRemarks = '';
+    this.isAdjustStockModalVisible = true;
+  }
+
+  saveStockAdjustment(): void {
+    if (!this.adjustProductItem) return;
+    if (this.adjustTargetStock < 0) {
+      this.msg.error('Target stock cannot be negative');
+      return;
+    }
+    this.isAdjustingStock = true;
+    this.productService.adjustProductStock(this.adjustProductItem.product_no, {
+      target_stock_pcs: this.adjustTargetStock,
+      reason: this.adjustReason,
+      remarks: this.adjustRemarks
+    }).subscribe({
+      next: (res) => {
+        this.isAdjustingStock = false;
+        if (res.success) {
+          this.adjustProductItem!.stock_qty = this.adjustTargetStock;
+          this.applyFilters();
+          this.msg.success(`Stock for "${this.adjustProductItem!.product_name}" updated to ${this.adjustTargetStock} pcs!`);
+          this.isAdjustStockModalVisible = false;
+        } else {
+          this.msg.error(res.message || 'Failed to adjust stock');
+        }
+      },
+      error: (err) => {
+        this.isAdjustingStock = false;
+        this.msg.error(err?.error?.message || 'Failed to adjust stock');
+      }
+    });
   }
 
   refreshTable(): void {

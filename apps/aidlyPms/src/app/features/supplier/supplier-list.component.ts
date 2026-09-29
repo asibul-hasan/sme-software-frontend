@@ -12,6 +12,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
@@ -39,6 +40,7 @@ interface SupplierRow {
     NzIconModule,
     NzCheckboxModule,
     NzTooltipModule,
+    NzTagModule,
     PageHeaderComponent,
   ],
   template: `
@@ -87,6 +89,9 @@ interface SupplierRow {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportSuppliersCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="default" routerLink="/supplier/add" class="rounded-md">
             <span nz-icon nzType="form"></span> Supplier Form
           </a>
@@ -94,6 +99,7 @@ interface SupplierRow {
             <span nz-icon nzType="plus"></span> Add Supplier (F2)
           </button>
         </div>
+
       </app-page-header>
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
@@ -376,7 +382,91 @@ interface SupplierRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Vendor Ledger Modal -->
+    <nz-modal
+      [(nzVisible)]="isLedgerModalVisible"
+      [nzTitle]="'Vendor Ledger: ' + (activeLedgerSupplier?.name || '')"
+      [nzFooter]="ledgerFooter"
+      (nzOnCancel)="isLedgerModalVisible = false"
+      nzWidth="780px"
+    >
+      <ng-container *nzModalContent>
+        @if (activeLedgerSupplier) {
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
+              <div>
+                <span class="text-slate-400 block">Phone:</span>
+                <span class="font-bold text-slate-800">{{ activeLedgerSupplier.phone }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Current Outstanding Due:</span>
+                <span class="font-bold text-rose-600 font-mono text-sm">৳ {{ (activeLedgerSupplier.balance || 0) | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Vendor Note:</span>
+                <span class="text-slate-600 truncate">{{ activeLedgerSupplier.note || 'None' }}</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-xs text-slate-700 uppercase tracking-wider">Transaction History</span>
+                <span class="text-xs text-slate-400">{{ supplierLedgerEntries.length }} transaction(s)</span>
+              </div>
+              <div class="border border-slate-200 rounded-lg overflow-hidden max-h-72 overflow-y-auto">
+                <table class="w-full text-xs text-left">
+                  <thead class="sticky top-0 bg-slate-100 text-slate-600 font-semibold border-b border-slate-200 shadow-xs">
+                    <tr>
+                      <th class="p-2">Date</th>
+                      <th class="p-2">Doc #</th>
+                      <th class="p-2">Type</th>
+                      <th class="p-2 text-right">Purchase (৳)</th>
+                      <th class="p-2 text-right">Paid (৳)</th>
+                      <th class="p-2 text-right">Balance (৳)</th>
+                      <th class="p-2">Note</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (entry of supplierLedgerEntries; track (entry.doc_no + entry.doc_date)) {
+                      <tr>
+                        <td class="p-2 text-slate-600 font-mono">{{ entry.doc_date | date:'dd/MM/yy hh:mm a' }}</td>
+                        <td class="p-2 font-mono font-semibold text-slate-800">{{ entry.doc_no }}</td>
+                        <td class="p-2">
+                          <nz-tag [nzColor]="entry.doc_type === 'Purchase Invoice' ? 'blue' : 'purple'">
+                            {{ entry.doc_type }}
+                          </nz-tag>
+                        </td>
+                        <td class="p-2 text-right font-mono">{{ entry.debit > 0 ? (entry.debit | number:'1.2-2') : '—' }}</td>
+                        <td class="p-2 text-right font-mono text-emerald-600 font-semibold">{{ entry.credit > 0 ? (entry.credit | number:'1.2-2') : '—' }}</td>
+                        <td class="p-2 text-right font-mono font-bold" [ngClass]="entry.balance > 0 ? 'text-rose-600' : 'text-emerald-700'">
+                          ৳ {{ entry.balance | number:'1.2-2' }}
+                        </td>
+                        <td class="p-2 text-slate-500 text-[11px] truncate max-w-[150px]">{{ entry.note || '—' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" class="p-6 text-center text-slate-400">
+                          {{ isLoadingLedger ? 'Loading ledger transactions...' : 'No ledger transactions recorded for this supplier.' }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #ledgerFooter>
+        <button nz-button nzType="default" (click)="isLedgerModalVisible = false">Close</button>
+        <button nz-button nzType="primary" (click)="printSupplierStatement()">
+          <span nz-icon nzType="printer"></span> Print Statement
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
+
 })
 export class SupplierListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
@@ -394,6 +484,11 @@ export class SupplierListComponent implements OnInit, OnDestroy {
 
   isAddPayMethodOpen = false;
   newPayMethodName = '';
+
+  activeLedgerSupplier: SupplierRow | null = null;
+  supplierLedgerEntries: any[] = [];
+  isLoadingLedger = false;
+  isLedgerModalVisible = false;
 
   ngOnInit(): void {
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
@@ -576,7 +671,52 @@ export class SupplierListComponent implements OnInit, OnDestroy {
   }
 
   viewLedger(s: SupplierRow): void {
-    this.msg.info(`Viewing vendor ledger transactions for ${s.name}`);
+    this.activeLedgerSupplier = s;
+    this.isLedgerModalVisible = true;
+    this.isLoadingLedger = true;
+    this.supplierLedgerEntries = [];
+    this.supplierService.getSupplierLedger(s.supplier_no).subscribe({
+      next: (res) => {
+        this.isLoadingLedger = false;
+        if (res.success && res.data?.ledger) {
+          this.supplierLedgerEntries = res.data.ledger;
+        }
+      },
+      error: () => {
+        this.isLoadingLedger = false;
+      }
+    });
+  }
+
+  printSupplierStatement(): void {
+    window.print();
+  }
+
+  exportSuppliersCsv(): void {
+    const list = this.filteredSuppliers();
+    if (!list.length) {
+      this.msg.warning('No supplier records to export.');
+      return;
+    }
+    const headers = ['Supplier Name', 'Phone', 'Address / Details', 'Outstanding Balance (৳)', 'Note'];
+    const rows = list.map(s => [
+      `"${(s.name || '').replace(/"/g, '""')}"`,
+      `"${s.phone || ''}"`,
+      `"${(s.address || '').replace(/"/g, '""')}"`,
+      (s.balance || 0).toFixed(2),
+      `"${(s.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `supplier_directory_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} suppliers to CSV`);
   }
 
   openPaymentModal(s: SupplierRow): void {

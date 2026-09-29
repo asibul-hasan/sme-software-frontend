@@ -125,7 +125,8 @@ export interface ProdProductRequisitionItem {
   total_price: number;
   is_selected: boolean;
 
-  // Navigation
+  // Navigation & Joined fields
+  product_name?: string;
   product?: ProdProduct;
 }
 
@@ -136,3 +137,23 @@ export type Product = ProdProduct;
 export type ProductBatch = ProdProductBatch;
 export type InventoryRequisition = ProdProductRequisition;
 export type RequisitionItem = ProdProductRequisitionItem;
+
+export interface LowStockProduct {
+  product_no: number;
+  product_name: string;
+  brand_name: string;
+  generic_name: string;
+  company_no?: number;
+  company_name: string;
+  current_stock_pcs: number;
+  min_stock_qty_pcs: number;
+  shortfall_pcs: number;
+  quantity_per_box: number;
+  suggested_box_qty: number;
+  purchase_price_per_piece: number;
+  cost_per_box: number;
+  sale_price_per_piece: number;
+  vat_percent: number;
+  sale_qty_6mth_pcs: number;
+  estimated_total_cost: number;
+}

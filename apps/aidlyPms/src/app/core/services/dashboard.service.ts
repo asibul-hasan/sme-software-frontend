@@ -17,11 +17,23 @@ export interface DashboardSummary {
   low_stock_items_count: number;
   expired_items_count: number;
   near_expiry_items_count: number;
+  total_bank_balance?: number;
+  total_mfs_balance?: number;
+  total_cash_balance?: number;
+  today_incomes?: number;
+  today_demurrage?: number;
+  pending_handover_count?: number;
+  pending_handover_amount?: number;
+  today_sale_returns?: number;
+  today_purchase_returns?: number;
+  today_due_collected?: number;
+  today_supplier_paid?: number;
 }
 
 export interface FastMovingProduct {
   product_no: number;
   product_name: string;
+  generic_name?: string;
   total_sold_pcs: number;
   total_revenue: number;
 }
@@ -36,6 +48,16 @@ export interface CashbookEntry {
   balance: number;
 }
 
+export interface DailySalesTrend {
+  date_label: string;
+  date_val: string;
+  buy_price: number;
+  gross_profit: number;
+  total_sale: number;
+  op_cost: number;
+  net_profit: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -46,13 +68,21 @@ export class DashboardService {
     return this.api.get<DashboardSummary>('dashboard/summary');
   }
 
-  getAnalytics(limit = 10): Observable<ApiResponse<FastMovingProduct[]>> {
-    return this.api.get<FastMovingProduct[]>('dashboard/analytics', { limit });
+  getAnalytics(limit = 10, sort = 'desc'): Observable<ApiResponse<FastMovingProduct[]>> {
+    return this.api.get<FastMovingProduct[]>('dashboard/analytics', { limit, sort });
   }
 
   getCashbook(date?: string): Observable<ApiResponse<CashbookEntry[]>> {
     const params: Record<string, unknown> = {};
     if (date) params['date'] = date;
     return this.api.get<CashbookEntry[]>('dashboard/cashbook', params);
+  }
+
+  getTrends(): Observable<ApiResponse<DailySalesTrend[]>> {
+    return this.api.get<DailySalesTrend[]>('dashboard/trends');
+  }
+
+  getBranches(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('sys/branches');
   }
 }

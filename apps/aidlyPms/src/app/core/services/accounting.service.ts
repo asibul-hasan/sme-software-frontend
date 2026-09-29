@@ -39,6 +39,10 @@ export class AccountingService {
     return this.api.delete<boolean>(`acc/accounts/${accountNo}`);
   }
 
+  getAccountStatement(accountNo: number): Observable<ApiResponse<{ account: AccTransactionAccount; transactions: any[] }>> {
+    return this.api.get<{ account: AccTransactionAccount; transactions: any[] }>(`acc/accounts/${accountNo}/statement`);
+  }
+
   // Expense Categories
   getExpenseCategories(): Observable<ApiResponse<AccExpenseCategory[]>> {
     return this.api.get<AccExpenseCategory[]>('acc/expenses/categories');
@@ -55,6 +59,10 @@ export class AccountingService {
 
   createExpense(expense: Partial<AccExpense>): Observable<ApiResponse<AccExpense>> {
     return this.api.post<AccExpense>('acc/expenses', expense);
+  }
+
+  deleteExpense(expenseNo: number): Observable<ApiResponse<boolean>> {
+    return this.api.delete<boolean>(`acc/expenses/${expenseNo}`);
   }
 
   // Income Categories

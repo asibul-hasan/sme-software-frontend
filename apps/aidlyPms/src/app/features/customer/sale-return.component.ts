@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -417,6 +417,7 @@ export class SaleReturnComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly productService = inject(ProductService);
   private readonly posSaleService = inject(PosSaleService);
+  private readonly route = inject(ActivatedRoute);
 
   customers = signal<Customer[]>([]);
   availableProducts = signal<Product[]>([]);
@@ -456,9 +457,14 @@ export class SaleReturnComponent implements OnInit {
   isSubmitting = signal(false);
 
   ngOnInit(): void {
+    const invParam = this.route.snapshot.queryParamMap.get('invoice');
+    if (invParam) {
+      this.originalInvoice = invParam;
+    }
     this.loadCustomers();
     this.loadProducts();
   }
+
 
   loadCustomers(): void {
     this.customerService.getCustomers({ pageSize: 100 }).subscribe({

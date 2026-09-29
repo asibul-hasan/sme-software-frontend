@@ -94,6 +94,9 @@ interface IncomeRow {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportIncomeCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <button nz-button nzType="dashed" class="rounded-md" (click)="openCatModal()">
             <span nz-icon nzType="folder-add"></span> + Category
           </button>
@@ -332,6 +335,61 @@ interface IncomeRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Printable Money Receipt Modal -->
+    <nz-modal
+      [(nzVisible)]="isReceiptModalOpen"
+      nzTitle="Money Receipt (Miscellaneous Income)"
+      [nzFooter]="receiptFooter"
+      (nzOnCancel)="isReceiptModalOpen = false"
+      nzWidth="600px"
+      [nzStyle]="{ top: '30px' }"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedIncome) {
+          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+            <div class="text-center border-b pb-3 border-slate-200">
+              <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
+              <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
+              <div class="inline-block mt-1 px-3 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded border border-emerald-200">
+                OFFICIAL MONEY RECEIPT
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Receipt No:</span> <strong class="font-mono text-slate-900 ml-1">{{ selectedIncome.receipt }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Date:</span> <span class="font-mono text-slate-800 ml-1">{{ selectedIncome.date }}</span></div>
+              <div><span class="text-slate-400">Received From:</span> <strong class="text-slate-900 ml-1">{{ selectedIncome.from }}</strong></div>
+              <div class="text-right"><span class="text-slate-400">Payment Account:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedIncome.account }} ({{ selectedIncome.payment }})</span></div>
+              <div><span class="text-slate-400">Revenue Head:</span> <span class="font-medium text-slate-800 ml-1">{{ selectedIncome.category }}</span></div>
+              <div class="text-right"><span class="text-slate-400">Status:</span> <span class="text-emerald-600 font-bold ml-1">Received & Posted</span></div>
+              <div class="col-span-2"><span class="text-slate-400">Purpose / Note:</span> <span class="text-slate-800 ml-1">{{ selectedIncome.note || 'None' }}</span></div>
+            </div>
+
+            <div class="bg-emerald-50/50 border border-emerald-200 rounded-md p-3 flex justify-between items-center">
+              <div>
+                <span class="text-xs font-semibold uppercase text-emerald-800 block">Total Amount Received</span>
+                <span class="text-xs text-slate-500 italic">Credited into {{ selectedIncome.account }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xl font-bold font-mono text-emerald-700">৳ {{ selectedIncome.amount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 pt-8 text-[11px] text-slate-500 text-center">
+              <div class="border-t border-dashed border-slate-400 pt-1">Depositor / Payer Signature</div>
+              <div class="border-t border-dashed border-slate-400 pt-1">Authorized Cashier Signature</div>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #receiptFooter>
+        <button nz-button nzType="default" (click)="isReceiptModalOpen = false">Close</button>
+        <button nz-button nzType="primary" (click)="printReceipt()">
+          <span nz-icon nzType="printer"></span> Print Receipt
+        </button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class IncomeComponent implements OnInit {
@@ -542,8 +600,16 @@ export class IncomeComponent implements OnInit {
     });
   }
 
+  isReceiptModalOpen = false;
+  selectedIncome: IncomeRow | null = null;
+
   viewIncome(inc: IncomeRow): void {
-    this.msg.info(`Receipt ${inc.receipt} | ${inc.from} | ৳ ${inc.amount.toLocaleString()}`);
+    this.selectedIncome = inc;
+    this.isReceiptModalOpen = true;
+  }
+
+  printReceipt(): void {
+    window.print();
   }
 
   voidIncome(inc: IncomeRow): void {
@@ -560,5 +626,34 @@ export class IncomeComponent implements OnInit {
         });
       }
     });
+  }
+
+  exportIncomeCsv(): void {
+    const list = this.incomes();
+    if (!list.length) {
+      this.msg.warning('No income receipts to export.');
+      return;
+    }
+    const headers = ['SL', 'Receipt #', 'Date', 'Received From', 'Category', 'Account', 'Payment Method', 'Amount (BDT)', 'Note'];
+    const rows = list.map((inc, i) => [
+      i + 1,
+      `"${inc.receipt}"`,
+      `"${inc.date}"`,
+      `"${inc.from}"`,
+      `"${inc.category}"`,
+      `"${inc.account}"`,
+      `"${inc.payment}"`,
+      inc.amount.toFixed(2),
+      `"${(inc.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `income_receipts_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} income receipts.`);
   }
 }

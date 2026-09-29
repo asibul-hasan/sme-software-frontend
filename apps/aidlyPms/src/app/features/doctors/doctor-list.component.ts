@@ -9,6 +9,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { DoctorService } from '../../core/services/doctor.service';
@@ -38,6 +39,7 @@ interface DoctorRow {
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
+    NzTagModule,
     PageHeaderComponent,
   ],
   template: `
@@ -66,6 +68,9 @@ interface DoctorRow {
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <button nz-button nzType="default" class="rounded-md" (click)="exportDoctorsCsv()">
+            <span nz-icon nzType="download"></span> Export CSV
+          </button>
           <a nz-button nzType="default" routerLink="/doctors-portal/settings" class="rounded-md">
             <span nz-icon nzType="setting"></span> Rx Settings
           </a>
@@ -250,6 +255,56 @@ interface DoctorRow {
         </div>
       </ng-container>
     </nz-modal>
+
+    <!-- Doctor Profile & Prescriptions Modal -->
+    <nz-modal
+      [(nzVisible)]="isProfileModalOpen"
+      [nzTitle]="'Doctor Profile: ' + (selectedDoctor?.name || '')"
+      [nzFooter]="profileFooter"
+      (nzOnCancel)="isProfileModalOpen = false"
+      nzWidth="600px"
+    >
+      <ng-container *nzModalContent>
+        @if (selectedDoctor) {
+          <div class="space-y-4 py-2 text-xs">
+            <div class="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg">
+                Dr
+              </div>
+              <div class="flex-1">
+                <h3 class="text-sm font-bold text-slate-900 mb-0.5">{{ selectedDoctor.name }}</h3>
+                <p class="text-xs text-slate-600 mb-0 font-bengali">{{ selectedDoctor.nameBn }}</p>
+                <p class="text-xs text-blue-600 font-medium mb-0">{{ selectedDoctor.desc }}</p>
+              </div>
+              <nz-tag nzColor="blue">{{ selectedDoctor.gender }}</nz-tag>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 p-3 bg-white border border-slate-200 rounded-lg">
+              <div>
+                <span class="text-slate-400 text-[11px] block">Contact Phone:</span>
+                <span class="font-mono text-slate-900 font-semibold">{{ selectedDoctor.phone || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[11px] block">Hospital / Chamber:</span>
+                <span class="text-slate-800 font-medium">{{ selectedDoctor.descBn || 'General Practice' }}</span>
+              </div>
+            </div>
+
+            <div class="border border-slate-200 rounded-lg p-3 text-center bg-slate-50/50">
+              <span nz-icon nzType="file-text" class="text-2xl text-slate-300 mb-1 block"></span>
+              <p class="text-xs font-semibold text-slate-700 mb-1">Prescription Records Registry</p>
+              <p class="text-[11px] text-slate-400 mb-2">Patients referred by {{ selectedDoctor.name }} are logged directly during POS dispensing.</p>
+              <a nz-button nzType="dashed" nzSize="small" routerLink="/customer/sale" (click)="isProfileModalOpen = false">
+                <span nz-icon nzType="shopping-cart"></span> Dispense Rx in POS
+              </a>
+            </div>
+          </div>
+        }
+      </ng-container>
+      <ng-template #profileFooter>
+        <button nz-button nzType="default" (click)="isProfileModalOpen = false">Close</button>
+      </ng-template>
+    </nz-modal>
   `,
 })
 export class DoctorListComponent implements OnInit {
@@ -398,8 +453,39 @@ export class DoctorListComponent implements OnInit {
     }
   }
 
+  isProfileModalOpen = false;
+  selectedDoctor: DoctorRow | null = null;
+
   viewPrescriptions(d: DoctorRow): void {
-    this.msg.info(`Viewing prescriptions signed by ${d.name}`);
+    this.selectedDoctor = d;
+    this.isProfileModalOpen = true;
+  }
+
+  exportDoctorsCsv(): void {
+    const list = this.doctors();
+    if (!list.length) {
+      this.msg.warning('No doctors to export.');
+      return;
+    }
+    const headers = ['SL', 'Doctor Name (EN)', 'Doctor Name (BN)', 'Phone', 'Gender', 'Degrees / Qualifications', 'Chamber / Hospital'];
+    const rows = list.map((d, i) => [
+      i + 1,
+      `"${d.name}"`,
+      `"${d.nameBn}"`,
+      `"${d.phone}"`,
+      `"${d.gender}"`,
+      `"${(d.desc || '').replace(/"/g, '""')}"`,
+      `"${(d.descBn || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `doctors_directory_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} doctor profiles.`);
   }
 
   deleteDoctor(d: DoctorRow): void {

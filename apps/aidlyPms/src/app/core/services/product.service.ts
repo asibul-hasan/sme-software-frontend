@@ -100,4 +100,27 @@ export class ProductService {
   getRequisitionRecords(params?: Record<string, unknown>): Observable<ApiResponse<ProdProductRequisition[]>> {
     return this.api.get<ProdProductRequisition[]>('prod/requisitions/records', params);
   }
+
+  getRequisitionById(requisitionNo: number): Observable<ApiResponse<ProdProductRequisition>> {
+    return this.api.get<ProdProductRequisition>(`prod/requisitions/${requisitionNo}`);
+  }
+
+  updateRequisitionStatus(requisitionNo: number, status: string): Observable<ApiResponse<boolean>> {
+    return this.api.put<boolean>(`prod/requisitions/${requisitionNo}/status`, { status });
+  }
+
+  getLowStockProducts(companyNo?: number, fallbackLowest = true): Observable<ApiResponse<import('../models/product.models').LowStockProduct[]>> {
+    const params: Record<string, unknown> = { fallbackLowest };
+    if (companyNo) params['companyNo'] = companyNo;
+    return this.api.get<import('../models/product.models').LowStockProduct[]>('prod/products/low-stock', params);
+  }
+
+  getProductBatches(productNo: number): Observable<ApiResponse<ProdProductBatch[]>> {
+    return this.api.get<ProdProductBatch[]>(`inv/batches/product/${productNo}`);
+  }
+
+  adjustProductStock(productNo: number, payload: { target_stock_pcs: number; reason?: string; remarks?: string }): Observable<ApiResponse<any>> {
+    return this.api.post<any>(`prod/products/${productNo}/adjust-stock`, payload);
+  }
 }
+
