@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 import { AuthService } from '../auth/auth.service';
+import { BackendDiscoveryService } from '../services/backend-discovery.service';
 
 /**
  * Token to suppress the automatic global error notification toast.
@@ -13,6 +14,7 @@ export const SKIP_ERROR_NOTIFICATION = new HttpContextToken<boolean>(() => false
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notification = inject(NotificationService);
   const auth = inject(AuthService);
+  const discovery = inject(BackendDiscoveryService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -24,7 +26,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'An unexpected server error occurred.';
 
       if (error.status === 0) {
-        errorMessage = 'Unable to connect to backend server. Please verify the backend API is running on port 5275.';
+        discovery.handleConnectionFailure(req.url);
+        errorMessage = 'Unable to reach local backend server. Traffic is automatically rerouted to Hugging Face cloud live.';
       } else if (error.error && typeof error.error === 'object' && 'message' in error.error) {
         errorMessage = error.error.message;
       } else if (error.status === 401) {

@@ -8,6 +8,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { AuthService } from '../../core/auth/auth.service';
+import { BackendDiscoveryService } from '../../core/services/backend-discovery.service';
 import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/config/menu.config';
 
 @Component({
@@ -70,6 +71,27 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #e2e8f0;
+    }
+    .header-backend-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .header-backend-pill:hover {
+      filter: brightness(1.2);
+    }
+    .backend-local {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+    }
+    .backend-remote {
+      background: rgba(14, 165, 233, 0.12) !important;
+      border-color: rgba(14, 165, 233, 0.35) !important;
+    }
+    .backend-checking {
+      background: rgba(245, 158, 11, 0.12) !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
     }
     .header-user-btn {
       color: #ffffff !important;
@@ -166,6 +188,35 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
 
         <div class="h-4 w-px bg-white/15 mx-0.5 hidden sm:block"></div>
 
+        <!-- Backend Connection Indicator Pill (Localhost vs Hugging Face Live) -->
+        <button
+          type="button"
+          (click)="discovery.recheckNow()"
+          class="header-backend-pill flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer select-none text-xs font-mono"
+          [class.backend-local]="discovery.mode() === 'local' && discovery.status() === 'connected'"
+          [class.backend-remote]="discovery.mode() === 'remote' && discovery.status() === 'connected'"
+          [class.backend-checking]="discovery.status() === 'checking'"
+          nz-tooltip
+          [nzTooltipTitle]="backendTooltip"
+        >
+          @if (discovery.status() === 'checking') {
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span>
+            <span class="text-amber-300 font-medium">Checking...</span>
+          } @else if (discovery.mode() === 'local') {
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-emerald-300 font-medium">Local:{{ discovery.activePort() || 5275 }}</span>
+            @if (discovery.latencyMs() !== null) {
+              <span class="text-emerald-400/70 text-[10px]">({{ discovery.latencyMs() }}ms)</span>
+            }
+          } @else {
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+            <span class="text-sky-300 font-medium">HF Live</span>
+            @if (discovery.latencyMs() !== null) {
+              <span class="text-sky-400/70 text-[10px]">({{ discovery.latencyMs() }}ms)</span>
+            }
+          }
+        </button>
+
         <!-- Active Branch Indicator -->
         <div class="header-branch-pill hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -242,10 +293,22 @@ export class HeaderComponent {
   @Output() toggleCollapse = new EventEmitter<void>();
 
   readonly authService = inject(AuthService);
+  readonly discovery = inject(BackendDiscoveryService);
   private readonly router = inject(Router);
 
   currentScreen?: SystemScreen;
   currentUrl = '';
+
+  get backendTooltip(): string {
+    const origin = this.discovery.currentOrigin();
+    const mode = this.discovery.mode();
+    const latency = this.discovery.latencyMs();
+    const latencyStr = latency !== null ? ` (${latency}ms)` : '';
+    if (mode === 'local') {
+      return `Connected to Localhost backend at ${origin}${latencyStr}. Auto-failover to Hugging Face enabled. Click to re-check.`;
+    }
+    return `Connected to Hugging Face Cloud Live at ${origin}${latencyStr}. Polling for localhost to reconnect automatically. Click to probe local now.`;
+  }
 
   constructor() {
     this.currentUrl = this.router.url;

@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { ApiResponse, PagedResult } from '../models/common.models';
 import { SKIP_ERROR_NOTIFICATION } from '../interceptors/error.interceptor';
 
+import { BackendDiscoveryService } from './backend-discovery.service';
+
 export interface RequestOptions {
   params?: Record<string, unknown>;
   silent?: boolean;
@@ -14,7 +16,19 @@ export interface RequestOptions {
 })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1';
+  private readonly discovery = inject(BackendDiscoveryService);
+
+  /**
+   * Dynamic API base URL (switches automatically between localhost and Hugging Face live)
+   */
+  get baseUrl(): string {
+    return this.discovery.currentApiBase();
+  }
+
+  private buildUrl(endpoint: string): string {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    return `${this.baseUrl}/${cleanEndpoint}`;
+  }
 
   get<T>(endpoint: string, paramsOrOptions?: Record<string, unknown> | RequestOptions): Observable<ApiResponse<T>> {
     let params: Record<string, unknown> | undefined;
@@ -30,7 +44,7 @@ export class ApiService {
 
     const httpParams = this.buildParams(params);
     const context = silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, { params: httpParams, context });
+    return this.http.get<ApiResponse<T>>(this.buildUrl(endpoint), { params: httpParams, context });
   }
 
   getPaged<T>(endpoint: string, paramsOrOptions?: Record<string, unknown> | RequestOptions): Observable<ApiResponse<PagedResult<T>>> {
@@ -47,22 +61,22 @@ export class ApiService {
 
     const httpParams = this.buildParams(params);
     const context = silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.get<ApiResponse<PagedResult<T>>>(`${this.baseUrl}/${endpoint}`, { params: httpParams, context });
+    return this.http.get<ApiResponse<PagedResult<T>>>(this.buildUrl(endpoint), { params: httpParams, context });
   }
 
   post<T>(endpoint: string, body: unknown, options?: RequestOptions): Observable<ApiResponse<T>> {
     const context = options?.silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, body, { context });
+    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint), body, { context });
   }
 
   put<T>(endpoint: string, body: unknown, options?: RequestOptions): Observable<ApiResponse<T>> {
     const context = options?.silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, body, { context });
+    return this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), body, { context });
   }
 
   delete<T>(endpoint: string, options?: RequestOptions): Observable<ApiResponse<T>> {
     const context = options?.silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, { context });
+    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint), { context });
   }
 
   private buildParams(params?: Record<string, unknown>): HttpParams {
