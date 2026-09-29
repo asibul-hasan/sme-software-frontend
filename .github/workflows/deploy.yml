@@ -1,56 +1,56 @@
-name: Build and Deploy Angular App
-on:
-  push:
-    branches:
-      - main
+# name: Build and Deploy Angular App
+# on:
+#   push:
+#     branches:
+#       - main
     
-permissions:
-  actions: write
-  contents: read
+# permissions:
+#   actions: write
+#   contents: read
 
-jobs:
-  web-deploy:
-    name: Deploy to cPanel
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get latest code
-        uses: actions/checkout@v4
+# jobs:
+#   web-deploy:
+#     name: Deploy to cPanel
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Get latest code
+#         uses: actions/checkout@v4
     
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24' 
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '24' 
     
-      - name: Install dependencies
-        run: npm ci
+#       - name: Install dependencies
+#         run: npm ci
     
-      - name: Build project
-        env:
-          NX_DAEMON: 'false'
-        run: npm run build -- --configuration production
+#       - name: Build project
+#         env:
+#           NX_DAEMON: 'false'
+#         run: npm run build -- --configuration production
     
-      - name: Sync files to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          # UPDATED PATH HERE:
-          local-dir: ./dist/apps/web-client/browser/
-          server-dir: ./
+#       - name: Sync files to cPanel
+#         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+#         with:
+#           server: ${{ secrets.FTP_SERVER }}
+#           username: ${{ secrets.FTP_USERNAME }}
+#           password: ${{ secrets.FTP_PASSWORD }}
+#           # UPDATED PATH HERE:
+#           local-dir: ./dist/apps/web-client/browser/
+#           server-dir: ./
 
-      - name: Clear GitHub Actions caches & artifacts
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          echo "Purging artifacts and caches to keep GitHub storage under limit..."
-          gh api -X GET "repos/$REPO/actions/artifacts" --jq '.artifacts[].id' 2>/dev/null | while read -r id; do
-            [ -n "$id" ] && gh api -X DELETE "repos/$REPO/actions/artifacts/$id" 2>/dev/null || true
-          done
-          gh api -X GET "repos/$REPO/actions/caches" --jq '.actions_caches[].id' 2>/dev/null | while read -r cache_id; do
-            [ -n "$cache_id" ] && gh api -X DELETE "repos/$REPO/actions/caches/$cache_id" 2>/dev/null || true
-          done
-          echo "Storage cleanup complete."
+#       - name: Clear GitHub Actions caches & artifacts
+#         if: always()
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           REPO: ${{ github.repository }}
+#         run: |
+#           echo "Purging artifacts and caches to keep GitHub storage under limit..."
+#           gh api -X GET "repos/$REPO/actions/artifacts" --jq '.artifacts[].id' 2>/dev/null | while read -r id; do
+#             [ -n "$id" ] && gh api -X DELETE "repos/$REPO/actions/artifacts/$id" 2>/dev/null || true
+#           done
+#           gh api -X GET "repos/$REPO/actions/caches" --jq '.actions_caches[].id' 2>/dev/null | while read -r cache_id; do
+#             [ -n "$cache_id" ] && gh api -X DELETE "repos/$REPO/actions/caches/$cache_id" 2>/dev/null || true
+#           done
+#           echo "Storage cleanup complete."
 
