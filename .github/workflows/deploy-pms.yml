@@ -1,0 +1,56 @@
+name: Build and Deploy Aidly PMS App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/aidlyPms/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-pms.yml'
+  workflow_dispatch:
+
+jobs:
+  pms-deploy:
+    name: Deploy Aidly PMS to cPanel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Aidly PMS project
+        env:
+          NX_DAEMON: 'false'
+        run: npm run build:pms -- --configuration production
+
+      - name: Create .htaccess for SPA routing (cPanel)
+        run: |
+          cat << 'EOF' > ./dist/apps/aidlyPms/browser/.htaccess
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+          </IfModule>
+          EOF
+
+      - name: Sync files to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.PMS_FTP_SERVER }}
+          username: ${{ secrets.PMS_FTP_USERNAME }}
+          password: ${{ secrets.PMS_FTP_PASSWORD }}
+          local-dir: ./dist/apps/aidlyPms/browser/
+          server-dir: ./
