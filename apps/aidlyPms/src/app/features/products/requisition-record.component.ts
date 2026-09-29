@@ -100,7 +100,7 @@ interface RequisitionRecord {
                 <th class="p-3 text-right">Total Bill</th>
                 <th class="p-3">Requisition Info</th>
                 <th class="p-3 text-center">Status</th>
-                <th class="p-3 text-center w-36">Action</th>
+                <th class="p-3 text-center w-40">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
@@ -111,8 +111,17 @@ interface RequisitionRecord {
                     ৳ {{ r.total | number: '1.2-2' }}
                   </td>
                   <td class="p-3">
-                    <p class="font-bold text-slate-900 m-0 text-xs">{{ r.reqCode }}</p>
-                    <p class="text-slate-400 m-0 text-[11px]">{{ r.supplier }} · {{ r.itemsCount }} items · By {{ r.createdBy }}</p>
+                    <a
+                      [routerLink]="['/products/requisition']"
+                      [queryParams]="{ requisitionNo: r.id }"
+                      class="font-bold text-indigo-600 hover:text-indigo-900 hover:underline m-0 text-xs inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                      nz-tooltip
+                      nzTooltipTitle="Edit in Inventory Requisition Planner"
+                    >
+                      <span>{{ r.reqCode }}</span>
+                      <span nz-icon nzType="form" class="text-[11px] opacity-75"></span>
+                    </a>
+                    <p class="text-slate-400 m-0 text-[11px] mt-0.5">{{ r.supplier }} · {{ r.itemsCount }} items · By {{ r.createdBy }}</p>
                   </td>
                   <td class="p-3 text-center">
                     <span
@@ -137,6 +146,26 @@ interface RequisitionRecord {
                       >
                         <span nz-icon nzType="eye"></span>
                       </button>
+                      <a
+                        [routerLink]="['/products/requisition']"
+                        [queryParams]="{ requisitionNo: r.id }"
+                        nz-tooltip
+                        nzTooltipTitle="Edit in Planner"
+                        class="btn-tbl-action text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200"
+                      >
+                        <span nz-icon nzType="edit"></span>
+                      </a>
+                      @if (r.status !== 'Approved' && r.status !== 'Cancelled') {
+                        <button
+                          type="button"
+                          (click)="approveRecord(r)"
+                          nz-tooltip
+                          nzTooltipTitle="Approve Requisition"
+                          class="btn-tbl-action text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 border border-emerald-200"
+                        >
+                          <span nz-icon nzType="check"></span>
+                        </button>
+                      }
                       <button
                         type="button"
                         (click)="printRequisition(r)"
@@ -187,10 +216,9 @@ interface RequisitionRecord {
     <!-- Requisition Details Modal -->
     <nz-modal
       [(nzVisible)]="isDetailsVisible"
-      [nzTitle]="'Requisition Details: ' + activeRecord?.reqCode"
+      [nzTitle]="'Requisition Details: ' + (activeRecord?.reqCode || '')"
+      [nzFooter]="detailsFooter"
       (nzOnCancel)="isDetailsVisible = false"
-      (nzOnOk)="isDetailsVisible = false"
-      nzOkText="Close"
       nzWidth="750px"
     >
       <ng-container *nzModalContent>
@@ -253,6 +281,42 @@ interface RequisitionRecord {
           </div>
         }
       </ng-container>
+      <ng-template #detailsFooter>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-2">
+            @if (activeRecord && activeRecord.status !== 'Approved' && activeRecord.status !== 'Cancelled') {
+              <button
+                nz-button
+                nzType="primary"
+                class="bg-emerald-600 hover:bg-emerald-500 border-emerald-600 text-white font-semibold"
+                (click)="approveRecord(activeRecord)"
+              >
+                <span nz-icon nzType="check-circle"></span> Approve Requisition
+              </button>
+            }
+            @if (activeRecord) {
+              <a
+                nz-button
+                nzType="default"
+                [routerLink]="['/products/requisition']"
+                [queryParams]="{ requisitionNo: activeRecord.id }"
+                (click)="isDetailsVisible = false"
+                class="border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              >
+                <span nz-icon nzType="edit"></span> Edit in Planner
+              </a>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            @if (activeRecord) {
+              <button nz-button nzType="default" (click)="isDetailsVisible = false; printRequisition(activeRecord)">
+                <span nz-icon nzType="printer"></span> Print
+              </button>
+            }
+            <button nz-button nzType="default" (click)="isDetailsVisible = false">Close</button>
+          </div>
+        </div>
+      </ng-template>
     </nz-modal>
 
     <!-- Printable Requisition Modal -->
@@ -462,6 +526,38 @@ export class RequisitionRecordComponent implements OnInit {
 
   triggerPrint(): void {
     window.print();
+  }
+
+  approveRecord(r: RequisitionRecord): void {
+    this.modal
+      .confirmAction(
+        `Approve Requisition ${r.reqCode}?`,
+        'Approving this requisition confirms procurement of these inventory items.',
+        'Approve Requisition',
+        false
+      )
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.productService.updateRequisitionStatus(Number(r.id), 'Approved').subscribe({
+            next: res => {
+              if (res.success) {
+                this.records.update(list =>
+                  list.map(rec => (rec.id === r.id ? { ...rec, status: 'Approved' as const } : rec))
+                );
+                if (this.activeRecord && this.activeRecord.id === r.id) {
+                  this.activeRecord = { ...this.activeRecord, status: 'Approved' };
+                }
+                this.msg.success(`Requisition ${r.reqCode} approved successfully.`);
+              } else {
+                this.msg.error(res.message || 'Failed to approve requisition.');
+              }
+            },
+            error: err => {
+              this.msg.error(err?.error?.message || 'Failed to approve requisition.');
+            },
+          });
+        }
+      });
   }
 
   cancelRecord(r: RequisitionRecord): void {

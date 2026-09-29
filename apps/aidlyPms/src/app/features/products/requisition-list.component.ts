@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -25,7 +25,7 @@ export interface RequisitionItemRow {
   product_name: string;
   generic_name: string;
   company_name: string;
-  company_no?: number;
+  company_no?: number | null;
   current_stock_pcs: number;
   min_stock_qty_pcs: number;
   shortfall_pcs: number;
@@ -69,6 +69,27 @@ export interface RequisitionItemRow {
           <a routerLink="/products/requisition/records" nz-button nzType="default" class="rounded-md">
             <span nz-icon nzType="history"></span> Requisition Records
           </a>
+          @if (loadedRequisitionNo()) {
+            <button
+              nz-button
+              nzType="default"
+              class="rounded-md border-indigo-300 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100"
+              (click)="startNewRequisition()"
+            >
+              <span nz-icon nzType="plus"></span> New Blank Planner
+            </button>
+            @if (loadedRequisitionStatus() !== 'Approved' && loadedRequisitionStatus() !== 'Cancelled') {
+              <button
+                nz-button
+                nzType="primary"
+                class="rounded-md bg-emerald-600 hover:bg-emerald-500 border-emerald-600 font-semibold text-white"
+                [nzLoading]="isApproving()"
+                (click)="approveCurrentRequisition()"
+              >
+                <span nz-icon nzType="check-circle"></span> Approve Order
+              </button>
+            }
+          }
           <button
             nz-button
             nzType="default"
@@ -89,24 +110,81 @@ export interface RequisitionItemRow {
             [disabled]="items().length === 0"
             (click)="saveRequisition()"
           >
-            <span nz-icon nzType="save"></span> Save Requisition (F8)
+            <span nz-icon nzType="save"></span>
+            {{ loadedRequisitionNo() ? 'Update Requisition (F8)' : 'Save Requisition (F8)' }}
           </button>
         </div>
       </app-page-header>
 
       <!-- MASTER HEADER CARD -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3.5 shrink-0">
+        @if (loadedRequisitionNo()) {
+          <div class="mb-3 px-3 py-2 rounded-lg bg-indigo-50/90 border border-indigo-200 text-xs flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span nz-icon nzType="info-circle" class="text-indigo-600 text-sm"></span>
+              <span class="text-indigo-900 font-medium">
+                Editing Requisition: <strong class="font-mono text-indigo-950 font-bold">{{ savedRequisitionCode() }}</strong>
+              </span>
+              <span
+                class="px-2 py-0.5 rounded text-[11px] font-bold"
+                [ngClass]="{
+                  'bg-emerald-100 text-emerald-800 border border-emerald-300': loadedRequisitionStatus() === 'Approved',
+                  'bg-amber-100 text-amber-800 border border-amber-300': loadedRequisitionStatus() === 'Pending',
+                  'bg-rose-100 text-rose-800 border border-rose-300': loadedRequisitionStatus() === 'Cancelled'
+                }"
+              >
+                {{ loadedRequisitionStatus() }}
+              </span>
+              @if (loadedRequisitionStatus() === 'Approved') {
+                <span class="text-emerald-700 text-[11px] font-medium">(Procurement Approved)</span>
+              }
+            </div>
+            <div class="flex items-center gap-2">
+              @if (loadedRequisitionStatus() !== 'Approved' && loadedRequisitionStatus() !== 'Cancelled') {
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzSize="small"
+                  class="bg-emerald-600 hover:bg-emerald-500 border-emerald-600 text-white rounded font-medium"
+                  [nzLoading]="isApproving()"
+                  (click)="approveCurrentRequisition()"
+                >
+                  <span nz-icon nzType="check-circle"></span> Approve This Requisition
+                </button>
+              }
+              <button
+                nz-button
+                nzType="default"
+                nzSize="small"
+                class="rounded"
+                (click)="startNewRequisition()"
+              >
+                <span nz-icon nzType="plus"></span> New Blank Planner
+              </button>
+            </div>
+          </div>
+        }
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
           <!-- Requisition ID / Code -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
               Requisition Code
             </label>
-            <div class="flex items-center h-8">
+            <div class="flex items-center gap-1.5 h-8">
               @if (savedRequisitionCode()) {
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 font-mono font-bold text-xs">
                   <span nz-icon nzType="check-circle" class="text-emerald-600"></span>
                   {{ savedRequisitionCode() }}
+                </span>
+                <span
+                  class="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                  [ngClass]="{
+                    'bg-emerald-100 text-emerald-800 border border-emerald-200': loadedRequisitionStatus() === 'Approved',
+                    'bg-amber-100 text-amber-800 border border-amber-200': loadedRequisitionStatus() === 'Pending',
+                    'bg-rose-100 text-rose-800 border border-rose-200': loadedRequisitionStatus() === 'Cancelled'
+                  }"
+                >
+                  {{ loadedRequisitionStatus() }}
                 </span>
               } @else {
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-500 font-mono text-xs">
@@ -452,7 +530,8 @@ export interface RequisitionItemRow {
               [disabled]="items().length === 0"
               (click)="saveRequisition()"
             >
-              <span nz-icon nzType="check"></span> Save & Generate (F8)
+              <span nz-icon nzType="check"></span>
+              {{ loadedRequisitionNo() ? 'Update & Save Changes (F8)' : 'Save & Generate (F8)' }}
             </button>
           </div>
         </div>
@@ -545,7 +624,7 @@ export interface RequisitionItemRow {
     <!-- Success Modal after save -->
     <nz-modal
       [(nzVisible)]="isSuccessModalVisible"
-      nzTitle="Requisition Order Created"
+      [nzTitle]="loadedRequisitionNo() ? 'Requisition Order Updated' : 'Requisition Order Created'"
       [nzFooter]="successModalFooter"
       (nzOnCancel)="isSuccessModalVisible = false"
     >
@@ -555,7 +634,9 @@ export interface RequisitionItemRow {
             <span nz-icon nzType="check"></span>
           </div>
           <div>
-            <h4 class="font-bold text-slate-900 text-base m-0">Requisition Generated Successfully!</h4>
+            <h4 class="font-bold text-slate-900 text-base m-0">
+              {{ loadedRequisitionNo() ? 'Requisition Updated Successfully!' : 'Requisition Generated Successfully!' }}
+            </h4>
             <p class="text-xs text-slate-500 mt-1 m-0">
               The purchase requisition order has been logged and sent for manager approval.
             </p>
@@ -586,8 +667,13 @@ export class RequisitionListComponent implements OnInit {
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
   private readonly supplierService = inject(SupplierService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   // Master State
+  loadedRequisitionNo = signal<number | null>(null);
+  loadedRequisitionStatus = signal<string>('Draft');
+  isApproving = signal<boolean>(false);
   savedRequisitionCode = signal<string | null>(null);
   lastSavedCost = signal<number>(0);
   requisitionDate: Date = new Date();
@@ -645,6 +731,12 @@ export class RequisitionListComponent implements OnInit {
     this.loadSuppliers();
     this.loadCompanies();
     this.loadCatalogProducts();
+    this.route.queryParams.subscribe(params => {
+      const reqNo = params['requisitionNo'];
+      if (reqNo) {
+        this.loadRequisitionForEdit(Number(reqNo));
+      }
+    });
   }
 
   // Keyboard Shortcuts (F2: Add Item, F8: Save Requisition)
@@ -687,6 +779,24 @@ export class RequisitionListComponent implements OnInit {
         if (res.success && res.data) {
           this.allProducts = [...(res.data.items || [])];
           this.catalogProducts.set(this.allProducts);
+          // If items already loaded from requisition, enrich any missing details
+          if (this.items().length > 0) {
+            this.items.update(list =>
+              list.map(item => {
+                const prod = this.allProducts.find(p => p.product_no === item.product_no);
+                if (!prod) return item;
+                return {
+                  ...item,
+                  product_name: item.product_name && !item.product_name.startsWith('Product #') ? item.product_name : prod.product_name,
+                  generic_name: item.generic_name !== 'General' ? item.generic_name : (prod.generic_name || 'General'),
+                  company_name: item.company_name !== 'Pharmaceuticals Ltd.' ? item.company_name : (prod.company_name || 'Pharmaceuticals Ltd.'),
+                  current_stock_pcs: prod.stock_qty ?? item.current_stock_pcs,
+                  min_stock_qty_pcs: prod.min_stock_qty_pcs ?? item.min_stock_qty_pcs,
+                  shortfall_pcs: Math.max(0, (prod.min_stock_qty_pcs ?? item.min_stock_qty_pcs) - (prod.stock_qty ?? 0)),
+                };
+              })
+            );
+          }
         }
       },
     });
@@ -848,7 +958,95 @@ export class RequisitionListComponent implements OnInit {
     return Math.round(totalPcs * unitPriceWithVat * 100) / 100;
   }
 
-  // Final Save to Backend
+  // Load Existing Requisition for Edit
+  loadRequisitionForEdit(reqNo: number): void {
+    this.productService.getRequisitionById(reqNo).subscribe({
+      next: res => {
+        if (res.success && res.data) {
+          const req = res.data;
+          this.loadedRequisitionNo.set(req.requisition_no);
+          this.savedRequisitionCode.set(req.requisition_code || `REQ-${req.requisition_no}`);
+          this.loadedRequisitionStatus.set(req.status || 'Pending');
+          this.selectedSupplierNo = req.supplier_no || null;
+          this.selectedCompanyNo = req.company_no || null;
+          this.requisitionDate = req.created_at ? new Date(req.created_at) : new Date();
+
+          const mappedRows: RequisitionItemRow[] = (req.items || []).map(item => {
+            const prod = this.allProducts.find(p => p.product_no === item.product_no);
+            const qtyInBox = item.quantity_in_box || prod?.quantity_per_box || 1;
+            const boxQty = item.box_qty || 1;
+            const minQtyPcs = item.min_qty_pcs ?? prod?.min_stock_qty_pcs ?? 10;
+            const currentStock = prod?.stock_qty ?? 0;
+            const shortfall = Math.max(0, minQtyPcs - currentStock);
+            const unitCost = item.btp || prod?.purchase_price_per_piece || 0;
+            const vatPercent = item.vat || 0;
+
+            return {
+              product_no: item.product_no,
+              product_name: item.product_name || prod?.product_name || `Product #${item.product_no}`,
+              generic_name: prod?.generic_name || 'General',
+              company_name: prod?.company_name || req.company_name || 'Pharmaceuticals Ltd.',
+              company_no: prod?.company_no ?? req.company_no ?? null,
+              current_stock_pcs: currentStock,
+              min_stock_qty_pcs: minQtyPcs,
+              shortfall_pcs: shortfall,
+              quantity_in_box: qtyInBox,
+              box_qty: boxQty,
+              unit_cost: unitCost,
+              vat_percent: vatPercent,
+              sale_qty_6mth_pcs: item.sale_qty_6mth_pcs || 0,
+              is_from_low_stock: false,
+            };
+          });
+
+          this.items.set(mappedRows);
+          this.msg.info(`Loaded requisition ${this.savedRequisitionCode()} for editing.`);
+        } else {
+          this.msg.error(res.message || 'Failed to load requisition');
+        }
+      },
+      error: err => {
+        this.msg.error(err?.error?.message || 'Failed to load requisition');
+      },
+    });
+  }
+
+  // Master Action: Approve Current Requisition
+  approveCurrentRequisition(): void {
+    const reqNo = this.loadedRequisitionNo();
+    const reqCode = this.savedRequisitionCode() || `REQ-${reqNo}`;
+    if (!reqNo) return;
+
+    this.modal
+      .confirmAction(
+        `Approve Requisition ${reqCode}?`,
+        'Approving this requisition confirms procurement of these inventory items.',
+        'Approve Requisition',
+        false
+      )
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.isApproving.set(true);
+          this.productService.updateRequisitionStatus(reqNo, 'Approved').subscribe({
+            next: res => {
+              this.isApproving.set(false);
+              if (res.success) {
+                this.loadedRequisitionStatus.set('Approved');
+                this.msg.success(`Requisition ${reqCode} has been approved successfully!`);
+              } else {
+                this.msg.error(res.message || 'Failed to approve requisition.');
+              }
+            },
+            error: err => {
+              this.isApproving.set(false);
+              this.msg.error(err?.error?.message || 'Failed to approve requisition.');
+            },
+          });
+        }
+      });
+  }
+
+  // Final Save to Backend (Create or Update)
   saveRequisition(): void {
     if (this.items().length === 0) {
       this.msg.warning('Please add at least one product item to create a requisition.');
@@ -860,7 +1058,7 @@ export class RequisitionListComponent implements OnInit {
     const payload = {
       company_no: this.selectedCompanyNo,
       supplier_no: this.selectedSupplierNo,
-      status: 'Pending',
+      status: this.loadedRequisitionNo() ? this.loadedRequisitionStatus() : 'Pending',
       remarks: this.remarks.trim() || undefined,
       items: this.items().map(i => {
         const boxQty = i.box_qty || 1;
@@ -891,32 +1089,59 @@ export class RequisitionListComponent implements OnInit {
       }),
     };
 
-    this.productService.createRequisition(payload).subscribe({
-      next: res => {
-        this.isSaving.set(false);
-        if (res.success && res.data) {
-          const reqCode = res.data.requisition_code;
-          this.savedRequisitionCode.set(reqCode);
-          this.lastSavedCost.set(this.grandTotal());
-          this.isSuccessModalVisible = true;
-          this.msg.success(`Requisition ${reqCode} generated successfully!`);
-        } else {
-          this.msg.error(res.message || 'Failed to save requisition');
-        }
-      },
-      error: err => {
-        this.isSaving.set(false);
-        this.msg.error(err?.error?.message || 'Failed to save requisition');
-      },
-    });
+    const reqNo = this.loadedRequisitionNo();
+    if (reqNo) {
+      this.productService.updateRequisition(reqNo, payload).subscribe({
+        next: res => {
+          this.isSaving.set(false);
+          if (res.success && res.data) {
+            const code = res.data.requisition_code || this.savedRequisitionCode() || `REQ-${reqNo}`;
+            this.savedRequisitionCode.set(code);
+            this.lastSavedCost.set(this.grandTotal());
+            this.isSuccessModalVisible = true;
+            this.msg.success(`Requisition ${code} updated successfully!`);
+          } else {
+            this.msg.error(res.message || 'Failed to update requisition');
+          }
+        },
+        error: err => {
+          this.isSaving.set(false);
+          this.msg.error(err?.error?.message || 'Failed to update requisition');
+        },
+      });
+    } else {
+      this.productService.createRequisition(payload).subscribe({
+        next: res => {
+          this.isSaving.set(false);
+          if (res.success && res.data) {
+            const reqCode = res.data.requisition_code;
+            this.savedRequisitionCode.set(reqCode);
+            this.lastSavedCost.set(this.grandTotal());
+            this.isSuccessModalVisible = true;
+            this.msg.success(`Requisition ${reqCode} generated successfully!`);
+          } else {
+            this.msg.error(res.message || 'Failed to save requisition');
+          }
+        },
+        error: err => {
+          this.isSaving.set(false);
+          this.msg.error(err?.error?.message || 'Failed to save requisition');
+        },
+      });
+    }
   }
 
   startNewRequisition(): void {
     this.isSuccessModalVisible = false;
+    this.loadedRequisitionNo.set(null);
     this.savedRequisitionCode.set(null);
+    this.loadedRequisitionStatus.set('Draft');
     this.remarks = '';
     this.items.set([]);
+    this.selectedSupplierNo = null;
+    this.selectedCompanyNo = null;
     this.requisitionDate = new Date();
+    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
     this.msg.info('Ready for new requisition order.');
   }
 }

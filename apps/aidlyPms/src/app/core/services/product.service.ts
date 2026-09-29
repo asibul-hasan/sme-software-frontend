@@ -97,6 +97,10 @@ export class ProductService {
     return this.api.post<ProdProductRequisition>('prod/requisitions', payload);
   }
 
+  updateRequisition(requisitionNo: number, payload: unknown): Observable<ApiResponse<ProdProductRequisition>> {
+    return this.api.put<ProdProductRequisition>(`prod/requisitions/${requisitionNo}`, payload);
+  }
+
   getRequisitionRecords(params?: Record<string, unknown>): Observable<ApiResponse<ProdProductRequisition[]>> {
     return this.api.get<ProdProductRequisition[]>('prod/requisitions/records', params);
   }

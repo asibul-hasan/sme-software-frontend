@@ -94,7 +94,9 @@ export interface ProdProductRequisition {
   pharmacy_no: number;
   branch_no?: number;
   company_no?: number | null; // Manufacturer reference
+  company_name?: string | null;
   supplier_no?: number | null;
+  supplier_name?: string | null;
   total_selected_items: number;
   total_cost: number;
   is_as_per_sale: boolean;
