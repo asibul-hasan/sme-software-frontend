@@ -11,6 +11,10 @@ on:
       - '.github/workflows/deploy-pms.yml'
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   pms-deploy:
     name: Deploy Aidly PMS to cPanel
@@ -23,7 +27,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -54,3 +57,28 @@ jobs:
           password: ${{ secrets.PMS_FTP_PASSWORD }}
           local-dir: ./dist/apps/aidlyPms/browser/
           server-dir: ./
+
+      - name: Clear GitHub Actions caches & artifacts
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Purging artifacts and caches to keep GitHub storage under limit..."
+          # Delete any stored artifacts for this repository
+          gh api -X GET "repos/$REPO/actions/artifacts" --jq '.artifacts[].id' 2>/dev/null | while read -r id; do
+            if [ -n "$id" ]; then
+              echo "Deleting artifact ID: $id"
+              gh api -X DELETE "repos/$REPO/actions/artifacts/$id" 2>/dev/null || true
+            fi
+          done
+
+          # Delete all actions caches for this repository
+          gh api -X GET "repos/$REPO/actions/caches" --jq '.actions_caches[].id' 2>/dev/null | while read -r cache_id; do
+            if [ -n "$cache_id" ]; then
+              echo "Deleting cache ID: $cache_id"
+              gh api -X DELETE "repos/$REPO/actions/caches/$cache_id" 2>/dev/null || true
+            fi
+          done
+          echo "Storage cleanup complete."
+

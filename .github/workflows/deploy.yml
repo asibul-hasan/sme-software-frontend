@@ -4,6 +4,10 @@ on:
     branches:
       - main
     
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   web-deploy:
     name: Deploy to cPanel
@@ -21,12 +25,9 @@ jobs:
         run: npm ci
     
       - name: Build project
+        env:
+          NX_DAEMON: 'false'
         run: npm run build -- --configuration production
-
-
-      # - name: Build project
-      #   # This tells Angular to build for the /admin/ subfolder
-      #   run: npm run build -- --configuration production --base-href /admin/
     
       - name: Sync files to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -37,3 +38,19 @@ jobs:
           # UPDATED PATH HERE:
           local-dir: ./dist/apps/web-client/browser/
           server-dir: ./
+
+      - name: Clear GitHub Actions caches & artifacts
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Purging artifacts and caches to keep GitHub storage under limit..."
+          gh api -X GET "repos/$REPO/actions/artifacts" --jq '.artifacts[].id' 2>/dev/null | while read -r id; do
+            [ -n "$id" ] && gh api -X DELETE "repos/$REPO/actions/artifacts/$id" 2>/dev/null || true
+          done
+          gh api -X GET "repos/$REPO/actions/caches" --jq '.actions_caches[].id' 2>/dev/null | while read -r cache_id; do
+            [ -n "$cache_id" ] && gh api -X DELETE "repos/$REPO/actions/caches/$cache_id" 2>/dev/null || true
+          done
+          echo "Storage cleanup complete."
+
