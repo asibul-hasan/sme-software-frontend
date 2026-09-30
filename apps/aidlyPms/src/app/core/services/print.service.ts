@@ -387,8 +387,8 @@ export class PrintService {
             color: #64748b;
           }
           footer.doc-footer {
-            margin-top: 25px;
-            border-top: 1px solid #e2e8f0;
+            margin-top: 10px;
+            border-top: 1px solid #cbd5e1;
             padding-top: 6px;
             display: flex;
             justify-content: space-between;
@@ -396,6 +396,16 @@ export class PrintService {
             color: #94a3b8;
             page-break-inside: avoid;
             break-inside: avoid;
+          }
+          .last-page-footer-group {
+            width: 100%;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          #bottom-spacer {
+            display: block;
+            width: 100%;
+            height: 0px;
           }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
@@ -406,13 +416,66 @@ export class PrintService {
         </style>
       </head>
       <body>
+        ${!isThermal ? '<div id="print-page-probe" style="position: absolute; top: 0; left: 0; height: 274mm; width: 1px; visibility: hidden; pointer-events: none;"></div>' : ''}
         ${htmlContent}
+        ${!isThermal ? `
+          <script>
+            function alignLastPageFooter() {
+              try {
+                var probe = document.getElementById('print-page-probe');
+                var content = document.getElementById('printable-content');
+                var footer = document.getElementById('last-page-footer');
+                var spacer = document.getElementById('bottom-spacer');
+                if (!probe || !content || !footer || !spacer) return;
+
+                spacer.style.height = '0px';
+                spacer.style.breakBefore = 'auto';
+                spacer.style.pageBreakBefore = 'auto';
+
+                var pageHeight = probe.getBoundingClientRect().height;
+                var contentHeight = content.getBoundingClientRect().height;
+                var footerHeight = footer.getBoundingClientRect().height;
+
+                if (!pageHeight || pageHeight <= 0) return;
+
+                var remainder = contentHeight % pageHeight;
+                var spaceLeft = pageHeight - remainder;
+                var safety = 16;
+
+                if (spaceLeft >= footerHeight + safety) {
+                  var neededSpacer = spaceLeft - footerHeight - safety;
+                  spacer.style.height = Math.max(0, Math.floor(neededSpacer)) + 'px';
+                } else {
+                  spacer.style.breakBefore = 'page';
+                  spacer.style.pageBreakBefore = 'always';
+                  var neededSpacer = pageHeight - footerHeight - safety;
+                  spacer.style.height = Math.max(0, Math.floor(neededSpacer)) + 'px';
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+
+            window.addEventListener('DOMContentLoaded', alignLastPageFooter);
+            window.addEventListener('load', alignLastPageFooter);
+            window.addEventListener('beforeprint', alignLastPageFooter);
+            alignLastPageFooter();
+          </script>
+        ` : ''}
       </body>
       </html>
     `);
     doc.close();
 
     setTimeout(() => {
+      try {
+        const win = iframe.contentWindow;
+        if (win && (win as any).alignLastPageFooter) {
+          (win as any).alignLastPageFooter();
+        }
+      } catch (e) {
+        // ignore
+      }
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
     }, 250);
@@ -478,73 +541,79 @@ export class PrintService {
 
     const invoiceHtml = `
       <div class="invoice-container">
-        <!-- Header -->
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${branchName}</h1>
-          <p class="pharmacy-branch">${branchAddress}</p>
-          <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <!-- Header -->
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${branchName}</h1>
+            <p class="pharmacy-branch">${branchAddress}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <!-- Document Title -->
-        <div class="doc-title-badge">SALE RECEIPT</div>
+          <!-- Document Title -->
+          <div class="doc-title-badge">SALE RECEIPT</div>
 
-        <!-- Metadata Card -->
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Bill No:</span> <strong class="meta-val font-mono">${data.inv}</strong></div>
-            <div class="meta-item"><span class="meta-label">Customer:</span> <span class="meta-val">${data.customer}${data.customerPhone ? ' (' + data.customerPhone + ')' : ''}</span></div>
-            <div class="meta-item"><span class="meta-label">Salesman:</span> <span class="meta-val">${data.salesman || 'Admin'}</span></div>
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${dateStr}</span></div>
-            <div class="meta-item"><span class="meta-label">Time:</span> <span class="meta-val font-mono">${timeStr}</span></div>
-            <div class="meta-item"><span class="meta-label">Payment:</span> <span class="meta-val">${data.paymentMethod || 'Cash Counter'}</span></div>
-          </div>
-        </section>
+          <!-- Metadata Card -->
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Bill No:</span> <strong class="meta-val font-mono">${data.inv}</strong></div>
+              <div class="meta-item"><span class="meta-label">Customer:</span> <span class="meta-val">${data.customer}${data.customerPhone ? ' (' + data.customerPhone + ')' : ''}</span></div>
+              <div class="meta-item"><span class="meta-label">Salesman:</span> <span class="meta-val">${data.salesman || 'Admin'}</span></div>
+            </div>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${dateStr}</span></div>
+              <div class="meta-item"><span class="meta-label">Time:</span> <span class="meta-val font-mono">${timeStr}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment:</span> <span class="meta-val">${data.paymentMethod || 'Cash Counter'}</span></div>
+            </div>
+          </section>
 
-        <!-- Table -->
-        <main class="table-wrapper">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th class="th-item">ITEM DESCRIPTION</th>
-                <th class="th-qty text-center" style="width: 70px;">QTY</th>
-                <th class="th-price text-right" style="width: 110px;">UNIT PRICE</th>
-                <th class="th-total text-right" style="width: 120px;">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </main>
+          <!-- Table -->
+          <main class="table-wrapper">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th class="th-item">ITEM DESCRIPTION</th>
+                  <th class="th-qty text-center" style="width: 70px;">QTY</th>
+                  <th class="th-price text-right" style="width: 110px;">UNIT PRICE</th>
+                  <th class="th-total text-right" style="width: 120px;">TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </main>
 
-        <!-- Summary Card -->
-        <section class="summary-wrapper">
-          <div class="summary-box">
-            <div class="sum-row"><span class="sum-label">Subtotal:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.subtotal)}</span></div>
-            ${data.disc ? `<div class="sum-row"><span class="sum-label">Discount:</span> <span class="sum-val font-mono text-emerald">-৳ ${fmtMoney(data.disc)}</span></div>` : ''}
-            ${data.vat ? `<div class="sum-row"><span class="sum-label">VAT / Tax:</span> <span class="sum-val font-mono">+৳ ${fmtMoney(data.vat)}</span></div>` : ''}
-            <div class="sum-row sum-net"><span class="sum-label">Net Payable:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.total)}</span></div>
-            <div class="sum-row"><span class="sum-label">Paid Amount:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.paid)}</span></div>
-            ${data.due ? `<div class="sum-row" style="color: #b91c1c; font-weight: 700;"><span class="sum-label" style="color: #b91c1c;">Due Remaining:</span> <span class="sum-val font-mono text-rose">৳ ${fmtMoney(data.due)}</span></div>` : ''}
-            ${data.change ? `<div class="sum-row"><span class="sum-label">Change Given:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.change)}</span></div>` : ''}
-          </div>
-        </section>
+          <!-- Summary Card -->
+          <section class="summary-wrapper">
+            <div class="summary-box">
+              <div class="sum-row"><span class="sum-label">Subtotal:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.subtotal)}</span></div>
+              ${data.disc ? `<div class="sum-row"><span class="sum-label">Discount:</span> <span class="sum-val font-mono text-emerald">-৳ ${fmtMoney(data.disc)}</span></div>` : ''}
+              ${data.vat ? `<div class="sum-row"><span class="sum-label">VAT / Tax:</span> <span class="sum-val font-mono">+৳ ${fmtMoney(data.vat)}</span></div>` : ''}
+              <div class="sum-row sum-net"><span class="sum-label">Net Payable:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.total)}</span></div>
+              <div class="sum-row"><span class="sum-label">Paid Amount:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.paid)}</span></div>
+              ${data.due ? `<div class="sum-row" style="color: #b91c1c; font-weight: 700;"><span class="sum-label" style="color: #b91c1c;">Due Remaining:</span> <span class="sum-val font-mono text-rose">৳ ${fmtMoney(data.due)}</span></div>` : ''}
+              ${data.change ? `<div class="sum-row"><span class="sum-label">Change Given:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.change)}</span></div>` : ''}
+            </div>
+          </section>
+        </div>
 
-        <!-- Thank-You & Policies -->
-        <section class="thank-you-box">
-          <div class="ty-star">*** Thank You for Shopping! ***</div>
-          <div class="ty-policy">Medicines sold cannot be returned without receipt.</div>
-          <div class="ty-signature-note">This is generated by AidlyPms no authority signature is required</div>
-        </section>
+        <div id="bottom-spacer"></div>
 
-        <!-- Running Footer -->
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
+        <div id="last-page-footer" class="last-page-footer-group">
+          <!-- Thank-You & Policies -->
+          <section class="thank-you-box">
+            <div class="ty-star">*** Thank You for Shopping! ***</div>
+            <div class="ty-policy">Medicines sold cannot be returned without receipt.</div>
+            <div class="ty-signature-note">This is generated by AidlyPms no authority signature is required</div>
+          </section>
+
+          <!-- Running Footer -->
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
+        </div>
       </div>
     `;
 
@@ -650,64 +719,70 @@ export class PrintService {
 
     const voucherHtml = `
       <div class="invoice-container">
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${branchName}</h1>
-          <p class="pharmacy-branch">${branchAddress}</p>
-          <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${branchName}</h1>
+            <p class="pharmacy-branch">${branchAddress}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <div class="doc-title-badge">GOODS RECEIVING NOTE (GRN) / PURCHASE VOUCHER</div>
+          <div class="doc-title-badge">GOODS RECEIVING NOTE (GRN) / PURCHASE VOUCHER</div>
 
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Voucher #:</span> <strong class="meta-val font-mono">${data.ref}</strong></div>
-            <div class="meta-item"><span class="meta-label">Vendor / Supplier:</span> <strong class="meta-val">${data.supplier}${data.supplierPhone ? ' (' + data.supplierPhone + ')' : ''}</strong></div>
-            <div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-val">${data.type || 'Commercial Medicine Stock'}</span></div>
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Inward Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-            <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.paymentMode || 'Credit Supplier Payable'}</span></div>
-            <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Received & Stocked</span></div>
-          </div>
-        </section>
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Voucher #:</span> <strong class="meta-val font-mono">${data.ref}</strong></div>
+              <div class="meta-item"><span class="meta-label">Vendor / Supplier:</span> <strong class="meta-val">${data.supplier}${data.supplierPhone ? ' (' + data.supplierPhone + ')' : ''}</strong></div>
+              <div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-val">${data.type || 'Commercial Medicine Stock'}</span></div>
+            </div>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Inward Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.paymentMode || 'Credit Supplier Payable'}</span></div>
+              <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Received & Stocked</span></div>
+            </div>
+          </section>
 
-        <main class="table-wrapper">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th class="th-item">ITEM FORMULATION</th>
-                <th class="th-qty text-center" style="width: 75px;">INWARD QTY</th>
-                <th class="th-price text-right" style="width: 110px;">UNIT COST (৳)</th>
-                <th class="th-total text-right" style="width: 120px;">TOTAL (৳)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </main>
+          <main class="table-wrapper">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th class="th-item">ITEM FORMULATION</th>
+                  <th class="th-qty text-center" style="width: 75px;">INWARD QTY</th>
+                  <th class="th-price text-right" style="width: 110px;">UNIT COST (৳)</th>
+                  <th class="th-total text-right" style="width: 120px;">TOTAL (৳)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </main>
 
-        <section class="summary-wrapper">
-          <div class="summary-box">
-            <div class="sum-row"><span class="sum-label">Gross Value:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.gross)}</span></div>
-            ${data.disc ? `<div class="sum-row"><span class="sum-label">Discount Allowed:</span> <span class="sum-val font-mono text-emerald">-৳ ${fmtMoney(data.disc)}</span></div>` : ''}
-            <div class="sum-row sum-net"><span class="sum-label">Net Inward Amount:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.net)}</span></div>
-            ${data.paid !== undefined ? `<div class="sum-row"><span class="sum-label">Amount Paid:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.paid)}</span></div>` : ''}
-            ${data.due !== undefined ? `<div class="sum-row sum-due"><span class="sum-label">Due Payable:</span> <span class="sum-val font-mono text-rose">৳ ${fmtMoney(data.due)}</span></div>` : ''}
-          </div>
-        </section>
-
-        <div class="signature-section">
-          <div class="sig-box">Receiving Pharmacist</div>
-          <div class="sig-box">Supplier Representative</div>
-          <div class="sig-box">Accounts Department</div>
+          <section class="summary-wrapper">
+            <div class="summary-box">
+              <div class="sum-row"><span class="sum-label">Gross Value:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.gross)}</span></div>
+              ${data.disc ? `<div class="sum-row"><span class="sum-label">Discount Allowed:</span> <span class="sum-val font-mono text-emerald">-৳ ${fmtMoney(data.disc)}</span></div>` : ''}
+              <div class="sum-row sum-net"><span class="sum-label">Net Inward Amount:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.net)}</span></div>
+              ${data.paid !== undefined ? `<div class="sum-row"><span class="sum-label">Amount Paid:</span> <span class="sum-val font-mono">৳ ${fmtMoney(data.paid)}</span></div>` : ''}
+              ${data.due !== undefined ? `<div class="sum-row sum-due"><span class="sum-label">Due Payable:</span> <span class="sum-val font-mono text-rose">৳ ${fmtMoney(data.due)}</span></div>` : ''}
+            </div>
+          </section>
         </div>
 
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
+        <div id="bottom-spacer"></div>
+
+        <div id="last-page-footer" class="last-page-footer-group">
+          <div class="signature-section">
+            <div class="sig-box">Receiving Pharmacist</div>
+            <div class="sig-box">Supplier Representative</div>
+            <div class="sig-box">Accounts Department</div>
+          </div>
+
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
+        </div>
       </div>
     `;
 
@@ -735,64 +810,70 @@ export class PrintService {
 
     const reqHtml = `
       <div class="invoice-container">
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${branchName}</h1>
-          <p class="pharmacy-branch">${branchAddress}</p>
-          <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${branchName}</h1>
+            <p class="pharmacy-branch">${branchAddress}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <div class="doc-title-badge">COMMERCIAL PURCHASE REQUISITION ORDER</div>
+          <div class="doc-title-badge">COMMERCIAL PURCHASE REQUISITION ORDER</div>
 
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Requisition #:</span> <strong class="meta-val font-mono">${data.reqCode}</strong></div>
-            <div class="meta-item"><span class="meta-label">Supplier Assigned:</span> <strong class="meta-val">${data.supplier}</strong></div>
-            <div class="meta-item"><span class="meta-label">Originator:</span> <span class="meta-val">${data.createdBy}</span></div>
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-            <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val font-bold text-emerald">${data.status}</span></div>
-            <div class="meta-item"><span class="meta-label">Order Type:</span> <span class="meta-val">Regular Stock Replenishment</span></div>
-          </div>
-        </section>
-
-        <main class="table-wrapper">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th class="text-center" style="width: 32px;">#</th>
-                <th class="th-item">MEDICINE FORMULATION</th>
-                <th class="th-qty text-center" style="width: 80px;">REQ BOX</th>
-                <th class="th-price text-right" style="width: 110px;">UNIT BTP (৳)</th>
-                <th class="th-total text-right" style="width: 120px;">SUBTOTAL (৳)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </main>
-
-        <section class="summary-wrapper">
-          <div class="summary-box">
-            <div class="sum-row sum-net">
-              <span class="sum-label">Estimated Total:</span>
-              <span class="sum-val font-mono">৳ ${fmtMoney(data.totalEstimated)}</span>
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Requisition #:</span> <strong class="meta-val font-mono">${data.reqCode}</strong></div>
+              <div class="meta-item"><span class="meta-label">Supplier Assigned:</span> <strong class="meta-val">${data.supplier}</strong></div>
+              <div class="meta-item"><span class="meta-label">Originator:</span> <span class="meta-val">${data.createdBy}</span></div>
             </div>
-          </div>
-        </section>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
+              <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val font-bold text-emerald">${data.status}</span></div>
+              <div class="meta-item"><span class="meta-label">Order Type:</span> <span class="meta-val">Regular Stock Replenishment</span></div>
+            </div>
+          </section>
 
-        <div class="signature-section">
-          <div class="sig-box">Prepared By (Pharmacist)</div>
-          <div class="sig-box">Store Manager Verification</div>
-          <div class="sig-box">Commercial Approval</div>
+          <main class="table-wrapper">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th class="text-center" style="width: 32px;">#</th>
+                  <th class="th-item">MEDICINE FORMULATION</th>
+                  <th class="th-qty text-center" style="width: 80px;">REQ BOX</th>
+                  <th class="th-price text-right" style="width: 110px;">UNIT BTP (৳)</th>
+                  <th class="th-total text-right" style="width: 120px;">SUBTOTAL (৳)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </main>
+
+          <section class="summary-wrapper">
+            <div class="summary-box">
+              <div class="sum-row sum-net">
+                <span class="sum-label">Estimated Total:</span>
+                <span class="sum-val font-mono">৳ ${fmtMoney(data.totalEstimated)}</span>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
+        <div id="bottom-spacer"></div>
+
+        <div id="last-page-footer" class="last-page-footer-group">
+          <div class="signature-section">
+            <div class="sig-box">Prepared By (Pharmacist)</div>
+            <div class="sig-box">Store Manager Verification</div>
+            <div class="sig-box">Commercial Approval</div>
+          </div>
+
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
+        </div>
       </div>
     `;
 
@@ -810,60 +891,66 @@ export class PrintService {
 
     const receiptHtml = `
       <div class="invoice-container">
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${branchName}</h1>
-          <p class="pharmacy-branch">${branchAddress}</p>
-          <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${branchName}</h1>
+            <p class="pharmacy-branch">${branchAddress}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <div class="doc-title-badge">CUSTOMER DUE SETTLEMENT MONEY RECEIPT</div>
+          <div class="doc-title-badge">CUSTOMER DUE SETTLEMENT MONEY RECEIPT</div>
 
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Receipt #:</span> <strong class="meta-val font-mono">${data.receipt}</strong></div>
-            <div class="meta-item"><span class="meta-label">Customer:</span> <strong class="meta-val">${data.customer}</strong></div>
-            <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${data.phone || 'N/A'}</span></div>
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-            <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.method}</span></div>
-            <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Collected & Settled</span></div>
-          </div>
-        </section>
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Receipt #:</span> <strong class="meta-val font-mono">${data.receipt}</strong></div>
+              <div class="meta-item"><span class="meta-label">Customer:</span> <strong class="meta-val">${data.customer}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${data.phone || 'N/A'}</span></div>
+            </div>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.method}</span></div>
+              <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Collected & Settled</span></div>
+            </div>
+          </section>
 
-        <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 6px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <div>
-            <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #065f46;">Total Due Collected</div>
-            <div style="font-size: 10px; color: #047857; margin-top: 2px;">Customer ledger updated and credit balance settled</div>
+          <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 6px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #065f46;">Total Due Collected</div>
+              <div style="font-size: 10px; color: #047857; margin-top: 2px;">Customer ledger updated and credit balance settled</div>
+            </div>
+            <div style="font-size: 20px; font-weight: 800; font-family: monospace; color: #047857;">
+              ৳ ${fmtMoney(data.amount)}
+            </div>
           </div>
-          <div style="font-size: 20px; font-weight: 800; font-family: monospace; color: #047857;">
-            ৳ ${fmtMoney(data.amount)}
-          </div>
+
+          ${data.note ? `
+            <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc; font-size: 11px; margin-bottom: 20px;">
+              <span style="color: #64748b; font-weight: 600;">Settlement Narration:</span>
+              <span style="color: #0f172a; margin-left: 6px;">${data.note}</span>
+            </div>
+          ` : ''}
         </div>
 
-        ${data.note ? `
-          <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc; font-size: 11px; margin-bottom: 20px;">
-            <span style="color: #64748b; font-weight: 600;">Settlement Narration:</span>
-            <span style="color: #0f172a; margin-left: 6px;">${data.note}</span>
+        <div id="bottom-spacer"></div>
+
+        <div id="last-page-footer" class="last-page-footer-group">
+          <div class="signature-section">
+            <div class="sig-box">Collecting Cashier / Pharmacist</div>
+            <div class="sig-box">Customer Signature</div>
+            <div class="sig-box">Authorized Signature</div>
           </div>
-        ` : ''}
 
-        <div class="signature-section">
-          <div class="sig-box">Collecting Cashier / Pharmacist</div>
-          <div class="sig-box">Customer Signature</div>
-          <div class="sig-box">Authorized Signature</div>
+          <section class="thank-you-box" style="margin-top: 14px;">
+            <div class="ty-star">*** Thank You for Your Payment! ***</div>
+            <div class="ty-signature-note">Official computer-generated receipt from Aidly PMS</div>
+          </section>
+
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
         </div>
-
-        <section class="thank-you-box" style="margin-top: 24px;">
-          <div class="ty-star">*** Thank You for Your Payment! ***</div>
-          <div class="ty-signature-note">Official computer-generated receipt from Aidly PMS</div>
-        </section>
-
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
       </div>
     `;
 
@@ -933,66 +1020,72 @@ export class PrintService {
 
     const statementHtml = `
       <div class="invoice-container">
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${this.defaultPharmacy.name}</h1>
-          <p class="pharmacy-branch">${this.defaultPharmacy.branch}</p>
-          <p class="pharmacy-meta">Hotline: ${this.defaultPharmacy.phone} <span class="sep">|</span> DL: ${this.defaultPharmacy.dl}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${this.defaultPharmacy.name}</h1>
+            <p class="pharmacy-branch">${this.defaultPharmacy.branch}</p>
+            <p class="pharmacy-meta">Hotline: ${this.defaultPharmacy.phone} <span class="sep">|</span> DL: ${this.defaultPharmacy.dl}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <div class="doc-title-badge">CUSTOMER STATEMENT OF ACCOUNT (LEDGER)</div>
+          <div class="doc-title-badge">CUSTOMER STATEMENT OF ACCOUNT (LEDGER)</div>
 
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Customer Name:</span> <strong class="meta-val">${customer.name}</strong></div>
-            <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${customer.phone || 'N/A'}</span></div>
-            <div class="meta-item"><span class="meta-label">Customer Type:</span> <span class="meta-val">${customer.type || 'Regular Customer'}</span></div>
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>
-            <div class="meta-item"><span class="meta-label">Net Due Balance:</span> <strong class="meta-val font-mono text-rose" style="font-size: 13px;">৳ ${fmtMoney(dueBalance)}</strong></div>
-            <div class="meta-item"><span class="meta-label">Ledger Status:</span> <span class="meta-val font-bold ${Number(dueBalance) > 0 ? 'text-rose' : 'text-emerald'}">${Number(dueBalance) > 0 ? 'PAYABLE DUE' : 'CLEARED'}</span></div>
-          </div>
-        </section>
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Customer Name:</span> <strong class="meta-val">${customer.name}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${customer.phone || 'N/A'}</span></div>
+              <div class="meta-item"><span class="meta-label">Customer Type:</span> <span class="meta-val">${customer.type || 'Regular Customer'}</span></div>
+            </div>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>
+              <div class="meta-item"><span class="meta-label">Net Due Balance:</span> <strong class="meta-val font-mono text-rose" style="font-size: 13px;">৳ ${fmtMoney(dueBalance)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Ledger Status:</span> <span class="meta-val font-bold ${Number(dueBalance) > 0 ? 'text-rose' : 'text-emerald'}">${Number(dueBalance) > 0 ? 'PAYABLE DUE' : 'CLEARED'}</span></div>
+            </div>
+          </section>
 
-        <main class="table-wrapper">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th class="text-center" style="width: 32px;">#</th>
-                <th style="width: 110px;">Date & Time</th>
-                <th style="width: 90px;">Doc #</th>
-                <th style="width: 90px;">Type</th>
-                <th class="text-right" style="width: 85px;">Debit (৳)</th>
-                <th class="text-right" style="width: 85px;">Credit (৳)</th>
-                <th class="text-right" style="width: 95px;">Balance (৳)</th>
-                <th>Method / Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </main>
+          <main class="table-wrapper">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th class="text-center" style="width: 32px;">#</th>
+                  <th style="width: 110px;">Date & Time</th>
+                  <th style="width: 90px;">Doc #</th>
+                  <th style="width: 90px;">Type</th>
+                  <th class="text-right" style="width: 85px;">Debit (৳)</th>
+                  <th class="text-right" style="width: 85px;">Credit (৳)</th>
+                  <th class="text-right" style="width: 95px;">Balance (৳)</th>
+                  <th>Method / Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </main>
 
-        <section class="summary-wrapper">
-          <div class="summary-box">
-            <div class="sum-row"><span>Total Sales / Debit:</span> <span class="font-mono">৳ ${fmtMoney(totalDebit)}</span></div>
-            <div class="sum-row"><span>Total Payments / Credit:</span> <span class="font-mono text-emerald">৳ ${fmtMoney(totalCredit)}</span></div>
-            <div class="sum-row sum-net"><span>Net Outstanding Due:</span> <span class="font-mono text-rose">৳ ${fmtMoney(dueBalance)}</span></div>
-          </div>
-        </section>
-
-        <div class="signature-section">
-          <div class="sig-box">Prepared By (Pharmacist)</div>
-          <div class="sig-box">Customer Signature</div>
-          <div class="sig-box">Authorized Signatory</div>
+          <section class="summary-wrapper">
+            <div class="summary-box">
+              <div class="sum-row"><span>Total Sales / Debit:</span> <span class="font-mono">৳ ${fmtMoney(totalDebit)}</span></div>
+              <div class="sum-row"><span>Total Payments / Credit:</span> <span class="font-mono text-emerald">৳ ${fmtMoney(totalCredit)}</span></div>
+              <div class="sum-row sum-net"><span>Net Outstanding Due:</span> <span class="font-mono text-rose">৳ ${fmtMoney(dueBalance)}</span></div>
+            </div>
+          </section>
         </div>
 
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
+        <div id="bottom-spacer"></div>
+
+        <div id="last-page-footer" class="last-page-footer-group">
+          <div class="signature-section">
+            <div class="sig-box">Prepared By (Pharmacist)</div>
+            <div class="sig-box">Customer Signature</div>
+            <div class="sig-box">Authorized Signatory</div>
+          </div>
+
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
+        </div>
       </div>
     `;
 
@@ -1062,66 +1155,72 @@ export class PrintService {
 
     const statementHtml = `
       <div class="invoice-container">
-        <header class="doc-header">
-          <h1 class="pharmacy-title">${this.defaultPharmacy.name}</h1>
-          <p class="pharmacy-branch">${this.defaultPharmacy.branch}</p>
-          <p class="pharmacy-meta">Hotline: ${this.defaultPharmacy.phone} <span class="sep">|</span> DL: ${this.defaultPharmacy.dl}</p>
-          <div class="header-divider"></div>
-        </header>
+        <div id="printable-content">
+          <header class="doc-header">
+            <h1 class="pharmacy-title">${this.defaultPharmacy.name}</h1>
+            <p class="pharmacy-branch">${this.defaultPharmacy.branch}</p>
+            <p class="pharmacy-meta">Hotline: ${this.defaultPharmacy.phone} <span class="sep">|</span> DL: ${this.defaultPharmacy.dl}</p>
+            <div class="header-divider"></div>
+          </header>
 
-        <div class="doc-title-badge">SUPPLIER STATEMENT OF ACCOUNT (LEDGER)</div>
+          <div class="doc-title-badge">SUPPLIER STATEMENT OF ACCOUNT (LEDGER)</div>
 
-        <section class="meta-card">
-          <div class="meta-col">
-            <div class="meta-item"><span class="meta-label">Supplier / Vendor:</span> <strong class="meta-val">${supplier.name}</strong></div>
-            <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${supplier.phone || 'N/A'}</span></div>
-            ${supplier.note ? `<div class="meta-item"><span class="meta-label">Note:</span> <span class="meta-val">${supplier.note}</span></div>` : ''}
-          </div>
-          <div class="meta-col meta-right">
-            <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>
-            <div class="meta-item"><span class="meta-label">Net Payable Due:</span> <strong class="meta-val font-mono text-rose" style="font-size: 13px;">৳ ${fmtMoney(dueBalance)}</strong></div>
-            <div class="meta-item"><span class="meta-label">Account Status:</span> <span class="meta-val font-bold ${Number(dueBalance) > 0 ? 'text-rose' : 'text-emerald'}">${Number(dueBalance) > 0 ? 'PAYABLE' : 'CLEARED'}</span></div>
-          </div>
-        </section>
+          <section class="meta-card">
+            <div class="meta-col">
+              <div class="meta-item"><span class="meta-label">Supplier / Vendor:</span> <strong class="meta-val">${supplier.name}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${supplier.phone || 'N/A'}</span></div>
+              ${supplier.note ? `<div class="meta-item"><span class="meta-label">Note:</span> <span class="meta-val">${supplier.note}</span></div>` : ''}
+            </div>
+            <div class="meta-col meta-right">
+              <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>
+              <div class="meta-item"><span class="meta-label">Net Payable Due:</span> <strong class="meta-val font-mono text-rose" style="font-size: 13px;">৳ ${fmtMoney(dueBalance)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Account Status:</span> <span class="meta-val font-bold ${Number(dueBalance) > 0 ? 'text-rose' : 'text-emerald'}">${Number(dueBalance) > 0 ? 'PAYABLE' : 'CLEARED'}</span></div>
+            </div>
+          </section>
 
-        <main class="table-wrapper">
-          <table class="invoice-table">
-            <thead>
-              <tr>
-                <th class="text-center" style="width: 32px;">#</th>
-                <th style="width: 110px;">Date & Time</th>
-                <th style="width: 90px;">Doc #</th>
-                <th style="width: 100px;">Type</th>
-                <th class="text-right" style="width: 85px;">Purchase (৳)</th>
-                <th class="text-right" style="width: 85px;">Paid (৳)</th>
-                <th class="text-right" style="width: 95px;">Balance (৳)</th>
-                <th>Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </main>
+          <main class="table-wrapper">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th class="text-center" style="width: 32px;">#</th>
+                  <th style="width: 110px;">Date & Time</th>
+                  <th style="width: 90px;">Doc #</th>
+                  <th style="width: 100px;">Type</th>
+                  <th class="text-right" style="width: 85px;">Purchase (৳)</th>
+                  <th class="text-right" style="width: 85px;">Paid (৳)</th>
+                  <th class="text-right" style="width: 95px;">Balance (৳)</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </main>
 
-        <section class="summary-wrapper">
-          <div class="summary-box">
-            <div class="sum-row"><span>Total Invoiced / Purchase:</span> <span class="font-mono">৳ ${fmtMoney(totalDebit)}</span></div>
-            <div class="sum-row"><span>Total Payments Made:</span> <span class="font-mono text-emerald">৳ ${fmtMoney(totalCredit)}</span></div>
-            <div class="sum-row sum-net"><span>Net Payable Balance:</span> <span class="font-mono text-rose">৳ ${fmtMoney(dueBalance)}</span></div>
-          </div>
-        </section>
-
-        <div class="signature-section">
-          <div class="sig-box">Procurement Officer</div>
-          <div class="sig-box">Vendor Representative</div>
-          <div class="sig-box">Accounts Department</div>
+          <section class="summary-wrapper">
+            <div class="summary-box">
+              <div class="sum-row"><span>Total Invoiced / Purchase:</span> <span class="font-mono">৳ ${fmtMoney(totalDebit)}</span></div>
+              <div class="sum-row"><span>Total Payments Made:</span> <span class="font-mono text-emerald">৳ ${fmtMoney(totalCredit)}</span></div>
+              <div class="sum-row sum-net"><span>Net Payable Balance:</span> <span class="font-mono text-rose">৳ ${fmtMoney(dueBalance)}</span></div>
+            </div>
+          </section>
         </div>
 
-        <footer class="doc-footer">
-          <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-          <span class="footer-right">Page 1 of 1</span>
-        </footer>
+        <div id="bottom-spacer"></div>
+
+        <div id="last-page-footer" class="last-page-footer-group">
+          <div class="signature-section">
+            <div class="sig-box">Procurement Officer</div>
+            <div class="sig-box">Vendor Representative</div>
+            <div class="sig-box">Accounts Department</div>
+          </div>
+
+          <footer class="doc-footer">
+            <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
+            <span class="footer-right">Page 1 of 1</span>
+          </footer>
+        </div>
       </div>
     `;
 
