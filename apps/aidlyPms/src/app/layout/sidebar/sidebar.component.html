@@ -21,19 +21,36 @@
         <span class="sb-rail-initial">℞</span>
       </a>
 
-      <!-- Module Navigation List -->
+      <!-- Home / Dashboard Button (Standalone Home Link) -->
+      <a
+        routerLink="/dashboard"
+        class="sb-module-btn sb-home-btn"
+        [class.active]="isHomeActive()"
+        [class.route-active]="isHomeActive()"
+        (click)="onHomeClicked()"
+        nz-tooltip
+        nzTooltipTitle="ড্যাশবোর্ড / Executive Dashboard"
+        nzTooltipPlacement="right"
+      >
+        <span class="sb-module-icon">
+          <span nz-icon nzType="dashboard" class="text-base"></span>
+        </span>
+        <span class="sb-module-label">DASH</span>
+      </a>
+
+      <!-- 5 Core Module Navigation List -->
       <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
-        @for (mod of menuModules; track mod.module_code) {
+        @for (mod of sidebarModules; track mod.module_code) {
           <button
             type="button"
             class="sb-module-btn"
-            [class.active]="isModuleSelected(mod)"
+            [class.active]="!isHomeActive() && isModuleSelected(mod)"
             [class.route-active]="hasActiveChild(mod)"
             (mouseenter)="openFlyout(mod)"
             (focus)="openFlyout(mod)"
             (click)="selectModule(mod)"
             nz-tooltip
-            [nzTooltipTitle]="mod.module"
+            [nzTooltipTitle]="mod.module + ' (' + mod.module_bn + ')'"
             nzTooltipPlacement="right"
           >
             <span class="sb-module-icon">
@@ -55,7 +72,11 @@
         <header class="sb-panel-head flex items-center flex-shrink-0">
           <div class="min-w-0 flex-1">
             <h2 class="sb-module-heading truncate">{{ selectedModule()?.module }}</h2>
-            <p class="sb-company truncate">{{ activeBranchName() }}</p>
+            <p class="sb-company truncate">
+              <span class="text-indigo-400 font-semibold">{{ selectedModule()?.module_bn }}</span>
+              <span class="mx-1 text-slate-500">•</span>
+              <span>{{ activeBranchName() }}</span>
+            </p>
           </div>
         </header>
 
@@ -83,18 +104,46 @@
           </div>
         </div>
 
-        <!-- Screens List in Selected Module -->
+        <!-- Submodules and Screens in Selected Module -->
         <nav class="sb-menu-panel flex-1 overflow-y-auto overflow-x-hidden">
-          @for (screen of filteredScreens(); track screen.form_id) {
-            <a
-              class="sb-form-link"
-              [routerLink]="screen.route"
-              [class.active]="isRouteActive(screen.route)"
-              (click)="onMenuItemSelected()"
-            >
-              <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
-              <span class="sb-form-label truncate">{{ screen.title }}</span>
-            </a>
+          @for (sub of filteredSubmodules(); track sub.key) {
+            <div class="sb-submodule-group">
+              <!-- Submodule Category Header -->
+              <div
+                class="sb-submodule-header"
+                [class.has-active]="isSubmoduleActive(sub)"
+                (click)="toggleSubmodule(sub.key)"
+              >
+                <div class="sb-submodule-head-left">
+                  <span nz-icon [nzType]="sub.icon" class="sb-submodule-icon"></span>
+                  <span class="sb-submodule-title truncate">{{ sub.name }}</span>
+                  <span class="sb-submodule-bn truncate">({{ sub.name_bn }})</span>
+                </div>
+                <span
+                  nz-icon
+                  [nzType]="isSubmoduleCollapsed(sub.key) ? 'down' : 'up'"
+                  class="sb-submodule-chevron"
+                ></span>
+              </div>
+
+              <!-- Screens under this Submodule -->
+              @if (!isSubmoduleCollapsed(sub.key)) {
+                <div class="sb-submodule-screens">
+                  @for (screen of sub.screens; track screen.form_id) {
+                    <a
+                      class="sb-form-link"
+                      [routerLink]="screen.route"
+                      [class.active]="isRouteActive(screen.route)"
+                      (click)="onMenuItemSelected()"
+                    >
+                      <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
+                      <span class="sb-form-label truncate">{{ screen.title }}</span>
+                      <span class="sb-form-id">{{ screen.form_id }}</span>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
           } @empty {
             <div class="sb-empty-state">
               <span nz-icon nzType="search" class="text-2xl text-slate-500"></span>

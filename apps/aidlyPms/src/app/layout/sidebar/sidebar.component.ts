@@ -15,7 +15,15 @@ import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
-import { SYSTEM_MENU_CONFIG, SystemModule, SystemScreen } from '../../core/config/menu.config';
+import {
+  getSidebarTree,
+  getBreadcrumb,
+  getScreenByFormId,
+  HOME_FORM_ID,
+  SidebarModule,
+  SidebarSubModule,
+  SystemScreen,
+} from '../../core/config/menu.config';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -30,19 +38,26 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() toggleCollapse = new EventEmitter<void>();
 
-  readonly menuModules: readonly SystemModule[] = SYSTEM_MENU_CONFIG;
+  readonly sidebarModules: readonly SidebarModule[] = getSidebarTree();
+  readonly homeScreen = getScreenByFormId(HOME_FORM_ID);
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly searchTerm = signal('');
   readonly isFlyoutOpen = signal(false);
-  readonly selectedModuleId = signal<string>('DASH');
+  readonly selectedModuleId = signal<string>('SAL');
   private readonly previewModuleId = signal<string | null>(null);
+  private readonly collapsedSubmodules = signal<Record<string, boolean>>({});
 
   readonly activeBranchName = computed(() => this.authService.activeBranch()?.name || 'Kazi — Cumilla');
 
-  readonly selectedModule = computed<SystemModule | null>(() => {
-    const modules = this.menuModules;
+  readonly isHomeActive = computed(() => {
+    const clean = this.router.url.split('?')[0];
+    return clean === '/' || clean === '/dashboard';
+  });
+
+  readonly selectedModule = computed<SidebarModule | null>(() => {
+    const modules = this.sidebarModules;
     if (!modules.length) return null;
 
     const previewId = this.collapsed && this.isFlyoutOpen()
@@ -54,17 +69,28 @@ export class SidebarComponent {
 
   readonly shouldShowPanel = computed(() => !this.collapsed || this.isFlyoutOpen());
 
-  readonly filteredScreens = computed<SystemScreen[]>(() => {
-    const screens = this.selectedModule()?.screens ?? [];
+  readonly filteredSubmodules = computed<SidebarSubModule[]>(() => {
+    const mod = this.selectedModule();
+    if (!mod) return [];
+
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) {
-      return screens.filter(s => s.is_in_sidebar !== false);
+      return [...mod.sub_modules];
     }
-    return screens.filter(s =>
-      s.title.toLowerCase().includes(term) ||
-      s.form_id.toLowerCase().includes(term) ||
-      (s.description && s.description.toLowerCase().includes(term))
-    );
+
+    return mod.sub_modules
+      .map(sub => {
+        const matchingScreens = sub.screens.filter(s =>
+          s.title.toLowerCase().includes(term) ||
+          s.form_id.toLowerCase().includes(term) ||
+          (s.description && s.description.toLowerCase().includes(term))
+        );
+        return {
+          ...sub,
+          screens: matchingScreens,
+        };
+      })
+      .filter(sub => sub.screens.length > 0);
   });
 
   constructor() {
@@ -82,7 +108,7 @@ export class SidebarComponent {
     this.closeFlyout();
   }
 
-  openFlyout(mod?: SystemModule): void {
+  openFlyout(mod?: SidebarModule): void {
     if (!this.collapsed) return;
     if (mod) this.previewModuleId.set(mod.module_code);
     this.isFlyoutOpen.set(true);
@@ -100,7 +126,11 @@ export class SidebarComponent {
     this.closeFlyout();
   }
 
-  selectModule(mod: SystemModule): void {
+  onHomeClicked(): void {
+    this.closeFlyout();
+  }
+
+  selectModule(mod: SidebarModule): void {
     this.selectedModuleId.set(mod.module_code);
     this.previewModuleId.set(mod.module_code);
     this.searchTerm.set('');
@@ -108,10 +138,24 @@ export class SidebarComponent {
       this.openFlyout(mod);
     }
     const currentUrl = this.router.url.split('?')[0];
-    const containsCurrent = mod.screens.some(s => s.route.split('?')[0] === currentUrl);
+    const containsCurrent = mod.sub_modules.some(sub =>
+      sub.screens.some(s => s.route.split('?')[0] === currentUrl)
+    );
     if (!containsCurrent && mod.default_route) {
       this.router.navigateByUrl(mod.default_route);
     }
+  }
+
+  toggleSubmodule(key: string): void {
+    this.collapsedSubmodules.update(state => ({
+      ...state,
+      [key]: !state[key],
+    }));
+  }
+
+  isSubmoduleCollapsed(key: string): boolean {
+    if (this.searchTerm().trim()) return false;
+    return !!this.collapsedSubmodules()[key];
   }
 
   onMenuItemSelected(): void {
@@ -124,12 +168,19 @@ export class SidebarComponent {
     return currentUrl === cleanRoute;
   }
 
-  hasActiveChild(mod: SystemModule): boolean {
-    const currentUrl = this.router.url.split('?')[0];
-    return mod.screens.some(s => s.route.split('?')[0] === currentUrl);
+  hasActiveChild(mod: SidebarModule): boolean {
+    const cleanUrl = this.router.url.split('?')[0];
+    const breadcrumb = getBreadcrumb(cleanUrl);
+    return breadcrumb?.module.module_code === mod.module_code;
   }
 
-  isModuleSelected(mod: SystemModule): boolean {
+  isSubmoduleActive(sub: SidebarSubModule): boolean {
+    const cleanUrl = this.router.url.split('?')[0];
+    const breadcrumb = getBreadcrumb(cleanUrl);
+    return breadcrumb?.sub.key === sub.key;
+  }
+
+  isModuleSelected(mod: SidebarModule): boolean {
     return this.selectedModule()?.module_code === mod.module_code;
   }
 
@@ -151,9 +202,9 @@ export class SidebarComponent {
 
   private syncActiveModule(url: string): void {
     const clean = url.split('?')[0];
-    const match = this.menuModules.find(m => m.screens.some(s => s.route.split('?')[0] === clean));
-    if (match) {
-      this.selectedModuleId.set(match.module_code);
+    const breadcrumb = getBreadcrumb(clean);
+    if (breadcrumb) {
+      this.selectedModuleId.set(breadcrumb.module.module_code);
     }
   }
 }
