@@ -102,44 +102,60 @@
               </button>
             }
           </div>
+          <button
+            type="button"
+            class="sb-action-btn"
+            (click)="toggleExpandAll()"
+            nz-tooltip
+            [nzTooltipTitle]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
+            nzTooltipPlacement="top"
+          >
+            <span nz-icon [nzType]="isAllExpanded() ? 'compress' : 'expand'"></span>
+          </button>
         </div>
 
         <!-- Submodules and Screens in Selected Module -->
         <nav class="sb-menu-panel flex-1 overflow-y-auto overflow-x-hidden">
           @for (sub of filteredSubmodules(); track sub.key) {
-            <div class="sb-submodule-group">
-              <!-- Submodule Category Header -->
-              <div
-                class="sb-submodule-header"
-                [class.has-active]="isSubmoduleActive(sub)"
+            <div class="sb-sub-group">
+              <!-- Submodule Category Header Button -->
+              <button
+                type="button"
+                class="sb-sub-btn"
+                [class.active]="isSubmoduleActive(sub)"
                 (click)="toggleSubmodule(sub.key)"
+                nz-tooltip
+                [nzTooltipTitle]="sub.name + ' (' + sub.name_bn + ')'"
+                nzTooltipPlacement="right"
               >
-                <div class="sb-submodule-head-left">
-                  <span nz-icon [nzType]="sub.icon" class="sb-submodule-icon"></span>
-                  <span class="sb-submodule-title truncate">{{ sub.name }}</span>
-                  <span class="sb-submodule-bn truncate">({{ sub.name_bn }})</span>
-                </div>
+                <span nz-icon [nzType]="sub.icon" class="sb-sub-icon"></span>
+                <span class="sb-sub-label truncate">{{ sub.name }}</span>
+                <span class="sb-sub-bn truncate">({{ sub.name_bn }})</span>
                 <span
                   nz-icon
                   [nzType]="isSubmoduleCollapsed(sub.key) ? 'down' : 'up'"
-                  class="sb-submodule-chevron"
+                  class="sb-chevron"
                 ></span>
-              </div>
+              </button>
 
-              <!-- Screens under this Submodule -->
+              <!-- Screens under this Submodule (Tree connected) -->
               @if (!isSubmoduleCollapsed(sub.key)) {
-                <div class="sb-submodule-screens">
+                <div class="sb-form-list">
                   @for (screen of sub.screens; track screen.form_id) {
-                    <a
-                      class="sb-form-link"
-                      [routerLink]="screen.route"
-                      [class.active]="isRouteActive(screen.route)"
-                      (click)="onMenuItemSelected()"
-                    >
-                      <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
-                      <span class="sb-form-label truncate">{{ screen.title }}</span>
-                      <span class="sb-form-id">{{ screen.form_id }}</span>
-                    </a>
+                    <div class="sb-form-row">
+                      <a
+                        class="sb-form-link"
+                        [routerLink]="screen.route"
+                        [class.active]="isRouteActive(screen.route)"
+                        (click)="onMenuItemSelected()"
+                        nz-tooltip
+                        [nzTooltipTitle]="screen.title + (screen.description ? ' — ' + screen.description : '')"
+                        nzTooltipPlacement="right"
+                      >
+                        <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
+                        <span class="sb-form-label truncate">{{ screen.title }}</span>
+                      </a>
+                    </div>
                   }
                 </div>
               }

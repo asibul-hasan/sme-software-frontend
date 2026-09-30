@@ -69,6 +69,13 @@ export class SidebarComponent {
 
   readonly shouldShowPanel = computed(() => !this.collapsed || this.isFlyoutOpen());
 
+  readonly isAllExpanded = computed(() => {
+    const mod = this.selectedModule();
+    if (!mod) return true;
+    const collapsed = this.collapsedSubmodules();
+    return !mod.sub_modules.some(sub => !!collapsed[sub.key]);
+  });
+
   readonly filteredSubmodules = computed<SidebarSubModule[]>(() => {
     const mod = this.selectedModule();
     if (!mod) return [];
@@ -153,6 +160,17 @@ export class SidebarComponent {
     }));
   }
 
+  toggleExpandAll(): void {
+    const mod = this.selectedModule();
+    if (!mod) return;
+    const currentlyAllExpanded = this.isAllExpanded();
+    const updated: Record<string, boolean> = { ...this.collapsedSubmodules() };
+    for (const sub of mod.sub_modules) {
+      updated[sub.key] = currentlyAllExpanded;
+    }
+    this.collapsedSubmodules.set(updated);
+  }
+
   isSubmoduleCollapsed(key: string): boolean {
     if (this.searchTerm().trim()) return false;
     return !!this.collapsedSubmodules()[key];
@@ -187,16 +205,18 @@ export class SidebarComponent {
   getScreenIcon(screen: SystemScreen): string {
     const title = screen.title.toLowerCase();
     if (title.includes('add') || title.includes('create') || title.includes('form')) return 'form';
-    if (title.includes('setting') || title.includes('config')) return 'setting';
+    if (title.includes('setting') || title.includes('config') || title.includes('rule')) return 'setting';
     if (title.includes('record') || title.includes('history') || title.includes('audit')) return 'history';
-    if (title.includes('pos') || title.includes('sale')) return 'shopping-cart';
+    if (title.includes('pos') || title.includes('sale') || title.includes('counter')) return 'shopping-cart';
     if (title.includes('purchase') || title.includes('supplier')) return 'shop';
-    if (title.includes('cash') || title.includes('due') || title.includes('expense') || title.includes('income') || title.includes('balance')) return 'dollar';
+    if (title.includes('cash') || title.includes('due') || title.includes('expense') || title.includes('income') || title.includes('balance') || title.includes('capital')) return 'dollar';
     if (title.includes('doctor') || title.includes('rx') || title.includes('prescription')) return 'user';
     if (title.includes('rep') || title.includes('staff')) return 'team';
-    if (title.includes('role') || title.includes('permission')) return 'safety-certificate';
+    if (title.includes('role') || title.includes('permission') || title.includes('access')) return 'safety-certificate';
     if (title.includes('analytics') || title.includes('report') || title.includes('dashboard')) return 'fund';
-    if (title.includes('expired') || title.includes('warning')) return 'warning';
+    if (title.includes('expired') || title.includes('warning') || title.includes('alert')) return 'warning';
+    if (title.includes('print') || title.includes('receipt') || title.includes('invoice')) return 'printer';
+    if (title.includes('sms')) return 'message';
     return 'file-text';
   }
 
