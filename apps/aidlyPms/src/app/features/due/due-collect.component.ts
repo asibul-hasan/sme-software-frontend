@@ -647,8 +647,15 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   }
 
   triggerPrint(): void {
-    this.printService.printElement('due-receipt', {
-      title: `Due Settlement Receipt - ${this.selectedPaid?.receipt || ''}`,
+    if (!this.selectedPaid) return;
+    this.printService.printDueReceipt({
+      receipt: this.selectedPaid.receipt,
+      date: this.todayFormatted,
+      customer: this.selectedPaid.customer,
+      phone: this.selectedPaid.phone,
+      method: this.selectedPaid.method,
+      amount: this.selectedPaid.amount,
+      note: this.selectedPaid.note,
     });
   }
 

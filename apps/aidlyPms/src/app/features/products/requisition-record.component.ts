@@ -527,8 +527,20 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   triggerPrint(): void {
-    this.printService.printElement('requisition-order', {
-      title: `Purchase Requisition - ${this.printingRecord?.reqCode || ''}`,
+    if (!this.printingRecord) return;
+    this.printService.printRequisitionOrder({
+      reqCode: this.printingRecord.reqCode,
+      date: this.printingRecord.date,
+      supplier: this.printingRecord.supplier,
+      createdBy: this.printingRecord.createdBy,
+      status: this.printingRecord.status,
+      lines: this.detailItems().map(item => ({
+        name: item.product_name,
+        boxQty: Number(item.box_qty) || 0,
+        btp: Number(item.box_trade_price) || 0,
+        totalPrice: Number(item.total_price) || 0,
+      })),
+      totalEstimated: this.printingRecord.total || this.detailItems().reduce((sum, item) => sum + (Number(item.total_price) || 0), 0),
     });
   }
 

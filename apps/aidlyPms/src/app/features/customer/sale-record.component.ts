@@ -324,75 +324,86 @@ interface SaleRecordRow {
       </ng-template>
     </nz-modal>
 
-    <!-- 80mm Thermal Receipt Preview Modal -->
+    <!-- Sale Receipt & Invoice Preview Modal -->
     <nz-modal
       [(nzVisible)]="isReceiptModalVisible"
-      nzTitle="80mm Thermal POS Receipt Preview"
+      nzTitle="Sale Receipt & Tax Invoice Preview"
       [nzCentered]="true"
-      [nzWidth]="380"
+      [nzWidth]="480"
       [nzFooter]="receiptFooter"
       (nzOnCancel)="isReceiptModalVisible = false"
     >
       <ng-container *nzModalContent>
         @if (printingSale) {
-          <div id="thermal-receipt" class="p-4 bg-white text-black font-mono text-xs border border-dashed border-slate-300 rounded shadow-xs max-w-[340px] mx-auto select-none">
-            <div class="text-center pb-2 border-b border-dashed border-slate-400">
-              <div class="text-sm font-black uppercase">Aidly Model Pharmacy</div>
-              <div class="text-[10px] text-slate-600">Main Branch (Banani), Dhaka</div>
-              <div class="text-[10px] text-slate-600">Hotline: +880 1700-000000</div>
-              <div class="text-[10px] text-slate-600">DL: DL-2024-DH-8841</div>
+          <div class="p-4 bg-white text-slate-800 rounded-lg border border-slate-200 shadow-xs max-w-[440px] mx-auto select-none">
+            <div class="text-center pb-2.5 border-b-2 border-blue-900">
+              <div class="text-base font-extrabold text-blue-700 tracking-wide uppercase">Aidly Model Pharmacy</div>
+              <div class="text-[11px] text-slate-600">Main Branch (Banani), Dhaka</div>
+              <div class="text-[10px] text-slate-500">Hotline: +880 1700-000000 | DL: DL-2024-DH-8841</div>
             </div>
-            <div class="py-2 border-b border-dashed border-slate-400 text-[10px] space-y-0.5">
-              <div class="flex justify-between"><span>Bill No:</span><span class="font-bold">{{ printingSale.inv }}</span></div>
-              <div class="flex justify-between"><span>Date:</span><span>{{ printingSale.date }}</span></div>
-              <div class="flex justify-between"><span>Customer:</span><span>{{ printingSale.customer }}</span></div>
-              <div class="flex justify-between"><span>Salesman:</span><span>{{ printingSale.salesman }}</span></div>
+
+            <div class="text-center my-2 font-bold text-xs tracking-wider text-slate-900 uppercase">
+              SALE RECEIPT
             </div>
-            <table class="w-full text-[10px] my-2 border-collapse">
+
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] space-y-1 mb-2">
+              <div class="flex justify-between"><span class="text-slate-500">Bill No:</span><span class="font-bold font-mono text-slate-900">{{ printingSale.inv }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Date:</span><span class="font-mono text-slate-700">{{ printingSale.date }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Customer:</span><span class="font-medium text-slate-800">{{ printingSale.customer }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Salesman:</span><span class="font-medium text-slate-800">{{ printingSale.salesman }}</span></div>
+            </div>
+
+            <table class="w-full text-[11px] my-2 border-collapse">
               <thead>
-                <tr class="border-b border-slate-400 text-left">
-                  <th class="py-1">Item</th>
-                  <th class="text-center">Qty</th>
-                  <th class="text-right">Price</th>
-                  <th class="text-right">Total</th>
+                <tr class="bg-slate-100 text-slate-700 font-semibold border-y border-slate-300">
+                  <th class="py-1 px-1.5 text-left">Item Description</th>
+                  <th class="py-1 px-1 text-center w-12">Qty</th>
+                  <th class="py-1 px-1 text-right w-20">Price</th>
+                  <th class="py-1 px-1.5 text-right w-20">Total</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-slate-100">
                 @for (item of printingSale.lines; track item.name) {
                   <tr>
-                    <td class="py-0.5 pr-1 truncate max-w-[120px]">{{ item.name }}</td>
-                    <td class="text-center">{{ item.qty }}</td>
-                    <td class="text-right">{{ item.price | number: '1.2-2' }}</td>
-                    <td class="text-right">{{ item.total | number: '1.2-2' }}</td>
+                    <td class="py-1 px-1.5 font-medium text-slate-800">{{ item.name }}</td>
+                    <td class="py-1 px-1 text-center font-mono">{{ item.qty }}</td>
+                    <td class="py-1 px-1 text-right font-mono">৳ {{ item.price | number: '1.2-2' }}</td>
+                    <td class="py-1 px-1.5 text-right font-mono font-bold text-slate-900">৳ {{ item.total | number: '1.2-2' }}</td>
                   </tr>
                 }
               </tbody>
             </table>
-            <div class="border-t border-dashed border-slate-400 pt-1 text-[10px] space-y-0.5">
-              <div class="flex justify-between"><span>Subtotal:</span><span>৳ {{ printingSale.subtotal | number: '1.2-2' }}</span></div>
+
+            <div class="border border-slate-200 rounded-md p-2 bg-slate-50 text-[11px] space-y-1 mt-2">
+              <div class="flex justify-between"><span class="text-slate-600">Subtotal:</span><span class="font-mono font-semibold">৳ {{ printingSale.subtotal | number: '1.2-2' }}</span></div>
               @if (printingSale.disc > 0) {
-                <div class="flex justify-between"><span>Discount:</span><span>-৳ {{ printingSale.disc | number: '1.2-2' }}</span></div>
+                <div class="flex justify-between text-emerald-700"><span>Discount:</span><span class="font-mono font-semibold">-৳ {{ printingSale.disc | number: '1.2-2' }}</span></div>
               }
-              <div class="flex justify-between font-bold text-xs pt-1 border-t border-slate-300">
+              <div class="flex justify-between font-bold text-xs pt-1.5 border-t border-blue-200 text-blue-900 bg-blue-50/60 -mx-2 px-2 py-1">
                 <span>Net Payable:</span>
-                <span>৳ {{ printingSale.total | number: '1.2-2' }}</span>
+                <span class="font-mono">৳ {{ printingSale.total | number: '1.2-2' }}</span>
               </div>
-              <div class="flex justify-between"><span>Paid Amount:</span><span>৳ {{ printingSale.paid | number: '1.2-2' }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-600">Paid Amount:</span><span class="font-mono font-semibold">৳ {{ printingSale.paid | number: '1.2-2' }}</span></div>
               @if (printingSale.due > 0) {
-                <div class="flex justify-between text-rose-600 font-bold"><span>Due Remaining:</span><span>৳ {{ printingSale.due | number: '1.2-2' }}</span></div>
+                <div class="flex justify-between text-rose-600 font-bold"><span>Due Remaining:</span><span class="font-mono">৳ {{ printingSale.due | number: '1.2-2' }}</span></div>
               }
             </div>
-            <div class="text-center pt-3 text-[10px] text-slate-500 border-t border-dashed border-slate-400 mt-2">
-              <div>*** Thank You for Shopping! ***</div>
-              <div class="text-[9px]">Medicines sold cannot be returned without receipt</div>
+
+            <div class="text-center pt-2.5 text-[10px] text-slate-500 border-t border-dashed border-slate-300 mt-2.5">
+              <div class="font-bold text-slate-700">*** Thank You for Shopping! ***</div>
+              <div class="text-[9px]">Medicines sold cannot be returned without receipt.</div>
+              <div class="text-[8.5px] text-slate-400 mt-0.5">This is generated by AidlyPms no authority signature is required</div>
             </div>
           </div>
         }
       </ng-container>
       <ng-template #receiptFooter>
         <button nz-button nzType="default" (click)="isReceiptModalVisible = false">Close</button>
-        <button nz-button nzType="primary" (click)="triggerPrint()">
-          <span nz-icon nzType="printer"></span> Print Receipt
+        <button nz-button nzType="default" (click)="triggerPrint('thermal')">
+          <span nz-icon nzType="snippets"></span> 80mm Slip
+        </button>
+        <button nz-button nzType="primary" (click)="triggerPrint('a4')">
+          <span nz-icon nzType="printer"></span> Print A4 Invoice / PDF
         </button>
       </ng-template>
     </nz-modal>
@@ -533,10 +544,29 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
     this.isReceiptModalVisible = true;
   }
 
-  triggerPrint(): void {
-    this.printService.printElement('thermal-receipt', {
-      title: `Sale Receipt - ${this.printingSale?.inv || ''}`,
-    });
+  triggerPrint(format: 'a4' | 'thermal' = 'a4'): void {
+    if (!this.printingSale) return;
+    const sale = this.printingSale;
+    const [datePart, timePart] = sale.date.includes(',') ? sale.date.split(',') : [sale.date, ''];
+    this.printService.printSaleInvoice({
+      inv: sale.inv,
+      date: datePart.trim(),
+      time: timePart.trim(),
+      customer: sale.customer,
+      salesman: sale.salesman,
+      paymentMethod: sale.payment,
+      lines: sale.lines.map(line => ({
+        name: line.name,
+        qty: line.qty,
+        price: line.price,
+        total: line.total,
+      })),
+      subtotal: sale.subtotal,
+      disc: sale.disc,
+      total: sale.total,
+      paid: sale.paid,
+      due: sale.due,
+    }, format);
   }
 
   viewInvoiceDetails(s: SaleRecordRow): void {

@@ -616,8 +616,21 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   triggerPrint(): void {
-    this.printService.printElement('purchase-voucher', {
-      title: `Purchase Voucher - ${this.printingRecord?.ref || ''}`,
+    if (!this.printingRecord) return;
+    this.printService.printPurchaseVoucher({
+      ref: this.printingRecord.ref,
+      date: this.printingRecord.date,
+      supplier: this.printingRecord.supplier,
+      type: this.printingRecord.type,
+      gross: this.printingRecord.gross,
+      disc: this.printingRecord.disc,
+      net: this.printingRecord.net,
+      lines: this.printingRecord.lines.map(line => ({
+        name: line.name,
+        qty: line.qty,
+        unitPrice: line.unitPrice,
+        total: line.total,
+      })),
     });
   }
 
