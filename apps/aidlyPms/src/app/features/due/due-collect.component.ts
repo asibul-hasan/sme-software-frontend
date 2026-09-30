@@ -15,6 +15,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 import { CustomerService } from '../../core/services/customer.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { PrintService } from '../../core/services/print.service';
 import { AccTransactionAccount } from '../../core/models/accounting.models';
 
 interface DueRecord {
@@ -377,7 +378,7 @@ interface PaidRecord {
     >
       <ng-container *nzModalContent>
         @if (selectedPaid) {
-          <div class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
+          <div id="due-receipt" class="p-4 bg-white border border-slate-200 rounded-lg text-slate-800 space-y-4">
             <div class="text-center border-b pb-3 border-slate-200">
               <h2 class="text-base font-bold text-slate-900 tracking-wide uppercase">Aidly Pharmacy Ltd.</h2>
               <p class="text-xs text-slate-500">Dhaka Medical Plaza, Main Road, Dhaka</p>
@@ -426,6 +427,7 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly customerService = inject(CustomerService);
   private readonly accountingService = inject(AccountingService);
+  private readonly printService = inject(PrintService);
 
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -645,7 +647,9 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   }
 
   triggerPrint(): void {
-    window.print();
+    this.printService.printElement('due-receipt', {
+      title: `Due Settlement Receipt - ${this.selectedPaid?.receipt || ''}`,
+    });
   }
 
   exportDueCsv(): void {

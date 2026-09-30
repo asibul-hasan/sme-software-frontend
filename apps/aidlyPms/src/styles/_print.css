@@ -1,0 +1,98 @@
+/* ─────────────────────────────────────────────────────────────────
+   AIDLY PMS GLOBAL PRINT STYLES
+   Ensures standard, full-page printing without modal UI chrome
+   ───────────────────────────────────────────────────────────────── */
+
+@media print {
+  /* Hide application navigation & non-printable UI chrome */
+  nz-header,
+  nz-sider,
+  .app-sidebar,
+  .app-header,
+  .page-header,
+  .table-sticky-footer,
+  .ant-modal-mask,
+  .ant-modal-close,
+  .ant-modal-footer,
+  .btn-tbl-action,
+  .ant-btn,
+  button,
+  .no-print,
+  [no-print] {
+    display: none !important;
+  }
+
+  /* Reset document viewport & background */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Unconstrain modals if printed via window.print() */
+  .cdk-overlay-container,
+  .cdk-global-overlay-wrapper,
+  .ant-modal-wrap {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ant-modal {
+    position: static !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .ant-modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ant-modal-header {
+    border-bottom: 2px solid #0f172a !important;
+    padding: 0 0 10px 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .ant-modal-body {
+    padding: 0 !important;
+  }
+
+  /* Unconstrain scrollable containers so all rows print */
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .overflow-auto,
+  .max-h-64,
+  .max-h-72,
+  .max-h-80,
+  .max-h-96 {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Standard page margins */
+  @page {
+    size: auto;
+    margin: 12mm 15mm;
+  }
+}

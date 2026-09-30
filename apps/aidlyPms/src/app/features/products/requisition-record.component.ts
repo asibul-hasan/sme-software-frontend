@@ -15,6 +15,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 import { SupplierService } from '../../core/services/supplier.service';
+import { PrintService } from '../../core/services/print.service';
 import { ProdProductRequisitionItem } from '../../core/models/product.models';
 
 interface RequisitionRecord {
@@ -413,6 +414,7 @@ export class RequisitionRecordComponent implements OnInit {
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
   private readonly supplierService = inject(SupplierService);
+  private readonly printService = inject(PrintService);
 
   searchCode = '';
   selectedSupplier = '';
@@ -525,7 +527,9 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   triggerPrint(): void {
-    window.print();
+    this.printService.printElement('requisition-order', {
+      title: `Purchase Requisition - ${this.printingRecord?.reqCode || ''}`,
+    });
   }
 
   approveRecord(r: RequisitionRecord): void {

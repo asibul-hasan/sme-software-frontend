@@ -16,6 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { CustomerService } from '../../core/services/customer.service';
+import { PrintService } from '../../core/services/print.service';
 import { CustCustomer } from '../../core/models';
 
 interface CustomerRow {
@@ -578,6 +579,7 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly customerService = inject(CustomerService);
+  private readonly printService = inject(PrintService);
 
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -836,7 +838,14 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   printCustomerStatement(): void {
-    window.print();
+    if (!this.activeLedgerCustomer) {
+      this.msg.warning('No customer selected for statement.');
+      return;
+    }
+    this.printService.printCustomerStatement(
+      this.activeLedgerCustomer,
+      this.customerLedgerEntries
+    );
   }
 
   exportCustomersCsv(): void {

@@ -18,6 +18,7 @@ import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 import { CustomerService } from '../../core/services/customer.service';
+import { PrintService } from '../../core/services/print.service';
 import { Customer } from '../../core/models/customer.models';
 
 interface SaleRecordRow {
@@ -403,6 +404,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   private readonly modal = inject(ModalService);
   private readonly posSaleService = inject(PosSaleService);
   private readonly customerService = inject(CustomerService);
+  private readonly printService = inject(PrintService);
   private readonly router = inject(Router);
 
   sales = signal<SaleRecordRow[]>([]);
@@ -532,7 +534,9 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   triggerPrint(): void {
-    window.print();
+    this.printService.printElement('thermal-receipt', {
+      title: `Sale Receipt - ${this.printingSale?.inv || ''}`,
+    });
   }
 
   viewInvoiceDetails(s: SaleRecordRow): void {

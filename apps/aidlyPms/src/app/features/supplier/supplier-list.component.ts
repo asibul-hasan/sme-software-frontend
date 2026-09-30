@@ -16,6 +16,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
+import { PrintService } from '../../core/services/print.service';
 
 interface SupplierRow {
   supplier_no: number;
@@ -472,6 +473,7 @@ export class SupplierListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly supplierService = inject(SupplierService);
+  private readonly printService = inject(PrintService);
 
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -689,7 +691,14 @@ export class SupplierListComponent implements OnInit, OnDestroy {
   }
 
   printSupplierStatement(): void {
-    window.print();
+    if (!this.activeLedgerSupplier) {
+      this.msg.warning('No supplier selected for statement.');
+      return;
+    }
+    this.printService.printSupplierStatement(
+      this.activeLedgerSupplier,
+      this.supplierLedgerEntries
+    );
   }
 
   exportSuppliersCsv(): void {

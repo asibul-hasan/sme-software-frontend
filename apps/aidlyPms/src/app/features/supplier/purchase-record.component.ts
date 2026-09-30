@@ -17,6 +17,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
+import { PrintService } from '../../core/services/print.service';
 import { SuppSupplier } from '../../core/models/supplier.models';
 import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
 
@@ -478,6 +479,7 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   suppliers = signal<SuppSupplier[]>([]);
 
   private readonly supplierService = inject(SupplierService);
+  private readonly printService = inject(PrintService);
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
 
@@ -614,7 +616,9 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   triggerPrint(): void {
-    window.print();
+    this.printService.printElement('purchase-voucher', {
+      title: `Purchase Voucher - ${this.printingRecord?.ref || ''}`,
+    });
   }
 
   initiateReturn(r: PurchaseRecordRow): void {

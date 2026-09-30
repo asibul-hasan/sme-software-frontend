@@ -24,6 +24,7 @@ import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
+import { PrintService } from '../../core/services/print.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 
 interface CartItem {
@@ -1733,6 +1734,7 @@ export class PosTerminalComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly customerService = inject(CustomerService);
   private readonly posSaleService = inject(PosSaleService);
+  private readonly printService = inject(PrintService);
 
   isReceiptModalVisible = false;
   lastPrintedInvoice: SaleInvoice | null = null;
@@ -2669,7 +2671,9 @@ export class PosTerminalComponent implements OnInit {
   }
 
   triggerBrowserPrint(): void {
-    window.print();
+    this.printService.printElement('thermal-receipt', {
+      title: `POS Receipt - ${this.lastPrintedInvoice?.sales_number || 'Receipt'}`,
+    });
   }
 
   confirmCheckout(): void {
