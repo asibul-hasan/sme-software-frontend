@@ -1,0 +1,754 @@
+<div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
+  <app-page-header
+    title="Master Medicine Catalog"
+    subtitle="Complete catalog of pharmaceutical formulations, stock batches, and pricing"
+    formId="PROD_1601"
+    [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Catalog' }]"
+  >
+    <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+      <!-- Search Input -->
+      <div class="flex flex-col">
+        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Medicine</label>
+        <nz-input-group [nzPrefix]="searchIcon" class="w-52 shrink-0 rounded-md">
+          <input
+            type="text"
+            nz-input
+            placeholder="Brand or generic..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange()"
+            class="text-xs"
+          />
+        </nz-input-group>
+        <ng-template #searchIcon>
+          <span nz-icon nzType="search" class="text-slate-400"></span>
+        </ng-template>
+      </div>
+
+      <!-- Company Filter -->
+      <div class="flex flex-col">
+        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Manufacturer</label>
+        <nz-select
+          [(ngModel)]="companyFilter"
+          (ngModelChange)="onCompanyFilter($event)"
+          class="w-44 shrink-0"
+          nzPlaceHolder="Filter by Company"
+        >
+          <nz-option nzValue="All" nzLabel="All Companies"></nz-option>
+          @for (comp of companies; track comp) {
+            <nz-option [nzValue]="comp" [nzLabel]="comp"></nz-option>
+          }
+        </nz-select>
+      </div>
+
+      <!-- Medicine Form Filter -->
+      <div class="flex flex-col">
+        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Dosage Form</label>
+        <nz-select
+          [(ngModel)]="selectedType"
+          (ngModelChange)="onTypeFilter($event)"
+          class="w-36 shrink-0"
+          nzPlaceHolder="Dosage Form"
+          nzAllowClear
+        >
+          @for (opt of medicineTypes; track opt.value) {
+            <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+          }
+        </nz-select>
+      </div>
+
+      <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+        <span nz-icon nzType="clear"></span> Reset
+      </button>
+    </div>
+
+    <div actions class="flex items-center gap-1.5 shrink-0 flex-nowrap">
+      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="downloadStock()">
+        <span nz-icon nzType="download"></span> Download
+      </button>
+      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="openAddCompanyModal()">
+        <span nz-icon nzType="plus"></span> Add Company
+      </button>
+      <a routerLink="/products/requisition" nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1">
+        <span nz-icon nzType="file-done"></span> Requisitions
+      </a>
+      <a routerLink="/products/add" nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" title="Open Full-Page Form">
+        <span nz-icon nzType="form"></span> Full Form
+      </a>
+      <button nz-button nzType="primary" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="openAddMedicineModal()">
+        <span nz-icon nzType="plus"></span> Add Medicine
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Medicine Data Table -->
+  <app-data-table
+    class="flex-1 min-h-0 flex flex-col"
+    [data]="filteredProducts"
+    [columns]="columns"
+    [total]="filteredProducts.length"
+    scrollX="1540px"
+  >
+    <div tableFooter class="flex flex-wrap items-center gap-3 text-xs">
+      <span>Total Products: <strong class="text-slate-800 font-semibold">{{ filteredProducts.length }}</strong></span>
+      <span class="text-slate-300">|</span>
+      <span>Total Stock: <strong class="text-slate-800 font-semibold">{{ totalStockQty | number }}</strong> pcs</span>
+      <span class="text-slate-300">|</span>
+      <span class="font-semibold text-slate-700">Total Purchase Valuation: <strong class="theme-total-text font-mono text-sm">৳ {{ totalPurchaseValuation | number:'1.2-2' }}</strong></span>
+      <span class="text-slate-300">|</span>
+      <span class="font-semibold text-slate-700">Total Retail Value: <strong class="theme-total-text font-mono text-sm">৳ {{ totalSaleValuation | number:'1.2-2' }}</strong></span>
+    </div>
+  </app-data-table>
+</div>
+
+<ng-template #slTpl let-sl="sl" let-i="index">
+  <span class="pms-badge-rank mx-auto">{{ sl ?? (i + 1) }}</span>
+</ng-template>
+
+<ng-template #medNameTpl let-item>
+  <span class="font-semibold text-slate-900">{{ item.product_name }}</span>
+</ng-template>
+
+<ng-template #avgPurchaseTpl let-item>
+  <span class="font-mono text-right w-full block text-slate-600">{{ item.avg_purchase_price_per_piece | number:'1.2-2' }}</span>
+</ng-template>
+
+<ng-template #purchaseTpl let-item>
+  <span class="font-mono text-right w-full block text-slate-600">{{ item.purchase_price_per_piece | number:'1.2-2' }}</span>
+</ng-template>
+
+<ng-template #salePriceTpl let-item>
+  <span class="font-mono text-right w-full block pr-2 font-bold text-slate-900">{{ item.sale_price_per_piece | number:'1.2-2' }}</span>
+</ng-template>
+
+<ng-template #rakTpl let-item>
+  <div class="flex items-center justify-center w-full">
+    <span class="pms-badge-rak">
+      {{ item.rak_number || '—' }}
+    </span>
+  </div>
+</ng-template>
+
+<ng-template #stockTpl let-item>
+  <div class="flex items-center justify-end w-full pr-1 whitespace-nowrap">
+    @if (item.stock_qty > 50) {
+      <span class="pms-badge-stock-in whitespace-nowrap">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+        <span>{{ item.stock_qty }} pcs</span>
+      </span>
+    } @else if (item.stock_qty > 10) {
+      <span class="pms-badge-stock-low whitespace-nowrap">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+        <span>{{ item.stock_qty }} pcs</span>
+      </span>
+    } @else {
+      <span class="pms-badge-stock-out whitespace-nowrap">
+        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+        <span>{{ item.stock_qty }} pcs</span>
+      </span>
+    }
+  </div>
+</ng-template>
+
+<!-- Actions Column Template for Edit & Delete -->
+<ng-template #actionTpl let-item>
+  <div class="flex items-center justify-center gap-1.5">
+    <button
+      type="button"
+      (click)="viewDetails(item)"
+      nz-tooltip
+      nzTooltipTitle="View Batches & Stock"
+      class="btn-tbl-action btn-tbl-view"
+    >
+      <span nz-icon nzType="eye"></span>
+    </button>
+    <button
+      type="button"
+      (click)="adjustStock(item)"
+      nz-tooltip
+      nzTooltipTitle="Stock Adjustment"
+      class="btn-tbl-action btn-tbl-warning"
+    >
+      <span nz-icon nzType="sliders"></span>
+    </button>
+    <button
+      type="button"
+      (click)="openEditMedicineModal(item)"
+      nz-tooltip
+      nzTooltipTitle="Edit Formulation"
+      class="btn-tbl-action btn-tbl-edit"
+    >
+      <span nz-icon nzType="edit"></span>
+    </button>
+    <button
+      type="button"
+      (click)="deleteProduct(item)"
+      nz-tooltip
+      nzTooltipTitle="Delete Product"
+      class="btn-tbl-action btn-tbl-delete"
+    >
+      <span nz-icon nzType="delete"></span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Add Company Modal -->
+<nz-modal
+  [(nzVisible)]="isAddCompanyModalVisible"
+  nzTitle="Quick Add Company"
+  (nzOnCancel)="isAddCompanyModalVisible = false"
+  (nzOnOk)="saveNewCompany()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Company Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="Enter company name"
+          [(ngModel)]="newCompanyName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Generic Modal -->
+<nz-modal
+  [(nzVisible)]="isAddGenericModalVisible"
+  nzTitle="Quick Add Generic Formulation"
+  (nzOnCancel)="isAddGenericModalVisible = false"
+  (nzOnOk)="saveNewGeneric()"
+  nzWidth="400px"
+>
+  <ng-container *nzModalContent>
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1">
+        Generic Name <span class="text-rose-500">*</span>
+      </label>
+      <input
+        type="text"
+        nz-input
+        placeholder="e.g. Paracetamol"
+        [(ngModel)]="newGenericName"
+        class="rounded-md"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Medicine Type Modal -->
+<nz-modal
+  [(nzVisible)]="isAddMedicineTypeModalVisible"
+  nzTitle="Quick Add Medicine Form"
+  (nzOnCancel)="isAddMedicineTypeModalVisible = false"
+  (nzOnOk)="saveNewMedicineType()"
+  nzWidth="400px"
+>
+  <ng-container *nzModalContent>
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1">
+        Form Name <span class="text-rose-500">*</span>
+      </label>
+      <input
+        type="text"
+        nz-input
+        placeholder="e.g. Inhaler, Suspension"
+        [(ngModel)]="newMedicineTypeName"
+        class="rounded-md"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Unit Type Modal -->
+<nz-modal
+  [(nzVisible)]="isAddUnitTypeModalVisible"
+  nzTitle="Quick Add Unit Type"
+  (nzOnCancel)="isAddUnitTypeModalVisible = false"
+  (nzOnOk)="saveNewUnitType()"
+  nzWidth="400px"
+>
+  <ng-container *nzModalContent>
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1">
+        Unit Name <span class="text-rose-500">*</span>
+      </label>
+      <input
+        type="text"
+        nz-input
+        placeholder="e.g. BOTTLE, VIAL, SACHET"
+        [(ngModel)]="newUnitTypeName"
+        class="rounded-md"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Rak Modal -->
+<nz-modal
+  [(nzVisible)]="isAddRakModalVisible"
+  nzTitle="Quick Set Rak / Shelf Location"
+  (nzOnCancel)="isAddRakModalVisible = false"
+  (nzOnOk)="saveNewRak()"
+  nzWidth="400px"
+>
+  <ng-container *nzModalContent>
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1">
+        Rak / Shelf Code <span class="text-rose-500">*</span>
+      </label>
+      <input
+        type="text"
+        nz-input
+        placeholder="e.g. Shelf C-02, Drawer 4"
+        [(ngModel)]="newRakLocation"
+        class="rounded-md"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Unified Dual-Purpose Modal for ADD and MODIFY -->
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="modalMode === 'create' ? 'Add New Medicine Formulation' : ('Modify Medicine: ' + formModel.product_name)"
+  [nzWidth]="880"
+  [nzStyle]="{ top: '24px' }"
+  [nzOkText]="modalMode === 'create' ? 'Add Medicine' : 'Save Changes'"
+  [nzOkLoading]="isSaving"
+  (nzOnCancel)="closeModal()"
+  (nzOnOk)="saveMedicine()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3 py-1 text-xs">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- Medicine Name -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Medicine / Brand Name <span class="text-rose-500">*</span>
+          </span>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. Napa Extra 500mg"
+            [(ngModel)]="formModel.product_name"
+            class="rounded-md"
+          />
+        </div>
+
+        <!-- Strength -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Strength</span>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. 500mg + 65mg"
+            [(ngModel)]="formModel.strength"
+            class="rounded-md"
+          />
+        </div>
+
+        <!-- Volume -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Volume / Dosage Form</span>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. 100ml / Tablet"
+            [(ngModel)]="formModel.volume"
+            class="rounded-md"
+          />
+        </div>
+
+        <!-- Medicine Form / Type -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Medicine Form <span class="text-rose-500">*</span>
+          </span>
+          <div class="flex gap-1.5">
+            <nz-select class="flex-1" [(ngModel)]="formModel.medicine_type">
+              @for (opt of medicineTypes; track opt.value) {
+                <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+              }
+            </nz-select>
+            <button
+              type="button"
+              nz-button
+              nzType="primary"
+              (click)="isAddMedicineTypeModalVisible = true"
+              nz-tooltip
+              nzTooltipTitle="Quick Add Medicine Form"
+              class="btn-quick-add"
+            >
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Unit Type -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Unit Type <span class="text-rose-500">*</span>
+          </span>
+          <div class="flex gap-1.5">
+            <nz-select class="flex-1" [(ngModel)]="formModel.unit_type">
+              @for (opt of unitTypes; track opt.value) {
+                <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+              }
+            </nz-select>
+            <button
+              type="button"
+              nz-button
+              nzType="primary"
+              (click)="isAddUnitTypeModalVisible = true"
+              nz-tooltip
+              nzTooltipTitle="Quick Add Unit Type"
+              class="btn-quick-add"
+            >
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quantity / Box -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Quantity / Box <span class="text-rose-500">*</span>
+          </span>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="1"
+            [(ngModel)]="formModel.quantity_per_box"
+            (ngModelChange)="onBoxPriceOrQtyChange()"
+          ></nz-input-number>
+        </div>
+
+        <!-- Cost / Box -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Cost Price / Box (৳) <span class="text-rose-500">*</span>
+          </span>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="0"
+            [nzStep]="0.5"
+            [(ngModel)]="formModel.cost_per_box"
+          ></nz-input-number>
+        </div>
+
+        <!-- Sale Price / Box -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Sale Price / Box (৳) <span class="text-rose-500">*</span>
+          </span>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="0"
+            [nzStep]="0.5"
+            [(ngModel)]="formModel.sale_price_per_box"
+            (ngModelChange)="onBoxPriceOrQtyChange()"
+          ></nz-input-number>
+        </div>
+
+        <!-- Sale Price / Piece -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">
+            Sale Price / Piece (৳) <span class="text-rose-500">*</span>
+          </span>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="0"
+            [nzStep]="0.1"
+            [(ngModel)]="formModel.sale_price_per_piece"
+          ></nz-input-number>
+        </div>
+
+        <!-- Rak Number -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Rak / Shelf Location</span>
+          <div class="flex gap-1.5">
+            <nz-select
+              nzShowSearch
+              nzAllowClear
+              nzPlaceHolder="Select shelf location..."
+              [(ngModel)]="formModel.rak_number"
+              class="flex-1"
+            >
+              @for (r of raks; track r) {
+                <nz-option [nzValue]="r" [nzLabel]="r"></nz-option>
+              }
+            </nz-select>
+            <button
+              type="button"
+              nz-button
+              nzType="primary"
+              (click)="isAddRakModalVisible = true"
+              nz-tooltip
+              nzTooltipTitle="Quick Set Rak / Shelf"
+              class="btn-quick-add"
+            >
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Generic Name -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</span>
+          <div class="flex gap-1.5">
+            <nz-select
+              nzShowSearch
+              nzAllowClear
+              nzPlaceHolder="Select generic formulation..."
+              [(ngModel)]="formModel.generic_name"
+              class="flex-1"
+            >
+              @for (g of generics; track g) {
+                <nz-option [nzValue]="g" [nzLabel]="g"></nz-option>
+              }
+            </nz-select>
+            <button
+              type="button"
+              nz-button
+              nzType="primary"
+              (click)="isAddGenericModalVisible = true"
+              nz-tooltip
+              nzTooltipTitle="Quick Add Generic"
+              class="btn-quick-add"
+            >
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Manufacturer Company -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Manufacturer Company</span>
+          <div class="flex gap-1.5">
+            <nz-select
+              nzShowSearch
+              nzAllowClear
+              nzPlaceHolder="Select manufacturer company..."
+              [(ngModel)]="formModel.company_name"
+              class="flex-1"
+            >
+              @for (c of companies; track c) {
+                <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
+              }
+            </nz-select>
+            <button
+              type="button"
+              nz-button
+              nzType="primary"
+              (click)="openAddCompanyModal()"
+              nz-tooltip
+              nzTooltipTitle="Quick Add Company"
+              class="btn-quick-add"
+            >
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Barcode -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Barcode / UPC</span>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. 89411001001"
+            [(ngModel)]="formModel.barcode_value"
+            class="rounded-md"
+          />
+        </div>
+
+        <!-- Reorder Level -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Min Reorder Level (Pcs)</span>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="0"
+            [(ngModel)]="formModel.min_stock_qty_pcs"
+          ></nz-input-number>
+        </div>
+      </div>
+
+      <!-- Mark as Medicine Checkbox -->
+      <div class="flex items-center gap-3 pt-2">
+        <label nz-checkbox [(ngModel)]="formModel.is_medicine" class="text-xs font-medium text-slate-700">
+          Mark as Clinical Prescription Medicine
+        </label>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- View Product Details & Batches Modal -->
+<nz-modal
+  [(nzVisible)]="isViewDetailsModalVisible"
+  [nzTitle]="'Product Details: ' + (selectedProductDetails?.product_name || '')"
+  [nzFooter]="viewDetailsFooter"
+  (nzOnCancel)="isViewDetailsModalVisible = false"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    @if (selectedProductDetails) {
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
+          <div>
+            <span class="text-slate-400 block">Manufacturer:</span>
+            <span class="font-bold text-slate-800">{{ selectedProductDetails.company_name || 'N/A' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Generic:</span>
+            <span class="font-semibold text-slate-700">{{ selectedProductDetails.generic_name || 'N/A' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Strength & Form:</span>
+            <span class="font-medium text-slate-700">{{ selectedProductDetails.strength || '' }} ({{ selectedProductDetails.medicine_type_label || 'Tablet' }})</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Shelf / Rak:</span>
+            <nz-tag nzColor="purple">{{ selectedProductDetails.rak_number || 'Unassigned' }}</nz-tag>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Current Stock:</span>
+            <span class="font-bold text-emerald-600 text-sm font-mono">{{ selectedProductDetails.stock_qty || 0 }} pcs</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Qty / Box:</span>
+            <span class="font-semibold text-slate-700 font-mono">{{ selectedProductDetails.quantity_per_box || 1 }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Cost / Box:</span>
+            <span class="font-semibold text-slate-700 font-mono">৳ {{ selectedProductDetails.cost_per_box | number:'1.2-2' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Sale / Box:</span>
+            <span class="font-bold theme-total-text font-mono">৳ {{ selectedProductDetails.sale_price_per_box | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold text-xs text-slate-700 uppercase tracking-wider">Active Inventory Batches</span>
+            <span class="text-xs text-slate-400">{{ productBatches.length }} batch(es) found</span>
+          </div>
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2">Batch #</th>
+                  <th class="p-2">Expiry Date</th>
+                  <th class="p-2 text-center">Box Qty</th>
+                  <th class="p-2 text-center">Pcs</th>
+                  <th class="p-2 text-right">Cost/Box</th>
+                  <th class="p-2 text-right">Sale/Box</th>
+                  <th class="p-2 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (b of productBatches; track b.batch_no) {
+                  <tr>
+                    <td class="p-2 font-mono font-semibold text-slate-800">{{ b.batch_number }}</td>
+                    <td class="p-2 font-mono text-slate-600">{{ b.expiry_date | date:'dd/MM/yyyy' }}</td>
+                    <td class="p-2 text-center font-mono">{{ b.box_quantity }}</td>
+                    <td class="p-2 text-center font-mono font-bold text-slate-900">{{ b.total_quantity_pcs }}</td>
+                    <td class="p-2 text-right font-mono">৳ {{ b.cost_per_box | number:'1.2-2' }}</td>
+                    <td class="p-2 text-right font-mono font-bold theme-total-text">৳ {{ b.sale_price_per_box | number:'1.2-2' }}</td>
+                    <td class="p-2 text-center">
+                      <nz-tag [nzColor]="b.is_expired ? 'error' : (b.total_quantity_pcs > 0 ? 'success' : 'default')">
+                        {{ b.is_expired ? 'Expired' : (b.total_quantity_pcs > 0 ? 'Active' : 'Depleted') }}
+                      </nz-tag>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="p-4 text-center text-slate-400">
+                      {{ isLoadingBatches ? 'Loading batches from database...' : 'No batch records found for this product.' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </ng-container>
+  <ng-template #viewDetailsFooter>
+    <button nz-button nzType="default" (click)="isViewDetailsModalVisible = false">Close</button>
+    <button nz-button nzType="primary" (click)="isViewDetailsModalVisible = false; adjustStock(selectedProductDetails!)">
+      <span nz-icon nzType="sliders"></span> Adjust Stock
+    </button>
+  </ng-template>
+</nz-modal>
+
+<!-- Adjust Stock Modal -->
+<nz-modal
+  [(nzVisible)]="isAdjustStockModalVisible"
+  [nzTitle]="'Stock Adjustment: ' + (adjustProductItem?.product_name || '')"
+  [nzOkText]="'Save Stock Adjustment'"
+  [nzOkLoading]="isAdjustingStock"
+  (nzOnCancel)="isAdjustStockModalVisible = false"
+  (nzOnOk)="saveStockAdjustment()"
+  nzWidth="480px"
+>
+  <ng-container *nzModalContent>
+    @if (adjustProductItem) {
+      <div class="space-y-3 py-1 text-xs">
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+          <div>
+            <span class="text-slate-400 block text-[11px]">Current System Stock:</span>
+            <span class="font-mono font-bold text-slate-800 text-base">{{ adjustProductItem.stock_qty || 0 }} pcs</span>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 block text-[11px]">Net Adjustment Diff:</span>
+            <span class="font-mono font-bold text-sm" [ngClass]="(adjustTargetStock - (adjustProductItem.stock_qty || 0)) >= 0 ? 'text-emerald-600' : 'text-rose-600'">
+              {{ (adjustTargetStock - (adjustProductItem.stock_qty || 0)) > 0 ? '+' : '' }}{{ adjustTargetStock - (adjustProductItem.stock_qty || 0) }} pcs
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            New Physical Stock Count (Pieces) <span class="text-rose-500">*</span>
+          </label>
+          <nz-input-number
+            class="w-full"
+            [nzMin]="0"
+            [nzStep]="1"
+            [(ngModel)]="adjustTargetStock"
+            nzPlaceHolder="Enter audited physical count"
+          ></nz-input-number>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Reason for Adjustment</label>
+          <nz-select class="w-full" [(ngModel)]="adjustReason">
+            <nz-option nzValue="Physical Stock Audit" nzLabel="Physical Stock Audit / Inventory Count"></nz-option>
+            <nz-option nzValue="Damaged Goods" nzLabel="Damaged / Broken Packaging"></nz-option>
+            <nz-option nzValue="Expired Medicine" nzLabel="Expired Medicine Discarded"></nz-option>
+            <nz-option nzValue="Data Entry Correction" nzLabel="Initial Opening Stock Correction"></nz-option>
+            <nz-option nzValue="Other" nzLabel="Other Discrepancy"></nz-option>
+          </nz-select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Remarks / Auditor Note</label>
+          <textarea
+            nz-input
+            rows="2"
+            placeholder="Optional explanation notes for audit ledger..."
+            [(ngModel)]="adjustRemarks"
+            class="rounded-md text-xs"
+          ></textarea>
+        </div>
+      </div>
+    }
+  </ng-container>
+</nz-modal>

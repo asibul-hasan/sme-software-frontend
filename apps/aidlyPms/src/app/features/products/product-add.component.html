@@ -1,0 +1,461 @@
+<div class="w-full space-y-4">
+  <app-page-header
+    title="Add New Medicine Formulation"
+    subtitle="Register new pharmaceutical stock item, pricing, and packaging"
+    formId="PROD_1602"
+    [breadcrumbs]="[
+      { label: 'Products', url: '/products/list' },
+      { label: 'Catalog', url: '/products/list' },
+      { label: 'Add Medicine' }
+    ]"
+  >
+    <div actions class="flex items-center gap-2">
+      <a
+        nz-button
+        nzType="default"
+        routerLink="/products/list"
+        class="rounded-md inline-flex items-center gap-1.5 text-xs"
+      >
+        <span nz-icon nzType="arrow-left"></span> Back to Catalog
+      </a>
+      <button
+        nz-button
+        nzType="primary"
+        (click)="submitForm()"
+        [nzLoading]="isSaving"
+        class="rounded-md inline-flex items-center gap-1.5 text-xs"
+      >
+        <span nz-icon nzType="check"></span> Save Medicine
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Main Form Card -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+    <h3 class="font-semibold text-slate-800 text-sm mb-4 border-b border-slate-100 pb-2.5">
+      General Medicine Details
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Medicine Name -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Medicine / Brand Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. Napa Extra, Seclo 20mg"
+          [(ngModel)]="form.name"
+          class="rounded-md"
+        />
+      </div>
+
+      <!-- Strength -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Strength / Potency</span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. 500mg, 20mg, 10mg/5ml"
+          [(ngModel)]="form.strength"
+          class="rounded-md"
+        />
+      </div>
+
+      <!-- Volume -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Volume / Pack Size</span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. 100ml, 10's Pack, 1 Vial"
+          [(ngModel)]="form.volume"
+          class="rounded-md"
+        />
+      </div>
+
+      <!-- Form / Medicine Type -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Medicine Form (Dosage) <span class="text-rose-500">*</span>
+        </span>
+        <div class="flex gap-1.5">
+          <nz-select class="flex-1" [(ngModel)]="form.medicineType">
+            @for (opt of medicineTypeOptions; track opt.value) {
+              <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="isAddMedicineTypeModalVisible = true"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Medicine Type"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Unit Type -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Packaging / Billing Unit <span class="text-rose-500">*</span>
+        </span>
+        <div class="flex gap-1.5">
+          <nz-select class="flex-1" [(ngModel)]="form.unitType">
+            @for (opt of unitTypeOptions; track opt.value) {
+              <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="isAddUnitTypeModalVisible = true"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Unit Type"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quantity / Box -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Pieces / Box (Qty Per Box) <span class="text-rose-500">*</span>
+        </span>
+        <nz-input-number
+          class="w-full"
+          [nzMin]="1"
+          [(ngModel)]="form.qtyBox"
+          (ngModelChange)="calculatePiecePrice()"
+        ></nz-input-number>
+      </div>
+
+      <!-- Cost / Box (TP) -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Cost Price / Box (৳) <span class="text-rose-500">*</span>
+        </span>
+        <nz-input-number
+          class="w-full"
+          [nzMin]="0"
+          [nzStep]="0.5"
+          [(ngModel)]="form.costBox"
+        ></nz-input-number>
+      </div>
+
+      <!-- Sale Price / Box (MRP) -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Sale Price / Box (৳) <span class="text-rose-500">*</span>
+        </span>
+        <nz-input-number
+          class="w-full"
+          [nzMin]="0"
+          [nzStep]="0.5"
+          [(ngModel)]="form.salePriceBox"
+          (ngModelChange)="calculatePiecePrice()"
+        ></nz-input-number>
+      </div>
+
+      <!-- Sale Price / Piece -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Sale Price / Piece (৳) <span class="text-rose-500">*</span>
+        </span>
+        <nz-input-number
+          class="w-full"
+          [nzMin]="0"
+          [nzStep]="0.1"
+          [(ngModel)]="form.salePricePiece"
+        ></nz-input-number>
+      </div>
+
+      <!-- Rak Number -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Rak / Shelf Location</span>
+        <div class="flex gap-1.5">
+          <nz-select
+            nzShowSearch
+            nzAllowClear
+            class="flex-1"
+            [(ngModel)]="form.rakNumber"
+            nzPlaceHolder="Select or enter shelf"
+          >
+            @for (r of raks; track r) {
+              <nz-option [nzValue]="r" [nzLabel]="r"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="isAddRakModalVisible = true"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Rak / Shelf"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Manufacturer / Company with Quick Add Modal -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Manufacturer Company <span class="text-rose-500">*</span>
+        </span>
+        <div class="flex gap-1.5">
+          <nz-select
+            nzShowSearch
+            nzAllowClear
+            class="flex-1"
+            [(ngModel)]="form.company"
+            nzPlaceHolder="Select company"
+          >
+            @for (c of companies; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="isAddCompanyModalVisible = true"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Manufacturer Company"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Generic Name with Quick Add Modal -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</span>
+        <div class="flex gap-1.5">
+          <nz-select
+            nzShowSearch
+            nzAllowClear
+            class="flex-1"
+            [(ngModel)]="form.generic"
+            nzPlaceHolder="Select generic"
+          >
+            @for (g of generics; track g) {
+              <nz-option [nzValue]="g" [nzLabel]="g"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="isAddGenericModalVisible = true"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Generic Formulation"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barcode Value -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Barcode / UPC</span>
+        <input
+          type="text"
+          nz-input
+          placeholder="Scan or enter barcode"
+          [(ngModel)]="form.barcode"
+          class="rounded-md"
+        />
+      </div>
+
+      <!-- Country of Origin -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Country of Origin</span>
+        <input
+          type="text"
+          nz-input
+          placeholder="Bangladesh"
+          [(ngModel)]="form.country"
+          class="rounded-md"
+        />
+      </div>
+
+      <!-- Reorder Level -->
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">Min Reorder Level (Pcs)</span>
+        <nz-input-number
+          class="w-full"
+          [nzMin]="0"
+          [(ngModel)]="form.minStock"
+        ></nz-input-number>
+      </div>
+    </div>
+
+    <!-- Medicine Flag Checkbox -->
+    <div class="flex items-center gap-3 pt-2">
+      <label nz-checkbox [(ngModel)]="form.isMedicine" class="text-sm font-medium text-slate-700">
+        Mark as Clinical Prescription Medicine
+      </label>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+      <a routerLink="/products/list" nz-button nzType="default" class="rounded-md">Cancel</a>
+      <button
+        nz-button
+        nzType="primary"
+        class="rounded-md"
+        (click)="submitForm()"
+        [nzLoading]="isSaving"
+      >
+        <span nz-icon nzType="check"></span> Save Medicine
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Add Company Sub-Modal -->
+<nz-modal
+  [(nzVisible)]="isAddCompanyModalVisible"
+  nzTitle="Quick Add Manufacturer Company"
+  [nzCentered]="true"
+  [nzWidth]="480"
+  (nzOnCancel)="isAddCompanyModalVisible = false"
+  (nzOnOk)="saveNewCompany()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Company Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. Popular Pharmaceuticals"
+          [(ngModel)]="newCompanyName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Generic Sub-Modal -->
+<nz-modal
+  [(nzVisible)]="isAddGenericModalVisible"
+  nzTitle="Quick Add Generic Formulation"
+  [nzCentered]="true"
+  [nzWidth]="480"
+  (nzOnCancel)="isAddGenericModalVisible = false"
+  (nzOnOk)="saveNewGeneric()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Generic (INN) Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. Pantoprazole Sodium"
+          [(ngModel)]="newGenericName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Medicine Type Sub-Modal -->
+<nz-modal
+  [(nzVisible)]="isAddMedicineTypeModalVisible"
+  nzTitle="Quick Add Medicine Type / Dosage Form"
+  [nzCentered]="true"
+  [nzWidth]="480"
+  (nzOnCancel)="isAddMedicineTypeModalVisible = false"
+  (nzOnOk)="saveNewMedicineType()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Medicine Type / Dosage Form Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. Inhaler, Eye Drop, Sachet"
+          [(ngModel)]="newMedicineTypeName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Unit Type Sub-Modal -->
+<nz-modal
+  [(nzVisible)]="isAddUnitTypeModalVisible"
+  nzTitle="Quick Add Packaging Unit Type"
+  [nzCentered]="true"
+  [nzWidth]="480"
+  (nzOnCancel)="isAddUnitTypeModalVisible = false"
+  (nzOnOk)="saveNewUnitType()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Unit Type Name <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. VIAL, AMPOULE, BLISTER"
+          [(ngModel)]="newUnitTypeName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Quick Add Rak / Shelf Sub-Modal -->
+<nz-modal
+  [(nzVisible)]="isAddRakModalVisible"
+  nzTitle="Quick Add Rak / Shelf Location"
+  [nzCentered]="true"
+  [nzWidth]="480"
+  (nzOnCancel)="isAddRakModalVisible = false"
+  (nzOnOk)="saveNewRak()"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-3">
+      <div>
+        <span class="block text-xs font-semibold text-slate-700 mb-1">
+          Shelf / Rak Identifier <span class="text-rose-500">*</span>
+        </span>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. Rack C-04, Drawer 2"
+          [(ngModel)]="newRakName"
+          class="rounded-md"
+        />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
