@@ -70,7 +70,7 @@ export class AuthService {
   }
 
   login(phone: string, password: string): Observable<ApiResponse<LoginResponseData>> {
-    return this.apiService.post<LoginResponseData>('api/v1/auth/login', { phone, password }).pipe(
+    return this.apiService.post<LoginResponseData>('auth/login', { phone, password }).pipe(
       tap((res) => {
         if (res.data) {
           this.setSession(res.data.token, res.data.user, res.data.branch);
