@@ -32,6 +32,14 @@ import { SettingsService } from '../../core/services/settings.service';
         [breadcrumbs]="[{ label: 'Settings', url: '/settings/sale-config' }, { label: 'SMS Config' }]"
       ></app-page-header>
 
+      <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
+        <span nz-icon nzType="info-circle" class="text-amber-600 text-base mt-0.5 flex-shrink-0"></span>
+        <div>
+          <span class="font-bold text-amber-900">Feature Preview (Coming in Phase 3):</span>
+          <p class="text-[11px] text-amber-700 mb-0 mt-0.5">Automated SMS gateway dispatching for sales receipts and customer dues is currently in preview. SMS packages and configuration will activate with the upcoming SMS dispatcher.</p>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
         <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
           <span class="text-sm font-semibold text-slate-700">Available SMS Credits</span>

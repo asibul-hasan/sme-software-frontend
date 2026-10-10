@@ -52,18 +52,23 @@ import { SubscriptionComponent } from './features/subscription/subscription.comp
 import { BranchSwitcherComponent } from './features/subscription/branch-switcher.component';
 
 import { ModuleScreenViewComponent } from './features/common/module-screen-view.component';
+import { LoginComponent } from './features/auth/login.component';
+import { authGuard } from './core/guards/auth.guard';
+import { managerGuard } from './core/guards/role.guard';
 
 export const appRoutes: Route[] = [
+  { path: 'auth/login', component: LoginComponent },
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
-      // Dashboard & Executive Analytics (DASH_2301 - DASH_2303)
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'dashboard/analytics', component: ModuleScreenViewComponent },
-      { path: 'dashboard/cashbook', component: ModuleScreenViewComponent },
+      // Dashboard & Executive Analytics (DASH_2301 - DASH_2303) - Restricted to Manager
+      { path: 'dashboard', component: DashboardComponent, canActivate: [managerGuard] },
+      { path: 'dashboard/analytics', component: ModuleScreenViewComponent, canActivate: [managerGuard] },
+      { path: 'dashboard/cashbook', component: ModuleScreenViewComponent, canActivate: [managerGuard] },
 
       // Products & Inventory (PROD_1601 - PROD_1610)
       { path: 'products', redirectTo: 'products/list', pathMatch: 'full' },
@@ -77,14 +82,14 @@ export const appRoutes: Route[] = [
       { path: 'products/requisition/records', component: RequisitionRecordComponent },
       { path: 'products/expired', component: ExpiredItemsComponent },
 
-      // Suppliers & Purchases (PUR_1501 - PUR_1509)
+      // Suppliers & Purchases (PUR_1501 - PUR_1509) - Restricted to Manager
       { path: 'purchase', redirectTo: 'supplier/purchase', pathMatch: 'full' },
       { path: 'purchases', redirectTo: 'supplier/purchase', pathMatch: 'full' },
       { path: 'supplier', redirectTo: 'supplier/purchase', pathMatch: 'full' },
-      { path: 'supplier/purchase', component: PurchaseEntryComponent },
-      { path: 'supplier/list', component: SupplierListComponent },
-      { path: 'supplier/add', component: SupplierAddComponent },
-      { path: 'supplier/records', component: PurchaseRecordComponent },
+      { path: 'supplier/purchase', component: PurchaseEntryComponent, canActivate: [managerGuard] },
+      { path: 'supplier/list', component: SupplierListComponent, canActivate: [managerGuard] },
+      { path: 'supplier/add', component: SupplierAddComponent, canActivate: [managerGuard] },
+      { path: 'supplier/records', component: PurchaseRecordComponent, canActivate: [managerGuard] },
 
       // Customer & Sales POS (SALE_1401 - SALE_1410)
       { path: 'customer/sale', component: PosTerminalComponent },
@@ -97,44 +102,44 @@ export const appRoutes: Route[] = [
       // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
       { path: 'cash', redirectTo: 'cash/receive', pathMatch: 'full' },
       { path: 'cash/receive', component: CashHandoverComponent },
-      { path: 'reconciliation', component: ReconciliationListComponent },
-      { path: 'reconciliation/add', component: ReconciliationAddComponent },
+      { path: 'reconciliation', component: ReconciliationListComponent, canActivate: [managerGuard] },
+      { path: 'reconciliation/add', component: ReconciliationAddComponent, canActivate: [managerGuard] },
 
       // Due & Credit Collection (DUE_1301 - DUE_1302)
       { path: 'due-collect', component: DueCollectComponent },
       { path: 'pms-due-paid-payments', component: DueCollectComponent },
 
-      // Accounting & Financials (ACC_1101 - ACC_1110)
+      // Accounting & Financials (ACC_1101 - ACC_1110) - Restricted to Manager
       { path: 'accounting', redirectTo: 'accounting/transaction', pathMatch: 'full' },
-      { path: 'accounting/transaction', component: AccountsComponent },
-      { path: 'accounting/transaction/add', component: AccountAddComponent },
-      { path: 'accounting/expenses', component: ExpensesComponent },
-      { path: 'accounting/expenses/add', component: ExpenseAddComponent },
-      { path: 'accounting/income', component: IncomeComponent },
-      { path: 'accounting/additional-balance', component: AdditionalBalanceComponent },
+      { path: 'accounting/transaction', component: AccountsComponent, canActivate: [managerGuard] },
+      { path: 'accounting/transaction/add', component: AccountAddComponent, canActivate: [managerGuard] },
+      { path: 'accounting/expenses', component: ExpensesComponent, canActivate: [managerGuard] },
+      { path: 'accounting/expenses/add', component: ExpenseAddComponent, canActivate: [managerGuard] },
+      { path: 'accounting/income', component: IncomeComponent, canActivate: [managerGuard] },
+      { path: 'accounting/additional-balance', component: AdditionalBalanceComponent, canActivate: [managerGuard] },
 
       // Doctors Portal (DOC_1701 - DOC_1703)
       { path: 'doctors-portal/list', component: DoctorListComponent },
       { path: 'doctors-portal/add', component: DoctorAddComponent },
-      { path: 'doctors-portal/settings', component: PrescriptionSettingsComponent },
+      { path: 'doctors-portal/settings', component: PrescriptionSettingsComponent, canActivate: [managerGuard] },
 
-      // Representatives & Staff (REP_1801 - REP_1802)
-      { path: 'representative', component: RepListComponent },
-      { path: 'representative/add', component: RepAddComponent },
+      // Representatives & Staff (REP_1801 - REP_1802) - Restricted to Manager
+      { path: 'representative', component: RepListComponent, canActivate: [managerGuard] },
+      { path: 'representative/add', component: RepAddComponent, canActivate: [managerGuard] },
 
-      // Roles & RBAC (ROLE_1901 - ROLE_1902)
-      { path: 'roles', component: RoleListComponent },
-      { path: 'roles/add', component: RoleAddComponent },
+      // Roles & RBAC (ROLE_1901 - ROLE_1902) - Restricted to Manager
+      { path: 'roles', component: RoleListComponent, canActivate: [managerGuard] },
+      { path: 'roles/add', component: RoleAddComponent, canActivate: [managerGuard] },
 
-      // System & POS Settings (CFG_2001 - CFG_2005)
-      { path: 'settings/sale-config', component: SaleConfigComponent },
-      { path: 'settings/invoice-config', component: InvoiceConfigComponent },
-      { path: 'settings/product-config', component: ProductConfigComponent },
-      { path: 'settings/loyalty-config', component: LoyaltyConfigComponent },
-      { path: 'settings/bulk-sms-config', component: SmsConfigComponent },
+      // System & POS Settings (CFG_2001 - CFG_2005) - Restricted to Manager
+      { path: 'settings/sale-config', component: SaleConfigComponent, canActivate: [managerGuard] },
+      { path: 'settings/invoice-config', component: InvoiceConfigComponent, canActivate: [managerGuard] },
+      { path: 'settings/product-config', component: ProductConfigComponent, canActivate: [managerGuard] },
+      { path: 'settings/loyalty-config', component: LoyaltyConfigComponent, canActivate: [managerGuard] },
+      { path: 'settings/bulk-sms-config', component: SmsConfigComponent, canActivate: [managerGuard] },
 
       // Subscription & Multi-Branch (SUB_2101 - PHAR_2201)
-      { path: 'subscription-report', component: SubscriptionComponent },
+      { path: 'subscription-report', component: SubscriptionComponent, canActivate: [managerGuard] },
       { path: 'change-pharmacy', component: BranchSwitcherComponent },
     ],
   },

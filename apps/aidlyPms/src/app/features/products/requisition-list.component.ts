@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -13,6 +15,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
@@ -54,11 +58,17 @@ export interface RequisitionItemRow {
     NzTooltipModule,
     NzBadgeModule,
     NzTagModule,
+    NzCheckboxModule,
+    NzSpinModule,
     PageHeaderComponent,
   ],
   templateUrl: './requisition-list.component.html',
 })
-export class RequisitionListComponent implements OnInit {
+export class RequisitionListComponent implements OnInit, OnDestroy {
+  @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
+  private readonly searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
+
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
@@ -89,11 +99,14 @@ export class RequisitionListComponent implements OnInit {
   isLoadingLowStock = signal(false);
   isSaving = signal(false);
 
-  // Product Selector Modal State
+  // Product Selector Modal State (Multi-Choice & Live Search)
   isProductSelectorVisible = false;
   productSearchQuery = '';
   catalogProducts = signal<ProdProduct[]>([]);
   allProducts: ProdProduct[] = [];
+  isSearchingCatalog = signal(false);
+  selectedProductNos = signal<Set<number>>(new Set());
+  selectedProductsMap = new Map<number, ProdProduct>();
 
   // Success Modal
   isSuccessModalVisible = false;
@@ -127,12 +140,27 @@ export class RequisitionListComponent implements OnInit {
     this.loadSuppliers();
     this.loadCompanies();
     this.loadCatalogProducts();
+
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(250), distinctUntilChanged())
+      .subscribe(query => {
+        this.executeCatalogSearch(query);
+      });
+
     this.route.queryParams.subscribe(params => {
       const reqNo = params['requisitionNo'];
       if (reqNo) {
         this.loadRequisitionForEdit(Number(reqNo));
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  onLineItemChange(): void {
+    this.items.update(list => [...list]);
   }
 
   // Keyboard Shortcuts (F2: Add Item, F8: Save Requisition)
@@ -199,7 +227,9 @@ export class RequisitionListComponent implements OnInit {
   }
 
   onCompanyFilterChange(): void {
-    if (this.selectedCompanyNo) {
+    if (this.isProductSelectorVisible) {
+      this.executeCatalogSearch(this.productSearchQuery);
+    } else if (this.selectedCompanyNo) {
       const filtered = this.allProducts.filter(p => p.company_no === this.selectedCompanyNo);
       this.catalogProducts.set(filtered);
     } else {
@@ -272,33 +302,165 @@ export class RequisitionListComponent implements OnInit {
     });
   }
 
-  // Detail Item Management
+  // Detail Item Management & Product Catalog Selector (F2)
   openProductSelector(): void {
     this.productSearchQuery = '';
-    this.searchCatalogProducts();
+    this.clearSelection();
     this.isProductSelectorVisible = true;
+    this.executeCatalogSearch('');
+
+    // Auto-focus search bar when popup opens
+    setTimeout(() => {
+      this.searchInputEl?.nativeElement?.focus();
+      this.searchInputEl?.nativeElement?.select();
+    }, 80);
   }
 
-  searchCatalogProducts(): void {
-    const q = this.productSearchQuery.trim().toLowerCase();
-    let source = this.allProducts;
-    if (this.selectedCompanyNo) {
-      source = source.filter(p => p.company_no === this.selectedCompanyNo);
+  onSearchInputChange(val: string): void {
+    this.searchSubject.next(val);
+  }
+
+  executeCatalogSearch(query: string): void {
+    this.isSearchingCatalog.set(true);
+    const params: Record<string, unknown> = {
+      pageSize: 50,
+    };
+    const trimmed = query.trim();
+    if (trimmed) {
+      params['search'] = trimmed;
     }
-    if (!q) {
-      this.catalogProducts.set(source);
+    if (this.selectedCompanyNo) {
+      params['companyNo'] = this.selectedCompanyNo;
+    }
+
+    this.productService.getProducts(params).subscribe({
+      next: res => {
+        this.isSearchingCatalog.set(false);
+        if (res.success && res.data) {
+          const prods: ProdProduct[] = Array.isArray(res.data) ? [...res.data] : [...(res.data.items || [])];
+          this.catalogProducts.set(prods);
+        } else {
+          this.catalogProducts.set([]);
+        }
+      },
+      error: () => {
+        this.isSearchingCatalog.set(false);
+        this.catalogProducts.set([]);
+      },
+    });
+  }
+
+  // Multi-choice state helpers
+  isProductSelected(productNo: number): boolean {
+    return this.selectedProductNos().has(productNo);
+  }
+
+  toggleProductSelection(p: ProdProduct): void {
+    const nextSet = new Set(this.selectedProductNos());
+    if (nextSet.has(p.product_no)) {
+      nextSet.delete(p.product_no);
+      this.selectedProductsMap.delete(p.product_no);
+    } else {
+      nextSet.add(p.product_no);
+      this.selectedProductsMap.set(p.product_no, p);
+    }
+    this.selectedProductNos.set(nextSet);
+  }
+
+  isAllFilteredSelected(): boolean {
+    const prods = this.catalogProducts();
+    if (prods.length === 0) return false;
+    const set = this.selectedProductNos();
+    return prods.every(p => set.has(p.product_no));
+  }
+
+  toggleSelectAllFiltered(): void {
+    const prods = this.catalogProducts();
+    const nextSet = new Set(this.selectedProductNos());
+    if (this.isAllFilteredSelected()) {
+      for (const p of prods) {
+        nextSet.delete(p.product_no);
+        this.selectedProductsMap.delete(p.product_no);
+      }
+    } else {
+      for (const p of prods) {
+        nextSet.add(p.product_no);
+        this.selectedProductsMap.set(p.product_no, p);
+      }
+    }
+    this.selectedProductNos.set(nextSet);
+  }
+
+  clearSelection(): void {
+    this.selectedProductNos.set(new Set());
+    this.selectedProductsMap.clear();
+  }
+
+  populateSelectedProducts(): void {
+    const selected = Array.from(this.selectedProductsMap.values());
+    if (selected.length === 0) {
+      this.msg.warning('Please select at least one medicine to populate.');
       return;
     }
-    const matched = source.filter(
-      p =>
-        p.product_name.toLowerCase().includes(q) ||
-        (p.generic_name && p.generic_name.toLowerCase().includes(q)) ||
-        (p.barcode_value && p.barcode_value.toLowerCase().includes(q))
+
+    let addedCount = 0;
+    let incrementedCount = 0;
+
+    this.items.update(current => {
+      const list = [...current];
+      for (const p of selected) {
+        const existingIdx = list.findIndex(i => i.product_no === p.product_no);
+        const qtyInBox = p.quantity_per_box || 1;
+        const unitCost = p.purchase_price_per_piece || (p.cost_per_box ? p.cost_per_box / qtyInBox : 0);
+        const minQty = p.min_stock_qty_pcs || 10;
+        const curStock = p.stock_qty || 0;
+        const shortfall = Math.max(0, minQty - curStock);
+
+        if (existingIdx >= 0) {
+          list[existingIdx] = {
+            ...list[existingIdx],
+            box_qty: list[existingIdx].box_qty + 1,
+          };
+          incrementedCount++;
+        } else {
+          list.unshift({
+            product_no: p.product_no,
+            product_name: p.product_name,
+            generic_name: p.generic_name || 'General',
+            company_name: p.company_name || 'Pharmaceuticals Ltd.',
+            company_no: p.company_no,
+            current_stock_pcs: curStock,
+            min_stock_qty_pcs: minQty,
+            shortfall_pcs: shortfall,
+            quantity_in_box: qtyInBox,
+            box_qty: 1,
+            unit_cost: unitCost,
+            vat_percent: 0,
+            sale_qty_6mth_pcs: 0,
+            is_from_low_stock: false,
+          });
+          addedCount++;
+        }
+      }
+      return list;
+    });
+
+    this.clearSelection();
+    this.isProductSelectorVisible = false;
+    this.msg.success(
+      `Populated ${addedCount} medicines into requisition plan (${incrementedCount} incremented).`
     );
-    this.catalogProducts.set(matched);
   }
 
-  addProductToRequisition(p: ProdProduct): void {
+  getItemBoxQtyInPlan(productNo: number): number {
+    const item = this.items().find(i => i.product_no === productNo);
+    return item ? item.box_qty : 0;
+  }
+
+  addProductToRequisition(p: ProdProduct, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
     const existing = this.items().find(i => i.product_no === p.product_no);
     const qtyInBox = p.quantity_per_box || 1;
     const unitCost = p.purchase_price_per_piece || (p.cost_per_box ? p.cost_per_box / qtyInBox : 0);
@@ -328,8 +490,6 @@ export class RequisitionListComponent implements OnInit {
       this.items.update(list => [newLine, ...list]);
       this.msg.success(`Added ${p.product_name} to requisition`);
     }
-
-    this.isProductSelectorVisible = false;
   }
 
   removeItem(item: RequisitionItemRow): void {

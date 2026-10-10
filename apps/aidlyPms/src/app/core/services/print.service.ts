@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
+import { SettingsService } from './settings.service';
 
 export interface CustomerStatementPrintData {
   name: string;
@@ -118,6 +120,9 @@ function fmtMoney(amount: number | string | undefined | null): string {
   providedIn: 'root',
 })
 export class PrintService {
+  private readonly authService = inject(AuthService);
+  private readonly settingsService = inject(SettingsService);
+
   private readonly defaultPharmacy = {
     name: 'Aidly Model Pharmacy',
     branch: 'Main Branch (Banani), Dhaka',
@@ -129,7 +134,7 @@ export class PrintService {
    * Prints arbitrary HTML content in a dedicated, isolated hidden iframe.
    * Includes complete CSS print stylesheet, @page configuration, and anti-page-spill rules.
    */
-  printHtml(htmlContent: string, title = 'Aidly PMS Document', format: 'a4' | 'thermal' = 'a4'): void {
+  printHtml(htmlContent: string, title = 'Aidly PMS Document', format: 'a4' | 'thermal' = 'a4', rollWidth = '80mm'): void {
     const existingFrame = document.getElementById('aidly-print-iframe') as HTMLIFrameElement;
     if (existingFrame) {
       existingFrame.remove();
@@ -154,6 +159,21 @@ export class PrintService {
     }
 
     const isThermal = format === 'thermal';
+    let bodyWidth = '100%';
+    let pageSize = 'A4 portrait; margin: 10mm 15mm 12mm 15mm;';
+
+    if (isThermal) {
+      if (rollWidth === '57mm' || rollWidth === '58mm') {
+        pageSize = '58mm auto; margin: 0;';
+        bodyWidth = '54mm';
+      } else if (rollWidth === '72mm') {
+        pageSize = '72mm auto; margin: 0;';
+        bodyWidth = '70mm';
+      } else {
+        pageSize = '80mm auto; margin: 0;';
+        bodyWidth = '76mm';
+      }
+    }
 
     doc.open();
     doc.write(`
@@ -164,7 +184,7 @@ export class PrintService {
         <title>${title}</title>
         <style>
           @page {
-            ${isThermal ? 'size: 80mm auto; margin: 0;' : 'size: A4 portrait; margin: 10mm 15mm 12mm 15mm;'}
+            size: ${pageSize};
           }
           * {
             box-sizing: border-box;
@@ -177,9 +197,9 @@ export class PrintService {
             color: ${isThermal ? '#000000' : '#1e293b'};
             line-height: ${isThermal ? '1.3' : '1.4'};
             background: #ffffff;
-            padding: ${isThermal ? '4mm 3mm' : '0'};
+            padding: ${isThermal ? '3mm 2mm' : '0'};
             margin: 0;
-            width: ${isThermal ? '74mm' : '100%'};
+            width: ${bodyWidth};
             height: auto !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -511,10 +531,11 @@ export class PrintService {
       return;
     }
 
-    const branchName = data.branchName || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
+    const activeBranch = this.authService.activeBranch();
+    const branchName = data.branchName || activeBranch?.name || this.defaultPharmacy.name;
+    const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
+    const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
+    const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
 
     const dateStr = data.date || new Date().toLocaleDateString('en-GB');
     const timeStr = data.time || new Date().toLocaleTimeString('en-GB');
@@ -611,7 +632,6 @@ export class PrintService {
           <!-- Running Footer -->
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>
@@ -624,35 +644,61 @@ export class PrintService {
    * Dedicated 80mm thermal roll receipt printer renderer.
    */
   printThermalSlip(data: SaleInvoicePrintData): void {
-    const branchName = data.branchName || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
+    const activeBranch = this.authService.activeBranch();
+    const invCfg = this.settingsService.invoiceConfig();
+
+    const branchName = data.branchName || activeBranch?.name || this.defaultPharmacy.name;
+    const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
+    const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
+    const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
+
+    // Resolve paper roll width from settings:
+    // paper_type: 2 -> 58mm/57mm, 3 -> 72mm, 1 (default) -> 80mm
+    let rollWidth = '80mm';
+    let containerWidth = '74mm';
+    let baseFontSize = '11px';
+    if (invCfg?.paper_type === 2) {
+      rollWidth = '58mm';
+      containerWidth = '52mm';
+      baseFontSize = '9.5px';
+    } else if (invCfg?.paper_type === 3) {
+      rollWidth = '72mm';
+      containerWidth = '68mm';
+      baseFontSize = '10.5px';
+    }
+
+    const showServedBy = invCfg?.show_served_by_row ?? true;
+    const showCustomer = invCfg?.show_customer_name ?? true;
+    const showPhone = invCfg?.show_customer_phone ?? true;
+    const topHeaderText = invCfg?.top_row_text?.trim();
+    const bottomDisclaimer = invCfg?.bottom_row_text?.trim() || 'Medicines cannot be returned without receipt within 7 days.';
 
     const dateStr = data.date || new Date().toLocaleDateString('en-GB');
 
     const rowsHtml = data.lines.map((i) => `
       <tr>
-        <td style="padding: 2px 0; text-align: left; font-size: 11px;">${i.name}</td>
-        <td style="padding: 2px 0; text-align: center; font-size: 11px;">${i.qty}</td>
-        <td style="padding: 2px 0; text-align: right; font-size: 11px;">${fmtMoney(i.price)}</td>
-        <td style="padding: 2px 0; text-align: right; font-size: 11px; font-weight: bold;">${fmtMoney(i.total)}</td>
+        <td style="padding: 2px 0; text-align: left; font-size: ${baseFontSize};">${i.name}</td>
+        <td style="padding: 2px 0; text-align: center; font-size: ${baseFontSize};">${i.qty}</td>
+        <td style="padding: 2px 0; text-align: right; font-size: ${baseFontSize};">${fmtMoney(i.price)}</td>
+        <td style="padding: 2px 0; text-align: right; font-size: ${baseFontSize}; font-weight: bold;">${fmtMoney(i.total)}</td>
       </tr>
     `).join('');
 
     const thermalHtml = `
-      <div style="font-family: monospace; font-size: 11px; color: #000; width: 72mm; margin: 0 auto; text-align: center;">
+      <div style="font-family: monospace; font-size: ${baseFontSize}; color: #000; width: ${containerWidth}; margin: 0 auto; text-align: center;">
+        ${topHeaderText ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; white-space: pre-line;">${topHeaderText}</div>` : ''}
         <div style="font-size: 13px; font-weight: bold; text-transform: uppercase;">${branchName}</div>
         <div style="font-size: 10px;">${branchAddress}</div>
         <div style="font-size: 10px;">Hotline: ${branchPhone}</div>
-        <div style="font-size: 10px;">DL: ${dlNumber}</div>
+        <div style="font-size: 10px; font-weight: 600;">DL: ${dlNumber}</div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
 
         <div style="font-size: 10px; text-align: left; line-height: 1.3;">
           <div style="display: flex; justify-content: space-between;"><span>Bill No:</span><strong>${data.inv}</strong></div>
           <div style="display: flex; justify-content: space-between;"><span>Date:</span><span>${dateStr}</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>Customer:</span><span>${data.customer}</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>Salesman:</span><span>${data.salesman || 'Admin'}</span></div>
+          ${showCustomer ? `<div style="display: flex; justify-content: space-between;"><span>Customer:</span><span>${data.customer}</span></div>` : ''}
+          ${showPhone && data.customerPhone ? `<div style="display: flex; justify-content: space-between;"><span>Phone:</span><span>${data.customerPhone}</span></div>` : ''}
+          ${showServedBy ? `<div style="display: flex; justify-content: space-between;"><span>Served By:</span><span>${data.salesman || 'Admin'}</span></div>` : ''}
         </div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
 
@@ -687,13 +733,13 @@ export class PrintService {
 
         <div style="font-size: 10px; margin-top: 6px;">
           <div>*** Thank You for Shopping! ***</div>
-          <div style="font-size: 9px; margin-top: 2px;">Medicines cannot be returned without receipt</div>
+          <div style="font-size: 9px; margin-top: 2px; white-space: pre-line;">${bottomDisclaimer}</div>
           <div style="font-size: 8px; margin-top: 2px; color: #444;">Generated by AidlyPms</div>
         </div>
       </div>
     `;
 
-    this.printHtml(thermalHtml, `Receipt - ${data.inv}`, 'thermal');
+    this.printHtml(thermalHtml, `Receipt - ${data.inv}`, 'thermal', rollWidth);
   }
 
   /**
@@ -780,7 +826,6 @@ export class PrintService {
 
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>
@@ -871,7 +916,6 @@ export class PrintService {
 
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>
@@ -948,7 +992,6 @@ export class PrintService {
 
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>
@@ -1083,7 +1126,6 @@ export class PrintService {
 
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>
@@ -1218,7 +1260,6 @@ export class PrintService {
 
           <footer class="doc-footer">
             <span class="footer-left">AidlyPms by Infoaidtech Solutions</span>
-            <span class="footer-right">Page 1 of 1</span>
           </footer>
         </div>
       </div>

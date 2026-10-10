@@ -104,11 +104,9 @@ export interface TableColumn<T = unknown> {
               [(nzPageIndex)]="pageIndex"
               [(nzPageSize)]="pageSize"
               [nzTotal]="total"
-              [nzPageSizeOptions]="[10, 20, 50, 100]"
-              [nzShowSizeChanger]="true"
+              [nzShowSizeChanger]="false"
               nzSize="small"
               (nzPageIndexChange)="onPageChange($event)"
-              (nzPageSizeChange)="onPageSizeChange($event)"
             ></nz-pagination>
           }
         </div>

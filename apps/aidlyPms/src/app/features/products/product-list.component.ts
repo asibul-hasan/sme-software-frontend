@@ -27,6 +27,7 @@ import {
 import { ProdProduct, ProdCompany, ProdGeneric, ProdProductBatch } from '../../core/models';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 export type ProductRow = ProdProduct & {
   generic_name: string;
@@ -60,6 +61,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
+  readonly authService = inject(AuthService);
 
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -182,20 +184,24 @@ export class ProductListComponent implements OnInit, OnDestroy {
         key: 'unit_type_label',
         width: '85px',
       },
-      {
-        title: 'Avg. Purchase',
-        key: 'avg_purchase_price_per_piece',
-        align: 'right',
-        width: '120px',
-        template: this.avgPurchaseTpl,
-      },
-      {
-        title: 'Purchase',
-        key: 'purchase_price_per_piece',
-        align: 'right',
-        width: '110px',
-        template: this.purchaseTpl,
-      },
+      ...(this.authService.canViewCostPrice()
+        ? [
+            {
+              title: 'Avg. Purchase',
+              key: 'avg_purchase_price_per_piece',
+              align: 'right' as const,
+              width: '120px',
+              template: this.avgPurchaseTpl,
+            },
+            {
+              title: 'Purchase',
+              key: 'purchase_price_per_piece',
+              align: 'right' as const,
+              width: '110px',
+              template: this.purchaseTpl,
+            },
+          ]
+        : []),
       {
         title: 'Sale Price',
         key: 'sale_price_per_piece',
@@ -269,20 +275,37 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.msg.warning('No products available to download.');
       return;
     }
-    const headers = ['Product Name', 'Generic', 'Manufacturer', 'Type', 'Strength', 'Shelf/Rak', 'Stock (pcs)', 'Cost/Box', 'Sale/Box', 'Retail Price/Pc (৳)', 'Stock Value (৳)'];
-    const rows = this.filteredProducts.map(p => [
-      `"${(p.product_name || '').replace(/"/g, '""')}"`,
-      `"${(p.generic_name || '').replace(/"/g, '""')}"`,
-      `"${(p.company_name || '').replace(/"/g, '""')}"`,
-      `"${p.medicine_type_label || ''}"`,
-      `"${p.strength || ''}"`,
-      `"${p.rak_number || ''}"`,
-      p.stock_qty || 0,
-      p.cost_per_box || 0,
-      p.sale_price_per_box || 0,
-      p.sale_price_per_piece || 0,
-      ((p.stock_qty || 0) * (p.purchase_price_per_piece || 0)).toFixed(2)
-    ]);
+    const canCost = this.authService.canViewCostPrice();
+    const headers = canCost
+      ? ['Product Name', 'Generic', 'Manufacturer', 'Type', 'Strength', 'Shelf/Rak', 'Stock (pcs)', 'Cost/Box', 'Sale/Box', 'Retail Price/Pc (৳)', 'Stock Value (৳)']
+      : ['Product Name', 'Generic', 'Manufacturer', 'Type', 'Strength', 'Shelf/Rak', 'Stock (pcs)', 'Sale/Box', 'Retail Price/Pc (৳)'];
+
+    const rows = this.filteredProducts.map(p => {
+      const base = [
+        `"${(p.product_name || '').replace(/"/g, '""')}"`,
+        `"${(p.generic_name || '').replace(/"/g, '""')}"`,
+        `"${(p.company_name || '').replace(/"/g, '""')}"`,
+        `"${p.medicine_type_label || ''}"`,
+        `"${p.strength || ''}"`,
+        `"${p.rak_number || ''}"`,
+        p.stock_qty || 0,
+      ];
+      if (canCost) {
+        return [
+          ...base,
+          p.cost_per_box || 0,
+          p.sale_price_per_box || 0,
+          p.sale_price_per_piece || 0,
+          ((p.stock_qty || 0) * (p.purchase_price_per_piece || 0)).toFixed(2)
+        ];
+      } else {
+        return [
+          ...base,
+          p.sale_price_per_box || 0,
+          p.sale_price_per_piece || 0,
+        ];
+      }
+    });
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

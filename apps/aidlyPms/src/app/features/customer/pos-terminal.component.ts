@@ -25,6 +25,8 @@ import { ProductService } from '../../core/services/product.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { PrintService } from '../../core/services/print.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 
 interface CartItem {
@@ -133,6 +135,8 @@ export class PosTerminalComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly posSaleService = inject(PosSaleService);
   private readonly printService = inject(PrintService);
+  readonly authService = inject(AuthService);
+  readonly settingsService = inject(SettingsService);
 
   isReceiptModalVisible = false;
   lastPrintedInvoice: SaleInvoice | null = null;
@@ -374,6 +378,7 @@ export class PosTerminalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.settingsService.getInvoiceConfig().subscribe({ error: () => {} });
     this.loadProducts();
 
     this.customerService.getCustomers({ pageSize: 100 }).subscribe(res => {

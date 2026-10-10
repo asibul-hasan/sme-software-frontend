@@ -26,6 +26,7 @@ export interface SystemScreen {
   readonly permission_code: string;
   readonly description: string;
   readonly is_in_sidebar?: boolean;
+  readonly badge?: string;
 }
 
 // One clickable group inside a module (e.g. "Customers" under Sales)
@@ -414,6 +415,7 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     permission_code: 'Pharmacy-Module',
     description: 'Header/footer branding layout for printed prescription pads.',
     is_in_sidebar: true,
+    badge: 'Coming Soon',
   },
 
   // Representatives & Staff Users
@@ -492,6 +494,7 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     permission_code: 'Pharmacy-Module',
     description: 'Loyalty earn rate per BDT 100 spent and redemption discounts.',
     is_in_sidebar: true,
+    badge: 'Coming Soon',
   },
   {
     form_id: 'CFG_2005',
@@ -501,6 +504,7 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     permission_code: 'Pharmacy-Module',
     description: 'SMS notification templates for sales receipts and overdue dues.',
     is_in_sidebar: true,
+    badge: 'Coming Soon',
   },
 
   // SaaS Subscription & Billing

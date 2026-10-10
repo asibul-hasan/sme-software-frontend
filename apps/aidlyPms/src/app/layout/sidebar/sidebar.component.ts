@@ -38,10 +38,32 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() toggleCollapse = new EventEmitter<void>();
 
-  readonly sidebarModules: readonly SidebarModule[] = getSidebarTree();
+  private readonly allSidebarModules: readonly SidebarModule[] = getSidebarTree();
   readonly homeScreen = getScreenByFormId(HOME_FORM_ID);
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+
+  readonly sidebarModules = computed<readonly SidebarModule[]>(() => {
+    const isMgr = this.authService.isManager();
+    return this.allSidebarModules
+      .filter((m) => {
+        // Cashiers / salesmen cannot access Accounts (ACC), Settings (SYS), or Purchases (PUR)
+        if (!isMgr && (m.module_code === 'ACC' || m.module_code === 'SYS' || m.module_code === 'PUR')) {
+          return false;
+        }
+        return true;
+      })
+      .map((m) => ({
+        ...m,
+        sub_modules: m.sub_modules
+          .map((sub) => ({
+            ...sub,
+            screens: sub.screens.filter((s) => this.authService.hasPermission(s.permission_code)),
+          }))
+          .filter((sub) => sub.screens.length > 0),
+      }))
+      .filter((m) => m.sub_modules.length > 0);
+  });
 
   readonly searchTerm = signal('');
   readonly isFlyoutOpen = signal(false);
@@ -56,8 +78,13 @@ export class SidebarComponent {
     return clean === '/' || clean === '/dashboard';
   });
 
+  readonly isPosActive = computed(() => {
+    const clean = this.router.url.split('?')[0];
+    return clean === '/customer/sale';
+  });
+
   readonly selectedModule = computed<SidebarModule | null>(() => {
-    const modules = this.sidebarModules;
+    const modules = this.sidebarModules();
     if (!modules.length) return null;
 
     const previewId = this.collapsed && this.isFlyoutOpen()

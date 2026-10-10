@@ -21,26 +21,44 @@
         <span class="sb-rail-initial">℞</span>
       </a>
 
-      <!-- Home / Dashboard Button (Standalone Home Link) -->
-      <a
-        routerLink="/dashboard"
-        class="sb-module-btn sb-home-btn"
-        [class.active]="isHomeActive()"
-        [class.route-active]="isHomeActive()"
-        (click)="onHomeClicked()"
-        nz-tooltip
-        nzTooltipTitle="ড্যাশবোর্ড / Executive Dashboard"
-        nzTooltipPlacement="right"
-      >
-        <span class="sb-module-icon">
-          <span nz-icon nzType="dashboard" class="text-base"></span>
-        </span>
-        <span class="sb-module-label">DASH</span>
-      </a>
+      <!-- Home / Dashboard Button (Executive Dashboard for Manager, POS for Cashier) -->
+      @if (authService.isManager()) {
+        <a
+          routerLink="/dashboard"
+          class="sb-module-btn sb-home-btn"
+          [class.active]="isHomeActive()"
+          [class.route-active]="isHomeActive()"
+          (click)="onHomeClicked()"
+          nz-tooltip
+          nzTooltipTitle="ড্যাশবোর্ড / Executive Dashboard"
+          nzTooltipPlacement="right"
+        >
+          <span class="sb-module-icon">
+            <span nz-icon nzType="dashboard" class="text-base"></span>
+          </span>
+          <span class="sb-module-label">DASH</span>
+        </a>
+      } @else {
+        <a
+          routerLink="/customer/sale"
+          class="sb-module-btn sb-home-btn"
+          [class.active]="isPosActive()"
+          [class.route-active]="isPosActive()"
+          (click)="onHomeClicked()"
+          nz-tooltip
+          nzTooltipTitle="পয়েন্ট অফ সেল / POS Terminal"
+          nzTooltipPlacement="right"
+        >
+          <span class="sb-module-icon">
+            <span nz-icon nzType="shopping-cart" class="text-base"></span>
+          </span>
+          <span class="sb-module-label">POS</span>
+        </a>
+      }
 
       <!-- 5 Core Module Navigation List -->
       <nav class="sb-module-list flex-1 overflow-y-auto overflow-x-hidden">
-        @for (mod of sidebarModules; track mod.module_code) {
+        @for (mod of sidebarModules(); track mod.module_code) {
           <button
             type="button"
             class="sb-module-btn"
@@ -154,6 +172,11 @@
                       >
                         <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
                         <span class="sb-form-label truncate">{{ screen.title }}</span>
+                        @if (screen.badge) {
+                          <span class="ml-auto text-[9px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 flex-shrink-0">
+                            {{ screen.badge }}
+                          </span>
+                        }
                       </a>
                     </div>
                   }

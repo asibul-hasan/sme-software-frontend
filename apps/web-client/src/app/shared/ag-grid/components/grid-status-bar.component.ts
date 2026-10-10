@@ -30,22 +30,6 @@ import { UiTooltipDirective } from '@app/shared/ui/tooltip/ui-tooltip.directive'
 
       @if (showPagination()) {
         <div class="erp-grid-pager">
-          <label class="erp-grid-pager__size">
-            <span>Rows</span>
-            <select
-              class="form-select form-select-sm erp-grid-pager__select"
-              [value]="pageSize()"
-              (change)="onPageSize($event)"
-            >
-              @for (size of pageSizeOptions(); track size) {
-                <!-- selected as well as the value binding: options are stamped by
-                     the loop after the value binding runs, so without this the
-                     browser keeps the first option highlighted. -->
-                <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
-              }
-            </select>
-          </label>
-
           <span class="erp-grid-pager__range">{{ rangeLabel() }}</span>
 
           <div class="btn-action-group">
@@ -67,7 +51,7 @@ import { UiTooltipDirective } from '@app/shared/ui/tooltip/ui-tooltip.directive'
             >
               <mat-icon class="erp-grid-pager__icon">chevron_left</mat-icon>
             </button>
-            <span class="erp-grid-pager__page">{{ currentPage() + 1 }} / {{ totalPages() || 1 }}</span>
+            <span class="erp-grid-pager__page">Page {{ currentPage() + 1 }}</span>
             <button
               type="button"
               class="btn-action btn-reset erp-grid-pager__btn"

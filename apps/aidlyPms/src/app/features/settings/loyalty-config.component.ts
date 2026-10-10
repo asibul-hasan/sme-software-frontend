@@ -33,6 +33,14 @@ import { CfgLoyaltyConfig } from '../../core/models/config.models';
         [breadcrumbs]="[{ label: 'Settings', url: '/settings/sale-config' }, { label: 'Loyalty Config' }]"
       ></app-page-header>
 
+      <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
+        <span nz-icon nzType="info-circle" class="text-amber-600 text-base mt-0.5 flex-shrink-0"></span>
+        <div>
+          <span class="font-bold text-amber-900">Feature Preview (Coming in Phase 3):</span>
+          <p class="text-[11px] text-amber-700 mb-0 mt-0.5">Points accumulation and checkout redemption ledger are currently in preview. Configuration saved here will activate once the customer points ledger engine is deployed.</p>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
         <div class="flex items-center justify-between p-4 theme-highlight-card rounded-xl">
           <div>

@@ -30,6 +30,14 @@ import { DoctorService } from '../../core/services/doctor.service';
         [breadcrumbs]="[{ label: 'Doctors Portal', url: '/doctors-portal/list' }, { label: 'Prescription Settings' }]"
       ></app-page-header>
 
+      <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
+        <span nz-icon nzType="info-circle" class="text-amber-600 text-base mt-0.5 flex-shrink-0"></span>
+        <div>
+          <span class="font-bold text-amber-900">Feature Preview (Coming in Phase 3):</span>
+          <p class="text-[11px] text-amber-700 mb-0 mt-0.5">Doctor prescription pad layout customization, digital logo embedding, and specialized clinic headers will be fully active in Phase 3.</p>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">

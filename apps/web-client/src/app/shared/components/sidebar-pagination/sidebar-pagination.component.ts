@@ -59,21 +59,6 @@ import { PaginatorState } from '../../../core/utils/paginator';
         <span class="pager-total"
           >{{ pager.totalItems() }} <small>Records</small></span
         >
-        <ng-select
-          class="pager-size"
-          [items]="pager.pageSizeOptions"
-          [ngModel]="pager.pageSize()"
-          (ngModelChange)="pager.setPageSize($event)"
-          [clearable]="false"
-          [searchable]="false"
-        >
-          <ng-template ng-label-tmp let-item="item"
-            >{{ item }} / page</ng-template
-          >
-          <ng-template ng-option-tmp let-item="item"
-            >{{ item }} / page</ng-template
-          >
-        </ng-select>
       </div>
     </div>
   `,

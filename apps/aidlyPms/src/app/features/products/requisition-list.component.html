@@ -347,6 +347,7 @@
                   [nzMin]="1"
                   [nzStep]="1"
                   [(ngModel)]="item.box_qty"
+                  (ngModelChange)="onLineItemChange()"
                 ></nz-input-number>
               </td>
 
@@ -368,6 +369,7 @@
                   [nzMin]="0"
                   [nzStep]="0.5"
                   [(ngModel)]="item.unit_cost"
+                  (ngModelChange)="onLineItemChange()"
                 ></nz-input-number>
               </td>
 
@@ -482,84 +484,197 @@
 <!-- Product Search & Add Selector Modal (F2) -->
 <nz-modal
   [(nzVisible)]="isProductSelectorVisible"
-  nzTitle="Search & Add Product to Requisition"
-  [nzFooter]="null"
-  nzWidth="720px"
+  nzTitle="Add Medicines to Requisition Planner"
+  [nzFooter]="productModalFooter"
+  nzWidth="860px"
   (nzOnCancel)="isProductSelectorVisible = false"
 >
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
+      <!-- Search Bar with Live Debounce & Loading Indicator -->
       <div class="relative">
         <input
           #searchInput
           type="text"
           nz-input
-          placeholder="Search by brand name, generic formulation, or barcode..."
+          placeholder="Search from 10,000+ medicines by brand name, generic formulation, or barcode..."
           [(ngModel)]="productSearchQuery"
-          (ngModelChange)="searchCatalogProducts()"
-          class="rounded-md text-sm pl-8 py-2 w-full"
+          (ngModelChange)="onSearchInputChange($event)"
+          class="rounded-lg text-sm pl-9 pr-9 py-2.5 w-full border-slate-300 shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
         />
-        <span nz-icon nzType="search" class="absolute left-2.5 top-3 text-slate-400"></span>
+        <span nz-icon nzType="search" class="absolute left-3 top-3.5 text-slate-400"></span>
+        @if (isSearchingCatalog()) {
+          <span nz-icon nzType="loading" class="absolute right-3 top-3.5 text-indigo-600"></span>
+        } @else if (productSearchQuery) {
+          <button
+            type="button"
+            class="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+            (click)="productSearchQuery = ''; onSearchInputChange('')"
+          >
+            <span nz-icon nzType="close-circle"></span>
+          </button>
+        }
+      </div>
+
+      <!-- Bulk Selection Toolbar -->
+      <div class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs">
+        <div class="flex items-center gap-3">
+          <label
+            nz-checkbox
+            [nzChecked]="isAllFilteredSelected()"
+            (nzCheckedChange)="toggleSelectAllFiltered()"
+            [nzDisabled]="catalogProducts().length === 0"
+            class="font-semibold text-slate-700 m-0"
+          >
+            Select All Shown ({{ catalogProducts().length }})
+          </label>
+          @if (selectedProductNos().size > 0) {
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-800 text-[11px]">
+              {{ selectedProductNos().size }} Selected
+            </span>
+            <button
+              nz-button
+              nzType="link"
+              nzSize="small"
+              class="text-rose-600 hover:text-rose-700 text-xs p-0 h-auto"
+              (click)="clearSelection()"
+            >
+              Clear
+            </button>
+          }
+        </div>
+
+        <div class="flex items-center gap-2 text-slate-500">
+          @if (selectedCompanyNo) {
+            <span class="text-slate-400 italic">Filtered by manufacturer</span>
+          }
+          <span>Showing {{ catalogProducts().length }} results</span>
+        </div>
       </div>
 
       <!-- Catalog Products List -->
-      <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-lg">
-        @for (p of catalogProducts(); track p.product_no) {
-          <div
-            class="p-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer"
-            (click)="addProductToRequisition(p)"
-          >
-            <div class="flex flex-col flex-1 mr-4">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900 text-xs">{{ p.product_name }}</span>
-                @if (p.strength) {
-                  <span class="text-[11px] text-slate-500 font-mono">{{ p.strength }}</span>
-                }
-                <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-600">
-                  {{ p.company_name }}
+      <nz-spin [nzSpinning]="isSearchingCatalog()">
+        <div class="max-h-[380px] overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-lg bg-white">
+          @for (p of catalogProducts(); track p.product_no) {
+            <div
+              class="p-2.5 flex items-center justify-between hover:bg-indigo-50/40 transition-colors cursor-pointer select-none"
+              [class.bg-indigo-50/60]="isProductSelected(p.product_no)"
+              (click)="toggleProductSelection(p)"
+            >
+              <!-- Checkbox -->
+              <div class="mr-3 shrink-0" (click)="$event.stopPropagation()">
+                <label
+                  nz-checkbox
+                  [nzChecked]="isProductSelected(p.product_no)"
+                  (nzCheckedChange)="toggleProductSelection(p)"
+                ></label>
+              </div>
+
+              <!-- Product Info -->
+              <div class="flex flex-col flex-1 mr-4 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-bold text-slate-900 text-xs">{{ p.product_name }}</span>
+                  @if (p.strength) {
+                    <span class="text-[11px] text-slate-500 font-mono">{{ p.strength }}</span>
+                  }
+                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-600 font-medium">
+                    {{ p.company_name }}
+                  </span>
+                  @if (getItemBoxQtyInPlan(p.product_no) > 0) {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <span nz-icon nzType="check"></span> In Plan ({{ getItemBoxQtyInPlan(p.product_no) }} boxes)
+                    </span>
+                  }
+                </div>
+                <span class="text-[11px] text-slate-400 mt-0.5 truncate">
+                  Generic: <strong class="text-slate-600 font-medium">{{ p.generic_name || 'N/A' }}</strong> · {{ p.quantity_per_box }} pcs/box
                 </span>
               </div>
-              <span class="text-[11px] text-slate-400 mt-0.5">
-                Generic: {{ p.generic_name || 'N/A' }} · {{ p.quantity_per_box }} pcs/box
-              </span>
-            </div>
 
-            <div class="flex items-center gap-4 text-right">
-              <div>
-                <p class="text-[11px] text-slate-400 m-0">Stock</p>
-                <p
-                  class="font-mono text-xs font-semibold m-0"
-                  [class.text-rose-600]="(p.stock_qty || 0) <= p.min_stock_qty_pcs"
-                  [class.text-slate-800]="(p.stock_qty || 0) > p.min_stock_qty_pcs"
+              <!-- Stock & Pricing -->
+              <div class="flex items-center gap-4 text-right shrink-0">
+                <div class="w-20 text-center">
+                  <p class="text-[10px] text-slate-400 m-0 uppercase font-semibold">Stock</p>
+                  <span
+                    class="inline-block px-1.5 py-0.5 rounded font-mono text-xs font-semibold m-0"
+                    [ngClass]="{
+                      'bg-rose-100 text-rose-800 border border-rose-200': (p.stock_qty || 0) <= p.min_stock_qty_pcs,
+                      'bg-slate-100 text-slate-700': (p.stock_qty || 0) > p.min_stock_qty_pcs
+                    }"
+                  >
+                    {{ p.stock_qty || 0 }} pcs
+                  </span>
+                </div>
+
+                <div class="w-24 text-right">
+                  <p class="text-[10px] text-slate-400 m-0 uppercase font-semibold">BTP Unit</p>
+                  <p class="font-mono text-xs font-bold text-slate-800 m-0">
+                    ৳ {{ p.purchase_price_per_piece || 0 | number: '1.2-2' }}
+                  </p>
+                </div>
+
+                <button
+                  nz-button
+                  nzType="default"
+                  nzSize="small"
+                  class="rounded border-slate-300 hover:border-indigo-500 hover:text-indigo-600"
+                  (click)="addProductToRequisition(p, $event)"
+                  nz-tooltip
+                  nzTooltipTitle="Quick Add 1 Box directly to list"
                 >
-                  {{ p.stock_qty || 0 }} pcs
-                </p>
+                  <span nz-icon nzType="plus"></span> Add
+                </button>
               </div>
-              <div>
-                <p class="text-[11px] text-slate-400 m-0">BTP Price</p>
-                <p class="font-mono text-xs font-bold text-slate-800 m-0">
-                  ৳ {{ p.purchase_price_per_piece || 0 | number: '1.2-2' }}
-                </p>
-              </div>
-              <button
-                nz-button
-                nzType="primary"
-                nzSize="small"
-                class="rounded"
-                (click)="addProductToRequisition(p); $event.stopPropagation()"
-              >
-                <span nz-icon nzType="plus"></span> Add
-              </button>
             </div>
-          </div>
-        } @empty {
-          <div class="p-8 text-center text-slate-400 text-xs">
-            No matching products found in catalog.
-          </div>
-        }
-      </div>
+          } @empty {
+            <div class="p-10 text-center text-slate-400 text-xs">
+              <span nz-icon nzType="search" class="text-3xl text-slate-300 mb-2"></span>
+              <p class="font-medium text-slate-600 text-sm m-0">No medicines found</p>
+              <p class="text-xs text-slate-400 mt-1 m-0">
+                Try searching with a different brand name, generic formulation, or barcode.
+              </p>
+            </div>
+          }
+        </div>
+      </nz-spin>
     </div>
   </ng-container>
+
+  <ng-template #productModalFooter>
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-2 text-xs">
+        @if (selectedProductNos().size > 0) {
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+            <span nz-icon nzType="check-square" class="text-indigo-600"></span>
+            {{ selectedProductNos().size }} medicines selected
+          </span>
+          <button nz-button nzType="link" nzSize="small" class="text-slate-500 text-xs p-0" (click)="clearSelection()">
+            Deselect All
+          </button>
+        } @else {
+          <span class="text-slate-400">
+            Select multiple checkboxes above to populate in bulk.
+          </span>
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button nz-button nzType="default" class="rounded" (click)="isProductSelectorVisible = false">
+          Close
+        </button>
+        <button
+          nz-button
+          nzType="primary"
+          class="rounded font-semibold bg-indigo-600 hover:bg-indigo-500 border-indigo-600"
+          [disabled]="selectedProductNos().size === 0"
+          (click)="populateSelectedProducts()"
+        >
+          <span nz-icon nzType="plus-circle"></span>
+          Populate Selected ({{ selectedProductNos().size }}) Medicines
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </nz-modal>
 
 <!-- Success Modal after save -->
