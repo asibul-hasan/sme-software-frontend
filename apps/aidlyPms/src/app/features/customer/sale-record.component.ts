@@ -224,34 +224,6 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
     this.router.navigate(['/customer/returns'], { queryParams: { invoice: s.inv } });
   }
 
-  deleteInvoice(s: SaleRecordRow): void {
-    this.modal.confirmAction(
-      'Void Sale Invoice?',
-      `Are you sure you want to void and reverse sales invoice "${s.inv}" for ${s.customer}? Sold medicines will be restored back into inventory.`,
-      'Void Invoice',
-      true
-    ).subscribe(confirmed => {
-      if (confirmed) {
-        this.posSaleService.voidSale(s.sale_invoice_no).subscribe({
-          next: (res) => {
-            if (res.success) {
-              this.sales.update(list => list.filter(item => item.inv !== s.inv));
-              this.msg.success(`Sales invoice "${s.inv}" voided and stock restored successfully`);
-              if (this.selectedSale?.inv === s.inv) {
-                this.isDetailsOpen = false;
-              }
-            } else {
-              this.msg.error(res.message || 'Failed to void invoice');
-            }
-          },
-          error: (err) => {
-            this.msg.error(err?.error?.message || 'Failed to void invoice');
-          }
-        });
-      }
-    });
-  }
-
   exportSalesCsv(): void {
     const list = this.filteredSales();
     if (!list.length) {
