@@ -925,40 +925,106 @@ export class PosTerminalComponent implements OnInit {
     }
   }
 
-  openAddCustomerModal(): void {
+  normalizePhone(phone: string): string {
+    if (!phone) return '';
+    let p = phone.trim().replace(/[\s\-\(\)]/g, '');
+    if (p.startsWith('+88')) p = p.substring(3);
+    if (p.startsWith('88')) p = p.substring(2);
+    return p;
+  }
+
+  openAddCustomerModal(initialPhone: string = ''): void {
     this.customerModalMode = 'create';
-    this.customerForm = { id: crypto.randomUUID(), name: '', phone: '', customer_type: 1, address: '', current_due: 0 };
+    this.customerForm = { id: crypto.randomUUID(), name: '', phone: initialPhone, customer_type: 1, address: '', current_due: 0 };
     this.isCustomerModalVisible = true;
+    setTimeout(() => {
+      const phoneInput = document.getElementById('customer-modal-phone-input');
+      phoneInput?.focus();
+    }, 150);
   }
 
   saveCustomer(): void {
-    if (!this.customerForm.name.trim()) {
-      this.msg.warning('Customer name is required');
+    const rawPhone = this.customerForm.phone?.trim() || '';
+    const cleanPhone = this.normalizePhone(rawPhone);
+
+    if (!cleanPhone) {
+      this.msg.warning('Customer mobile phone number is required.');
       return;
     }
+
+    // Bangladeshi mobile number format check: 11 digits, starts with 01[3-9]
+    const phonePattern = /^01[3-9]\d{8}$/;
+    if (!phonePattern.test(cleanPhone)) {
+      this.msg.warning('Please enter a valid 11-digit Bangladeshi mobile number (e.g., 01712345678).');
+      return;
+    }
+
+    // Check for existing customer duplicate phone
+    const existing = this.customers.find(c => c.phone && this.normalizePhone(c.phone) === cleanPhone && c.id !== this.customerForm.id);
+    if (existing) {
+      this.msg.warning(`Customer with mobile ${cleanPhone} already exists: "${existing.name}". Selected existing customer.`);
+      this.selectedCustomer.set(existing.id);
+      this.isCustomerModalVisible = false;
+      return;
+    }
+
+    const trimmedName = this.customerForm.name?.trim() || '';
+
+    // If name is not provided, prompt confirmation to save mobile number as customer name
+    if (!trimmedName) {
+      this.modal.confirmAction(
+        'Save Customer with Mobile Number?',
+        `Customer name is empty. Do you want to save this customer with the mobile number "${cleanPhone}" as the customer name?`,
+        'Yes, Save as Name',
+        false
+      ).subscribe(confirmed => {
+        if (confirmed) {
+          this.customerForm.name = cleanPhone;
+          this.executeSaveCustomer(cleanPhone);
+        } else {
+          setTimeout(() => {
+            const nameInput = document.getElementById('customer-modal-name-input');
+            nameInput?.focus();
+          }, 150);
+        }
+      });
+      return;
+    }
+
+    this.executeSaveCustomer(cleanPhone);
+  }
+
+  private executeSaveCustomer(cleanPhone: string): void {
     const customerPayload = {
-      name: this.customerForm.name.trim(),
-      phone: this.customerForm.phone?.trim() || '01700000000',
+      name: this.customerForm.name.trim() || cleanPhone,
+      phone: cleanPhone,
       customer_type: this.customerForm.customer_type || 1,
-      address: this.customerForm.address || '',
+      address: this.customerForm.address?.trim() || '',
       current_due: this.customerForm.current_due || 0,
       has_due: (this.customerForm.current_due || 0) > 0,
     };
 
-    this.customerService.createCustomer(customerPayload).subscribe(res => {
-      if (res.data) {
-        const newCust = {
-          id: String(res.data.customer_no),
-          name: res.data.name,
-          phone: res.data.phone,
-          customer_type: res.data.customer_type,
-          address: res.data.address || '',
-          current_due: res.data.current_due || 0,
-        };
-        this.customers = [...this.customers, newCust];
-        this.selectedCustomer.set(newCust.id);
-        this.isCustomerModalVisible = false;
-        this.msg.success(`Customer "${newCust.name}" registered!`);
+    this.customerService.createCustomer(customerPayload).subscribe({
+      next: (res) => {
+        if (res.data) {
+          const newCust = {
+            id: String(res.data.customer_no),
+            name: res.data.name,
+            phone: res.data.phone,
+            customer_type: res.data.customer_type,
+            address: res.data.address || '',
+            current_due: res.data.current_due || 0,
+          };
+          this.customers = [...this.customers, newCust];
+          this.selectedCustomer.set(newCust.id);
+          this.isCustomerModalVisible = false;
+          this.msg.success(`Customer "${newCust.name}" registered successfully!`);
+        } else if (res.message) {
+          this.msg.error(res.message);
+        }
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to register customer.');
       }
     });
   }
