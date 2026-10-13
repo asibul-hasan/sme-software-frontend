@@ -19,6 +19,15 @@
         <span nz-icon nzType="arrow-left"></span> Back to Catalog
       </a>
       <button
+        type="button"
+        nz-button
+        nzType="default"
+        (click)="openImportModal()"
+        class="rounded-md inline-flex items-center gap-1.5 text-xs border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+      >
+        <span nz-icon nzType="export"></span> Import / Export
+      </button>
+      <button
         nz-button
         nzType="primary"
         (click)="submitForm()"
@@ -459,3 +468,18 @@
     </div>
   </ng-container>
 </nz-modal>
+
+<!-- Dynamic Excel Import & Lookup Modal -->
+<app-dynamic-import-modal
+  [(isVisible)]="isImportModalVisible"
+  title="Bulk Import Medicines & Formulations"
+  subtitle="Download format with interactive dropdown menus, fill Excel data, and upload for automated import"
+  templateFileName="medicine_import_template.xlsx"
+  [columns]="importColumns"
+  [lookups]="importLookups"
+  [sampleData]="importSampleData"
+  [requiredKeys]="['product_name']"
+  [importFn]="importProductsHandler"
+  (importSuccess)="onImportSuccess($event)"
+></app-dynamic-import-modal>
+

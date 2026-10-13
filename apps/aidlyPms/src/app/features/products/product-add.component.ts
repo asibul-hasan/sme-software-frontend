@@ -11,6 +11,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { DynamicImportModalComponent } from '../../shared/components/dynamic-import-modal/dynamic-import-modal.component';
+import { TemplateColumnDef } from '../../shared/services/excel-template.service';
 import {
   MEDICINE_TYPE_OPTIONS,
   UNIT_TYPE_OPTIONS,
@@ -36,6 +38,7 @@ import { ProdCompany, ProdGeneric, ProdProduct } from '../../core/models';
     NzCheckboxModule,
     NzModalModule,
     PageHeaderComponent,
+    DynamicImportModalComponent,
   ],
   templateUrl: './product-add.component.html',
 })
@@ -94,6 +97,260 @@ export class ProductAddComponent implements OnInit {
   // Rak Modal
   isAddRakModalVisible = false;
   newRakName = '';
+
+  // Dynamic Excel Import Modal
+  isImportModalVisible = false;
+
+  importColumns: TemplateColumnDef[] = [
+    {
+      key: 'product_name',
+      header: 'Medicine Name',
+      required: true,
+      width: 26,
+      sample: 'Napa Extra',
+      description: 'Brand or trade name of the pharmaceutical item (Required)',
+    },
+    {
+      key: 'strength',
+      header: 'Strength',
+      width: 15,
+      sample: '500mg+65mg',
+      description: 'Potency / dosage strength (e.g. 500mg, 20mg, 10mg/5ml)',
+    },
+    {
+      key: 'volume',
+      header: 'Volume / Pack',
+      width: 16,
+      sample: "10's Strip",
+      description: 'Pack size or liquid volume (e.g. 100ml, 10 strips)',
+    },
+    {
+      key: 'medicine_form',
+      header: 'Medicine Form',
+      required: true,
+      width: 18,
+      sample: 'Tablet',
+      dropdownOptions: [
+        'Tablet',
+        'Capsule',
+        'Syrup',
+        'Suspension',
+        'Injection',
+        'Drop',
+        'Ointment',
+        'Cream',
+        'Gel',
+        'Inhaler',
+        'Suppository',
+      ],
+      description: 'Dosage formulation from dropdown',
+    },
+    {
+      key: 'company_name',
+      header: 'Manufacturer Company',
+      required: true,
+      width: 30,
+      sample: 'Beximco Pharmaceuticals Ltd.',
+      lookupKey: 'companies',
+      description: 'Select existing manufacturer or type new to auto-create',
+    },
+    {
+      key: 'generic_name',
+      header: 'Generic Formulation',
+      width: 28,
+      sample: 'Paracetamol + Caffeine',
+      lookupKey: 'generics',
+      description: 'Active ingredient or formulation from dropdown or type new',
+    },
+    {
+      key: 'unit_type_name',
+      header: 'Unit Type',
+      required: true,
+      width: 14,
+      sample: 'STRIP',
+      dropdownOptions: ['STRIP', 'BOX', 'PIECE', 'BOTTLE', 'VIAL', 'AMPULE', 'TUBE', 'SACHET'],
+      description: 'Stock keeping dispensing unit',
+    },
+    {
+      key: 'quantity_per_box',
+      header: 'Qty Per Box',
+      width: 14,
+      sample: 10,
+      description: 'Number of units inside a master box/pack',
+    },
+    {
+      key: 'cost_per_box',
+      header: 'Cost Per Box (৳)',
+      width: 18,
+      sample: 250.0,
+      description: 'Purchase cost per box',
+    },
+    {
+      key: 'sale_price_per_box',
+      header: 'MRP Per Box (৳)',
+      width: 18,
+      sample: 300.0,
+      description: 'Maximum retail price per box',
+    },
+    {
+      key: 'purchase_price_per_piece',
+      header: 'Purchase Price (Piece)',
+      width: 22,
+      sample: 25.0,
+      description: 'Cost per piece/strip (auto-calculated if blank)',
+    },
+    {
+      key: 'sale_price_per_piece',
+      header: 'Sale Price (Piece)',
+      width: 20,
+      sample: 30.0,
+      description: 'Selling price per piece/strip (auto-calculated if blank)',
+    },
+    {
+      key: 'wholesale_price_per_box',
+      header: 'Wholesale Price / Box',
+      width: 22,
+      sample: 240.0,
+      description: 'Trade/wholesale price per box',
+    },
+    {
+      key: 'country_of_origin',
+      header: 'Country of Origin',
+      width: 18,
+      sample: 'Bangladesh',
+    },
+    {
+      key: 'barcode_value',
+      header: 'Barcode / SKU',
+      width: 18,
+      sample: '894010001234',
+      description: 'Leave blank to auto-generate',
+    },
+    {
+      key: 'rak_number',
+      header: 'Rack / Shelf No',
+      width: 20,
+      sample: 'A-01 (General OTC)',
+      dropdownOptions: [...DEFAULT_RAKS],
+    },
+    {
+      key: 'min_stock_qty_pcs',
+      header: 'Min Stock Alert (Pcs)',
+      width: 20,
+      sample: 50,
+      description: 'Low stock re-order alert threshold',
+    },
+    {
+      key: 'is_prescription_required',
+      header: 'Prescription Req',
+      width: 18,
+      sample: 'No',
+      dropdownOptions: ['Yes', 'No'],
+    },
+    {
+      key: 'is_narcotic',
+      header: 'Narcotic Item',
+      width: 16,
+      sample: 'No',
+      dropdownOptions: ['Yes', 'No'],
+    },
+    {
+      key: 'opening_stock_pcs',
+      header: 'Opening Stock (Pcs)',
+      width: 20,
+      sample: 100,
+      description: 'Initial stock on hand to create opening batch',
+    },
+  ];
+
+  importSampleData = [
+    {
+      product_name: 'Napa Extra',
+      strength: '500mg+65mg',
+      volume: "10's Strip",
+      medicine_form: 'Tablet',
+      company_name: 'Beximco Pharmaceuticals Ltd.',
+      generic_name: 'Paracetamol + Caffeine',
+      unit_type_name: 'STRIP',
+      quantity_per_box: 10,
+      cost_per_box: 250.0,
+      sale_price_per_box: 300.0,
+      purchase_price_per_piece: 25.0,
+      sale_price_per_piece: 30.0,
+      wholesale_price_per_box: 240.0,
+      country_of_origin: 'Bangladesh',
+      barcode_value: '894010001234',
+      rak_number: 'A-01 (General OTC)',
+      min_stock_qty_pcs: 50,
+      is_prescription_required: 'No',
+      is_narcotic: 'No',
+      opening_stock_pcs: 100,
+    },
+    {
+      product_name: 'Seclo 20mg',
+      strength: '20mg',
+      volume: "10's Alu-Alu",
+      medicine_form: 'Capsule',
+      company_name: 'Square Pharmaceuticals Ltd.',
+      generic_name: 'Omeprazole',
+      unit_type_name: 'STRIP',
+      quantity_per_box: 6,
+      cost_per_box: 360.0,
+      sale_price_per_box: 420.0,
+      purchase_price_per_piece: 60.0,
+      sale_price_per_piece: 70.0,
+      wholesale_price_per_box: 350.0,
+      country_of_origin: 'Bangladesh',
+      barcode_value: '894010001235',
+      rak_number: 'B-02 (Gastric)',
+      min_stock_qty_pcs: 40,
+      is_prescription_required: 'No',
+      is_narcotic: 'No',
+      opening_stock_pcs: 60,
+    },
+  ];
+
+  get importLookups(): Record<string, string[]> {
+    return {
+      companies: this.companies && this.companies.length > 0 ? this.companies : [...DEFAULT_COMPANIES],
+      generics: this.generics && this.generics.length > 0 ? this.generics : [...DEFAULT_GENERICS],
+    };
+  }
+
+  importProductsHandler = (rows: any[]) => {
+    const payload = rows.map((r) => ({
+      product_name: r.product_name,
+      strength: r.strength,
+      volume: r.volume,
+      medicine_form: r.medicine_form,
+      company_name: r.company_name,
+      generic_name: r.generic_name,
+      unit_type_name: r.unit_type_name,
+      quantity_per_box: Number(r.quantity_per_box) || 1,
+      cost_per_box: Number(r.cost_per_box) || 0,
+      sale_price_per_box: Number(r.sale_price_per_box) || 0,
+      purchase_price_per_piece: Number(r.purchase_price_per_piece) || 0,
+      sale_price_per_piece: Number(r.sale_price_per_piece) || 0,
+      wholesale_price_per_box: Number(r.wholesale_price_per_box) || 0,
+      country_of_origin: r.country_of_origin || 'Bangladesh',
+      barcode_value: r.barcode_value,
+      rak_number: r.rak_number,
+      min_stock_qty_pcs: Number(r.min_stock_qty_pcs) || 10,
+      is_prescription_required: String(r.is_prescription_required).toLowerCase() === 'yes',
+      is_narcotic: String(r.is_narcotic).toLowerCase() === 'yes',
+      opening_stock_pcs: Number(r.opening_stock_pcs) || 0,
+    }));
+    return this.productService.importProducts(payload);
+  };
+
+  openImportModal(): void {
+    this.isImportModalVisible = true;
+  }
+
+  onImportSuccess(result: any): void {
+    this.loadDropdownData();
+  }
+
 
   ngOnInit(): void {
     this.loadDropdownData();

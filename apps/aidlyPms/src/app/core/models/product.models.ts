@@ -159,3 +159,47 @@ export interface LowStockProduct {
   sale_qty_6mth_pcs: number;
   estimated_total_cost: number;
 }
+
+export interface ProductImportItem {
+  product_name: string;
+  strength?: string;
+  volume?: string;
+  company_name?: string;
+  generic_name?: string;
+  medicine_form?: string;
+  medicine_type?: number;
+  unit_type_name?: string;
+  unit_type?: number;
+  quantity_per_box?: number;
+  cost_per_box?: number;
+  sale_price_per_box?: number;
+  purchase_price_per_piece?: number;
+  sale_price_per_piece?: number;
+  wholesale_price_per_box?: number;
+  wholesale_price_per_piece?: number;
+  country_of_origin?: string;
+  barcode_value?: string;
+  rak_number?: string;
+  min_stock_qty_pcs?: number;
+  is_prescription_required?: boolean;
+  is_narcotic?: boolean;
+  opening_stock_pcs?: number;
+}
+
+export interface ProductImportResult {
+  total_rows: number;
+  inserted: number;
+  updated: number;
+  new_companies_created: number;
+  new_generics_created: number;
+  errors: string[];
+}
+
+export interface TemplateMetadata {
+  companies: string[];
+  generics: string[];
+  dosage_forms: string[];
+  unit_types: string[];
+  sample_data: Record<string, unknown>;
+}
+

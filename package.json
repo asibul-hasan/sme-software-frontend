@@ -38,6 +38,7 @@
     "chart.js": "^4.5.1",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.19",
+    "exceljs": "^4.4.0",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "lodash-es": "^4.17.23",

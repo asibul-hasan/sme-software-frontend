@@ -8,6 +8,9 @@ import {
   ProdGeneric,
   ProdProductBatch,
   ProdProductRequisition,
+  ProductImportItem,
+  ProductImportResult,
+  TemplateMetadata,
 } from '../models/product.models';
 
 @Injectable({
@@ -130,5 +133,14 @@ export class ProductService {
   adjustProductStock(productNo: number, payload: { target_stock_pcs: number; reason?: string; remarks?: string }): Observable<ApiResponse<any>> {
     return this.api.post<any>(`prod/products/${productNo}/adjust-stock`, payload);
   }
+
+  getTemplateMetadata(): Observable<ApiResponse<TemplateMetadata>> {
+    return this.api.get<TemplateMetadata>('prod/products/template-metadata');
+  }
+
+  importProducts(items: ProductImportItem[]): Observable<ApiResponse<ProductImportResult>> {
+    return this.api.post<ProductImportResult>('prod/products/import', { items });
+  }
 }
+
 
