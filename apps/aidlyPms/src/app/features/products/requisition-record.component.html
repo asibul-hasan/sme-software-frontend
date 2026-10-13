@@ -79,6 +79,7 @@
                 <span
                   class="px-2 py-0.5 rounded text-[11px] font-semibold"
                   [ngClass]="{
+                    'bg-blue-50 text-blue-700 border border-blue-200': r.status === 'Fulfilled',
                     'bg-emerald-50 text-emerald-700 border border-emerald-200': r.status === 'Approved',
                     'bg-amber-50 text-amber-700 border border-amber-200': r.status === 'Pending',
                     'bg-rose-50 text-rose-700 border border-rose-200': r.status === 'Cancelled'
@@ -107,7 +108,7 @@
                   >
                     <span nz-icon nzType="edit"></span>
                   </a>
-                  @if (r.status !== 'Approved' && r.status !== 'Cancelled') {
+                  @if (r.status !== 'Approved' && r.status !== 'Cancelled' && r.status !== 'Fulfilled') {
                     <button
                       type="button"
                       (click)="approveRecord(r)"
@@ -133,7 +134,7 @@
                     nz-tooltip
                     nzTooltipTitle="Cancel Requisition"
                     class="btn-tbl-action btn-tbl-delete"
-                    [disabled]="r.status === 'Cancelled'"
+                    [disabled]="r.status === 'Cancelled' || r.status === 'Fulfilled'"
                   >
                     <span nz-icon nzType="delete"></span>
                   </button>
@@ -192,6 +193,7 @@
           <div>
             <span class="text-slate-400">Status:</span>
             <p class="font-bold m-0" [ngClass]="{
+              'text-blue-700': activeRecord.status === 'Fulfilled',
               'text-emerald-700': activeRecord.status === 'Approved',
               'text-amber-700': activeRecord.status === 'Pending',
               'text-rose-700': activeRecord.status === 'Cancelled'
@@ -236,7 +238,7 @@
   <ng-template #detailsFooter>
     <div class="flex items-center justify-between w-full">
       <div class="flex items-center gap-2">
-        @if (activeRecord && activeRecord.status !== 'Approved' && activeRecord.status !== 'Cancelled') {
+        @if (activeRecord && activeRecord.status !== 'Approved' && activeRecord.status !== 'Cancelled' && activeRecord.status !== 'Fulfilled') {
           <button
             nz-button
             nzType="primary"

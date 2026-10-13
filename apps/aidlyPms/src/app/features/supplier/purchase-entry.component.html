@@ -49,22 +49,112 @@
     </div>
   </app-page-header>
 
+  <!-- MASTER HEADER SECTION: Supplier, Approved Requisition, Invoice #, Date, Inventory Type -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3 shrink-0">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+      <!-- Supplier Selector -->
+      <div class="md:col-span-4">
+        <label class="text-xs font-semibold text-slate-700 block mb-1">
+          Supplier / Vendor <span class="text-rose-500">*</span>
+        </label>
+        <div class="flex gap-1.5">
+          <nz-select
+            nzShowSearch
+            nzPlaceHolder="Select supplier..."
+            [(ngModel)]="selectedSupplierId"
+            class="flex-1"
+          >
+            @for (sup of suppliers(); track sup.id) {
+              <nz-option [nzValue]="sup.id" [nzLabel]="sup.name + (sup.phone ? ' (' + sup.phone + ')' : '')"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            (click)="openQuickAddSupplier()"
+            nz-tooltip
+            nzTooltipTitle="Quick Add Supplier"
+            class="btn-quick-add"
+          >
+            <span nz-icon nzType="plus"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Approved Requisition Selector (Bridge REQ -> PUR) -->
+      <div class="md:col-span-3">
+        <label class="text-xs font-semibold text-slate-700 block mb-1">
+          Load Approved Requisition
+          @if (isLoadingRequisition) {
+            <span nz-icon nzType="loading" class="text-indigo-600 ml-1"></span>
+          }
+        </label>
+        <nz-select
+          nzShowSearch
+          nzAllowClear
+          nzPlaceHolder="Select approved requisition..."
+          [ngModel]="selectedRequisitionNo"
+          (ngModelChange)="onRequisitionSelected($event)"
+          class="w-full"
+        >
+          @for (req of approvedRequisitions(); track req.requisition_no) {
+            <nz-option
+              [nzValue]="req.requisition_no"
+              [nzLabel]="req.requisition_code + ' (' + req.total_selected_items + ' items - ৳ ' + (req.total_cost | number: '1.0-0') + ')'"
+            ></nz-option>
+          }
+        </nz-select>
+      </div>
+
+      <!-- Supplier Invoice / Challan Number -->
+      <div class="md:col-span-2">
+        <label class="text-xs font-semibold text-slate-700 block mb-1">Vendor Challan / Inv #</label>
+        <input
+          type="text"
+          nz-input
+          placeholder="e.g. CH-2026-99"
+          [(ngModel)]="invoiceNumber"
+          class="rounded-md font-mono text-xs"
+        />
+      </div>
+
+      <!-- Purchase Date -->
+      <div class="md:col-span-2">
+        <label class="text-xs font-semibold text-slate-700 block mb-1">Intake Date</label>
+        <input
+          type="date"
+          nz-input
+          [(ngModel)]="purchaseDate"
+          class="rounded-md text-xs"
+        />
+      </div>
+
+      <!-- Inventory Type Selector -->
+      <div class="md:col-span-1">
+        <label class="text-xs font-semibold text-slate-700 block mb-1">Type</label>
+        <nz-select [(ngModel)]="inventoryType" class="w-full">
+          @for (t of inventoryTypeOptions; track t.value) {
+            <nz-option [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
+          }
+        </nz-select>
+      </div>
+    </div>
+  </div>
+
   <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0">
-    <!-- LEFT PANEL: Entry Form + Purchase Lines (8 cols) -->
-    <div class="lg:col-span-8 flex flex-col gap-3 min-h-0">
+    <!-- LEFT PANEL: Quick Add Bar + Receiving Grid (8 cols) -->
+    <div class="lg:col-span-8 flex flex-col gap-2.5 min-h-0">
       
-      <!-- Product Entry Card -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 shrink-0">
-        <!-- Row 1: Product, Box, BTP+VAT, Sale Price -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-2.5">
-          <div class="md:col-span-6">
+      <!-- Quick Product Add Card -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3 shrink-0">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end">
+          <div class="md:col-span-4">
             <label class="text-xs font-semibold text-slate-700 block mb-1">
-              Product <span class="text-rose-500">*</span>
+              Add Medicine <span class="text-rose-500">*</span>
             </label>
             <div class="flex gap-1.5">
               <nz-select
                 nzShowSearch
-                nzPlaceHolder="Please select product"
+                nzPlaceHolder="Search medicine name or generic..."
                 [(ngModel)]="currentLine.product"
                 (ngModelChange)="onProductSelected($event)"
                 (nzOnSearch)="onProductSearch($event)"
@@ -89,133 +179,80 @@
             </div>
           </div>
 
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              Box <span class="text-rose-500">*</span>
-            </label>
+          <div class="md:col-span-1">
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Box</label>
             <input
               type="number"
               nz-input
               placeholder="1"
               [(ngModel)]="currentLine.box"
               (ngModelChange)="onBoxOrQtyChange()"
-              class="rounded-md"
+              class="rounded-md font-mono text-center text-xs"
               (keyup.enter)="addLine()"
             />
           </div>
 
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              BTP + VAT (৳) <span class="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0.00"
-              [(ngModel)]="currentLine.btpVat"
-              class="rounded-md"
-              (keyup.enter)="addLine()"
-            />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Sale Price (৳)</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0.00"
-              [(ngModel)]="currentLine.salePrice"
-              class="rounded-md"
-              (keyup.enter)="addLine()"
-            />
-          </div>
-        </div>
-
-        <!-- Row 2: QTY in Box, Total QTY (pcs), Expiry Date, Barcode Value, Add Button -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              QTY In Box <span class="text-rose-500">*</span>
-            </label>
+          <div class="md:col-span-1">
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Pcs/Box</label>
             <input
               type="number"
               nz-input
               placeholder="10"
               [(ngModel)]="currentLine.qtyBox"
               (ngModelChange)="onBoxOrQtyChange()"
-              class="rounded-md"
+              class="rounded-md font-mono text-center text-xs"
             />
           </div>
 
           <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              Total QTY: <span class="text-slate-400 font-normal">(pcs)</span> <span class="text-rose-500">*</span>
-            </label>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">BTP+VAT (৳)</label>
             <input
               type="number"
               nz-input
-              placeholder="10"
-              [(ngModel)]="currentLine.totalQtyPcs"
-              class="rounded-md font-mono"
-            />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Free</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0"
-              [(ngModel)]="currentLine.freeQty"
-              class="rounded-md"
-            />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Expiry Date</label>
-            <input
-              type="date"
-              nz-input
-              [(ngModel)]="currentLine.expiryDate"
-              class="rounded-md"
-            />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Barcode Value</label>
-            <input
-              type="text"
-              nz-input
-              placeholder="Scan / code"
-              [(ngModel)]="currentLine.barcode"
-              class="rounded-md"
+              placeholder="0.00"
+              [(ngModel)]="currentLine.btpVat"
+              class="rounded-md font-mono text-right text-xs"
               (keyup.enter)="addLine()"
             />
           </div>
 
           <div class="md:col-span-2">
-            <label class="text-xs block mb-1 text-slate-500 truncate">
-              <span class="text-rose-600 font-bold">Press Enter</span> / Click:
-            </label>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Batch / Barcode</label>
+            <input
+              type="text"
+              nz-input
+              placeholder="Batch #"
+              [(ngModel)]="currentLine.barcode"
+              class="rounded-md font-mono text-xs"
+              (keyup.enter)="addLine()"
+            />
+          </div>
+
+          <div class="md:col-span-2">
             <button
               type="button"
               nz-button
-              nzType="primary"
               (click)="addLine()"
-              class="w-full rounded-md font-medium"
+              class="w-full btn-indigo rounded-md font-semibold flex items-center justify-center gap-1.5 h-[32px] cursor-pointer"
             >
-              Add
+              <span nz-icon nzType="plus-circle"></span>
+              <span>Add Line</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Purchase Lines Table Card -->
+      <!-- Receiving Table Card -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div class="px-4 py-2.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-          <h3 class="font-semibold text-slate-800 text-xs uppercase tracking-wider">Purchase Items</h3>
+        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+          <div class="flex items-center gap-2">
+            <h3 class="font-semibold text-slate-800 text-xs uppercase tracking-wider">Receiving Grid</h3>
+            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+              Editable inline
+            </span>
+          </div>
           <span class="text-xs text-slate-500 font-mono">
-            {{ lines().length }} item(s) in batch
+            {{ lines().length }} item(s) ({{ totalQuantityPcs() }} pcs)
           </span>
         </div>
 
@@ -223,56 +260,84 @@
           <table class="w-full text-sm text-left border-collapse">
             <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 sticky top-0 z-10">
               <tr>
-                <th class="p-2.5">Details</th>
-                <th class="p-2.5 text-center">Box</th>
-                <th class="p-2.5 text-center">QTY In Box</th>
-                <th class="p-2.5 text-center">Total QTY</th>
-                <th class="p-2.5 text-right">BTP + Vat</th>
-                <th class="p-2.5 text-right">Sale Price</th>
-                <th class="p-2.5 text-right">Total Price</th>
-                <th class="p-2.5 text-center">Free</th>
-                <th class="p-2.5 text-center">Exp Date</th>
-                <th class="p-2.5 text-center w-16">Action</th>
+                <th class="p-2">Medicine Details</th>
+                <th class="p-2 text-center w-28">Batch No</th>
+                <th class="p-2 text-center w-28">Expiry</th>
+                <th class="p-2 text-center w-20">Box</th>
+                <th class="p-2 text-center w-20">Pcs/Box</th>
+                <th class="p-2 text-center w-24">Total Pcs</th>
+                <th class="p-2 text-right w-24">BTP (৳)</th>
+                <th class="p-2 text-right w-28">Total (৳)</th>
+                <th class="p-2 text-center w-12">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
               @for (l of lines(); track l.id; let idx = $index) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
-                  <td class="p-2.5 font-semibold text-slate-900 text-xs">
+                  <td class="p-2 font-semibold text-slate-900 text-xs">
                     {{ l.product }}
-                    <div class="flex items-center gap-2 mt-0.5">
-                      @if (l.barcode) {
-                        <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono">
-                          #{{ l.barcode }}
-                        </span>
-                      }
-                      @if (l.expiryDate) {
-                        <span class="text-[11px] text-slate-400 font-normal">
-                          Exp: {{ l.expiryDate }}
-                        </span>
-                      }
-                    </div>
                   </td>
-                  <td class="p-2.5 text-center font-mono text-xs">{{ l.box }}</td>
-                  <td class="p-2.5 text-center font-mono text-xs">{{ l.qtyBox }}</td>
-                  <td class="p-2.5 text-center font-mono text-xs font-bold text-slate-700">{{ l.totalQtyPcs }} pcs</td>
-                  <td class="p-2.5 text-right font-mono text-xs">৳ {{ l.btpVat.toFixed(2) }}</td>
-                  <td class="p-2.5 text-right font-mono text-xs">৳ {{ l.salePrice.toFixed(2) }}</td>
-                  <td class="p-2.5 text-right font-mono text-xs font-bold theme-total-text">
-                    ৳ {{ l.total.toLocaleString() }}
+                  <td class="p-1.5 text-center">
+                    <input
+                      type="text"
+                      nz-input
+                      nzSize="small"
+                      [(ngModel)]="l.barcode"
+                      placeholder="Batch #"
+                      class="text-xs font-mono text-center rounded"
+                    />
                   </td>
-                  <td class="p-2.5 text-center font-mono text-xs text-slate-500">
-                    {{ l.freeQty || 0 }}
+                  <td class="p-1.5 text-center">
+                    <input
+                      type="date"
+                      nz-input
+                      nzSize="small"
+                      [(ngModel)]="l.expiryDate"
+                      class="text-xs rounded text-center"
+                    />
                   </td>
-                  <td class="p-2.5 text-center font-mono text-xs text-slate-500">
-                    {{ l.expiryDate || '-' }}
+                  <td class="p-1.5 text-center">
+                    <input
+                      type="number"
+                      nz-input
+                      nzSize="small"
+                      [(ngModel)]="l.box"
+                      (ngModelChange)="updateLine(l)"
+                      class="text-xs font-mono text-center rounded font-semibold text-indigo-700"
+                    />
                   </td>
-                  <td class="p-2.5 text-center">
+                  <td class="p-1.5 text-center">
+                    <input
+                      type="number"
+                      nz-input
+                      nzSize="small"
+                      [(ngModel)]="l.qtyBox"
+                      (ngModelChange)="updateLine(l)"
+                      class="text-xs font-mono text-center rounded text-slate-500"
+                    />
+                  </td>
+                  <td class="p-2 text-center font-mono text-xs font-bold text-slate-700">
+                    {{ l.totalQtyPcs }} pcs
+                  </td>
+                  <td class="p-1.5 text-right">
+                    <input
+                      type="number"
+                      nz-input
+                      nzSize="small"
+                      [(ngModel)]="l.btpVat"
+                      (ngModelChange)="updateLine(l)"
+                      class="text-xs font-mono text-right rounded"
+                    />
+                  </td>
+                  <td class="p-2 text-right font-mono text-xs font-bold text-slate-900">
+                    ৳ {{ l.total | number: '1.2-2' }}
+                  </td>
+                  <td class="p-2 text-center">
                     <button
                       type="button"
                       (click)="removeLine(idx)"
                       nz-tooltip
-                      nzTooltipTitle="Remove Line Item"
+                      nzTooltipTitle="Remove Item"
                       class="btn-tbl-action btn-tbl-delete inline-flex"
                     >
                       <span nz-icon nzType="delete"></span>
@@ -281,8 +346,8 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="10" class="p-8 text-center text-slate-400 text-xs">
-                    No product lines entered yet. Fill the inputs above and click "Add".
+                  <td colspan="9" class="p-8 text-center text-slate-400 text-xs">
+                    No items in purchase intake. Select an approved requisition or add medicines above.
                   </td>
                 </tr>
               }
@@ -290,174 +355,138 @@
           </table>
         </div>
 
-        <!-- Sticky Bottom Footer -->
+        <!-- Sticky Table Bottom Footer -->
         <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2 flex items-center justify-between text-xs text-slate-600">
           <div class="flex items-center gap-3">
             <span>Items: <strong class="text-slate-900 font-mono font-semibold">{{ lines().length }}</strong></span>
             <span class="text-slate-300">|</span>
-            <span>Total Quantity: <strong class="text-slate-900 font-mono font-semibold">{{ totalQuantityPcs() }} pcs</strong></span>
+            <span>Quantity: <strong class="text-slate-900 font-mono font-semibold">{{ totalQuantityPcs() }} pcs</strong></span>
             <span class="text-slate-300">|</span>
-            <span class="font-semibold text-slate-700">Total Purchase Price: <strong class="theme-total-text font-mono text-sm">৳ {{ grossTotal() | number: '1.2-2' }}</strong></span>
+            <span class="font-semibold text-slate-700">Gross Total: <strong class="theme-total-text font-mono text-sm">৳ {{ grossTotal() | number: '1.2-2' }}</strong></span>
           </div>
-          <span class="text-slate-400 font-mono text-[11px]">Batch Intake</span>
+          <span class="text-slate-400 font-mono text-[11px]">Intake Stock Grid</span>
         </div>
       </div>
     </div>
 
-    <!-- Right: Checkout & Purchase Summary Drawer -->
-    <div class="lg:col-span-4 flex flex-col min-h-0 overflow-y-auto">
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-3.5">
-        <h3 class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2.5">
-          Purchase Summary
-        </h3>
+    <!-- RIGHT PANEL: Summary, Discount, Payment & Confirmation (4 cols) -->
+    <div class="lg:col-span-4 flex flex-col min-h-0">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-col justify-between h-full">
+        <div>
+          <h3 class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2.5 flex items-center justify-between">
+            <span>Payment Summary</span>
+            <span class="text-xs font-normal text-slate-400 font-mono">Invoice Billing</span>
+          </h3>
 
-        <div class="space-y-3">
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-600">Total items:</span>
-            <span class="font-mono font-medium">{{ lines().length }}</span>
-          </div>
-
-          <div class="flex justify-between text-sm border-b border-slate-100 pb-2.5">
-            <span class="text-slate-600">Total price:</span>
-            <span class="font-mono font-bold text-slate-900 text-base">
-              ৳ {{ grossTotal().toLocaleString() }}
-            </span>
-          </div>
-
-          <!-- Discount with Flat / % toggle -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-700">Discount</span>
-              <div class="flex bg-slate-100 p-0.5 rounded border border-slate-200">
-                <button
-                  type="button"
-                  (click)="discountType = DiscountType.Flat"
-                  class="px-2 py-0.5 text-[11px] rounded border-0 cursor-pointer font-medium"
-                  [class.bg-white]="discountType === DiscountType.Flat"
-                  [class.shadow-xs]="discountType === DiscountType.Flat"
-                  [class.text-slate-800]="discountType === DiscountType.Flat"
-                  [class.text-slate-500]="discountType !== DiscountType.Flat"
-                >
-                  Flat
-                </button>
-                <button
-                  type="button"
-                  (click)="discountType = DiscountType.Percentage"
-                  class="px-2 py-0.5 text-[11px] rounded border-0 cursor-pointer font-medium"
-                  [class.bg-white]="discountType === DiscountType.Percentage"
-                  [class.shadow-xs]="discountType === DiscountType.Percentage"
-                  [class.text-slate-800]="discountType === DiscountType.Percentage"
-                  [class.text-slate-500]="discountType !== DiscountType.Percentage"
-                >
-                  %
-                </button>
-              </div>
+          <div class="space-y-3 mt-3">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-600">Total Lines:</span>
+              <span class="font-mono font-semibold text-slate-900">{{ lines().length }}</span>
             </div>
-            <div class="relative">
+
+            <div class="flex justify-between text-xs border-b border-slate-100 pb-2">
+              <span class="text-slate-600">Gross Total:</span>
+              <span class="font-mono font-bold text-slate-900 text-sm">
+                ৳ {{ grossTotal() | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <!-- Discount with Flat / % toggle -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">Discount</span>
+                <div class="flex bg-slate-100 p-0.5 rounded border border-slate-200">
+                  <button
+                    type="button"
+                    (click)="discountType = DiscountType.Flat"
+                    class="px-2 py-0.5 text-[11px] rounded border-0 cursor-pointer font-medium"
+                    [class.bg-white]="discountType === DiscountType.Flat"
+                    [class.shadow-xs]="discountType === DiscountType.Flat"
+                    [class.text-slate-800]="discountType === DiscountType.Flat"
+                    [class.text-slate-500]="discountType !== DiscountType.Flat"
+                  >
+                    Flat (৳)
+                  </button>
+                  <button
+                    type="button"
+                    (click)="discountType = DiscountType.Percentage"
+                    class="px-2 py-0.5 text-[11px] rounded border-0 cursor-pointer font-medium"
+                    [class.bg-white]="discountType === DiscountType.Percentage"
+                    [class.shadow-xs]="discountType === DiscountType.Percentage"
+                    [class.text-slate-800]="discountType === DiscountType.Percentage"
+                    [class.text-slate-500]="discountType !== DiscountType.Percentage"
+                  >
+                    %
+                  </button>
+                </div>
+              </div>
               <input
                 type="number"
                 nz-input
                 placeholder="0"
                 [(ngModel)]="discountValue"
-                class="rounded-md font-mono text-right"
+                class="rounded-md font-mono text-right text-xs"
               />
             </div>
-          </div>
 
-          <div class="flex justify-between py-2 theme-highlight-card rounded-lg px-3">
-            <span class="text-sm font-bold theme-highlight-title">Final price:</span>
-            <span class="font-mono font-bold theme-total-text text-base">
-              ৳ {{ finalPrice().toLocaleString() }}
-            </span>
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Paid:</label>
-            <input
-              type="number"
-              nz-input
-              [(ngModel)]="paidAmount"
-              class="rounded-md font-mono bg-sky-50/50 border-sky-200 focus:bg-white"
-            />
-          </div>
-
-          <div
-            class="flex justify-between py-2 rounded-lg px-3 border"
-            [ngClass]="balanceDue() > 0 ? 'bg-rose-50 border-rose-100 text-rose-900' : 'bg-emerald-50 border-emerald-100 text-emerald-900'"
-          >
-            <span class="text-xs font-semibold">
-              {{ balanceDue() > 0 ? 'Balance Due:' : 'Surplus / Change:' }}
-            </span>
-            <span class="font-mono font-bold text-sm">
-              ৳ {{ Math.abs(balanceDue()).toLocaleString() }}
-            </span>
-          </div>
-
-          <!-- Vendor Info Section -->
-          <div class="pt-2 border-t border-slate-100">
-            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
-              Vendor Info
+            <!-- Final Payable Card -->
+            <div class="flex justify-between items-center py-2.5 bg-indigo-50/70 border border-indigo-100 rounded-lg px-3.5">
+              <div>
+                <span class="text-xs font-bold text-indigo-900 block">Final Payable:</span>
+                <span class="text-[10px] text-indigo-600">Net after discount</span>
+              </div>
+              <span class="font-mono font-bold text-indigo-950 text-lg">
+                ৳ {{ finalPrice() | number: '1.2-2' }}
+              </span>
             </div>
 
-            <div class="space-y-2.5">
-              <div>
-                <label class="text-xs font-semibold text-slate-700 block mb-1">Choose supplier: *</label>
-                <div class="flex gap-2">
-                  <nz-select
-                    nzShowSearch
-                    [(ngModel)]="selectedSupplierId"
-                    nzPlaceHolder="Select supplier"
-                    class="flex-1"
-                  >
-                    @for (sup of suppliers(); track sup.id) {
-                      <nz-option [nzValue]="sup.id" [nzLabel]="sup.name"></nz-option>
-                    }
-                  </nz-select>
-                  <button
-                    type="button"
-                    nz-button
-                    nzType="primary"
-                    (click)="openQuickAddSupplier()"
-                    nz-tooltip
-                    nzTooltipTitle="Quick Add Supplier"
-                    class="btn-quick-add"
-                  >
-                    <span nz-icon nzType="plus"></span>
-                  </button>
-                </div>
+            <!-- Paid Amount -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-xs font-semibold text-slate-700">Paid Now (৳):</label>
+                <button
+                  type="button"
+                  (click)="paidAmount = finalPrice()"
+                  class="text-[10px] text-indigo-600 hover:underline font-medium cursor-pointer"
+                >
+                  Pay Full
+                </button>
               </div>
+              <input
+                type="number"
+                nz-input
+                [(ngModel)]="paidAmount"
+                class="rounded-md font-mono text-sm bg-sky-50/50 border-sky-200 focus:bg-white text-right font-bold text-slate-900"
+              />
+            </div>
 
-              <div>
-                <label class="text-xs font-semibold text-slate-700 block mb-1">Inventory type:</label>
-                <nz-select [(ngModel)]="inventoryType" class="w-full">
-                  @for (t of inventoryTypeOptions; track t.value) {
-                    <nz-option [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
-                  }
-                </nz-select>
-              </div>
-
-              <div>
-                <label class="text-xs font-semibold text-slate-700 block mb-1">Invoice number:</label>
-                <input
-                  type="text"
-                  nz-input
-                  placeholder="Vendor invoice / challan #"
-                  [(ngModel)]="invoiceNumber"
-                  class="rounded-md"
-                />
-              </div>
+            <!-- Balance Due -->
+            <div
+              class="flex justify-between py-2 rounded-lg px-3 border"
+              [ngClass]="balanceDue() > 0 ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'"
+            >
+              <span class="text-xs font-semibold">
+                {{ balanceDue() > 0 ? 'Supplier Due:' : 'Status:' }}
+              </span>
+              <span class="font-mono font-bold text-sm">
+                {{ balanceDue() > 0 ? ('৳ ' + (balanceDue() | number: '1.2-2')) : 'Fully Paid' }}
+              </span>
             </div>
           </div>
+        </div>
 
+        <!-- Sticky Receive Button in Summary -->
+        <div class="pt-4 border-t border-slate-100">
           <button
             type="button"
             nz-button
-            nzType="primary"
             nzBlock
             (click)="completePurchase()"
-            class="rounded-lg h-10 font-bold text-sm mt-2"
+            [disabled]="lines().length === 0"
+            class="btn-emerald h-11 rounded-lg text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer w-full"
           >
-            Purchase
+            <span nz-icon nzType="check-circle" class="text-base"></span>
+            <span>RECEIVE &amp; UPDATE STOCK</span>
           </button>
         </div>
       </div>

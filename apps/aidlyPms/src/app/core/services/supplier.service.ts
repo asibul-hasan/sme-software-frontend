@@ -9,6 +9,7 @@ export interface CreatePurchasePayload {
   items: unknown[];
   batches: unknown[];
   payments: unknown[];
+  requisition_no?: number;
 }
 
 export interface SupplierPaymentPayload {

@@ -19,6 +19,7 @@ import {
 } from '../../shared/constants/label-values.constant';
 import { ProductService } from '../../core/services/product.service';
 import { SupplierService, CreatePurchasePayload } from '../../core/services/supplier.service';
+import { ModalService } from '../../core/services/modal.service';
 
 interface PurchaseLine {
   id: string;
@@ -73,6 +74,7 @@ export class PurchaseEntryComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly productService = inject(ProductService);
   private readonly supplierService = inject(SupplierService);
+  private readonly modal = inject(ModalService);
   readonly Math = Math;
   readonly DiscountType = DiscountType;
 
@@ -83,6 +85,11 @@ export class PurchaseEntryComponent implements OnInit {
   inventoryType = 1; // INVENTORY PURCHASED
   selectedSupplierId: number | null = null;
   invoiceNumber = '';
+  purchaseDate = new Date().toISOString().slice(0, 10);
+
+  approvedRequisitions = signal<any[]>([]);
+  selectedRequisitionNo: number | null = null;
+  isLoadingRequisition = false;
 
   suppliers = signal<SupplierOption[]>([]);
   availableProducts = signal<ProductOption[]>([]);
@@ -164,6 +171,75 @@ export class PurchaseEntryComponent implements OnInit {
     this.loadSuppliers();
     this.loadProducts();
     this.loadCompaniesAndGenerics();
+    this.loadApprovedRequisitions();
+  }
+
+  loadApprovedRequisitions(): void {
+    this.productService.getApprovedRequisitions().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.approvedRequisitions.set(res.data);
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  onRequisitionSelected(reqNo: number | null): void {
+    if (!reqNo) {
+      this.selectedRequisitionNo = null;
+      return;
+    }
+    this.selectedRequisitionNo = reqNo;
+    this.isLoadingRequisition = true;
+
+    this.productService.getRequisitionById(reqNo).subscribe({
+      next: (res) => {
+        this.isLoadingRequisition = false;
+        if (res.data) {
+          const req = res.data;
+          if (req.supplier_no) {
+            this.selectedSupplierId = req.supplier_no;
+          }
+
+          if (req.items && req.items.length > 0) {
+            const defaultExp = new Date();
+            defaultExp.setFullYear(defaultExp.getFullYear() + 2);
+            const expStr = defaultExp.toISOString().slice(0, 10);
+
+            const converted: PurchaseLine[] = req.items.map((it: any) => {
+              const box = it.box_qty || 1;
+              const qtyBox = it.quantity_in_box || 10;
+              const totalPcs = it.min_qty_pcs || (box * qtyBox);
+              const btp = Number(it.btp_vat) || Number(it.btp) || 0;
+              const lineTotal = Number(it.total_price) || (box * btp);
+
+              return {
+                id: crypto.randomUUID(),
+                product_no: it.product_no,
+                product: it.product_name || `Product #${it.product_no}`,
+                barcode: `B-${Date.now().toString().slice(-4)}-${it.product_no}`,
+                box: box,
+                qtyBox: qtyBox,
+                totalQtyPcs: totalPcs,
+                btpVat: btp,
+                salePrice: 0,
+                freeQty: 0,
+                expiryDate: expStr,
+                total: Math.round(lineTotal * 100) / 100,
+              };
+            });
+
+            this.lines.set(converted);
+            this.msg.success(`Loaded ${converted.length} item(s) from Requisition ${req.requisition_code}`);
+          }
+        }
+      },
+      error: (err) => {
+        this.isLoadingRequisition = false;
+        this.msg.error(err?.error?.message || 'Failed to load requisition items');
+      },
+    });
   }
 
   loadSuppliers(): void {
@@ -323,6 +399,19 @@ export class PurchaseEntryComponent implements OnInit {
     this.lines.update(items => items.filter((_, i) => i !== idx));
   }
 
+  updateLine(line: PurchaseLine): void {
+    const box = Math.max(1, Number(line.box) || 1);
+    const qtyBox = Math.max(1, Number(line.qtyBox) || 1);
+    const btp = Math.max(0, Number(line.btpVat) || 0);
+
+    line.box = box;
+    line.qtyBox = qtyBox;
+    line.totalQtyPcs = box * qtyBox;
+    line.total = Math.round(box * btp * 100) / 100;
+
+    this.lines.update(items => [...items]);
+  }
+
   openNewProductModal(): void {
     this.quickProductName = '';
     this.quickProductGeneric = this.genericsList[0] || 'Paracetamol';
@@ -463,52 +552,67 @@ export class PurchaseEntryComponent implements OnInit {
       return;
     }
 
-    const payload: CreatePurchasePayload = {
-      invoice: {
-        supplier_no: this.selectedSupplierId,
-        supplier_invoice_no: this.invoiceNumber.trim() || undefined,
-        calculation_mode: this.calcMode,
-        inventory_type: this.inventoryType,
-        gross_total_price: this.grossTotal(),
-        discount_type: this.discountType,
-        discount_value: Number(this.discountValue) || 0,
-        paid_amount: Number(this.paidAmount) || 0,
-        due_amount: this.balanceDue() > 0 ? this.balanceDue() : 0,
-      },
-      items: this.lines().map(l => ({
-        product_no: l.product_no,
-        batch_number: l.barcode || `B-${Date.now().toString().slice(-6)}`,
-        box_qty: l.box,
-        qty_in_box: l.qtyBox,
-        total_qty_pcs: l.totalQtyPcs,
-        btp: l.btpVat,
-        sale_price: l.salePrice,
-        vat_percent: 0,
-        expiry_date: l.expiryDate ? new Date(l.expiryDate).toISOString() : new Date(Date.now() + 365*24*60*60*1000).toISOString(),
-      })),
-      batches: [],
-      payments: [
-        {
-          account_no: 1,
-          payment_method: 1,
-          amount: Number(this.paidAmount) || 0,
-        }
-      ],
-    };
+    const supplierObj = this.suppliers().find(s => s.id === this.selectedSupplierId);
+    const supplierName = supplierObj ? supplierObj.name : 'Selected Supplier';
 
-    this.supplierService.createPurchaseInvoice(payload).subscribe({
-      next: () => {
-        this.msg.success(
-          `Purchase of ৳ ${this.finalPrice().toLocaleString()} recorded successfully!`
-        );
-        this.lines.set([]);
-        this.invoiceNumber = '';
-        this.paidAmount = 0;
-        this.discountValue = 0;
-      },
-      error: (err) => {
-        this.msg.error(err?.error?.message || 'Failed to complete purchase');
-      },
+    this.modal.confirmAction(
+      'Confirm Purchase Receiving?',
+      `Receive ${this.lines().length} item(s) from "${supplierName}" totaling ৳ ${this.finalPrice().toLocaleString()} into stock?`,
+      'Receive Inventory',
+      false
+    ).subscribe(confirmed => {
+      if (!confirmed) return;
+
+      const payload: CreatePurchasePayload = {
+        requisition_no: this.selectedRequisitionNo || undefined,
+        invoice: {
+          supplier_no: this.selectedSupplierId!,
+          supplier_invoice_no: this.invoiceNumber.trim() || undefined,
+          calculation_mode: this.calcMode,
+          inventory_type: this.inventoryType,
+          gross_total_price: this.grossTotal(),
+          discount_type: this.discountType,
+          discount_value: Number(this.discountValue) || 0,
+          paid_amount: Number(this.paidAmount) || 0,
+          due_amount: this.balanceDue() > 0 ? this.balanceDue() : 0,
+        },
+        items: this.lines().map(l => ({
+          product_no: l.product_no,
+          batch_number: l.barcode?.trim() || `B-${Date.now().toString().slice(-6)}`,
+          box_qty: l.box,
+          qty_in_box: l.qtyBox,
+          total_qty_pcs: l.totalQtyPcs,
+          btp: l.btpVat,
+          sale_price: l.salePrice,
+          vat_percent: 0,
+          expiry_date: l.expiryDate ? new Date(l.expiryDate).toISOString() : new Date(Date.now() + 365*24*60*60*1000).toISOString(),
+        })),
+        batches: [],
+        payments: [
+          {
+            account_no: 1,
+            payment_method: 1,
+            amount: Number(this.paidAmount) || 0,
+          }
+        ],
+      };
+
+      this.supplierService.createPurchaseInvoice(payload).subscribe({
+        next: () => {
+          this.msg.success(
+            `Purchase of ৳ ${this.finalPrice().toLocaleString()} received and stock updated successfully!`
+          );
+          this.lines.set([]);
+          this.invoiceNumber = '';
+          this.paidAmount = 0;
+          this.discountValue = 0;
+          this.selectedRequisitionNo = null;
+          this.loadApprovedRequisitions();
+        },
+        error: (err) => {
+          this.msg.error(err?.error?.message || 'Failed to complete purchase');
+        },
+      });
     });
   }
 }

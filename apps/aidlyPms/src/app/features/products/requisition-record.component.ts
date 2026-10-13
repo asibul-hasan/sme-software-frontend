@@ -26,7 +26,7 @@ interface RequisitionRecord {
   supplier: string;
   itemsCount: number;
   createdBy: string;
-  status: 'Approved' | 'Pending' | 'Cancelled';
+  status: 'Approved' | 'Pending' | 'Cancelled' | 'Fulfilled';
 }
 
 @Component({
@@ -104,7 +104,11 @@ export class RequisitionRecordComponent implements OnInit {
             supplier: r.supplier_name || 'General Supplier',
             itemsCount: r.total_selected_items || r.total_items || 0,
             createdBy: 'System Staff',
-            status: (r.requisition_status === 2 || r.status === 'Approved' ? 'Approved' : (r.requisition_status === 3 || r.status === 'Cancelled' ? 'Cancelled' : 'Pending')) as any,
+            status: (
+              r.status === 'Fulfilled' || r.requisition_status === 4 ? 'Fulfilled' :
+              r.requisition_status === 2 || r.status === 'Approved' ? 'Approved' :
+              r.requisition_status === 3 || r.status === 'Cancelled' ? 'Cancelled' : 'Pending'
+            ) as any,
           }));
           this.records.set(list);
         }

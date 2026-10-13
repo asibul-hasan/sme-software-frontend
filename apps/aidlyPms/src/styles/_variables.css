@@ -232,3 +232,57 @@ h6 {
   background: var(--primary-gradient) !important;
   color: #ffffff !important;
 }
+
+/* Semantic Action Buttons */
+.btn-emerald {
+  background-color: #059669 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.btn-emerald:hover, .btn-emerald:focus {
+  background-color: #047857 !important;
+  border-color: #047857 !important;
+  color: #ffffff !important;
+}
+
+.btn-indigo {
+  background-color: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.btn-indigo:hover, .btn-indigo:focus {
+  background-color: #4338ca !important;
+  border-color: #4338ca !important;
+  color: #ffffff !important;
+}
+
+.btn-amber {
+  background-color: #d97706 !important;
+  border-color: #d97706 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.btn-amber:hover, .btn-amber:focus {
+  background-color: #b45309 !important;
+  border-color: #b45309 !important;
+  color: #ffffff !important;
+}
+
+.btn-rose {
+  background-color: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.btn-rose:hover, .btn-rose:focus {
+  background-color: #be123c !important;
+  border-color: #be123c !important;
+  color: #ffffff !important;
+}
+

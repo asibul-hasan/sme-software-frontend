@@ -109,6 +109,10 @@ export class ProductService {
     return this.api.get<ProdProductRequisition>(`prod/requisitions/${requisitionNo}`);
   }
 
+  getApprovedRequisitions(): Observable<ApiResponse<ProdProductRequisition[]>> {
+    return this.api.get<ProdProductRequisition[]>('prod/requisitions/approved');
+  }
+
   updateRequisitionStatus(requisitionNo: number, status: string): Observable<ApiResponse<boolean>> {
     return this.api.put<boolean>(`prod/requisitions/${requisitionNo}/status`, { status });
   }
