@@ -219,7 +219,7 @@ export class PurchaseEntryComponent implements OnInit {
                 id: crypto.randomUUID(),
                 product_no: it.product_no,
                 product: it.product_name || `Product #${it.product_no}`,
-                barcode: `B-${Date.now().toString().slice(-4)}-${it.product_no}`,
+                barcode: it.batch_number || '', // Manual entry from vendor packaging is standard
                 box: box,
                 qtyBox: qtyBox,
                 totalQtyPcs: totalPcs,
@@ -577,17 +577,21 @@ export class PurchaseEntryComponent implements OnInit {
           paid_amount: Number(this.paidAmount) || 0,
           due_amount: this.balanceDue() > 0 ? this.balanceDue() : 0,
         },
-        items: this.lines().map(l => ({
-          product_no: l.product_no,
-          batch_number: l.barcode?.trim() || `B-${Date.now().toString().slice(-6)}`,
-          box_qty: l.box,
-          qty_in_box: l.qtyBox,
-          total_qty_pcs: l.totalQtyPcs,
-          btp: l.btpVat,
-          sale_price: l.salePrice,
-          vat_percent: 0,
-          expiry_date: l.expiryDate ? new Date(l.expiryDate).toISOString() : new Date(Date.now() + 365*24*60*60*1000).toISOString(),
-        })),
+        items: this.lines().map((l, idx) => {
+          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          const fallbackBatch = `RCV-${dateStr}-${String(idx + 1).padStart(3, '0')}`;
+          return {
+            product_no: l.product_no,
+            batch_number: l.barcode?.trim() || fallbackBatch,
+            box_qty: l.box,
+            qty_in_box: l.qtyBox,
+            total_qty_pcs: l.totalQtyPcs,
+            btp: l.btpVat,
+            sale_price: l.salePrice,
+            vat_percent: 0,
+            expiry_date: l.expiryDate ? new Date(l.expiryDate).toISOString() : new Date(Date.now() + 365*24*60*60*1000).toISOString(),
+          };
+        }),
         batches: [],
         payments: [
           {
@@ -617,6 +621,18 @@ export class PurchaseEntryComponent implements OnInit {
         },
       });
     });
+  }
+
+  generateBatchForLine(line: PurchaseLine, idx: number): void {
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    line.barcode = `RCV-${dateStr}-${String(idx + 1).padStart(3, '0')}`;
+    this.lines.update(items => [...items]);
+  }
+
+  generateBatchForCurrentLine(): void {
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const seq = this.lines().length + 1;
+    this.currentLine.barcode = `RCV-${dateStr}-${String(seq).padStart(3, '0')}`;
   }
 
   resetForm(): void {
