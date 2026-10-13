@@ -86,6 +86,7 @@ export class PurchaseEntryComponent implements OnInit {
   selectedSupplierId: number | null = null;
   invoiceNumber = '';
   purchaseDate = new Date().toISOString().slice(0, 10);
+  generatedPurchaseId = '';
 
   approvedRequisitions = signal<any[]>([]);
   selectedRequisitionNo: number | null = null;
@@ -598,9 +599,11 @@ export class PurchaseEntryComponent implements OnInit {
       };
 
       this.supplierService.createPurchaseInvoice(payload).subscribe({
-        next: () => {
+        next: (res) => {
+          const invId = res.data?.inventory_number || (res.data?.purchase_invoice_no ? `PUR-${res.data.purchase_invoice_no}` : '');
+          this.generatedPurchaseId = invId || `PUR-${Date.now().toString().slice(-4)}`;
           this.msg.success(
-            `Purchase of ৳ ${this.finalPrice().toLocaleString()} received and stock updated successfully!`
+            `Purchase Invoice ${this.generatedPurchaseId} of ৳ ${this.finalPrice().toLocaleString()} received and stock updated successfully!`
           );
           this.lines.set([]);
           this.invoiceNumber = '';
@@ -614,5 +617,15 @@ export class PurchaseEntryComponent implements OnInit {
         },
       });
     });
+  }
+
+  resetForm(): void {
+    this.lines.set([]);
+    this.invoiceNumber = '';
+    this.paidAmount = 0;
+    this.discountValue = 0;
+    this.selectedRequisitionNo = null;
+    this.selectedSupplierId = null;
+    this.generatedPurchaseId = '';
   }
 }
