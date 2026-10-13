@@ -552,700 +552,352 @@
       </div>
     </div>
 
-    <!-- RIGHT PANEL: Checkout Drawer -->
-    <div class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col p-4 space-y-3 overflow-y-auto">
+    <!-- RIGHT PANEL: Checkout Drawer (Redesigned matching User Prototype) -->
+    <div class="lg:col-span-4 checkout-drawer">
       
-      <!-- Summary Header -->
-      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-        <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Fast Checkout</span>
-        <span class="text-xs font-mono font-semibold text-slate-500">
-          Total items: {{ cart().length }}
-        </span>
+      <!-- Customer Section -->
+      <label class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+        <span>Customer</span>
+      </label>
+      <div class="flex gap-1.5 items-center">
+        <nz-select
+          class="flex-1"
+          nzShowSearch
+          nzPlaceHolder="Select or search customer..."
+          [ngModel]="selectedCustomer()"
+          (ngModelChange)="onCustomerChange($event)"
+        >
+          @for (c of customers; track c.id) {
+            <nz-option
+              [nzValue]="c.id"
+              [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
+            ></nz-option>
+          }
+        </nz-select>
+        <button
+          type="button"
+          (click)="openAddCustomerModal()"
+          class="w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg flex items-center justify-center border-0 cursor-pointer shrink-0 transition-colors"
+          title="Add customer"
+          aria-label="Add customer"
+        >
+          +
+        </button>
       </div>
 
-      <!-- Total price -->
-      <div class="flex justify-between text-xs">
-        <span class="text-slate-600 font-medium">Subtotal:</span>
-        <span class="font-mono font-bold text-slate-900">
-          ৳ {{ subtotal() | number: '1.2-2' }}
-        </span>
+      <!-- Customer Due Information Banner -->
+      @if (selectedCustomer() !== '1' && selectedCustomerObj()) {
+        <div class="dueinfo" [class.has]="previousDue() > 0" [class.none]="previousDue() <= 0">
+          <div class="top">
+            <span>{{ previousDue() > 0 ? 'Previous due' : 'No previous due' }}</span>
+            @if (previousDue() > 0) {
+              <b>৳ {{ previousDue() | number: '1.2-2' }}</b>
+            }
+          </div>
+          @if (previousDue() > 0) {
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="collectPreviousDue()"
+                (ngModelChange)="toggleCollectPreviousDue($event)"
+                [disabled]="selectedMethod() === 'due'"
+              />
+              <span>Collect previous due with this bill</span>
+            </label>
+          }
+        </div>
+      }
+
+      <div class="sep"></div>
+
+      <!-- Net Payable Banner -->
+      <div class="net">
+        <small>{{ collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due' ? 'TOTAL TO COLLECT' : 'NET PAYABLE' }}</small>
+        <b>৳ {{ payableTotal() | number: '1.2-2' }}</b>
       </div>
 
-      <!-- Global Discount Section (Single Line, Full Width) -->
-      <div class="flex items-center gap-2 pt-0.5">
-        <span class="text-xs font-semibold text-slate-700 shrink-0 w-16">Discount:</span>
-        <div class="flex items-center gap-1.5 flex-1">
-          <div class="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
+      <!-- Mini Financial Summary -->
+      <div class="mini">
+        <span>Items</span>
+        <b>{{ cart().length }} ({{ totalCartPcs() }} pcs)</b>
+      </div>
+      <div class="mini">
+        <span>Subtotal</span>
+        <b>৳ {{ subtotal() | number: '1.2-2' }}</b>
+      </div>
+      @if (discountAmount() > 0) {
+        <div class="mini">
+          <span>Discount</span>
+          <b style="color: #b91c1c">− ৳ {{ discountAmount() | number: '1.2-2' }}</b>
+        </div>
+      }
+      @if (collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due') {
+        <div class="mini">
+          <span>Previous due</span>
+          <b>+ ৳ {{ previousDue() | number: '1.2-2' }}</b>
+        </div>
+      }
+      @if (cardCommission() && cardFee() > 0) {
+        <div class="mini">
+          <span>Card Fee ({{ cardCommissionRate() }}%)</span>
+          <b>+ ৳ {{ cardFee() | number: '1.2-2' }}</b>
+        </div>
+      }
+
+      <!-- Add Discount Inline Toggle -->
+      @if (!showDiscountBox()) {
+        <button type="button" class="linkbtn" (click)="showDiscountBox.set(true)">
+          + Add discount
+        </button>
+      } @else {
+        <div class="mt-2">
+          <div class="flex gap-1.5 items-center">
+            <input
+              type="number"
+              min="0"
+              [ngModel]="globalDiscountValue()"
+              (ngModelChange)="onGlobalDiscountChange($event)"
+              class="flex-1 h-9 px-2.5 border border-slate-200 rounded-lg text-right font-mono text-sm bg-white focus:outline-2 focus:outline-indigo-600"
+              placeholder="0"
+            />
             <button
               type="button"
               (click)="setGlobalDiscountType(DiscountType.Percentage)"
-              class="px-2.5 py-0.5 text-[10px] rounded border-0 cursor-pointer font-semibold"
-              [class.bg-white]="globalDiscountType() === DiscountType.Percentage"
-              [class.shadow-xs]="globalDiscountType() === DiscountType.Percentage"
+              class="w-12 h-9 rounded-lg text-xs font-semibold cursor-pointer border transition-colors"
+              [class.bg-indigo-600]="globalDiscountType() === DiscountType.Percentage"
+              [class.text-white]="globalDiscountType() === DiscountType.Percentage"
+              [class.border-indigo-600]="globalDiscountType() === DiscountType.Percentage"
+              [class.bg-white]="globalDiscountType() !== DiscountType.Percentage"
+              [class.text-slate-700]="globalDiscountType() !== DiscountType.Percentage"
+              [class.border-slate-200]="globalDiscountType() !== DiscountType.Percentage"
             >
               %
             </button>
             <button
               type="button"
               (click)="setGlobalDiscountType(DiscountType.Flat)"
-              class="px-2.5 py-0.5 text-[10px] rounded border-0 cursor-pointer font-semibold"
-              [class.bg-white]="globalDiscountType() === DiscountType.Flat"
-              [class.shadow-xs]="globalDiscountType() === DiscountType.Flat"
+              class="w-14 h-9 rounded-lg text-xs font-semibold cursor-pointer border transition-colors"
+              [class.bg-indigo-600]="globalDiscountType() === DiscountType.Flat"
+              [class.text-white]="globalDiscountType() === DiscountType.Flat"
+              [class.border-indigo-600]="globalDiscountType() === DiscountType.Flat"
+              [class.bg-white]="globalDiscountType() !== DiscountType.Flat"
+              [class.text-slate-700]="globalDiscountType() !== DiscountType.Flat"
+              [class.border-slate-200]="globalDiscountType() !== DiscountType.Flat"
             >
-              Flat
+              ৳ Flat
+            </button>
+            <button
+              type="button"
+              (click)="showDiscountBox.set(false)"
+              class="h-9 px-2 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs"
+              title="Close discount box"
+            >
+              ✕
             </button>
           </div>
-          <input
-            type="number"
-            nz-input
-            placeholder="0"
-            [ngModel]="globalDiscountValue()"
-            (ngModelChange)="onGlobalDiscountChange($event)"
-            class="rounded-md font-mono text-right flex-1 h-8 text-xs"
-            min="0"
-          />
-        </div>
-      </div>
-
-      <!-- Card Commission Checkbox (if card payment or custom check) -->
-      @if (selectedPaymentType() === 6 || cardCommission()) {
-        <div class="flex items-center justify-between pt-0.5">
-          <label
-            nz-checkbox
-            [ngModel]="cardCommission()"
-            (ngModelChange)="onCardCommissionToggle($event)"
-            class="text-xs font-medium text-slate-700"
-          >
-            Card Commission ({{ cardCommissionRate() }}%):
-          </label>
-          @if (cardCommission()) {
-            <span class="font-mono text-xs text-slate-800 font-bold">
-              + ৳ {{ cardFee() | number: '1.2-2' }}
-            </span>
-          }
         </div>
       }
 
-      <!-- Net Payable Banner -->
-      <div class="rounded-xl p-3.5 text-center shadow-xs theme-shell-banner">
-        <div class="text-[11px] font-medium tracking-wider uppercase opacity-90 mb-0.5">
-          Net Payable
-        </div>
-        <div class="text-3xl font-black font-mono">
-          ৳ {{ finalPrice() | number: '1.2-2' }}
-        </div>
-        @if (discountAmount() > 0) {
-          <div class="text-[10px] text-emerald-300 mt-0.5 font-medium">
-            Total Savings: ৳ {{ discountAmount() | number: '1.2-2' }}
-          </div>
-        }
+      <div class="sep"></div>
+
+      <!-- Payment Method Grid (4x2) -->
+      <label class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+        <span>Payment method</span>
+      </label>
+      <div class="pay">
+        <button type="button" [class.on]="selectedMethod() === 'cash'" (click)="setMethod('cash')">
+          Cash
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'card'" (click)="setMethod('card')">
+          Card
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'bkash'" (click)="setMethod('bkash')">
+          <span class="dot" style="background:#e2136e"></span>bKash
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'nagad'" (click)="setMethod('nagad')">
+          <span class="dot" style="background:#f6921e"></span>Nagad
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'rocket'" (click)="setMethod('rocket')">
+          <span class="dot" style="background:#8c3494"></span>Rocket
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'upay'" (click)="setMethod('upay')">
+          <span class="dot" style="background:#1a9f4a"></span>Upay
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'split'" (click)="setMethod('split')">
+          Split
+        </button>
+        <button type="button" [class.on]="selectedMethod() === 'due'" (click)="setMethod('due')">
+          Due
+        </button>
       </div>
 
-      <!-- Payment Method Segmented Tabs -->
-      <div class="space-y-1 pt-1">
-        <label class="text-xs font-bold text-slate-700 block">Payment Method:</label>
-        <div class="grid grid-cols-5 gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200">
-          <button
-            type="button"
-            (click)="setPaymentMethod(1)"
-            class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
-            [class.bg-white]="selectedPaymentType() === 1"
-            [class.text-indigo-700]="selectedPaymentType() === 1"
-            [class.shadow-xs]="selectedPaymentType() === 1"
-            [class.text-slate-600]="selectedPaymentType() !== 1"
-            [class.bg-transparent]="selectedPaymentType() !== 1"
-          >
-            <span class="text-xs">💵</span>
-            <span>Cash</span>
-          </button>
-          <button
-            type="button"
-            (click)="setPaymentMethod(6)"
-            class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
-            [class.bg-white]="selectedPaymentType() === 6"
-            [class.text-indigo-700]="selectedPaymentType() === 6"
-            [class.shadow-xs]="selectedPaymentType() === 6"
-            [class.text-slate-600]="selectedPaymentType() !== 6"
-            [class.bg-transparent]="selectedPaymentType() !== 6"
-          >
-            <span class="text-xs">💳</span>
-            <span>Card</span>
-          </button>
-          <button
-            type="button"
-            (click)="setPaymentMethod(3)"
-            class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
-            [class.bg-white]="selectedPaymentType() === 3"
-            [class.text-indigo-700]="selectedPaymentType() === 3"
-            [class.shadow-xs]="selectedPaymentType() === 3"
-            [class.text-slate-600]="selectedPaymentType() !== 3"
-            [class.bg-transparent]="selectedPaymentType() !== 3"
-          >
-            <span class="text-xs">📱</span>
-            <span>MFS</span>
-          </button>
-          <button
-            type="button"
-            (click)="setPaymentMethod(8)"
-            class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
-            [class.bg-white]="selectedPaymentType() === 8"
-            [class.text-indigo-700]="selectedPaymentType() === 8"
-            [class.shadow-xs]="selectedPaymentType() === 8"
-            [class.text-slate-600]="selectedPaymentType() !== 8"
-            [class.bg-transparent]="selectedPaymentType() !== 8"
-          >
-            <span class="text-xs">🔀</span>
-            <span>Split</span>
-          </button>
-          <button
-            type="button"
-            (click)="setPaymentMethod(4)"
-            class="py-1.5 px-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer flex flex-col items-center justify-center gap-0.5"
-            [class.bg-white]="selectedPaymentType() === 4"
-            [class.text-rose-700]="selectedPaymentType() === 4"
-            [class.shadow-xs]="selectedPaymentType() === 4"
-            [class.text-slate-600]="selectedPaymentType() !== 4"
-            [class.bg-transparent]="selectedPaymentType() !== 4"
-          >
-            <span class="text-xs">📝</span>
-            <span>Due</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Split Payment Multi-Tender Box (When Split Tab is Selected) -->
-      @if (selectedPaymentType() === 8) {
-        <div class="space-y-2.5 pt-1">
-          <!-- Allocation Summary Header Card -->
-          <div
-            class="p-2.5 rounded-xl border flex items-center justify-between shadow-2xs"
-            [class.bg-emerald-50]="splitRemaining() === 0 && splitOverpaid() === 0"
-            [class.border-emerald-300]="splitRemaining() === 0 && splitOverpaid() === 0"
-            [class.bg-amber-50]="splitRemaining() > 0"
-            [class.border-amber-300]="splitRemaining() > 0"
-            [class.bg-blue-50]="splitOverpaid() > 0"
-            [class.border-blue-300]="splitOverpaid() > 0"
-          >
-            <div>
-              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Split Allocation
-              </div>
-              <div class="text-base font-black font-mono text-slate-900">
-                ৳ {{ splitTotal() | number: '1.2-2' }}
-                <span class="text-xs font-normal text-slate-500">/ ৳ {{ finalPrice() | number: '1.2-2' }}</span>
-              </div>
-            </div>
-
-            <div class="text-right">
-              @if (splitRemaining() > 0) {
-                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-200 text-amber-900 font-bold text-xs shadow-2xs">
-                  <span>Rest: ৳ {{ splitRemaining() | number: '1.2-2' }}</span>
-                </div>
-              } @else if (splitOverpaid() > 0) {
-                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-200 text-blue-900 font-bold text-xs shadow-2xs">
-                  <span>Change: ৳ {{ splitOverpaid() | number: '1.2-2' }}</span>
-                </div>
-              } @else {
-                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-200 text-emerald-900 font-bold text-xs shadow-2xs">
-                  <span nz-icon nzType="check-circle"></span>
-                  <span>Balanced 100%</span>
-                </div>
-              }
-            </div>
+      <!-- Cash Tender Box -->
+      @if (selectedMethod() === 'cash') {
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+            <span>Received from customer (৳)</span>
+            <button type="button" class="linkbtn" (click)="setExactPayment()">Exact</button>
           </div>
-
-          <!-- 3 Clear Payment Channel Cards -->
-          <div class="space-y-2">
-            <!-- Channel 1: Card -->
-            <div
-              class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
-              [class.border-indigo-400]="splitCard() > 0"
-              [class.bg-indigo-50/20]="splitCard() > 0"
-              [class.border-slate-200]="splitCard() <= 0"
-            >
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
-                  <span>💳</span> Card Payment
-                </span>
-                <div class="flex items-center gap-1">
-                  @if (splitRemaining() > 0) {
-                    <button
-                      type="button"
-                      (click)="fillRemainingTo('card')"
-                      class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
-                    >
-                      ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
-                    </button>
-                  }
-                  <button
-                    type="button"
-                    (click)="setSplitFull('card')"
-                    class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
-                  >
-                    All
-                  </button>
-                  @if (splitCard() > 0) {
-                    <button
-                      type="button"
-                      (click)="clearSplitChannel('card')"
-                      class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  }
-                </div>
-              </div>
-              <div class="relative flex items-center">
-                <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
-                <input
-                  type="number"
-                  nz-input
-                  [ngModel]="splitCard() || ''"
-                  (ngModelChange)="onSplitChannelChange('card', $event)"
-                  placeholder="0.00"
-                  min="0"
-                  class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
-                />
-              </div>
-            </div>
-
-            <!-- Channel 2: Cash -->
-            <div
-              class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
-              [class.border-indigo-400]="splitCash() > 0"
-              [class.bg-indigo-50/20]="splitCash() > 0"
-              [class.border-slate-200]="splitCash() <= 0"
-            >
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
-                  <span>💵</span> Cash Payment
-                </span>
-                <div class="flex items-center gap-1">
-                  @if (splitRemaining() > 0) {
-                    <button
-                      type="button"
-                      (click)="fillRemainingTo('cash')"
-                      class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
-                    >
-                      ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
-                    </button>
-                  }
-                  <button
-                    type="button"
-                    (click)="setSplitFull('cash')"
-                    class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
-                  >
-                    All
-                  </button>
-                  @if (splitCash() > 0) {
-                    <button
-                      type="button"
-                      (click)="clearSplitChannel('cash')"
-                      class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  }
-                </div>
-              </div>
-              <div class="relative flex items-center">
-                <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
-                <input
-                  type="number"
-                  nz-input
-                  [ngModel]="splitCash() || ''"
-                  (ngModelChange)="onSplitChannelChange('cash', $event)"
-                  placeholder="0.00"
-                  min="0"
-                  class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
-                />
-              </div>
-            </div>
-
-            <!-- Channel 3: MFS -->
-            <div
-              class="p-2.5 rounded-lg border bg-white shadow-2xs transition-all"
-              [class.border-indigo-400]="splitMfs() > 0"
-              [class.bg-indigo-50/20]="splitMfs() > 0"
-              [class.border-slate-200]="splitMfs() <= 0"
-            >
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-bold text-xs text-slate-800 flex items-center gap-1">
-                  <span>📱</span> MFS (bKash / Nagad)
-                </span>
-                <div class="flex items-center gap-1">
-                  @if (splitRemaining() > 0) {
-                    <button
-                      type="button"
-                      (click)="fillRemainingTo('mfs')"
-                      class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded cursor-pointer transition-colors"
-                    >
-                      ⚡ Put Rest (৳{{ splitRemaining() | number: '1.0-2' }})
-                    </button>
-                  }
-                  <button
-                    type="button"
-                    (click)="setSplitFull('mfs')"
-                    class="px-1.5 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded cursor-pointer"
-                  >
-                    All
-                  </button>
-                  @if (splitMfs() > 0) {
-                    <button
-                      type="button"
-                      (click)="clearSplitChannel('mfs')"
-                      class="px-1.5 py-0.5 text-[10px] text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  }
-                </div>
-              </div>
-              <div class="relative flex items-center">
-                <span class="absolute left-3 font-bold text-xs text-slate-400">৳</span>
-                <input
-                  type="number"
-                  nz-input
-                  [ngModel]="splitMfs() || ''"
-                  (ngModelChange)="onSplitChannelChange('mfs', $event)"
-                  placeholder="0.00"
-                  min="0"
-                  class="pl-7 pr-3 h-8 font-mono font-bold text-sm text-slate-900 rounded-md border-slate-300 w-full"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Presets Toolbar -->
-          <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
-            <div class="flex items-center gap-1">
-              <button
-                type="button"
-                (click)="splitHalfAndHalf('cash', 'card')"
-                class="text-[10px] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded border border-indigo-200 cursor-pointer"
-              >
-                50% Cash + 50% Card
-              </button>
-              <button
-                type="button"
-                (click)="splitHalfAndHalf('cash', 'mfs')"
-                class="text-[10px] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded border border-indigo-200 cursor-pointer"
-              >
-                50% Cash + 50% MFS
-              </button>
-            </div>
-            <button
-              type="button"
-              (click)="resetAllSplit()"
-              class="text-[10px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer"
-            >
-              Reset All
-            </button>
-          </div>
-        </div>
-      } @else if (selectedPaymentType() !== 4) {
-        <div class="space-y-2 pt-1">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-slate-800">Tendered / Pay Amount:</span>
-              @if (!isManualTender()) {
-                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                  ⚡ Auto-Exact
-                </span>
-              }
-            </div>
-            <button
-              type="button"
-              (click)="setQuickExact()"
-              class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 cursor-pointer transition-colors"
-              nz-tooltip
-              nzTooltipTitle="Press F4 to sync exact payable"
-            >
-              ⚡ Exact (৳{{ finalPrice() | number: '1.2-2' }})
-            </button>
-          </div>
-
-          <!-- Big Stepper & Tender Input -->
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              nz-button
-              nzType="default"
-              (click)="stepTendered(-10)"
-              class="h-10 w-10 rounded-lg text-base font-bold"
-            >
-              −
-            </button>
-            <div class="relative flex-1">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">৳</span>
-              <input
-                type="number"
-                nz-input
-                [ngModel]="tendered()"
-                (ngModelChange)="onTenderedChange($event)"
-                class="w-full text-center font-mono font-black text-lg h-10 rounded-lg border-2 shadow-2xs"
-                [class.border-indigo-400]="!isManualTender()"
-                [class.border-slate-300]="isManualTender()"
-                min="0"
-                step="10"
-              />
-            </div>
-            <button
-              type="button"
-              nz-button
-              nzType="default"
-              (click)="stepTendered(10)"
-              class="h-10 w-10 rounded-lg text-base font-bold"
-            >
-              +
-            </button>
-          </div>
-
-          <!-- 1-Touch Cash Banknote Denominations Grid -->
-          <div class="space-y-1">
-            <div class="text-[11px] font-semibold text-slate-500 flex justify-between items-center">
-              <span>1-Touch Cash Notes:</span>
-              <button
-                type="button"
-                (click)="resetTenderToExact()"
-                class="text-[10px] text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer"
-              >
-                Reset to Exact
-              </button>
-            </div>
-            <div class="grid grid-cols-4 gap-1.5">
-              <button
-                type="button"
-                (click)="setQuickCash(nextRoundTender())"
-                class="py-1.5 px-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-                nz-tooltip
-                nzTooltipTitle="Next round banknote"
-              >
-                ৳{{ nextRoundTender() }}
-              </button>
-              <button
-                type="button"
-                (click)="setQuickCash(50)"
-                class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                ৳50
-              </button>
-              <button
-                type="button"
-                (click)="setQuickCash(100)"
-                class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                ৳100
-              </button>
-              <button
-                type="button"
-                (click)="setQuickCash(200)"
-                class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                ৳200
-              </button>
-              <button
-                type="button"
-                (click)="setQuickCash(500)"
-                class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                ৳500
-              </button>
-              <button
-                type="button"
-                (click)="setQuickCash(1000)"
-                class="py-1.5 px-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                ৳1000
-              </button>
-              <button
-                type="button"
-                (click)="addQuickCash(50)"
-                class="py-1.5 px-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                +৳50
-              </button>
-              <button
-                type="button"
-                (click)="addQuickCash(100)"
-                class="py-1.5 px-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-md font-mono font-bold text-xs cursor-pointer shadow-2xs transition-colors"
-              >
-                +৳100
-              </button>
-            </div>
-          </div>
-
-          <!-- Split Payment Chips (if used) -->
-          <div class="pt-1">
-            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-              <span>Split Tender:</span>
-              <div class="flex gap-1">
-                <button
-                  type="button"
-                  (click)="addSplitPayment('Cash')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
-                >
-                  + Cash
-                </button>
-                <button
-                  type="button"
-                  (click)="addSplitPayment('MFS')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
-                >
-                  + MFS
-                </button>
-                <button
-                  type="button"
-                  (click)="addSplitPayment('Card')"
-                  class="text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 font-medium cursor-pointer"
-                >
-                  + Card
-                </button>
-              </div>
-            </div>
-
-            @if (splitPayments().length > 0) {
-              <div class="flex flex-wrap gap-1.5">
-                @for (split of splitPayments(); track split.method; let sIdx = $index) {
-                  <div class="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded-md text-xs font-medium text-slate-800">
-                    <span class="font-bold theme-highlight-title">{{ split.method }}</span>
-                    <span class="font-mono font-semibold">৳ {{ split.amount | number: '1.2-2' }}</span>
-                    <button
-                      type="button"
-                      (click)="removeSplitPayment(sIdx)"
-                      class="text-rose-500 hover:text-rose-700 ml-1 border-0 bg-transparent cursor-pointer font-bold"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                }
-              </div>
+          <input
+            type="number"
+            min="0"
+            [ngModel]="tendered()"
+            (ngModelChange)="onTenderedChange($event)"
+            class="tender-input"
+          />
+          <div class="notes">
+            <button type="button" (click)="setQuickCash(100)">৳100</button>
+            <button type="button" (click)="setQuickCash(500)">৳500</button>
+            <button type="button" (click)="setQuickCash(1000)">৳1000</button>
+            @if (nextRoundTender() > 0 && nextRoundTender() !== 100 && nextRoundTender() !== 500 && nextRoundTender() !== 1000) {
+              <button type="button" (click)="setQuickCash(nextRoundTender())">৳{{ nextRoundTender() }}</button>
             }
           </div>
         </div>
       }
 
-      <!-- Prominent High-Contrast Change / Due Banner -->
-      @if (selectedPaymentType() === 4) {
-        <div class="bg-rose-50 border border-rose-300 text-rose-900 rounded-xl p-3 text-center">
-          <div class="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center justify-center gap-1">
-            <span nz-icon nzType="warning"></span> SALE ON FULL CREDIT (DUE)
+      <!-- Card / MFS Reference Box -->
+      @if (['card', 'bkash', 'nagad', 'rocket', 'upay'].includes(selectedMethod())) {
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+            <span>{{ selectedMethod() === 'card' ? 'Card last 4 digits / approval code' : (methodDisplayNames[selectedMethod()] + ' transaction ID') }}</span>
+            <span class="font-normal text-slate-400">optional</span>
           </div>
-          <div class="text-2xl font-black font-mono text-rose-700 mt-0.5">
-            ৳ {{ finalPrice() | number: '1.2-2' }}
-          </div>
-        </div>
-      } @else if (changeDue() > 0) {
-        <div class="bg-emerald-600 text-white rounded-xl p-3 shadow-md text-center">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-100 flex items-center justify-center gap-1.5">
-            <span nz-icon nzType="check-circle"></span> CHANGE TO RETURN
-          </div>
-          <div class="text-3xl font-black font-mono tracking-tight text-white mt-0.5">
-            ৳ {{ changeDue() | number: '1.2-2' }}
-          </div>
-        </div>
-      } @else if (ticketDue() > 0) {
-        <div class="bg-rose-50 border border-rose-300 text-rose-900 rounded-xl p-3 text-center">
-          <div class="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center justify-center gap-1">
-            <span nz-icon nzType="warning"></span> DUE / SHORTAGE AMOUNT
-          </div>
-          <div class="text-2xl font-black font-mono text-rose-700 mt-0.5">
-            ৳ {{ ticketDue() | number: '1.2-2' }}
-          </div>
-        </div>
-      } @else {
-        <div class="bg-slate-100 border border-slate-200 text-slate-700 rounded-xl p-2.5 text-center flex items-center justify-center gap-2 text-xs font-semibold">
-          <span nz-icon nzType="check-circle" class="text-emerald-600"></span>
-          <span>Bill Settled (Exact Amount • No Change Due)</span>
+          <input
+            type="text"
+            [placeholder]="selectedMethod() === 'card' ? 'e.g. 4417' : 'e.g. 8N7A5K2Q1B'"
+            [(ngModel)]="txnReference"
+            class="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono"
+          />
         </div>
       }
 
-      <!-- Customer Info Section -->
-      <div class="pt-2 border-t border-slate-100 space-y-2">
-        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-          Customer Info
-        </div>
-
+      <!-- Split Payment Box -->
+      @if (selectedMethod() === 'split') {
         <div>
-          <label class="text-xs font-semibold text-slate-700 block mb-1">Choose customer:</label>
-          <div class="flex gap-2">
-            <nz-select
-              class="flex-1"
-              nzShowSearch
-              nzPlaceHolder="Select or search customer (name or phone)..."
-              [ngModel]="selectedCustomer()"
-              (ngModelChange)="selectedCustomer.set($event)"
-            >
-              @for (c of customers; track c.id) {
-                <nz-option
-                  [nzValue]="c.id"
-                  [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
-                ></nz-option>
-              }
-            </nz-select>
-            <button
-              type="button"
-              (click)="openAddCustomerModal()"
-              nz-tooltip
-              nzTooltipTitle="Quick Add Customer"
-              class="btn-quick-add"
-            >
-              <span nz-icon nzType="plus"></span>
+          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+            <span>Split the payment (৳)</span>
+            <span class="font-normal text-slate-400">Cash covers the balance</span>
+          </div>
+          <div class="sprow">
+            <span>Cash</span>
+            <input
+              type="number"
+              min="0"
+              [ngModel]="splitCash()"
+              (ngModelChange)="onSplitCashChange($event)"
+            />
+          </div>
+          <div class="sprow">
+            <span>Card</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="0"
+              [ngModel]="splitCard() || ''"
+              (ngModelChange)="onSplitChannelInput('card', $event)"
+            />
+          </div>
+          <div class="sprow">
+            <span>bKash</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="0"
+              [ngModel]="splitBkash() || ''"
+              (ngModelChange)="onSplitChannelInput('bkash', $event)"
+            />
+          </div>
+          <div class="sprow">
+            <span>Nagad</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="0"
+              [ngModel]="splitNagad() || ''"
+              (ngModelChange)="onSplitChannelInput('nagad', $event)"
+            />
+          </div>
+          <div class="sprow">
+            <span>Rocket/Upay</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="0"
+              [ngModel]="splitOther() || ''"
+              (ngModelChange)="onSplitChannelInput('other', $event)"
+            />
+          </div>
+        </div>
+      }
+
+      <!-- Real-Time Status / Result Banner -->
+      <div
+        class="result"
+        [class.ok]="resultState().type === 'ok'"
+        [class.short]="resultState().type === 'short'"
+      >
+        {{ resultState().text }}
+      </div>
+
+      <!-- Order Note Link / Box -->
+      @if (!showNoteBox()) {
+        <button type="button" class="linkbtn mt-2.5 block text-left" (click)="showNoteBox.set(true)">
+          + Add note
+        </button>
+      } @else {
+        <div class="mt-2">
+          <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
+            <span>Order note</span>
+            <button type="button" (click)="showNoteBox.set(false)" class="text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs">
+              ✕
             </button>
           </div>
-          @if (previousDue() > 0) {
-            <div class="flex justify-between text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1 font-medium">
-              <span>Previous Due: ৳ {{ previousDue() | number: '1.2-2' }}</span>
-              @if (ticketDue() > 0) {
-                <span class="font-bold">Total Due: ৳ {{ totalCustomerDue() | number: '1.2-2' }}</span>
-              }
-            </div>
-          }
-        </div>
-
-        <div>
           <textarea
-            nz-input
             placeholder="Order note / remark..."
             [(ngModel)]="orderNote"
             rows="2"
-            class="rounded-md text-xs"
+            class="w-full p-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-2 focus:outline-indigo-600 resize-none"
           ></textarea>
         </div>
-      </div>
+      }
 
-      <!-- Bottom Action Buttons -->
-      <div class="flex flex-col gap-2 pt-2">
-        <button
-          type="button"
-          nz-button
-          nzType="primary"
-          [disabled]="cart().length === 0"
-          (click)="confirmCheckout()"
-          class="w-full rounded-xl font-bold h-12 text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <span nz-icon nzType="check"></span>
-          <span>COMPLETE SALE (Enter / F10)</span>
-          <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-xs">৳ {{ finalPrice() | number: '1.2-2' }}</span>
-        </button>
-        <div class="grid grid-cols-2 gap-2">
+      <!-- Complete Sale Action Button -->
+      <button
+        type="button"
+        class="go"
+        [disabled]="isCheckoutDisabled()"
+        (click)="confirmCheckout()"
+      >
+        <span>✓ Complete sale</span>
+        <kbd style="background:transparent;color:#d1fadf;border-color:#6ee7a0;border:1px solid #6ee7a0;border-radius:4px;padding:1px 5px;font-size:11px">F10</kbd>
+      </button>
+
+      <!-- Explanatory Hint -->
+      <div class="hint">{{ checkoutDisabledReason() }}</div>
+
+      <!-- Print receipt option and secondary helpers -->
+      <div class="opt">
+        <label>
+          <input type="checkbox" [(ngModel)]="quickPrint" />
+          <span>Print receipt</span>
+        </label>
+        <div class="flex items-center gap-2.5">
           <button
             type="button"
-            nz-button
-            nzType="default"
             (click)="printInvoice()"
-            class="rounded-lg font-medium h-9 text-xs"
+            class="text-xs text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer font-medium p-0"
+            title="Re-print last sale invoice"
           >
-            <span nz-icon nzType="printer"></span> Print Receipt
+            🖨️ Re-print
           </button>
           <button
             type="button"
-            nz-button
-            nzType="default"
             (click)="startNewInvoice()"
-            class="rounded-lg font-medium h-9 text-xs text-rose-600 hover:text-rose-700"
+            class="text-xs text-rose-500 hover:text-rose-700 bg-transparent border-0 cursor-pointer font-medium p-0"
+            title="Clear basket"
           >
-            <span nz-icon nzType="clear"></span> Clear Basket
+            Clear
           </button>
         </div>
       </div>

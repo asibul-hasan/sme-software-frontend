@@ -125,6 +125,267 @@ interface CustomerOption {
     ::ng-deep .product-search-dropdown .ant-select-item-option-content {
       width: 100% !important;
     }
+
+    /* POS Checkout Drawer Styles from Prototype */
+    .checkout-drawer {
+      background: #fff;
+      border: 1px solid #e3e7ee;
+      border-radius: 12px;
+      padding: 14px 16px;
+      position: sticky;
+      top: 12px;
+    }
+    .checkout-drawer .net {
+      background: #161a23;
+      color: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .checkout-drawer .net small {
+      letter-spacing: .1em;
+      font-size: 12px;
+      color: #a8b0be;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .checkout-drawer .net b {
+      display: block;
+      font-size: 34px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+    .checkout-drawer .mini {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #6b7686;
+      margin-bottom: 6px;
+    }
+    .checkout-drawer .mini b {
+      color: #1f2733;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    .checkout-drawer .linkbtn {
+      background: none;
+      border: 0;
+      color: #4f46e5;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      padding: 0;
+      font-weight: 600;
+    }
+    .checkout-drawer .linkbtn:hover {
+      text-decoration: underline;
+    }
+    .checkout-drawer .pay {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .checkout-drawer .pay button {
+      height: 42px;
+      border: 1px solid #e3e7ee;
+      background: #fff;
+      color: #1f2733;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .checkout-drawer .pay button:hover {
+      background: #f1f3f7;
+    }
+    .checkout-drawer .pay button.on {
+      border-color: #4f46e5;
+      background: #eef0ff;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+    .checkout-drawer .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .checkout-drawer .notes {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .checkout-drawer .notes button {
+      flex: 1;
+      height: 32px;
+      border: 1px solid #e3e7ee;
+      background: #fff;
+      color: #1f2733;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .checkout-drawer .notes button:hover {
+      background: #f1f3f7;
+      border-color: #cbd5e1;
+    }
+    .checkout-drawer .sprow {
+      display: grid;
+      grid-template-columns: 85px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #6b7686;
+    }
+    .checkout-drawer .sprow input {
+      height: 36px;
+      border: 1px solid #e3e7ee;
+      border-radius: 8px;
+      padding: 0 10px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      background: #fff;
+      color: #1f2733;
+      font-weight: 600;
+    }
+    .checkout-drawer .sprow input:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: -1px;
+    }
+    .checkout-drawer .result {
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      background: #f1f3f7;
+      color: #6b7686;
+    }
+    .checkout-drawer .result.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .checkout-drawer .result.short {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .checkout-drawer .go {
+      height: 50px;
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      background: #16a34a;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s ease;
+    }
+    .checkout-drawer .go:hover:not(:disabled) {
+      background: #15803d;
+    }
+    .checkout-drawer .go:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .checkout-drawer .hint {
+      font-size: 12px;
+      color: #6b7686;
+      text-align: center;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+    .checkout-drawer .opt {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .checkout-drawer .opt label {
+      margin: 0;
+      font-weight: 500;
+      color: #1f2733;
+      font-size: 13px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      cursor: pointer;
+    }
+    .checkout-drawer .sep {
+      height: 1px;
+      background: #e3e7ee;
+      margin: 14px 0;
+    }
+    .checkout-drawer .dueinfo {
+      margin-top: 8px;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+    .checkout-drawer .dueinfo.has {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .checkout-drawer .dueinfo.none {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .checkout-drawer .dueinfo .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .checkout-drawer .dueinfo b {
+      font-variant-numeric: tabular-nums;
+    }
+    .checkout-drawer .chk {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin: 6px 0 0;
+      font-weight: 500;
+      font-size: 13px;
+      color: inherit;
+      cursor: pointer;
+    }
+    .checkout-drawer .tender-input {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      border: 1px solid #e3e7ee;
+      border-radius: 8px;
+      background: #fff;
+      color: #1f2733;
+      font-size: 18px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .checkout-drawer .tender-input:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: -1px;
+    }
   `],
   templateUrl: './pos-terminal.component.html',
 })
@@ -170,6 +431,26 @@ export class PosTerminalComponent implements OnInit {
   cashReceived = signal<boolean>(true);
   orderNote = '';
 
+  // Prototype Payment & UI state
+  selectedMethod = signal<'cash' | 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay' | 'split' | 'due'>('cash');
+  showDiscountBox = signal<boolean>(false);
+  showNoteBox = signal<boolean>(false);
+  collectPreviousDue = signal<boolean>(false);
+  txnReference = '';
+  tenderTouched = false;
+  spCashTouched = false;
+
+  readonly methodDisplayNames: Record<string, string> = {
+    cash: 'Cash',
+    card: 'Card',
+    bkash: 'bKash',
+    nagad: 'Nagad',
+    rocket: 'Rocket',
+    upay: 'Upay',
+    split: 'Split',
+    due: 'Due',
+  };
+
   globalDiscountType = signal<number>(DiscountType.Percentage);
   globalDiscountValue = signal<number>(0);
 
@@ -179,23 +460,34 @@ export class PosTerminalComponent implements OnInit {
   tendered = signal<number>(0);
   isManualTender = signal<boolean>(false);
 
-  // Dedicated Split Tender Channels (Card, Cash, MFS)
+  // Dedicated Split Tender Channels (Card, Cash, bKash, Nagad, Other)
   splitCash = signal<number>(0);
   splitCard = signal<number>(0);
   splitMfs = signal<number>(0);
+  splitBkash = signal<number>(0);
+  splitNagad = signal<number>(0);
+  splitOther = signal<number>(0);
   lastPrintedPayments: { method: string; amount: number }[] = [];
 
-  readonly splitTotal = computed(() => {
-    return Math.round((this.splitCash() + this.splitCard() + this.splitMfs()) * 100) / 100;
+  readonly splitSum = computed(() => {
+    return Math.round((
+      (Number(this.splitCash()) || 0) +
+      (Number(this.splitCard()) || 0) +
+      (Number(this.splitBkash()) || 0) +
+      (Number(this.splitNagad()) || 0) +
+      (Number(this.splitOther()) || 0)
+    ) * 100) / 100;
   });
 
+  readonly splitTotal = computed(() => this.splitSum());
+
   readonly splitRemaining = computed(() => {
-    const rem = this.finalPrice() - this.splitTotal();
+    const rem = this.payableTotal() - this.splitSum();
     return rem > 0 ? Math.round(rem * 100) / 100 : 0;
   });
 
   readonly splitOverpaid = computed(() => {
-    const over = this.splitTotal() - this.finalPrice();
+    const over = this.splitSum() - this.payableTotal();
     return over > 0 ? Math.round(over * 100) / 100 : 0;
   });
 
@@ -213,15 +505,21 @@ export class PosTerminalComponent implements OnInit {
   cart = signal<CartItem[]>([]);
 
   constructor() {
-    // Auto-sync tender amount with finalPrice unless cashier explicitly entered cash notes or switched to credit/split
+    // Auto-sync tender amount and split balance unless cashier explicitly modified
     effect(() => {
-      const finalAmt = this.finalPrice();
+      const payable = this.payableTotal();
+      const m = this.selectedMethod();
       const isManual = this.isManualTender();
-      const isCash = this.cashReceived();
-      const payType = this.selectedPaymentType();
 
-      if (!isManual && isCash && payType !== 4 && payType !== 8) {
-        this.tendered.set(finalAmt);
+      if (!isManual && !this.tenderTouched && m === 'cash') {
+        this.tendered.set(payable);
+      }
+      if (m === 'split' && !this.spCashTouched) {
+        const nonCash = (Number(this.splitCard()) || 0) +
+                        (Number(this.splitBkash()) || 0) +
+                        (Number(this.splitNagad()) || 0) +
+                        (Number(this.splitOther()) || 0);
+        this.splitCash.set(Math.max(0, Math.round((payable - nonCash) * 100) / 100));
       }
     }, { allowSignalWrites: true });
   }
@@ -252,6 +550,86 @@ export class PosTerminalComponent implements OnInit {
   readonly finalPrice = computed(() => {
     const net = Math.max(0, this.subtotal() - this.discountAmount() + this.cardFee());
     return Math.round(net * 100) / 100;
+  });
+
+  readonly payableTotal = computed(() => {
+    const net = this.finalPrice();
+    const pc = (this.collectPreviousDue() && this.previousDue() > 0 && this.selectedMethod() !== 'due')
+      ? this.previousDue()
+      : 0;
+    return Math.round((net + pc) * 100) / 100;
+  });
+
+  readonly totalCartPcs = computed(() => {
+    const isWs = this.isWholesale();
+    return this.cart().reduce((sum, item) => {
+      const pcs = isWs ? Math.round(item.qty * (item.pcs_per_box || 10)) : Math.round(item.qty);
+      return sum + pcs;
+    }, 0);
+  });
+
+  readonly checkoutDisabledReason = computed(() => {
+    if (this.cart().length === 0) return 'Add at least one item.';
+    const m = this.selectedMethod();
+    const payable = this.payableTotal();
+    const tend = Number(this.tendered()) || 0;
+    if (m === 'cash' && tend < payable) return 'Received amount is less than the total.';
+    if (m === 'split') {
+      const diff = Math.round((payable - this.splitSum()) * 100) / 100;
+      if (diff !== 0) return 'Split amounts must add up to the total.';
+    }
+    if (m === 'due') {
+      if (this.selectedCustomer() === '1') return 'Choose a customer for due sales.';
+    }
+    return '';
+  });
+
+  readonly isCheckoutDisabled = computed(() => {
+    return this.checkoutDisabledReason().length > 0;
+  });
+
+  readonly resultState = computed(() => {
+    if (this.cart().length === 0) {
+      return { type: 'default', text: 'Add items to start a sale.' };
+    }
+    const m = this.selectedMethod();
+    const payable = this.payableTotal();
+    const tend = Number(this.tendered()) || 0;
+
+    if (m === 'cash') {
+      if (tend >= payable) {
+        const ch = Math.round((tend - payable) * 100) / 100;
+        return {
+          type: 'ok',
+          text: ch > 0 ? `Change to return: ৳ ${ch.toFixed(2)}` : 'Exact amount, no change due',
+        };
+      } else {
+        const short = Math.round((payable - tend) * 100) / 100;
+        return {
+          type: 'short',
+          text: `Short by ৳ ${short.toFixed(2)}`,
+        };
+      }
+    }
+
+    if (m === 'split') {
+      const diff = Math.round((payable - this.splitSum()) * 100) / 100;
+      if (diff === 0) {
+        return { type: 'ok', text: `Split settled · ৳ ${payable.toFixed(2)}` };
+      } else if (diff > 0) {
+        return { type: 'short', text: `Remaining ৳ ${diff.toFixed(2)}` };
+      } else {
+        return { type: 'short', text: `Over by ৳ ${(-diff).toFixed(2)}` };
+      }
+    }
+
+    if (m === 'due') {
+      const newBal = Math.round((this.previousDue() + this.finalPrice()) * 100) / 100;
+      return { type: 'short', text: `New due balance: ৳ ${newBal.toFixed(2)}` };
+    }
+
+    const name = this.methodDisplayNames[m] || 'Electronic';
+    return { type: 'ok', text: `Collect ৳ ${payable.toFixed(2)} via ${name}` };
   });
 
   readonly totalPaid = computed(() => {
@@ -740,8 +1118,9 @@ export class PosTerminalComponent implements OnInit {
 
   setExactPayment(): void {
     this.isManualTender.set(false);
+    this.tenderTouched = false;
     this.cashReceived.set(true);
-    this.tendered.set(this.finalPrice());
+    this.tendered.set(this.payableTotal());
     if (this.splitPayments().length > 0) {
       this.splitPayments.set([]);
     }
@@ -753,11 +1132,13 @@ export class PosTerminalComponent implements OnInit {
 
   resetTenderToExact(): void {
     this.isManualTender.set(false);
-    this.tendered.set(this.finalPrice());
+    this.tenderTouched = false;
+    this.tendered.set(this.payableTotal());
   }
 
   setQuickCash(amount: number): void {
     this.isManualTender.set(true);
+    this.tenderTouched = true;
     this.cashReceived.set(true);
     this.tendered.set(amount);
     if (this.splitPayments().length > 0) {
@@ -767,6 +1148,7 @@ export class PosTerminalComponent implements OnInit {
 
   addQuickCash(extra: number): void {
     this.isManualTender.set(true);
+    this.tenderTouched = true;
     this.cashReceived.set(true);
     const curr = Number(this.tendered()) || 0;
     this.tendered.set(curr + extra);
@@ -775,31 +1157,102 @@ export class PosTerminalComponent implements OnInit {
     }
   }
 
-  setPaymentMethod(type: number): void {
-    this.selectedPaymentType.set(type);
-    if (type === 4) { // Due / Credit
-      this.cashReceived.set(false);
-      this.tendered.set(0);
-      this.cardCommission.set(false);
-      this.splitPayments.set([]);
-    } else if (type === 8) { // Split / Multi-Tender
+  setMethod(m: 'cash' | 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay' | 'split' | 'due'): void {
+    this.selectedMethod.set(m);
+    this.tenderTouched = false;
+    this.isManualTender.set(false);
+
+    if (m === 'cash') {
+      this.selectedPaymentType.set(1);
       this.cashReceived.set(true);
       this.cardCommission.set(false);
-      this.isManualTender.set(true);
-      // If split channels are not initialized, leave at 0 so cashier can enter each channel
-      if (this.splitTotal() === 0 && this.tendered() > 0 && this.tendered() < this.finalPrice()) {
-        this.splitCash.set(this.tendered());
-      }
-    } else if (type === 6 || type === 2) { // Card
+      this.tendered.set(this.payableTotal());
+    } else if (m === 'card') {
+      this.selectedPaymentType.set(6);
       this.cashReceived.set(true);
       this.cardCommission.set(true);
-      this.isManualTender.set(false);
-      this.tendered.set(this.finalPrice());
-    } else { // Cash (1) or MFS (3)
+      this.tendered.set(this.payableTotal());
+    } else if (m === 'bkash' || m === 'nagad' || m === 'rocket' || m === 'upay') {
+      this.selectedPaymentType.set(3);
       this.cashReceived.set(true);
       this.cardCommission.set(false);
-      this.isManualTender.set(false);
-      this.tendered.set(this.finalPrice());
+      this.tendered.set(this.payableTotal());
+    } else if (m === 'split') {
+      this.selectedPaymentType.set(8);
+      this.cashReceived.set(true);
+      this.cardCommission.set(false);
+      this.spCashTouched = false;
+      this.splitCard.set(0);
+      this.splitBkash.set(0);
+      this.splitNagad.set(0);
+      this.splitOther.set(0);
+      this.splitCash.set(this.payableTotal());
+    } else if (m === 'due') {
+      this.selectedPaymentType.set(4);
+      this.cashReceived.set(false);
+      this.cardCommission.set(false);
+      this.tendered.set(0);
+      this.collectPreviousDue.set(false);
+    }
+  }
+
+  setPaymentMethod(type: number): void {
+    const mapTypeToMethod: Record<number, 'cash' | 'card' | 'bkash' | 'nagad' | 'rocket' | 'upay' | 'split' | 'due'> = {
+      1: 'cash',
+      6: 'card',
+      2: 'card',
+      3: 'bkash',
+      8: 'split',
+      4: 'due',
+    };
+    this.setMethod(mapTypeToMethod[type] || 'cash');
+  }
+
+  onSplitChannelInput(channel: 'card' | 'bkash' | 'nagad' | 'other', val: number | string): void {
+    const num = Math.max(0, Number(val) || 0);
+    const rounded = Math.round(num * 100) / 100;
+    if (channel === 'card') this.splitCard.set(rounded);
+    else if (channel === 'bkash') this.splitBkash.set(rounded);
+    else if (channel === 'nagad') this.splitNagad.set(rounded);
+    else if (channel === 'other') this.splitOther.set(rounded);
+
+    if (!this.spCashTouched) {
+      const nonCash = (Number(this.splitCard()) || 0) +
+                      (Number(this.splitBkash()) || 0) +
+                      (Number(this.splitNagad()) || 0) +
+                      (Number(this.splitOther()) || 0);
+      const rest = Math.max(0, Math.round((this.payableTotal() - nonCash) * 100) / 100);
+      this.splitCash.set(rest);
+    }
+  }
+
+  onSplitCashChange(val: number | string): void {
+    this.spCashTouched = true;
+    this.splitCash.set(Math.max(0, Number(val) || 0));
+  }
+
+  onCustomerChange(id: string): void {
+    this.selectedCustomer.set(id);
+    this.collectPreviousDue.set(false);
+    this.spCashTouched = false;
+    this.tenderTouched = false;
+    if (!this.tenderTouched && this.selectedMethod() === 'cash') {
+      this.tendered.set(this.payableTotal());
+    }
+  }
+
+  toggleCollectPreviousDue(checked: boolean): void {
+    this.collectPreviousDue.set(checked);
+    this.spCashTouched = false;
+    this.tenderTouched = false;
+    if (this.selectedMethod() === 'cash') {
+      this.tendered.set(this.payableTotal());
+    } else if (this.selectedMethod() === 'split') {
+      const nonCash = (Number(this.splitCard()) || 0) +
+                      (Number(this.splitBkash()) || 0) +
+                      (Number(this.splitNagad()) || 0) +
+                      (Number(this.splitOther()) || 0);
+      this.splitCash.set(Math.max(0, Math.round((this.payableTotal() - nonCash) * 100) / 100));
     }
   }
 
@@ -843,6 +1296,10 @@ export class PosTerminalComponent implements OnInit {
     this.splitCash.set(0);
     this.splitCard.set(0);
     this.splitMfs.set(0);
+    this.splitBkash.set(0);
+    this.splitNagad.set(0);
+    this.splitOther.set(0);
+    this.spCashTouched = false;
   }
 
   splitHalfAndHalf(chan1: 'cash' | 'card', chan2: 'card' | 'mfs'): void {
@@ -858,6 +1315,7 @@ export class PosTerminalComponent implements OnInit {
 
   stepTendered(delta: number): void {
     this.isManualTender.set(true);
+    this.tenderTouched = true;
     this.cashReceived.set(true);
     const curr = Number(this.tendered()) || 0;
     const next = Math.max(0, curr + delta);
@@ -869,6 +1327,7 @@ export class PosTerminalComponent implements OnInit {
 
   onTenderedChange(val: number | string): void {
     this.isManualTender.set(true);
+    this.tenderTouched = true;
     this.cashReceived.set(true);
     this.tendered.set(Math.max(0, Number(val) || 0));
     if (this.splitPayments().length > 0) {
@@ -918,8 +1377,18 @@ export class PosTerminalComponent implements OnInit {
             this.splitCash.set(0);
             this.splitCard.set(0);
             this.splitMfs.set(0);
+            this.splitBkash.set(0);
+            this.splitNagad.set(0);
+            this.splitOther.set(0);
+            this.spCashTouched = false;
+            this.tenderTouched = false;
             this.globalDiscountValue.set(0);
             this.cardCommission.set(false);
+            this.showDiscountBox.set(false);
+            this.showNoteBox.set(false);
+            this.collectPreviousDue.set(false);
+            this.orderNote = '';
+            this.txnReference = '';
           }
         });
     }
@@ -1214,6 +1683,7 @@ export class PosTerminalComponent implements OnInit {
         payment_method: this.selectedPaymentType(),
         cash_received_status: this.cashReceived() ? 2 : 1,
         is_quick_printed: this.quickPrint,
+        remarks: (this.orderNote ? this.orderNote + ' ' : '') + (this.txnReference ? `[Ref: ${this.txnReference}]` : ''),
       },
       items: this.cart().map(item => {
         const pcsPerBox = item.pcs_per_box || 10;
@@ -1239,9 +1709,11 @@ export class PosTerminalComponent implements OnInit {
       }),
       payments: this.selectedPaymentType() === 8
         ? [
-            ...(this.splitCard() > 0 ? [{ account_no: 1, payment_method: 6, amount: this.splitCard() }] : []),
             ...(this.splitCash() > 0 ? [{ account_no: 1, payment_method: 1, amount: this.splitCash() }] : []),
-            ...(this.splitMfs() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitMfs() }] : []),
+            ...(this.splitCard() > 0 ? [{ account_no: 1, payment_method: 6, amount: this.splitCard() }] : []),
+            ...(this.splitBkash() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitBkash() }] : []),
+            ...(this.splitNagad() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitNagad() }] : []),
+            ...(this.splitOther() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitOther() }] : []),
           ]
         : this.splitPayments().length > 0
         ? this.splitPayments().map(p => ({
@@ -1276,14 +1748,16 @@ export class PosTerminalComponent implements OnInit {
           // Set tender breakdown for receipt
           if (this.selectedPaymentType() === 8) {
             this.lastPrintedPayments = [
-              ...(this.splitCard() > 0 ? [{ method: 'Card', amount: this.splitCard() }] : []),
               ...(this.splitCash() > 0 ? [{ method: 'Cash', amount: this.splitCash() }] : []),
-              ...(this.splitMfs() > 0 ? [{ method: 'MFS (bKash/Nagad)', amount: this.splitMfs() }] : []),
+              ...(this.splitCard() > 0 ? [{ method: 'Card', amount: this.splitCard() }] : []),
+              ...(this.splitBkash() > 0 ? [{ method: 'bKash', amount: this.splitBkash() }] : []),
+              ...(this.splitNagad() > 0 ? [{ method: 'Nagad', amount: this.splitNagad() }] : []),
+              ...(this.splitOther() > 0 ? [{ method: 'Rocket/Upay', amount: this.splitOther() }] : []),
             ];
           } else {
             const methodLabel = this.selectedPaymentType() === 1 ? 'Cash'
               : this.selectedPaymentType() === 6 ? 'Card'
-              : this.selectedPaymentType() === 3 ? 'MFS'
+              : this.selectedPaymentType() === 3 ? (this.methodDisplayNames[this.selectedMethod()] || 'MFS')
               : this.selectedPaymentType() === 4 ? 'Due' : 'Cash';
             this.lastPrintedPayments = [{ method: methodLabel, amount: this.totalPaid() }];
           }
@@ -1311,7 +1785,17 @@ export class PosTerminalComponent implements OnInit {
           this.splitCash.set(0);
           this.splitCard.set(0);
           this.splitMfs.set(0);
+          this.splitBkash.set(0);
+          this.splitNagad.set(0);
+          this.splitOther.set(0);
+          this.spCashTouched = false;
+          this.tenderTouched = false;
           this.globalDiscountValue.set(0);
+          this.showDiscountBox.set(false);
+          this.showNoteBox.set(false);
+          this.collectPreviousDue.set(false);
+          this.orderNote = '';
+          this.txnReference = '';
 
           // Refresh authoritative product stock from backend
           this.loadProducts();
