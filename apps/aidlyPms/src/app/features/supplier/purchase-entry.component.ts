@@ -121,15 +121,20 @@ export class PurchaseEntryComponent implements OnInit {
     return this.lines().reduce((sum, item) => sum + (item.totalQtyPcs || 0), 0);
   });
 
-  finalPrice = computed(() => {
+  discountAmount = computed(() => {
     const gross = this.grossTotal();
     const val = Number(this.discountValue) || 0;
-    if (val <= 0) return gross;
+    if (val <= 0) return 0;
     if (this.discountType === DiscountType.Flat) {
-      return Math.max(0, gross - val);
+      return Math.min(gross, val);
     } else {
-      return Math.max(0, gross - (gross * val) / 100);
+      return Math.round((gross * val) / 100 * 100) / 100;
     }
+  });
+
+  finalPrice = computed(() => {
+    const gross = this.grossTotal();
+    return Math.max(0, gross - this.discountAmount());
   });
 
   balanceDue = computed(() => {
