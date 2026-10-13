@@ -213,6 +213,13 @@ interface CustomerOption {
       color: #4f46e5;
       font-weight: 600;
     }
+    .checkout-drawer .pay button .brand-svg {
+      height: 23px;
+      width: auto;
+      max-width: 48px;
+      display: block;
+      pointer-events: none;
+    }
     .checkout-drawer .dot {
       width: 8px;
       height: 8px;
