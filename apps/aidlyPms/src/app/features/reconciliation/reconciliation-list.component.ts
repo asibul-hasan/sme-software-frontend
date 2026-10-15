@@ -101,18 +101,18 @@ interface ReconcileRecord {
               }
             </nz-select>
           </div>
-          <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportTransfersCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportTransfersCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <a nz-button nzType="default" routerLink="/reconciliation/add" class="rounded-md">
+          <a nz-button class="btn-secondary-action rounded-md" routerLink="/reconciliation/add">
             <span nz-icon nzType="plus"></span> Transfer Form
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Reconciliation (F2)
           </button>
         </div>

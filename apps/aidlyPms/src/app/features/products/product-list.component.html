@@ -56,25 +56,25 @@
         </nz-select>
       </div>
 
-      <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+      <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
         <span nz-icon nzType="clear"></span> Reset
       </button>
     </div>
 
     <div actions class="flex items-center gap-1.5 shrink-0 flex-nowrap">
-      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="downloadStock()">
+      <button nz-button class="btn-export rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="downloadStock()">
         <span nz-icon nzType="download"></span> Download
       </button>
-      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="openAddCompanyModal()">
+      <button nz-button class="btn-secondary-action rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="openAddCompanyModal()">
         <span nz-icon nzType="plus"></span> Add Company
       </button>
-      <a routerLink="/products/requisition" nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1">
+      <a routerLink="/products/requisition" nz-button class="btn-history rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1">
         <span nz-icon nzType="file-done"></span> Requisitions
       </a>
-      <a routerLink="/products/add" nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" title="Open Full-Page Form">
+      <a routerLink="/products/add" nz-button class="btn-secondary-action rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" title="Open Full-Page Form">
         <span nz-icon nzType="form"></span> Full Form
       </a>
-      <button nz-button nzType="primary" class="rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="openAddMedicineModal()">
+      <button nz-button nzType="primary" class="btn-save rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1 font-semibold" (click)="openAddMedicineModal()">
         <span nz-icon nzType="plus"></span> Add Medicine
       </button>
     </div>

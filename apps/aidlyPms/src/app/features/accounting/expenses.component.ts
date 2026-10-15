@@ -108,22 +108,22 @@ interface ExpenseRow {
             </nz-select>
           </div>
           <div class="flex items-center pb-0.5">
-            <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+            <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
               <span nz-icon nzType="clear"></span> Reset
             </button>
           </div>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportExpensesCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportExpensesCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <button nz-button nzType="dashed" class="rounded-md" (click)="openCatModal()">
+          <button nz-button class="btn-secondary-action rounded-md" (click)="openCatModal()">
             <span nz-icon nzType="folder-add"></span> + Category
           </button>
-          <a nz-button nzType="default" routerLink="/accounting/expenses/add" class="rounded-md">
+          <a nz-button class="btn-secondary-action rounded-md" routerLink="/accounting/expenses/add">
             <span nz-icon nzType="plus"></span> Expense Form
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Expense (F2)
           </button>
         </div>

@@ -60,7 +60,7 @@ import { LabelOption } from '../../constants/label-values.constant';
       <!-- Action Buttons Slot -->
       <div class="flex items-center gap-2 shrink-0">
         @if (searchQuery || selectedOption !== null) {
-          <button nz-button nzType="default" nzSize="default" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md" nzSize="default" (click)="resetFilters()">
             <span nz-icon nzType="reload"></span>
             Reset
           </button>

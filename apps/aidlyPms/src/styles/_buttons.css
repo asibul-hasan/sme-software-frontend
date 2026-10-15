@@ -34,18 +34,389 @@
   fill: currentColor !important;
 }
 
-/* Default & Secondary Buttons */
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL UNIFIED BUTTON DESIGN SYSTEM (Aidly SaaS Parity)
+   Color Hierarchy, Semantic Tones & Zero-Black-Border Specification
+   ───────────────────────────────────────────────────────────────── */
+
+/* 1. PRIMARY ACTIONS & SAVE BUTTONS (Unified Primary Brand) */
+.ant-btn-primary,
+.btn-primary,
+.btn-save,
+.btn-submit,
+button[type="submit"],
+.ant-modal-footer .ant-btn-primary {
+  background-color: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px 0 rgba(79, 70, 229, 0.25) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.ant-btn-primary *,
+.btn-primary *,
+.btn-save *,
+.btn-submit *,
+button[type="submit"] *,
+.ant-modal-footer .ant-btn-primary * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+.ant-btn-primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled),
+.btn-save:hover:not(:disabled),
+.btn-submit:hover:not(:disabled),
+button[type="submit"]:hover:not(:disabled),
+.ant-modal-footer .ant-btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: #ffffff !important;
+}
+
+.ant-btn-primary:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-save:active:not(:disabled),
+.btn-submit:active:not(:disabled),
+button[type="submit"]:active:not(:disabled) {
+  background-color: var(--primary-active) !important;
+  border-color: var(--primary-active) !important;
+  color: #ffffff !important;
+  transform: scale(0.98);
+}
+
+/* 2. RESET & CLEAR BUTTONS (Unified Warm Amber-Orange Tonal) */
+.btn-reset,
+.btn-clear,
+.ant-btn-reset,
+.ant-btn:has(.anticon-clear),
+.ant-btn:has(.anticon-redo),
+button:has(.anticon-clear),
+button:has(.anticon-redo),
+button:has([nztype="clear"]),
+button:has([nztype="redo"]),
+.ant-btn[btn-type="reset"] {
+  background-color: #fff7ed !important;
+  border: 1px solid #fed7aa !important;
+  color: #c2410c !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(194, 65, 12, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-reset *,
+.btn-clear *,
+.ant-btn-reset *,
+.ant-btn:has(.anticon-clear) *,
+.ant-btn:has(.anticon-redo) *,
+button:has(.anticon-clear) *,
+button:has(.anticon-redo) * {
+  color: #c2410c !important;
+  fill: currentColor !important;
+}
+
+.btn-reset:hover:not(:disabled),
+.btn-clear:hover:not(:disabled),
+.ant-btn-reset:hover:not(:disabled),
+.ant-btn:has(.anticon-clear):hover:not(:disabled),
+.ant-btn:has(.anticon-redo):hover:not(:disabled),
+button:has(.anticon-clear):hover:not(:disabled),
+button:has(.anticon-redo):hover:not(:disabled) {
+  background-color: #ffedd5 !important;
+  border-color: #fdba74 !important;
+  color: #9a3412 !important;
+}
+
+.btn-reset:hover:not(:disabled) *,
+.btn-clear:hover:not(:disabled) *,
+.ant-btn:has(.anticon-clear):hover:not(:disabled) *,
+button:has(.anticon-clear):hover:not(:disabled) * {
+  color: #9a3412 !important;
+  fill: currentColor !important;
+}
+
+.btn-reset:active:not(:disabled),
+.btn-clear:active:not(:disabled),
+.ant-btn:has(.anticon-clear):active:not(:disabled) {
+  background-color: #fed7aa !important;
+  transform: scale(0.98);
+}
+
+/* 3. EXPORT & DOWNLOAD BUTTONS (Unified Fresh Emerald Tonal) */
+.btn-export,
+.btn-download,
+.ant-btn-export,
+.ant-btn:has(.anticon-download),
+.ant-btn:has(.anticon-export),
+.ant-btn:has(.anticon-file-excel),
+button:has(.anticon-download),
+button:has(.anticon-export),
+button:has(.anticon-file-excel),
+button:has([nztype="download"]),
+button:has([nztype="export"]),
+.ant-btn[btn-type="export"] {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(4, 120, 87, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-export *,
+.btn-download *,
+.ant-btn:has(.anticon-download) *,
+.ant-btn:has(.anticon-export) *,
+.ant-btn:has(.anticon-file-excel) *,
+button:has(.anticon-download) *,
+button:has(.anticon-export) * {
+  color: #047857 !important;
+  fill: currentColor !important;
+}
+
+.btn-export:hover:not(:disabled),
+.btn-download:hover:not(:disabled),
+.ant-btn:has(.anticon-download):hover:not(:disabled),
+.ant-btn:has(.anticon-export):hover:not(:disabled),
+button:has(.anticon-download):hover:not(:disabled),
+button:has(.anticon-export):hover:not(:disabled) {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+
+.btn-export:hover:not(:disabled) *,
+.btn-download:hover:not(:disabled) *,
+.ant-btn:has(.anticon-download):hover:not(:disabled) *,
+button:has(.anticon-download):hover:not(:disabled) * {
+  color: #065f46 !important;
+  fill: currentColor !important;
+}
+
+.btn-export:active:not(:disabled),
+.btn-download:active:not(:disabled),
+.ant-btn:has(.anticon-download):active:not(:disabled) {
+  background-color: #a7f3d0 !important;
+  transform: scale(0.98);
+}
+
+/* 4. SECONDARY CREATION & AUXILIARY ACTIONS (Unified Soft Indigo Tonal) */
+.btn-secondary-action,
+.btn-soft-primary,
+.btn-secondary-add,
+.ant-btn-dashed,
+.ant-btn:has(.anticon-folder-add),
+button:has(.anticon-folder-add),
+button:has([nztype="folder-add"]),
+.ant-btn:has(.anticon-user-add),
+button:has(.anticon-user-add),
+button:has([nztype="user-add"]),
+.ant-btn:has(.anticon-form),
+button:has(.anticon-form),
+button:has([nztype="form"]),
+.ant-btn:has(.anticon-plus):not(.ant-btn-primary):not(.btn-save):not(.btn-quick-add):not(.header-icon-btn),
+a.ant-btn:has(.anticon-plus):not(.ant-btn-primary) {
+  background-color: #eef2ff !important;
+  border: 1px solid #c7d2fe !important;
+  color: #4338ca !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(67, 56, 202, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-secondary-action *,
+.btn-soft-primary *,
+.ant-btn-dashed *,
+.ant-btn:has(.anticon-folder-add) *,
+.ant-btn:has(.anticon-user-add) *,
+.ant-btn:has(.anticon-form) *,
+.ant-btn:has(.anticon-plus):not(.ant-btn-primary):not(.btn-save):not(.btn-quick-add) * {
+  color: #4338ca !important;
+  fill: currentColor !important;
+}
+
+.btn-secondary-action:hover:not(:disabled),
+.btn-soft-primary:hover:not(:disabled),
+.ant-btn-dashed:hover:not(:disabled),
+.ant-btn:has(.anticon-folder-add):hover:not(:disabled),
+.ant-btn:has(.anticon-user-add):hover:not(:disabled),
+.ant-btn:has(.anticon-form):hover:not(:disabled),
+.ant-btn:has(.anticon-plus):not(.ant-btn-primary):not(.btn-save):not(.btn-quick-add):hover:not(:disabled),
+a.ant-btn:has(.anticon-plus):not(.ant-btn-primary):hover {
+  background-color: #e0e7ff !important;
+  border-color: #a5b4fc !important;
+  color: #3730a3 !important;
+}
+
+.btn-secondary-action:hover:not(:disabled) *,
+.btn-soft-primary:hover:not(:disabled) *,
+.ant-btn-dashed:hover:not(:disabled) *,
+.ant-btn:has(.anticon-folder-add):hover:not(:disabled) *,
+.ant-btn:has(.anticon-user-add):hover:not(:disabled) *,
+.ant-btn:has(.anticon-plus):not(.ant-btn-primary):hover:not(:disabled) * {
+  color: #3730a3 !important;
+  fill: currentColor !important;
+}
+
+.btn-secondary-action:active:not(:disabled),
+.ant-btn-dashed:active:not(:disabled) {
+  background-color: #c7d2fe !important;
+  transform: scale(0.98);
+}
+
+/* 5. CANCEL, CLOSE & BACK ACTIONS (Unified Soft Slate Neutral) */
+.btn-cancel,
+.btn-close,
+.btn-back,
+.ant-modal-footer .ant-btn-default,
+.ant-btn:has(.anticon-arrow-left),
+button:has(.anticon-arrow-left),
+button:has([nztype="arrow-left"]),
+.ant-btn:has(.anticon-close),
+button:has(.anticon-close),
+button:has([nztype="close"]) {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(71, 85, 105, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-cancel *,
+.btn-close *,
+.btn-back *,
+.ant-modal-footer .ant-btn-default *,
+.ant-btn:has(.anticon-arrow-left) *,
+.ant-btn:has(.anticon-close) * {
+  color: #475569 !important;
+  fill: currentColor !important;
+}
+
+.btn-cancel:hover:not(:disabled),
+.btn-close:hover:not(:disabled),
+.btn-back:hover:not(:disabled),
+.ant-modal-footer .ant-btn-default:hover:not(:disabled),
+.ant-btn:has(.anticon-arrow-left):hover:not(:disabled),
+.ant-btn:has(.anticon-close):hover:not(:disabled) {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+.btn-cancel:hover:not(:disabled) *,
+.btn-close:hover:not(:disabled) *,
+.ant-modal-footer .ant-btn-default:hover:not(:disabled) * {
+  color: #1e293b !important;
+  fill: currentColor !important;
+}
+
+/* 6. PRINT & STATEMENT ACTIONS (Unified Soft Cyan Tonal) */
+.btn-print,
+.ant-btn:has(.anticon-printer),
+button:has(.anticon-printer),
+button:has([nztype="printer"]) {
+  background-color: #ecfeff !important;
+  border: 1px solid #a5f3fc !important;
+  color: #0e7490 !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(14, 116, 144, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-print *,
+.ant-btn:has(.anticon-printer) *,
+button:has(.anticon-printer) * {
+  color: #0e7490 !important;
+  fill: currentColor !important;
+}
+
+.btn-print:hover:not(:disabled),
+.ant-btn:has(.anticon-printer):hover:not(:disabled),
+button:has(.anticon-printer):hover:not(:disabled) {
+  background-color: #cffafe !important;
+  border-color: #67e8f9 !important;
+  color: #155e75 !important;
+}
+
+/* 7. DESTRUCTIVE ACTIONS & DELETE (Unified Soft Rose Tonal) */
+.btn-danger,
+.btn-delete,
+.ant-btn-dangerous:not(.ant-btn-primary),
+.ant-btn-danger:not(.ant-btn-primary),
+.ant-btn:has(.anticon-delete),
+button:has(.anticon-delete),
+button:has([nztype="delete"]) {
+  background-color: #fff1f2 !important;
+  border: 1px solid #fecdd3 !important;
+  color: #e11d48 !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(225, 29, 72, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-danger *,
+.btn-delete *,
+.ant-btn-dangerous:not(.ant-btn-primary) *,
+.ant-btn:has(.anticon-delete) * {
+  color: #e11d48 !important;
+  fill: currentColor !important;
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-delete:hover:not(:disabled),
+.ant-btn-dangerous:not(.ant-btn-primary):hover:not(:disabled),
+.ant-btn:has(.anticon-delete):hover:not(:disabled) {
+  background-color: #ffe4e6 !important;
+  border-color: #fda4af !important;
+  color: #be123c !important;
+}
+
+/* 8. RECORDS & HISTORY ACTIONS (Unified Soft Purple/Violet Tonal) */
+.btn-history,
+.btn-records,
+.ant-btn:has(.anticon-history),
+button:has(.anticon-history),
+button:has([nztype="history"]),
+.ant-btn:has(.anticon-file-done),
+button:has(.anticon-file-done),
+button:has([nztype="file-done"]) {
+  background-color: #f5f3ff !important;
+  border: 1px solid #ddd6fe !important;
+  color: #6d28d9 !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px 0 rgba(109, 40, 217, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-history *,
+.ant-btn:has(.anticon-history) *,
+.ant-btn:has(.anticon-file-done) * {
+  color: #6d28d9 !important;
+  fill: currentColor !important;
+}
+
+.btn-history:hover:not(:disabled),
+.ant-btn:has(.anticon-history):hover:not(:disabled) {
+  background-color: #ede9fe !important;
+  border-color: #c4b5fd !important;
+  color: #5b21b6 !important;
+}
+
+/* 9. DEFAULT / SECONDARY FALLBACK BUTTONS (No more raw black border) */
 .ant-btn-default,
-.ant-btn:not(.ant-btn-primary):not(.ant-btn-danger):not(.ant-btn-dangerous):not(.btn-tbl-action):not(.header-toggle-btn):not(.header-icon-btn):not(.sb-module-btn) {
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
+.ant-btn:not(.ant-btn-primary):not(.ant-btn-danger):not(.ant-btn-dangerous):not(.btn-tbl-action):not(.header-toggle-btn):not(.header-icon-btn):not(.sb-module-btn):not(.btn-reset):not(.btn-export):not(.btn-secondary-action):not(.btn-cancel):not(.btn-print):not(.btn-history) {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
   color: #334155 !important;
+  transition: all 0.15s ease-in-out !important;
 }
 
 .ant-btn-default:hover,
-.ant-btn:not(.ant-btn-primary):not(.ant-btn-danger):not(.ant-btn-dangerous):not(.btn-tbl-action):not(.header-toggle-btn):not(.header-icon-btn):not(.sb-module-btn):hover {
-  background-color: #f8fafc !important;
-  border-color: #94a3b8 !important;
+.ant-btn:not(.ant-btn-primary):not(.ant-btn-danger):not(.ant-btn-dangerous):not(.btn-tbl-action):not(.header-toggle-btn):not(.header-icon-btn):not(.sb-module-btn):not(.btn-reset):not(.btn-export):not(.btn-secondary-action):not(.btn-cancel):not(.btn-print):not(.btn-history):hover {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
 

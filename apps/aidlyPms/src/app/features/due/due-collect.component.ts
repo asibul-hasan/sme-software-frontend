@@ -98,12 +98,12 @@ interface PaidRecord {
               <span nz-icon nzType="search" class="text-slate-400"></span>
             </ng-template>
           </div>
-          <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportDueCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportDueCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
         </div>

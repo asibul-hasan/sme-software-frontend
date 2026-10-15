@@ -7,14 +7,13 @@
     [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Requisition Planner' }]"
   >
     <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-      <a routerLink="/products/requisition/records" nz-button nzType="default" class="rounded-md">
+      <a routerLink="/products/requisition/records" nz-button class="btn-history rounded-md">
         <span nz-icon nzType="history"></span> Requisition Records
       </a>
       @if (loadedRequisitionNo()) {
         <button
           nz-button
-          nzType="default"
-          class="rounded-md border-indigo-300 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100"
+          class="btn-secondary-action rounded-md"
           (click)="startNewRequisition()"
         >
           <span nz-icon nzType="plus"></span> New Blank Planner
@@ -33,20 +32,19 @@
       }
       <button
         nz-button
-        nzType="default"
         class="rounded-md border-amber-400 bg-amber-50/60 text-amber-900 font-semibold hover:bg-amber-100"
         [nzLoading]="isLoadingLowStock()"
         (click)="populateLowStock()"
       >
         <span nz-icon nzType="thunderbolt" class="text-amber-600"></span> Populate Low Stock Items
       </button>
-      <button nz-button nzType="default" class="rounded-md" (click)="openProductSelector()">
+      <button nz-button class="btn-secondary-action rounded-md" (click)="openProductSelector()">
         <span nz-icon nzType="plus"></span> Add Item (F2)
       </button>
       <button
         nz-button
         nzType="primary"
-        class="rounded-md font-semibold"
+        class="btn-save rounded-md font-semibold"
         [nzLoading]="isSaving()"
         [disabled]="items().length === 0"
         (click)="saveRequisition()"
@@ -461,14 +459,14 @@
 
       <div class="flex items-center gap-2">
         @if (items().length > 0) {
-          <button nz-button nzType="default" nzSize="small" class="rounded" (click)="clearAllItems()">
+          <button nz-button nzSize="small" class="btn-reset rounded" (click)="clearAllItems()">
             Reset
           </button>
         }
         <button
           nz-button
           nzType="primary"
-          class="rounded font-semibold px-4"
+          class="btn-save rounded font-semibold px-4"
           [nzLoading]="isSaving()"
           [disabled]="items().length === 0"
           (click)="saveRequisition()"

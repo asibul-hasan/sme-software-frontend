@@ -51,15 +51,15 @@ interface BalanceEntry {
         <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
           <input type="date" nz-input [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
           <input type="date" nz-input [(ngModel)]="toDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
-          <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportBalancesCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportBalancesCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Balance
           </button>
         </div>

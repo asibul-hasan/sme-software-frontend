@@ -89,18 +89,18 @@ interface IncomeRow {
               }
             </nz-select>
           </div>
-          <button nz-button nzType="default" class="rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportIncomeCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportIncomeCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <button nz-button nzType="dashed" class="rounded-md" (click)="openCatModal()">
+          <button nz-button class="btn-secondary-action rounded-md" (click)="openCatModal()">
             <span nz-icon nzType="folder-add"></span> + Category
           </button>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Income (F2)
           </button>
         </div>

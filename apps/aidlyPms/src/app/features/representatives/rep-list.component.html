@@ -18,15 +18,15 @@
       <ng-template #searchIcon>
         <span nz-icon nzType="search" class="text-slate-400"></span>
       </ng-template>
-      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
+      <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
         <span nz-icon nzType="clear"></span> Reset
       </button>
     </div>
     <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-      <a nz-button nzType="default" routerLink="/representative/add" class="rounded-md">
+      <a nz-button class="btn-secondary-action rounded-md" routerLink="/representative/add">
         <span nz-icon nzType="user-add"></span> Staff Form
       </a>
-      <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+      <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add Representative (F2)
       </button>
     </div>

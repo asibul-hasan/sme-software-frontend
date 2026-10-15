@@ -54,18 +54,18 @@ interface AccountRow {
             <nz-option nzValue="Bank" nzLabel="Bank Account"></nz-option>
             <nz-option nzValue="MFS" nzLabel="MFS Wallets"></nz-option>
           </nz-select>
-          <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="typeFilter = ''">
+          <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="typeFilter = ''">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportAccountsCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportAccountsCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <a nz-button nzType="default" routerLink="/accounting/transaction/add" class="rounded-md">
+          <a nz-button class="btn-secondary-action rounded-md" routerLink="/accounting/transaction/add">
             <span nz-icon nzType="plus"></span> Account Form
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Create Account (F2)
           </button>
         </div>

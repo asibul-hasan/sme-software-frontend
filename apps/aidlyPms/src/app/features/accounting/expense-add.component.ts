@@ -119,10 +119,10 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button type="button" nz-button nzType="default" (click)="goBack()" class="rounded-md">
+            <button type="button" nz-button class="btn-cancel rounded-md" (click)="goBack()">
               Cancel
             </button>
-            <button type="submit" nz-button nzType="primary" class="rounded-md">
+            <button type="submit" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
               <span nz-icon nzType="check"></span> Submit Expense
             </button>
           </div>

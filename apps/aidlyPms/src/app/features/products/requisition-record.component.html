@@ -28,15 +28,15 @@
         [(ngModel)]="searchCode"
         class="w-40 shrink-0 rounded-md"
       />
-      <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
+      <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
         <span nz-icon nzType="clear"></span> Reset
       </button>
     </div>
     <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-      <a routerLink="/products/requisition" nz-button nzType="primary" class="rounded-md font-semibold">
+      <a routerLink="/products/requisition" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
         <span nz-icon nzType="plus"></span> New Requisition Planner
       </a>
-      <button nz-button nzType="default" class="rounded-md" (click)="exportReport()">
+      <button nz-button class="btn-export rounded-md" (click)="exportReport()">
         <span nz-icon nzType="download"></span> Export Register
       </button>
     </div>

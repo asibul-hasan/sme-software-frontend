@@ -63,21 +63,21 @@ interface DoctorRow {
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
           </ng-template>
-          <button nz-button nzType="default" class="rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
+          <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <button nz-button nzType="default" class="rounded-md" (click)="exportDoctorsCsv()">
+          <button nz-button class="btn-export rounded-md" (click)="exportDoctorsCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
-          <a nz-button nzType="default" routerLink="/doctors-portal/settings" class="rounded-md">
+          <a nz-button class="btn-secondary-action rounded-md" routerLink="/doctors-portal/settings">
             <span nz-icon nzType="setting"></span> Rx Settings
           </a>
-          <a nz-button nzType="default" routerLink="/doctors-portal/add" class="rounded-md">
+          <a nz-button class="btn-secondary-action rounded-md" routerLink="/doctors-portal/add">
             <span nz-icon nzType="user-add"></span> Doctor Form
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Doctor (F2)
           </button>
         </div>
