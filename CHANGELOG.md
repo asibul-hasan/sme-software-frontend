@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.0...v1.0.1) (2026-10-17)
+
+
+### 📝 Documentation
+
+* **memory:** update release and semver tagging documentation in GEMINI.md ([84cfd14](https://github.com/asibul-hasan/sme-software-frontend/commit/84cfd14fcf6a837c3539b55c91bb415db52a4ccf))
+
+
+### 🤖 Continuous Integration
+
+* **release:** enhance release notes preparation and GitHub Release action ([742d0c6](https://github.com/asibul-hasan/sme-software-frontend/commit/742d0c63ba2345071abb82eb8da4d49832f2a803))
+
 ## 1.0.0 (2026-10-17)
 
 ### 🚀 Features
