@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.2...v1.1.0) (2026-10-17)
+
+
+### 🚀 Features
+
+* **sales:** invoice-driven customer returns with auto-populated items ([cb4715c](https://github.com/asibul-hasan/sme-software-frontend/commit/cb4715cf6808c47fd1bce30f367da9ae0a927170))
+
 ## [1.0.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.1...v1.0.2) (2026-10-17)
 
 
