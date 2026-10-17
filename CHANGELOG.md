@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.4](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.3...v1.2.4) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **requisition:** lock approved requisitions from editing and deleting ([2a6a34d](https://github.com/asibul-hasan/sme-software-frontend/commit/2a6a34d647d6be04696b3cf7810c26f58cfaa70b))
+
 ## [1.2.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.2...v1.2.3) (2026-10-17)
 
 
