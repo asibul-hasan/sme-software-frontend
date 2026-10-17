@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.1.0...v1.2.0) (2026-10-17)
+
+
+### 🚀 Features
+
+* **pos:** hide split payment option and balance payment method grid ([a4f2410](https://github.com/asibul-hasan/sme-software-frontend/commit/a4f24100b6b0f9866c660b1c79a60c78a5b52840))
+
 ## [1.1.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.2...v1.1.0) (2026-10-17)
 
 
