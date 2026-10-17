@@ -21,6 +21,9 @@ interface AccountRow {
   number: string;
   balance: number;
   type: string;
+  account_code?: string;
+  transaction_count: number;
+  has_transactions: boolean;
 }
 
 @Component({
@@ -94,6 +97,11 @@ interface AccountRow {
                       >
                         {{ a.type }}
                       </nz-tag>
+                      @if (a.transaction_count > 0) {
+                        <nz-tag nzColor="default" class="text-[10px] text-slate-500 font-mono">
+                          {{ a.transaction_count }} txns
+                        </nz-tag>
+                      }
                     </div>
                     <p class="text-xs text-slate-400 mb-0">
                       {{ a.provider }} @if (a.number !== '—') { <span> · {{ a.number }}</span> }
@@ -124,15 +132,25 @@ interface AccountRow {
                       >
                         <span nz-icon nzType="edit"></span>
                       </button>
-                      <button
-                        type="button"
-                        (click)="deleteAccount(a)"
-                        nz-tooltip
-                        nzTooltipTitle="Delete Account"
-                        class="btn-tbl-action btn-tbl-delete"
-                      >
-                        <span nz-icon nzType="delete"></span>
-                      </button>
+                      @if (a.has_transactions) {
+                        <span
+                          class="btn-tbl-action text-slate-300 border-slate-200 cursor-not-allowed select-none bg-slate-50"
+                          nz-tooltip
+                          [nzTooltipTitle]="a.transaction_count > 0 ? 'Account has ' + a.transaction_count + ' recorded transaction(s) and cannot be deleted' : (a.balance !== 0 ? 'Account has active balance and cannot be deleted' : 'System account cannot be deleted')"
+                        >
+                          <span nz-icon nzType="lock" class="text-slate-400"></span>
+                        </span>
+                      } @else {
+                        <button
+                          type="button"
+                          (click)="deleteAccount(a)"
+                          nz-tooltip
+                          nzTooltipTitle="Delete Account"
+                          class="btn-tbl-action btn-tbl-delete"
+                        >
+                          <span nz-icon nzType="delete"></span>
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>
@@ -364,14 +382,23 @@ export class AccountsComponent implements OnInit {
     this.accountingService.getAccounts().subscribe({
       next: (res) => {
         const list = res.data || [];
-        this.accounts.set(list.map(a => ({
-          account_no: a.account_no,
-          name: a.account_name,
-          provider: a.bank_name || (a.account_type === 1 ? 'Cash In Hand' : (a.account_code || 'General')),
-          number: a.bank_account_number || a.phone_number || '—',
-          balance: Number(a.current_balance) || 0,
-          type: typeMap[a.account_type] || 'Cash',
-        })));
+        this.accounts.set(list.map(a => {
+          const txCount = a.transaction_count || 0;
+          const balance = Number(a.current_balance) || 0;
+          const isSystemAccount = !!(a.account_code && a.account_code.length === 5 && /^[1-5]/.test(a.account_code));
+          const hasTransactions = txCount > 0 || balance !== 0 || isSystemAccount;
+          return {
+            account_no: a.account_no,
+            name: a.account_name,
+            provider: a.bank_name || (a.account_type === 1 ? 'Cash In Hand' : (a.account_code || 'General')),
+            number: a.bank_account_number || a.phone_number || '—',
+            balance: balance,
+            type: typeMap[a.account_type] || 'Cash',
+            account_code: a.account_code || '',
+            transaction_count: txCount,
+            has_transactions: hasTransactions,
+          };
+        }));
         this.isLoading.set(false);
       },
       error: () => {
@@ -508,6 +535,14 @@ export class AccountsComponent implements OnInit {
   }
 
   deleteAccount(a: AccountRow): void {
+    if (a.has_transactions) {
+      const reason = a.transaction_count > 0
+        ? `Account "${a.name}" has ${a.transaction_count} recorded transaction(s) and cannot be deleted.`
+        : (a.balance !== 0 ? `Account "${a.name}" has an active balance of ৳ ${a.balance.toLocaleString()} and cannot be deleted.` : `System chart of account "${a.name}" cannot be deleted.`);
+      this.msg.warning(reason);
+      return;
+    }
+
     this.modal.confirmAction(
       'Delete Account?',
       `Are you sure you want to delete "${a.name}"? This action cannot be undone.`,
@@ -516,9 +551,13 @@ export class AccountsComponent implements OnInit {
     ).subscribe(confirmed => {
       if (confirmed) {
         this.accountingService.deleteAccount(a.account_no).subscribe({
-          next: () => {
-            this.msg.success(`Account "${a.name}" deleted successfully`);
-            this.loadAccounts();
+          next: (res) => {
+            if (res.success) {
+              this.msg.success(res.message || `Account "${a.name}" deleted successfully`);
+              this.loadAccounts();
+            } else {
+              this.msg.error(res.message || 'Failed to delete account');
+            }
           },
           error: (err) => {
             this.msg.error(err?.error?.message || 'Failed to delete account');

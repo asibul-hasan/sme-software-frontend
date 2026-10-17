@@ -63,6 +63,7 @@ export interface AccTransactionAccount {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  transaction_count?: number;
 }
 
 export interface AccExpenseCategory {
