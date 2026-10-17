@@ -11,7 +11,13 @@
     "postinstall": "node scripts/patch-ng-zorro.js",
     "test": "nx test web-client",
     "lint": "nx lint web-client",
-    "prepare": "husky"
+    "prepare": "husky",
+    "release": "commit-and-tag-version",
+    "release:first": "commit-and-tag-version --first-release --release-as 1.0.0",
+    "release:patch": "commit-and-tag-version --release-as patch",
+    "release:minor": "commit-and-tag-version --release-as minor",
+    "release:major": "commit-and-tag-version --release-as major",
+    "release:dry": "commit-and-tag-version --dry-run"
   },
   "private": true,
   "dependencies": {
@@ -77,6 +83,7 @@
     "@types/xlsx": "^0.0.35",
     "@typescript-eslint/utils": "^8.40.0",
     "angular-eslint": "^21.0.1",
+    "commit-and-tag-version": "^13.3.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "husky": "^9.1.7",
