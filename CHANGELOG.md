@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.1...v1.0.2) (2026-10-17)
+
+
+### 📝 Documentation
+
+* add comprehensive frontend monorepo README documentation ([225639b](https://github.com/asibul-hasan/sme-software-frontend/commit/225639b08f05bc61d1ba96a034cfca674c4bf939))
+
 ## [1.0.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.0.0...v1.0.1) (2026-10-17)
 
 
