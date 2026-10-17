@@ -773,10 +773,17 @@
             <path fill="#FBCE07" d="M91.67 114.09C92.23 119.86 89.9 125.15 85.88 128.68C82.9 131.32 78.88 132.92 74.54 133C64.32 133.16 53.86 131.96 43.96 128.6C18.7 120.27 4.86 98.71 5.02 72.59V63.86C5.02 58.89 9.45 53.29 15.64 53.29H31.17C37.52 53.29 41.87 59.05 41.87 63.94V72.51C41.87 82.05 47.5 90.06 56.27 94.87C62.38 97.27 68.82 98.31 75.42 98.71C79.44 98.95 83.06 100.55 85.96 103.12C89.18 105.68 91.27 109.61 91.67 114.09Z"/>
           </svg>
         </button>
-        <button type="button" [class.on]="selectedMethod() === 'split'" (click)="setMethod('split')">
-          Split
-        </button>
-        <button type="button" [class.on]="selectedMethod() === 'due'" (click)="setMethod('due')">
+        @if (showSplitOption) {
+          <button type="button" [class.on]="selectedMethod() === 'split'" (click)="setMethod('split')">
+            Split
+          </button>
+        }
+        <button
+          type="button"
+          [style.gridColumn]="showSplitOption ? 'auto' : 'span 2'"
+          [class.on]="selectedMethod() === 'due'"
+          (click)="setMethod('due')"
+        >
           Due
         </button>
       </div>
@@ -822,8 +829,8 @@
         </div>
       }
 
-      <!-- Split Payment Box -->
-      @if (selectedMethod() === 'split') {
+      <!-- Split Payment Box (hidden for now) -->
+      @if (showSplitOption && selectedMethod() === 'split') {
         <div>
           <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
             <span>Split the payment (৳)</span>

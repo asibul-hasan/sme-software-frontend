@@ -446,6 +446,7 @@ export class PosTerminalComponent implements OnInit {
   txnReference = '';
   tenderTouched = false;
   spCashTouched = false;
+  showSplitOption = false; // Hidden for now per user request
 
   readonly methodDisplayNames: Record<string, string> = {
     cash: 'Cash',
