@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.6](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.5...v1.2.6) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **accounting:** lock account deletion when transactions or active balance exist ([77ea892](https://github.com/asibul-hasan/sme-software-frontend/commit/77ea89228e81924bef76918894dabc65084da9a8))
+
 ## [1.2.5](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.4...v1.2.5) (2026-10-17)
 
 
