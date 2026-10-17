@@ -170,6 +170,16 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     description: 'Batches reaching expiry within 30, 60, or 90 days, and expired batches.',
     is_in_sidebar: true,
   },
+  {
+    form_id: 'PROD_1611',
+    title: 'Stock Valuation & Inventory Report',
+    type: 'Main Screen',
+    route: '/products/reports',
+    permission_code: 'PMS-Product-Module',
+    description: 'Current stock levels, stock valuation at cost and MRP, and stock shortage alerts.',
+    is_in_sidebar: true,
+  },
+
 
   // Suppliers & Purchase Invoicing
   {
@@ -669,7 +679,16 @@ export const SYSTEM_MENU_CONFIG: readonly SystemModule[] = [
         legacy_series: 1600,
         form_ids: ['PROD_1610'],
       },
+      {
+        key: 'stock-reports',
+        name: 'Stock Reports',
+        name_bn: 'স্টক রিপোর্ট',
+        icon: 'bar-chart',
+        legacy_series: 1600,
+        form_ids: ['PROD_1611'],
+      },
     ],
+
   },
   {
     module: 'Accounts & Cash',

@@ -11,6 +11,7 @@ import {
   ProductImportItem,
   ProductImportResult,
   TemplateMetadata,
+  StockReportResult,
 } from '../models/product.models';
 
 @Injectable({
@@ -141,6 +142,12 @@ export class ProductService {
   importProducts(items: ProductImportItem[]): Observable<ApiResponse<ProductImportResult>> {
     return this.api.post<ProductImportResult>('prod/products/import', { items });
   }
+
+  // Stock Reports
+  getStockReport(params?: Record<string, unknown>): Observable<ApiResponse<StockReportResult>> {
+    return this.api.get<StockReportResult>('prod/products/stock-report', params);
+  }
 }
+
 
 

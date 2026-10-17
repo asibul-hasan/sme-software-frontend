@@ -8,6 +8,8 @@ import { GenericListComponent } from './features/products/generic-list.component
 import { RequisitionListComponent } from './features/products/requisition-list.component';
 import { RequisitionRecordComponent } from './features/products/requisition-record.component';
 import { ExpiredItemsComponent } from './features/products/expired-items.component';
+import { StockReportComponent } from './features/products/stock-report.component';
+
 
 import { SupplierListComponent } from './features/supplier/supplier-list.component';
 import { SupplierAddComponent } from './features/supplier/supplier-add.component';
@@ -83,6 +85,9 @@ export const appRoutes: Route[] = [
       { path: 'products/requisition', component: RequisitionListComponent },
       { path: 'products/requisition/records', component: RequisitionRecordComponent },
       { path: 'products/expired', component: ExpiredItemsComponent },
+      { path: 'products/reports', component: StockReportComponent },
+      { path: 'inventory/reports', redirectTo: 'products/reports', pathMatch: 'full' },
+
 
       // Suppliers & Purchases (PUR_1501 - PUR_1509) - Restricted to Manager
       { path: 'purchase', redirectTo: 'supplier/purchase', pathMatch: 'full' },

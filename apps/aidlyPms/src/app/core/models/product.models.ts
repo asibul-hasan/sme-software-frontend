@@ -203,3 +203,40 @@ export interface TemplateMetadata {
   sample_data: Record<string, unknown>;
 }
 
+export interface StockReportSummary {
+  total_products: number;
+  in_stock_items: number;
+  low_stock_items: number;
+  out_of_stock_items: number;
+  total_stock_pcs: number;
+  total_cost_valuation: number;
+  total_sale_valuation: number;
+  potential_profit: number;
+}
+
+export interface StockReportItem {
+  product_no: number;
+  product_name: string;
+  strength?: string | null;
+  company_name?: string | null;
+  generic_name?: string | null;
+  quantity_per_box: number;
+  current_stock_pcs: number;
+  current_stock_boxes: number;
+  min_stock_qty_pcs: number;
+  purchase_price_per_piece: number;
+  sale_price_per_piece: number;
+  cost_valuation: number;
+  sale_valuation: number;
+  profit_margin_pct: number;
+  stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' | string;
+  rak_number?: string | null;
+}
+
+export interface StockReportResult {
+  summary: StockReportSummary;
+  items: StockReportItem[];
+  total_count: number;
+}
+
+
