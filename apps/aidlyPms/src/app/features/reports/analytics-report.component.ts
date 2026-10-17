@@ -10,10 +10,12 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { DashboardService, FastMovingProduct } from '../../core/services/dashboard.service';
+import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
@@ -31,6 +33,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
     NzTagModule,
     NzTooltipModule,
     NzSpinModule,
+    NzDatePickerModule,
     PageHeaderComponent,
     EmptyStateComponent,
   ],
@@ -83,24 +86,24 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
           <!-- Date Range Pickers -->
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onDateChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
 
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onDateChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
 
           <!-- Sort Selector -->
@@ -315,7 +318,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
               <div class="flex items-center gap-3">
                 <span>Ranked Items: <strong class="text-slate-900 font-mono">{{ filteredProducts().length }}</strong></span>
                 <span class="text-slate-300">|</span>
-                <span>Date Range: <strong class="text-slate-900 font-mono">{{ fromDate }} to {{ toDate }}</strong></span>
+                <span>Date Range: <strong class="text-slate-900 font-mono">{{ fromDateFormatted }} to {{ toDateFormatted }}</strong></span>
               </div>
               <div class="flex items-center gap-4 font-mono">
                 <span>Total Sold: <strong class="text-slate-900 font-bold">{{ totalSoldQty | number }} pcs</strong></span>
@@ -366,8 +369,16 @@ export class AnalyticsReportComponent implements OnInit {
 
   // Filter state
   activePreset: DatePreset = 'today';
-  fromDate = '';
-  toDate = '';
+  fromDate: Date | null = new Date();
+  toDate: Date | null = new Date();
+
+  get fromDateFormatted(): string {
+    return formatDateToDdMmYyyy(this.fromDate);
+  }
+
+  get toDateFormatted(): string {
+    return formatDateToDdMmYyyy(this.toDate);
+  }
   sortBy: 'qty' | 'revenue' | 'profit' | 'margin' = 'qty';
   limit = 25;
   searchQuery = '';
@@ -421,25 +432,20 @@ export class AnalyticsReportComponent implements OnInit {
     this.activePreset = preset;
     const now = new Date();
 
-    const formatDate = (d: Date): string => {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
+
 
     if (preset === 'today') {
-      this.fromDate = formatDate(now);
-      this.toDate = formatDate(now);
+      this.fromDate = now;
+      this.toDate = now;
     } else if (preset === 'week') {
       const past7 = new Date(now);
       past7.setDate(past7.getDate() - 6);
-      this.fromDate = formatDate(past7);
-      this.toDate = formatDate(now);
+      this.fromDate = past7;
+      this.toDate = now;
     } else if (preset === 'month') {
       const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      this.fromDate = formatDate(startMonth);
-      this.toDate = formatDate(now);
+      this.fromDate = startMonth;
+      this.toDate = now;
     }
 
     this.loadAnalytics();
@@ -461,8 +467,8 @@ export class AnalyticsReportComponent implements OnInit {
     this.isLoading.set(true);
     this.dashboardService
       .getAnalytics({
-        fromDate: this.fromDate,
-        toDate: this.toDate,
+        fromDate: this.fromDateFormatted,
+        toDate: this.toDateFormatted,
         limit: this.limit,
         sort: 'desc',
         sortBy: this.sortBy,
@@ -498,7 +504,7 @@ export class AnalyticsReportComponent implements OnInit {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sales_performance_${this.fromDate}_to_${this.toDate}.csv`;
+    a.download = `sales_performance_${this.fromDateFormatted}_to_${this.toDateFormatted}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     this.msg.success(`Exported sales performance report`);

@@ -9,11 +9,12 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccReconciliation, AccTransactionAccount } from '../../core/models/accounting.models';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface ReconcileRecord {
   id: string;
@@ -40,6 +41,7 @@ interface ReconcileRecord {
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -53,23 +55,23 @@ interface ReconcileRecord {
         <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Source Account</label>
@@ -343,9 +345,9 @@ export class ReconciliationListComponent implements OnInit {
   private readonly accountingService = inject(AccountingService);
 
   // Standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   filterFromAccountNo: number | null = null;
   filterToAccountNo: number | null = null;
 
@@ -387,6 +389,8 @@ export class ReconciliationListComponent implements OnInit {
       pageIndex: 1,
       pageSize: 100,
     };
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
     if (this.filterFromAccountNo) params['fromAccountNo'] = this.filterFromAccountNo;
     if (this.filterToAccountNo) params['toAccountNo'] = this.filterToAccountNo;
 
@@ -417,9 +421,9 @@ export class ReconciliationListComponent implements OnInit {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.filterFromAccountNo = null;
     this.filterToAccountNo = null;
     this.loadReconciliations();

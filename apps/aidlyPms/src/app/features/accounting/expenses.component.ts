@@ -13,11 +13,12 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/accounting.models';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface ExpenseRow {
   id: string;
@@ -46,6 +47,7 @@ interface ExpenseRow {
     NzTagModule,
     NzSpinModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -59,23 +61,23 @@ interface ExpenseRow {
         <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Expense Category</label>
@@ -414,9 +416,9 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
 
   // Initialize with standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   filterCategory = '';
   filterPayment = '';
 
@@ -494,8 +496,8 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       pageIndex: 1,
       pageSize: 50,
     };
-    if (this.fromDate) params['fromDate'] = this.fromDate;
-    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
     if (this.filterCategory) params['search'] = this.filterCategory;
     if (this.filterPayment) params['paymentType'] = this.filterPayment;
 
@@ -522,9 +524,9 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.filterCategory = '';
     this.filterPayment = '';
     this.loadExpenses();

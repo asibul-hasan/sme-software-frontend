@@ -106,12 +106,11 @@
       <!-- 2. Purchase Date (Intake Date) -->
       <div class="md:col-span-3">
         <label class="text-[11px] font-semibold text-slate-700 block mb-1">Intake Date</label>
-        <input
-          type="date"
-          nz-input
+        <nz-date-picker
           [(ngModel)]="purchaseDate"
-          class="rounded-md text-xs"
-        />
+          nzFormat="dd-MM-yyyy"
+          class="w-full rounded-md text-xs"
+        ></nz-date-picker>
       </div>
 
       <!-- 3. Purchase Type -->
@@ -381,13 +380,12 @@
                     </div>
                   </td>
                   <td class="p-1.5 text-center">
-                    <input
-                      type="date"
-                      nz-input
+                    <nz-date-picker
                       nzSize="small"
                       [(ngModel)]="l.expiryDate"
-                      class="text-xs rounded text-center"
-                    />
+                      nzFormat="dd-MM-yyyy"
+                      class="text-xs rounded text-center w-28"
+                    ></nz-date-picker>
                   </td>
                   <td class="p-1.5 text-center">
                     <input

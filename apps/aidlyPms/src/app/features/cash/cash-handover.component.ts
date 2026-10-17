@@ -7,10 +7,12 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ApiService } from '../../core/services/api.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface CashItem {
   id: string;
@@ -32,6 +34,7 @@ interface CashItem {
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -203,12 +206,11 @@ interface CashItem {
           <!-- Top Bar: Date -->
           <div class="flex justify-end items-center gap-2 pb-2 border-b border-slate-100">
             <span class="text-xs font-semibold text-slate-600">Date :</span>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="closerDate"
+              nzFormat="dd-MM-yyyy"
               class="w-40 rounded-md text-xs py-1"
-            />
+            ></nz-date-picker>
           </div>
 
           <!-- 2 Column Grid -->
@@ -399,7 +401,7 @@ export class CashHandoverComponent implements OnInit {
 
   isConfirmOpen = false;
   isCashCloserOpen = false;
-  closerDate = new Date().toISOString().split('T')[0];
+  closerDate: Date | null = new Date();
 
   denominations = [
     { note: '1000x', val: 1000, qty: 0 },
@@ -462,7 +464,7 @@ export class CashHandoverComponent implements OnInit {
       opening_balance: this.openingBalance,
       actual_counted_balance: totalCash,
       note: `Physical count. Total bank: ৳${this.calculatedTotalBank().toFixed(2)}, grand: ৳${grand.toFixed(2)}`,
-      closing_date: this.closerDate
+      closing_date: this.closerDate ? formatDateToDdMmYyyy(this.closerDate) : formatDateToDdMmYyyy(new Date())
     }).subscribe({
       next: (res: any) => {
         this.closeCashCloser();

@@ -10,6 +10,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
@@ -21,6 +22,7 @@ import {
 } from '../../core/services/dashboard.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccTransactionAccount, TrialBalanceRow } from '../../core/models/accounting.models';
+import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
@@ -38,6 +40,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
     NzTagModule,
     NzTooltipModule,
     NzSpinModule,
+    NzDatePickerModule,
     PageHeaderComponent,
     EmptyStateComponent,
   ],
@@ -90,24 +93,24 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
           <!-- Date Range Pickers -->
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onDateChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
 
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onDateChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
 
           <!-- Reset Button -->
@@ -361,7 +364,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
                   <div class="flex items-center gap-3">
                     <span>Records: <strong class="text-slate-900 font-mono">{{ filteredCashbookEntries().length }}</strong></span>
                     <span class="text-slate-300">|</span>
-                    <span>Date Range: <strong class="text-slate-900 font-mono">{{ fromDate }} to {{ toDate }}</strong></span>
+                    <span>Date Range: <strong class="text-slate-900 font-mono">{{ fromDateFormatted }} to {{ toDateFormatted }}</strong></span>
                   </div>
                   <div class="flex items-center gap-4 font-mono">
                     <span class="text-emerald-700">Total In: <strong class="font-bold">৳ {{ filteredTotalCashIn | number: '1.2-2' }}</strong></span>
@@ -578,8 +581,16 @@ export class CashbookReportComponent implements OnInit {
 
   // Date filter state
   activePreset: DatePreset = 'today';
-  fromDate = '';
-  toDate = '';
+  fromDate: Date | null = new Date();
+  toDate: Date | null = new Date();
+
+  get fromDateFormatted(): string {
+    return formatDateToDdMmYyyy(this.fromDate);
+  }
+
+  get toDateFormatted(): string {
+    return formatDateToDdMmYyyy(this.toDate);
+  }
 
   // Secondary filters
   searchQuery = '';
@@ -688,25 +699,18 @@ export class CashbookReportComponent implements OnInit {
     this.activePreset = preset;
     const now = new Date();
 
-    const formatDate = (d: Date): string => {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
     if (preset === 'today') {
-      this.fromDate = formatDate(now);
-      this.toDate = formatDate(now);
+      this.fromDate = now;
+      this.toDate = now;
     } else if (preset === 'week') {
       const past7 = new Date(now);
       past7.setDate(past7.getDate() - 6);
-      this.fromDate = formatDate(past7);
-      this.toDate = formatDate(now);
+      this.fromDate = past7;
+      this.toDate = now;
     } else if (preset === 'month') {
       const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      this.fromDate = formatDate(startMonth);
-      this.toDate = formatDate(now);
+      this.fromDate = startMonth;
+      this.toDate = now;
     }
 
     this.reloadAllData();
@@ -732,7 +736,7 @@ export class CashbookReportComponent implements OnInit {
 
   loadSummary(): void {
     this.isLoadingSummary.set(true);
-    this.dashboardService.getReportSummary({ fromDate: this.fromDate, toDate: this.toDate }).subscribe({
+    this.dashboardService.getReportSummary({ fromDate: this.fromDateFormatted, toDate: this.toDateFormatted }).subscribe({
       next: res => {
         this.isLoadingSummary.set(false);
         if (res.data) {
@@ -746,8 +750,8 @@ export class CashbookReportComponent implements OnInit {
   loadCashbook(): void {
     this.isLoadingCashbook.set(true);
     const params: { fromDate: string; toDate: string; accountNo?: number } = {
-      fromDate: this.fromDate,
-      toDate: this.toDate,
+      fromDate: this.fromDateFormatted,
+      toDate: this.toDateFormatted,
     };
     if (this.selectedAccountNo > 0) {
       params.accountNo = this.selectedAccountNo;
@@ -764,7 +768,7 @@ export class CashbookReportComponent implements OnInit {
 
   loadTrends(): void {
     this.isLoadingTrends.set(true);
-    this.dashboardService.getTrends({ fromDate: this.fromDate, toDate: this.toDate }).subscribe({
+    this.dashboardService.getTrends({ fromDate: this.fromDateFormatted, toDate: this.toDateFormatted }).subscribe({
       next: res => {
         this.isLoadingTrends.set(false);
         this.trends.set(res.data || []);
@@ -775,7 +779,7 @@ export class CashbookReportComponent implements OnInit {
 
   loadTrialBalance(): void {
     this.isLoadingTrialBalance.set(true);
-    this.accountingService.getTrialBalance({ fromDate: this.fromDate, toDate: this.toDate }).subscribe({
+    this.accountingService.getTrialBalance({ fromDate: this.fromDateFormatted, toDate: this.toDateFormatted }).subscribe({
       next: res => {
         this.isLoadingTrialBalance.set(false);
         this.trialBalanceRows.set(res.data || []);
@@ -843,7 +847,7 @@ export class CashbookReportComponent implements OnInit {
         r.cash_out.toFixed(2),
         r.balance.toFixed(2),
       ]);
-      this.downloadCsv(headers, rows, `cashbook_register_${this.fromDate}_to_${this.toDate}.csv`);
+      this.downloadCsv(headers, rows, `cashbook_register_${this.fromDateFormatted}_to_${this.toDateFormatted}.csv`);
     } else if (this.activeTab === 'reconciliation') {
       const items = this.trends();
       if (!items.length) {
@@ -861,7 +865,7 @@ export class CashbookReportComponent implements OnInit {
         r.op_cost.toFixed(2),
         r.net_profit.toFixed(2),
       ]);
-      this.downloadCsv(headers, rows, `buy_sale_reconciliation_${this.fromDate}_to_${this.toDate}.csv`);
+      this.downloadCsv(headers, rows, `buy_sale_reconciliation_${this.fromDateFormatted}_to_${this.toDateFormatted}.csv`);
     } else {
       const items = this.trialBalanceRows();
       if (!items.length) {
@@ -878,7 +882,7 @@ export class CashbookReportComponent implements OnInit {
         r.total_credit.toFixed(2),
         r.net_balance.toFixed(2),
       ]);
-      this.downloadCsv(headers, rows, `trial_balance_${this.fromDate}_to_${this.toDate}.csv`);
+      this.downloadCsv(headers, rows, `trial_balance_${this.fromDateFormatted}_to_${this.toDateFormatted}.csv`);
     }
   }
 

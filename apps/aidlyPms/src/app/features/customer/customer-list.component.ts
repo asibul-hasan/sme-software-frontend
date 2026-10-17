@@ -13,6 +13,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { CustomerService } from '../../core/services/customer.service';
@@ -50,6 +51,7 @@ interface CustomerRow {
     NzSelectModule,
     NzTagModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   templateUrl: './customer-list.component.html',

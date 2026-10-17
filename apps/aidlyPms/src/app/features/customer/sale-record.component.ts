@@ -13,10 +13,11 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 import { CustomerService } from '../../core/services/customer.service';
 import { PrintService } from '../../core/services/print.service';
 import { Customer } from '../../core/models/customer.models';
@@ -52,6 +53,7 @@ interface SaleRecordRow {
     NzTagModule,
     NzSpinModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   templateUrl: './sale-record.component.html',
@@ -72,9 +74,9 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   private searchSub?: Subscription;
 
   // Initialize with standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   searchInvoice = '';
   filterCustomer = '';
   searchSalesman = '';
@@ -139,8 +141,8 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       pageSize: 50,
     };
     if (this.searchInvoice.trim()) params['search'] = this.searchInvoice.trim();
-    if (this.fromDate) params['startDate'] = this.fromDate;
-    if (this.toDate) params['endDate'] = this.toDate;
+    if (this.fromDate) params['startDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['endDate'] = formatDateToDdMmYyyy(this.toDate);
     if (this.filterCustomer) params['search'] = this.filterCustomer;
 
     this.posSaleService.getSaleRecords(params).subscribe({
@@ -176,9 +178,9 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.searchInvoice = '';
     this.filterCustomer = '';
     this.searchSalesman = '';

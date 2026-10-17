@@ -314,12 +314,11 @@
               </div>
               <div class="flex items-center gap-1.5">
                 <label class="text-xs font-medium text-slate-600 shrink-0">Due Date:</label>
-                <input
-                  type="date"
-                  nz-input
+                <nz-date-picker
                   [(ngModel)]="form.dueDate"
+                  nzFormat="dd-MM-yyyy"
                   class="rounded-md w-36"
-                />
+                ></nz-date-picker>
               </div>
             </div>
           }

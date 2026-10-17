@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import {
   PURCHASE_CALC_MODE_OPTIONS,
@@ -20,6 +21,7 @@ import {
 import { ProductService } from '../../core/services/product.service';
 import { SupplierService, CreatePurchasePayload } from '../../core/services/supplier.service';
 import { ModalService } from '../../core/services/modal.service';
+import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface PurchaseLine {
   id: string;
@@ -66,6 +68,7 @@ interface ProductOption {
     NzIconModule,
     NzModalModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   templateUrl: './purchase-entry.component.html',
@@ -85,7 +88,7 @@ export class PurchaseEntryComponent implements OnInit {
   inventoryType = 1; // INVENTORY PURCHASED
   selectedSupplierId: number | null = null;
   invoiceNumber = '';
-  purchaseDate = new Date().toISOString().slice(0, 10);
+  purchaseDate: Date | null = new Date();
   generatedPurchaseId = '';
 
   approvedRequisitions = signal<any[]>([]);
@@ -574,6 +577,7 @@ export class PurchaseEntryComponent implements OnInit {
         invoice: {
           supplier_no: this.selectedSupplierId!,
           supplier_invoice_no: this.invoiceNumber.trim() || undefined,
+          purchase_date: this.purchaseDate ? formatDateToDdMmYyyy(this.purchaseDate) : undefined,
           calculation_mode: this.calcMode,
           inventory_type: this.inventoryType,
           gross_total_price: this.grossTotal(),

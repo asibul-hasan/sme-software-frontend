@@ -9,10 +9,12 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccAdditionalBalance, AccTransactionAccount } from '../../core/models/accounting.models';
+import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface BalanceEntry {
   id: string;
@@ -38,6 +40,7 @@ interface BalanceEntry {
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -49,8 +52,8 @@ interface BalanceEntry {
         [breadcrumbs]="[{ label: 'Accounting', url: '/accounting/transaction' }, { label: 'Additional Balance' }]"
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
-          <input type="date" nz-input [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
-          <input type="date" nz-input [(ngModel)]="toDate" (ngModelChange)="loadBalances()" class="w-32 shrink-0 rounded-md" />
+          <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="From Date"></nz-date-picker>
+          <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="toDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="To Date"></nz-date-picker>
           <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
@@ -157,7 +160,7 @@ interface BalanceEntry {
         <div class="space-y-3 py-1">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
-            <input type="date" nz-input [(ngModel)]="form.date" class="rounded-md" />
+            <nz-date-picker [(ngModel)]="form.date" nzFormat="dd-MM-yyyy" class="w-full rounded-md"></nz-date-picker>
           </div>
 
           <div>
@@ -255,8 +258,8 @@ export class AdditionalBalanceComponent implements OnInit {
   private readonly modal = inject(ModalService);
   private readonly accountingService = inject(AccountingService);
 
-  fromDate = '';
-  toDate = '';
+  fromDate: Date | null = null;
+  toDate: Date | null = null;
 
   balances = signal<BalanceEntry[]>([]);
   accounts = signal<AccTransactionAccount[]>([]);
@@ -265,7 +268,7 @@ export class AdditionalBalanceComponent implements OnInit {
 
   isModalOpen = false;
   form = {
-    date: new Date().toISOString().split('T')[0],
+    date: new Date() as Date | string | null,
     amount: 0,
     account_no: null as number | null,
     note: '',
@@ -295,8 +298,8 @@ export class AdditionalBalanceComponent implements OnInit {
       pageIndex: 1,
       pageSize: 100,
     };
-    if (this.fromDate) params['fromDate'] = this.fromDate;
-    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
 
     this.accountingService.getAdditionalBalances(params).subscribe({
       next: (res) => {
@@ -320,14 +323,14 @@ export class AdditionalBalanceComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.fromDate = '';
-    this.toDate = '';
+    this.fromDate = null;
+    this.toDate = null;
     this.loadBalances();
   }
 
   openAddModal(): void {
     this.form = {
-      date: new Date().toISOString().split('T')[0],
+      date: new Date(),
       amount: 0,
       account_no: this.accounts().length > 0 ? this.accounts()[0].account_no : null,
       note: '',

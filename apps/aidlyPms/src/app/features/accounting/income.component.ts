@@ -10,11 +10,12 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccIncome, AccIncomeCategory, AccTransactionAccount } from '../../core/models/accounting.models';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface IncomeRow {
   id: string;
@@ -43,6 +44,7 @@ interface IncomeRow {
     NzIconModule,
     NzTagModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -56,23 +58,23 @@ interface IncomeRow {
         <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Income Category</label>
@@ -398,9 +400,9 @@ export class IncomeComponent implements OnInit {
   private readonly accountingService = inject(AccountingService);
 
   // Standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   filterCategoryNo: number | null = null;
 
   categories = signal<AccIncomeCategory[]>([]);
@@ -463,8 +465,8 @@ export class IncomeComponent implements OnInit {
       pageIndex: 1,
       pageSize: 100,
     };
-    if (this.fromDate) params['fromDate'] = this.fromDate;
-    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
     if (this.filterCategoryNo) params['categoryNo'] = this.filterCategoryNo;
 
     this.accountingService.getIncomes(params).subscribe({
@@ -495,9 +497,9 @@ export class IncomeComponent implements OnInit {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.filterCategoryNo = null;
     this.loadIncomes();
   }

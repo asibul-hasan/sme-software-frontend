@@ -6,8 +6,8 @@
     [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Requisition Records' }]"
   >
     <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
-      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="fromDate" nzPlaceHolder="From Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
-      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="toDate" nzPlaceHolder="To Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
+      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="fromDate" (ngModelChange)="loadRecords()" nzPlaceHolder="From Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
+      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="toDate" (ngModelChange)="loadRecords()" nzPlaceHolder="To Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
       <nz-select class="w-36 shrink-0" [(ngModel)]="selectedSupplier" nzPlaceHolder="Supplier">
         <nz-option nzValue="" nzLabel="All Suppliers"></nz-option>
         @for (s of suppliers(); track s) {

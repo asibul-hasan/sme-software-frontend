@@ -17,6 +17,7 @@ import { ProductService } from '../../core/services/product.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
 import { ProdProductRequisitionItem } from '../../core/models/product.models';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface RequisitionRecord {
   id: string;
@@ -57,8 +58,9 @@ export class RequisitionRecordComponent implements OnInit {
 
   searchCode = '';
   selectedSupplier = '';
-  fromDate: Date | null = null;
-  toDate: Date | null = null;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   createdBy = '';
 
   suppliers = signal<string[]>([]);
@@ -93,12 +95,16 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   loadRecords(): void {
-    this.productService.getRequisitions({ pageSize: 100 }).subscribe({
+    const params: Record<string, unknown> = { pageSize: 100 };
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
+
+    this.productService.getRequisitions(params).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           const list: RequisitionRecord[] = (res.data.items || []).map((r: any) => ({
             id: String(r.requisition_no),
-            date: r.requisition_date ? new Date(r.requisition_date).toISOString().slice(0, 16).replace('T', ' ') : '',
+            date: r.requisition_date ? new Date(r.requisition_date).toLocaleDateString('en-GB') + ' ' + new Date(r.requisition_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
             total: r.total_cost || r.total_amount || 0,
             reqCode: r.requisition_code || r.requisition_number || `REQ-${r.requisition_no}`,
             supplier: r.supplier_name || 'General Supplier',
@@ -130,8 +136,9 @@ export class RequisitionRecordComponent implements OnInit {
   resetFilters(): void {
     this.searchCode = '';
     this.selectedSupplier = '';
-    this.fromDate = null;
-    this.toDate = null;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.createdBy = '';
     this.loadRecords();
   }

@@ -871,3 +871,69 @@ Use NG-ZORRO.
 Use Tailwind.
 Follow Angular best practices.
 Keep everything simple.**
+
+---
+
+# 29. Agentic Skills & Playbooks (AAS Library Integration)
+
+The Agentic Awesome Skills (AAS) catalog is installed and active in the environment (`~/.gemini/skills/`). When developing or migrating Aidly PMS features using Claude Code or other AI pair programmers, invoke and reference these specific domain and engineering skills using the `@<skill-name>` convention.
+
+### Primary Skills for Aidly PMS
+
+#### A. Frontend Architecture & UI
+- **`@angular`**: Modern Angular patterns — Signals, Standalone Components, Zoneless reactivity, and standard dependency injection.
+- **`@angular-best-practices`**: Performance tuning, change detection optimization, bundle size minimization, and memory leak prevention.
+- **`@angular-state-management`**: Signal-based state architecture, reactive computed values, and predictable component-level data flows.
+- **`@angular-ui-patterns`**: Canonical enterprise UI patterns — loading spinners, error banners, data tables, and modal dialogs.
+- **`@tailwind-design-system`**: Utility-first layouts, consistent spacing tokens, and clean responsive design without page-level SCSS.
+
+#### B. Languages & Type Safety
+- **`@typescript-expert`**: Strict TypeScript typing, DTO interfaces matching backend contracts, and eliminating `any` types.
+- **`@csharp-pro`**: Modern C# 13 and .NET 10 patterns for the `aidlypms-backend` Web API (Dapper, Npgsql, records, pattern matching).
+
+#### C. Code Quality, Clean Code & Architecture
+- **`@clean-code`**: Robert C. Martin (Uncle Bob) Clean Code principles — intention-revealing names, single-responsibility functions, and self-documenting code.
+- **`@clean-code-guard`**: Automated review against LLM failure modes, speculative abstractions, and unnecessary complexity.
+- **`@code-refactoring-refactor-clean`**: Surgical refactoring to remove technical debt without altering business behavior.
+
+#### D. Diagnostics & Testing
+- **`@systematic-debugging`**: Rigorous 4-phase root cause analysis before proposing or applying fixes to bugs or calculation issues.
+- **`@lint-and-validate`**: Pre-commit code quality checks, type checks, and formatting verification.
+- **`@tdd-workflow`**: Test-driven development for financial and inventory calculations (totals, VAT, batch discounts).
+
+#### E. Pharmacy Domain & Dual-Ledger Financials
+- **`@payment-accounting`**: Payment registers, cash flow, voucher creation, and tender management (Cash, Card, Mobile banking/bKash).
+- **`@purchase-accounting`**: Supplier invoice entry, accounts payable, purchase returns, and supplier ledger reconciliation.
+- **`@expense-accounting`**: Operational expense accounting, expense heads, and tax/VAT handling.
+- **`@inventory-demand-planning`**: Stock tracking, reorder levels, batch tracking, expiry date monitoring, and shelf/rack allocation.
+- **`@database-migrations-sql-migrations`**: Safe PostgreSQL migrations for Supabase, data integrity checks, and zero-downtime execution.
+
+---
+
+### How to Use Skills in Claude / Agent Prompts
+
+Reference the required skills directly when instructing Claude:
+
+```text
+Use @angular, @clean-code, and @angular-ui-patterns to migrate the Retail Sale POS form from React to Angular using NG-ZORRO and real DB entities.
+```
+
+```text
+Use @systematic-debugging to investigate and resolve the cart discount calculation discrepancy in Aidly PMS POS.
+```
+
+```text
+Use @clean-code-guard to audit this newly migrated Angular form before committing.
+```
+
+---
+
+# 30. Behavioral Safeguards for AI Coding
+
+To ensure safe, high-quality contributions:
+
+1. **Think Before Coding**: State assumptions explicitly. If requirements or entity mappings are ambiguous, ask before implementing.
+2. **Simplicity First**: Implement the minimum code that solves the problem. Never add speculative configurability, unrequested features, or generic abstractions.
+3. **Surgical Changes**: Touch only what is strictly necessary. Match existing code style and conventions.
+4. **Goal-Driven Execution**: Define verifiable criteria (e.g. tests, API checks, type checks) and loop until verified.
+

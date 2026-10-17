@@ -8,23 +8,23 @@
     <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
       <div class="flex flex-col">
         <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-        <input
-          type="date"
-          nz-input
+        <nz-date-picker
           [(ngModel)]="fromDate"
           (ngModelChange)="onFilterChange()"
+          nzFormat="dd-MM-yyyy"
+          nzPlaceHolder="From Date"
           class="w-32 shrink-0 rounded-md text-xs"
-        />
+        ></nz-date-picker>
       </div>
       <div class="flex flex-col">
         <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-        <input
-          type="date"
-          nz-input
+        <nz-date-picker
           [(ngModel)]="toDate"
           (ngModelChange)="onFilterChange()"
+          nzFormat="dd-MM-yyyy"
+          nzPlaceHolder="To Date"
           class="w-32 shrink-0 rounded-md text-xs"
-        />
+        ></nz-date-picker>
       </div>
       <div class="flex flex-col">
         <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Invoice / Challan #</label>

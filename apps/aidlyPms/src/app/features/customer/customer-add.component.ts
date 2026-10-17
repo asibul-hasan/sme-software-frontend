@@ -10,6 +10,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { CustomerService } from '../../core/services/customer.service';
 import { CustCustomer } from '../../core/models';
@@ -28,6 +29,7 @@ import { CustCustomer } from '../../core/models';
     NzIconModule,
     NzModalModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   templateUrl: './customer-add.component.html',

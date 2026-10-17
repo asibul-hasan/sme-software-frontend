@@ -14,12 +14,13 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
 import { SuppSupplier } from '../../core/models/supplier.models';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface PurchaseRecordRow {
   id: string;
@@ -50,6 +51,7 @@ interface PurchaseRecordRow {
     NzTagModule,
     NzSpinModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   templateUrl: './purchase-record.component.html',
@@ -69,9 +71,9 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
 
   // Initialize with standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   searchInvoice = '';
   filterSupplier = '';
   filterType = '';
@@ -144,8 +146,8 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
       pageIndex: 1,
       pageSize: 50,
     };
-    if (this.fromDate) params['fromDate'] = this.fromDate;
-    if (this.toDate) params['toDate'] = this.toDate;
+    if (this.fromDate) params['fromDate'] = formatDateToDdMmYyyy(this.fromDate);
+    if (this.toDate) params['toDate'] = formatDateToDdMmYyyy(this.toDate);
     if (this.searchInvoice.trim()) params['search'] = this.searchInvoice.trim();
     if (this.filterSupplier) params['search'] = this.filterSupplier;
     if (this.filterType) params['inventoryType'] = this.filterType === 'OPENING STOCK' ? 2 : 1;
@@ -179,9 +181,9 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.searchInvoice = '';
     this.filterSupplier = '';
     this.filterType = '';

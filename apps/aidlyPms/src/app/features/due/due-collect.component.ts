@@ -11,8 +11,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { getDefaultMonthDateRange } from '../../shared/utils/date-range.util';
+import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 import { CustomerService } from '../../core/services/customer.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { PrintService } from '../../core/services/print.service';
@@ -51,6 +52,7 @@ interface PaidRecord {
     NzTagModule,
     NzSelectModule,
     NzTooltipModule,
+    NzDatePickerModule,
     PageHeaderComponent,
   ],
   template: `
@@ -64,23 +66,23 @@ interface PaidRecord {
         <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="From Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <input
-              type="date"
-              nz-input
+            <nz-date-picker
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
+              nzFormat="dd-MM-yyyy"
+              nzPlaceHolder="To Date"
               class="w-32 shrink-0 rounded-md text-xs"
-            />
+            ></nz-date-picker>
           </div>
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Customer / Bill #</label>
@@ -436,9 +438,9 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   activeTab = 0;
 
   // Initialize with standard 1-month date range default
-  defaultDates = getDefaultMonthDateRange();
-  fromDate = this.defaultDates.fromDate;
-  toDate = this.defaultDates.toDate;
+  defaultDates = getDefaultMonthDates();
+  fromDate: Date | null = this.defaultDates.from;
+  toDate: Date | null = this.defaultDates.to;
   searchQuery = '';
 
   isLoading = signal(false);
@@ -520,8 +522,8 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   loadDueRecords(): void {
     this.isLoading.set(true);
     const params = {
-      fromDate: this.fromDate,
-      toDate: this.toDate,
+      fromDate: formatDateToDdMmYyyy(this.fromDate),
+      toDate: formatDateToDdMmYyyy(this.toDate),
       search: this.searchQuery.trim(),
     };
     this.customerService.getDueRecords(params).subscribe({
@@ -555,9 +557,9 @@ export class DueCollectComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const def = getDefaultMonthDateRange();
-    this.fromDate = def.fromDate;
-    this.toDate = def.toDate;
+    const def = getDefaultMonthDates();
+    this.fromDate = def.from;
+    this.toDate = def.to;
     this.searchQuery = '';
     this.loadDueRecords();
   }
