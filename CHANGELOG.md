@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.7...v1.3.0) (2026-10-17)
+
+
+### 🚀 Features
+
+* **reports:** build account module reports with date filters ([f49deee](https://github.com/asibul-hasan/sme-software-frontend/commit/f49deee9c3a92e0e09371fc6a70e83d14a568d02))
+
 ## [1.2.7](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.6...v1.2.7) (2026-10-17)
 
 
