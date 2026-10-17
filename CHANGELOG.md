@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.3.0...v1.4.0) (2026-10-17)
+
+
+### 🚀 Features
+
+* **inventory:** add stock valuation and inventory report screen ([b27dce3](https://github.com/asibul-hasan/sme-software-frontend/commit/b27dce3e23c9114346b07e1aa86ded82d1c5c4e3))
+
 ## [1.3.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.7...v1.3.0) (2026-10-17)
 
 
