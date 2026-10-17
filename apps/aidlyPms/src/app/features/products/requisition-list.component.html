@@ -18,7 +18,7 @@
         >
           <span nz-icon nzType="plus"></span> New Blank Planner
         </button>
-        @if (loadedRequisitionStatus() !== 'Approved' && loadedRequisitionStatus() !== 'Cancelled') {
+        @if (!isLocked() && loadedRequisitionStatus() !== 'Cancelled') {
           <button
             nz-button
             nzType="primary"
@@ -34,7 +34,7 @@
         nz-button
         class="rounded-md border-amber-400 bg-amber-50/60 text-amber-900 font-semibold hover:bg-amber-100"
         [nzLoading]="isLoadingLowStock()"
-        [disabled]="isApproved()"
+        [disabled]="isLocked()"
         (click)="populateLowStock()"
       >
         <span nz-icon nzType="thunderbolt" class="text-amber-600"></span> Populate Low Stock Items
@@ -42,7 +42,7 @@
       <button
         nz-button
         class="btn-secondary-action rounded-md"
-        [disabled]="isApproved()"
+        [disabled]="isLocked()"
         (click)="openProductSelector()"
       >
         <span nz-icon nzType="plus"></span> Add Item (F2)
@@ -52,11 +52,11 @@
         nzType="primary"
         class="btn-save rounded-md font-semibold"
         [nzLoading]="isSaving()"
-        [disabled]="items().length === 0 || isApproved()"
+        [disabled]="items().length === 0 || isLocked()"
         (click)="saveRequisition()"
       >
-        <span nz-icon [nzType]="isApproved() ? 'lock' : 'save'"></span>
-        {{ isApproved() ? 'Approved (Locked)' : (loadedRequisitionNo() ? 'Update Requisition (F8)' : 'Save Requisition (F8)') }}
+        <span nz-icon [nzType]="isLocked() ? 'lock' : 'save'"></span>
+        {{ isFulfilled() ? 'Fulfilled (View Only)' : (isApproved() ? 'Approved (Locked)' : (loadedRequisitionNo() ? 'Update Requisition (F8)' : 'Save Requisition (F8)')) }}
       </button>
     </div>
   </app-page-header>
@@ -66,16 +66,17 @@
     @if (loadedRequisitionNo()) {
       <div
         class="mb-3 px-3 py-2 rounded-lg text-xs flex items-center justify-between"
-        [ngClass]="isApproved() ? 'bg-emerald-50 border border-emerald-300' : 'bg-indigo-50/90 border border-indigo-200'"
+        [ngClass]="isFulfilled() ? 'bg-blue-50 border border-blue-300' : (isApproved() ? 'bg-emerald-50 border border-emerald-300' : 'bg-indigo-50/90 border border-indigo-200')"
       >
         <div class="flex items-center gap-2">
-          <span nz-icon [nzType]="isApproved() ? 'lock' : 'info-circle'" [class]="isApproved() ? 'text-emerald-700 text-sm' : 'text-indigo-600 text-sm'"></span>
-          <span [class]="isApproved() ? 'text-emerald-950 font-medium' : 'text-indigo-900 font-medium'">
-            Requisition: <strong class="font-mono font-bold" [class]="isApproved() ? 'text-emerald-950' : 'text-indigo-950'">{{ savedRequisitionCode() }}</strong>
+          <span nz-icon [nzType]="isLocked() ? 'lock' : 'info-circle'" [class]="isFulfilled() ? 'text-blue-700 text-sm' : (isApproved() ? 'text-emerald-700 text-sm' : 'text-indigo-600 text-sm')"></span>
+          <span [class]="isFulfilled() ? 'text-blue-950 font-medium' : (isApproved() ? 'text-emerald-950 font-medium' : 'text-indigo-900 font-medium')">
+            Requisition: <strong class="font-mono font-bold" [class]="isFulfilled() ? 'text-blue-950' : (isApproved() ? 'text-emerald-950' : 'text-indigo-950')">{{ savedRequisitionCode() }}</strong>
           </span>
           <span
             class="px-2 py-0.5 rounded text-[11px] font-bold"
             [ngClass]="{
+              'bg-blue-100 text-blue-800 border border-blue-300': loadedRequisitionStatus() === 'Fulfilled',
               'bg-emerald-100 text-emerald-800 border border-emerald-300': loadedRequisitionStatus() === 'Approved',
               'bg-amber-100 text-amber-800 border border-amber-300': loadedRequisitionStatus() === 'Pending',
               'bg-rose-100 text-rose-800 border border-rose-300': loadedRequisitionStatus() === 'Cancelled'
@@ -83,14 +84,18 @@
           >
             {{ loadedRequisitionStatus() }}
           </span>
-          @if (isApproved()) {
+          @if (isFulfilled()) {
+            <span class="text-blue-800 text-[11px] font-semibold flex items-center gap-1">
+              (Order is fulfilled — view only, locked from editing)
+            </span>
+          } @else if (isApproved()) {
             <span class="text-emerald-800 text-[11px] font-semibold flex items-center gap-1">
               (Order is approved — strictly locked from editing and deleting)
             </span>
           }
         </div>
         <div class="flex items-center gap-2">
-          @if (!isApproved() && loadedRequisitionStatus() !== 'Cancelled') {
+          @if (!isLocked() && loadedRequisitionStatus() !== 'Cancelled') {
             <button
               nz-button
               nzType="primary"
@@ -129,6 +134,7 @@
             <span
               class="px-1.5 py-0.5 rounded text-[10px] font-bold"
               [ngClass]="{
+                'bg-blue-100 text-blue-800 border border-blue-200': loadedRequisitionStatus() === 'Fulfilled',
                 'bg-emerald-100 text-emerald-800 border border-emerald-200': loadedRequisitionStatus() === 'Approved',
                 'bg-amber-100 text-amber-800 border border-amber-200': loadedRequisitionStatus() === 'Pending',
                 'bg-rose-100 text-rose-800 border border-rose-200': loadedRequisitionStatus() === 'Cancelled'
@@ -155,7 +161,7 @@
           [(ngModel)]="requisitionDate"
           nzFormat="dd-MM-yyyy"
           [nzAllowClear]="false"
-          [nzDisabled]="isApproved()"
+          [nzDisabled]="isLocked()"
         ></nz-date-picker>
       </div>
 
@@ -170,7 +176,7 @@
           nzPlaceHolder="Select Supplier / Distributor"
           nzShowSearch
           nzAllowClear
-          [nzDisabled]="isApproved()"
+          [nzDisabled]="isLocked()"
         >
           @for (sup of suppliers(); track sup.supplier_no) {
             <nz-option
@@ -193,7 +199,7 @@
           nzShowSearch
           nzAllowClear
           (ngModelChange)="onCompanyFilterChange()"
-          [nzDisabled]="isApproved()"
+          [nzDisabled]="isLocked()"
         >
           <nz-option [nzValue]="null" nzLabel="All Manufacturers"></nz-option>
           @for (comp of companies(); track comp.company_no) {
@@ -213,7 +219,7 @@
           placeholder="e.g. Urgent OTC morning restock..."
           [(ngModel)]="remarks"
           class="rounded-md w-full"
-          [disabled]="isApproved()"
+          [disabled]="isLocked()"
         />
       </div>
     </div>
@@ -228,7 +234,7 @@
           nzSize="small"
           class="rounded border-amber-300 text-amber-800 bg-amber-50/50 hover:bg-amber-100"
           [nzLoading]="isLoadingLowStock()"
-          [disabled]="isApproved()"
+          [disabled]="isLocked()"
           (click)="populateLowStock()"
         >
           <span nz-icon nzType="thunderbolt" class="text-amber-500"></span> Populate Low Stock
@@ -241,12 +247,12 @@
           nzType="default"
           nzSize="small"
           class="rounded"
-          [disabled]="isApproved()"
+          [disabled]="isLocked()"
           (click)="openProductSelector()"
         >
           <span nz-icon nzType="search"></span> Search & Add (F2)
         </button>
-        @if (items().length > 0 && !isApproved()) {
+        @if (items().length > 0 && !isLocked()) {
           <button
             nz-button
             nzType="text"
@@ -261,7 +267,11 @@
       </div>
 
       <div class="flex items-center gap-3 text-slate-500">
-        @if (isApproved()) {
+        @if (isFulfilled()) {
+          <span class="text-blue-700 font-semibold flex items-center gap-1">
+            <span nz-icon nzType="lock"></span> Editing and deleting are disabled for fulfilled orders
+          </span>
+        } @else if (isApproved()) {
           <span class="text-emerald-700 font-semibold flex items-center gap-1">
             <span nz-icon nzType="lock"></span> Editing and deleting are disabled for approved orders
           </span>
@@ -360,9 +370,9 @@
                 </div>
               </td>
 
-              <!-- Box Qty (Editable only when not approved) -->
+              <!-- Box Qty (Editable only when not locked) -->
               <td class="p-2.5 text-center">
-                @if (!isApproved()) {
+                @if (!isLocked()) {
                   <nz-input-number
                     class="w-20 rounded text-center font-mono font-bold"
                     nzSize="small"
@@ -386,9 +396,9 @@
                 {{ item.box_qty * item.quantity_in_box }}
               </td>
 
-              <!-- Unit Cost / BTP (Editable only when not approved) -->
+              <!-- Unit Cost / BTP (Editable only when not locked) -->
               <td class="p-2.5 text-right">
-                @if (!isApproved()) {
+                @if (!isLocked()) {
                   <nz-input-number
                     class="w-24 rounded text-right font-mono"
                     nzSize="small"
@@ -414,7 +424,7 @@
 
               <!-- Actions -->
               <td class="p-2.5 text-center">
-                @if (!isApproved()) {
+                @if (!isLocked()) {
                   <button
                     type="button"
                     (click)="removeItem(item)"
@@ -425,7 +435,7 @@
                     <span nz-icon nzType="delete"></span>
                   </button>
                 } @else {
-                  <span class="text-slate-300 text-xs select-none" nz-tooltip nzTooltipTitle="Approved requisition items cannot be deleted">—</span>
+                  <span class="text-slate-300 text-xs select-none" nz-tooltip [nzTooltipTitle]="loadedRequisitionStatus() + ' requisition items cannot be deleted'">—</span>
                 }
               </td>
             </tr>
@@ -444,7 +454,7 @@
                       nzType="primary"
                       nzSize="small"
                       class="rounded"
-                      [disabled]="isApproved()"
+                      [disabled]="isLocked()"
                       (click)="openProductSelector()"
                     >
                       <span nz-icon nzType="plus"></span> Add Product (F2)
@@ -454,7 +464,7 @@
                       nzType="default"
                       nzSize="small"
                       class="rounded border-amber-300 text-amber-800 bg-amber-50"
-                      [disabled]="isApproved()"
+                      [disabled]="isLocked()"
                       (click)="populateLowStock()"
                     >
                       <span nz-icon nzType="thunderbolt"></span> Populate Low Stock
@@ -495,7 +505,7 @@
       </div>
 
       <div class="flex items-center gap-2">
-        @if (items().length > 0 && !isApproved()) {
+        @if (items().length > 0 && !isLocked()) {
           <button nz-button nzSize="small" class="btn-reset rounded" (click)="clearAllItems()">
             Reset
           </button>
@@ -505,11 +515,11 @@
           nzType="primary"
           class="btn-save rounded font-semibold px-4"
           [nzLoading]="isSaving()"
-          [disabled]="items().length === 0 || isApproved()"
+          [disabled]="items().length === 0 || isLocked()"
           (click)="saveRequisition()"
         >
-          <span nz-icon [nzType]="isApproved() ? 'lock' : 'check'"></span>
-          {{ isApproved() ? 'Approved (Locked)' : (loadedRequisitionNo() ? 'Update & Save Changes (F8)' : 'Save & Generate (F8)') }}
+          <span nz-icon [nzType]="isLocked() ? 'lock' : 'check'"></span>
+          {{ isFulfilled() ? 'Fulfilled (View Only)' : (isApproved() ? 'Approved (Locked)' : (loadedRequisitionNo() ? 'Update & Save Changes (F8)' : 'Save & Generate (F8)')) }}
         </button>
       </div>
     </div>

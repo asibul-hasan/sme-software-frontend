@@ -188,6 +188,10 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   approveRecord(r: RequisitionRecord): void {
+    if (r.status === 'Approved' || r.status === 'Fulfilled') {
+      this.msg.warning(`Requisition is already ${r.status.toLowerCase()}.`);
+      return;
+    }
     this.modal
       .confirmAction(
         `Approve Requisition ${r.reqCode}?`,
@@ -220,8 +224,8 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   cancelRecord(r: RequisitionRecord): void {
-    if (r.status === 'Approved') {
-      this.msg.warning('Approved requisitions cannot be cancelled or deleted.');
+    if (r.status === 'Approved' || r.status === 'Fulfilled') {
+      this.msg.warning(`${r.status} requisitions cannot be cancelled or deleted.`);
       return;
     }
     this.modal

@@ -88,6 +88,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   remarks = '';
 
   isApproved = computed(() => (this.loadedRequisitionStatus() || '').trim().toLowerCase() === 'approved');
+  isFulfilled = computed(() => (this.loadedRequisitionStatus() || '').trim().toLowerCase() === 'fulfilled');
+  isLocked = computed(() => this.isApproved() || this.isFulfilled());
 
   // Data lookups
   suppliers = signal<SuppSupplier[]>([]);
@@ -162,7 +164,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   onLineItemChange(): void {
-    if (this.isApproved()) return;
+    if (this.isLocked()) return;
     this.items.update(list => [...list]);
   }
 
@@ -171,12 +173,12 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   handleKeyboardEvent(event: KeyboardEvent): void {
     if (event.key === 'F2') {
       event.preventDefault();
-      if (!this.isApproved()) {
+      if (!this.isLocked()) {
         this.openProductSelector();
       }
     } else if (event.key === 'F8') {
       event.preventDefault();
-      if (!this.isApproved() && !this.isSaving() && this.items().length > 0) {
+      if (!this.isLocked() && !this.isSaving() && this.items().length > 0) {
         this.saveRequisition();
       }
     }
@@ -244,8 +246,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Master Action: Populate Low Stock Items
   populateLowStock(): void {
-    if (this.isApproved()) {
-      this.msg.warning('This requisition is approved and locked. Low-stock items cannot be added.');
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is ${this.loadedRequisitionStatus().toLowerCase()} and locked. Low-stock items cannot be added.`);
       return;
     }
     this.isLoadingLowStock.set(true);
@@ -313,8 +315,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Detail Item Management & Product Catalog Selector (F2)
   openProductSelector(): void {
-    if (this.isApproved()) {
-      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is ${this.loadedRequisitionStatus().toLowerCase()} and locked. Items cannot be added.`);
       return;
     }
     this.productSearchQuery = '';
@@ -410,8 +412,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   populateSelectedProducts(): void {
-    if (this.isApproved()) {
-      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is ${this.loadedRequisitionStatus().toLowerCase()} and locked. Items cannot be added.`);
       return;
     }
     const selected = Array.from(this.selectedProductsMap.values());
@@ -475,8 +477,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   addProductToRequisition(p: ProdProduct, event?: MouseEvent): void {
-    if (this.isApproved()) {
-      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is ${this.loadedRequisitionStatus().toLowerCase()} and locked. Items cannot be added.`);
       return;
     }
     if (event) {
@@ -514,8 +516,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   removeItem(item: RequisitionItemRow): void {
-    if (this.isApproved()) {
-      this.msg.warning('Approved requisition items cannot be deleted.');
+    if (this.isLocked()) {
+      this.msg.warning(`${this.loadedRequisitionStatus()} requisition items cannot be deleted.`);
       return;
     }
     this.items.update(list => list.filter(i => i.product_no !== item.product_no));
@@ -523,8 +525,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   clearAllItems(): void {
-    if (this.isApproved()) {
-      this.msg.warning('Approved requisition items cannot be deleted.');
+    if (this.isLocked()) {
+      this.msg.warning(`${this.loadedRequisitionStatus()} requisition items cannot be deleted.`);
       return;
     }
     this.modal
@@ -585,7 +587,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
           });
 
           this.items.set(mappedRows);
-          this.msg.info(`Loaded requisition ${this.savedRequisitionCode()} for editing.`);
+          this.msg.info(`Loaded requisition ${this.savedRequisitionCode()}${this.isLocked() ? ' (view only).' : ' for editing.'}`);
         } else {
           this.msg.error(res.message || 'Failed to load requisition');
         }
@@ -598,6 +600,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Master Action: Approve Current Requisition
   approveCurrentRequisition(): void {
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is already ${this.loadedRequisitionStatus().toLowerCase()}.`);
+      return;
+    }
     const reqNo = this.loadedRequisitionNo();
     const reqCode = this.savedRequisitionCode() || `REQ-${reqNo}`;
     if (!reqNo) return;
@@ -633,8 +639,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Final Save to Backend (Create or Update)
   saveRequisition(): void {
-    if (this.isApproved()) {
-      this.msg.warning('This requisition is already approved and locked from editing.');
+    if (this.isLocked()) {
+      this.msg.warning(`This requisition is ${this.loadedRequisitionStatus().toLowerCase()} and locked from editing.`);
       return;
     }
 
