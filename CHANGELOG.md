@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.2...v1.2.3) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **purchase:** ensure receive and update stock button is visible and accessible ([bf7f76c](https://github.com/asibul-hasan/sme-software-frontend/commit/bf7f76cc2360a35baf273772697c002c7487c970))
+
 ## [1.2.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.1...v1.2.2) (2026-10-17)
 
 
