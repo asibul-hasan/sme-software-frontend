@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.1...v1.2.2) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** auto-focus add button after selecting product from dropdown ([d80f9a5](https://github.com/asibul-hasan/sme-software-frontend/commit/d80f9a5a052890d92e491749fb05a7e6c97d379c))
+
 ## [1.2.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.0...v1.2.1) (2026-10-17)
 
 
