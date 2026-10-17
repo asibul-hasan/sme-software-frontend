@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.0...v1.4.1) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **common:** standardize date pickers and API date filtering to dd-MM-yyyy format ([906e034](https://github.com/asibul-hasan/sme-software-frontend/commit/906e0348948004f2cfb911b53414c2bbbf611a91))
+
 ## [1.4.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.3.0...v1.4.0) (2026-10-17)
 
 
