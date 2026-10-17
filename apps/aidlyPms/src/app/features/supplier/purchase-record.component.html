@@ -1,9 +1,9 @@
 <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
   <app-page-header
-    title="Purchase Records (Invoices History)"
+    title="Purchase Invoices Register"
     subtitle="Review past supplier purchase orders, challans, and goods received notes"
-    formId="PUR_1504"
-    [breadcrumbs]="[{ label: 'Suppliers', url: '/supplier/list' }, { label: 'Purchase Records' }]"
+    formId="PUR_1509"
+    [breadcrumbs]="[{ label: 'Suppliers', url: '/supplier/list' }, { label: 'Purchase Invoices Register' }]"
   >
     <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
       <div class="flex flex-col">
@@ -181,7 +181,7 @@
         <span class="text-slate-300">|</span>
         <span class="font-semibold text-slate-700">Total Net: <strong class="theme-total-text font-mono text-sm">৳ {{ totalPurchaseNet() | number: '1.2-2' }}</strong></span>
       </div>
-      <span class="text-slate-400 font-mono text-[11px]">Audit History Log</span>
+      <span class="text-slate-400 font-mono text-[11px]">Invoices Register</span>
     </div>
   </div>
 </div>

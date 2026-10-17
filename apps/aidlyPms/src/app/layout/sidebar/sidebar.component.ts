@@ -233,7 +233,7 @@ export class SidebarComponent {
     const title = screen.title.toLowerCase();
     if (title.includes('add') || title.includes('create') || title.includes('form')) return 'form';
     if (title.includes('setting') || title.includes('config') || title.includes('rule')) return 'setting';
-    if (title.includes('record') || title.includes('history') || title.includes('audit')) return 'history';
+    if (title.includes('record') || title.includes('history') || title.includes('audit') || title.includes('register')) return 'history';
     if (title.includes('pos') || title.includes('sale') || title.includes('counter')) return 'shopping-cart';
     if (title.includes('purchase') || title.includes('supplier')) return 'shop';
     if (title.includes('cash') || title.includes('due') || title.includes('expense') || title.includes('income') || title.includes('balance') || title.includes('capital')) return 'dollar';

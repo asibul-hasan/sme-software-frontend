@@ -92,7 +92,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCustomers();
 
-    // Listen to query params for incoming return requests from Sales Invoices Audit Log
+    // Listen to query params for incoming return requests from Sales Invoices Register
     this.routeSub = this.route.queryParamMap.subscribe((params) => {
       const inv = params.get('invoice');
       const saleInvoiceNo = params.get('saleInvoiceNo');

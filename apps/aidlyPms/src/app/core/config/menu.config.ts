@@ -71,11 +71,11 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
   },
   {
     form_id: 'DASH_2303',
-    title: 'Cashbook & Buy/Sale Audit',
+    title: 'Cashbook & Buy/Sale Register',
     type: 'Sub-Screen',
     route: '/dashboard/cashbook',
     permission_code: 'PMS-Report-Module',
-    description: 'Consolidated cash inflow/outflow audit log for daily reconciling.',
+    description: 'Consolidated cash inflow/outflow register for daily reconciling.',
     is_in_sidebar: true,
   },
 
@@ -154,11 +154,11 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
   },
   {
     form_id: 'PROD_1609',
-    title: 'Requisitions Audit History',
+    title: 'Requisitions Register',
     type: 'Main Screen',
     route: '/products/requisition/records',
     permission_code: 'PMS-Requisition-Module',
-    description: 'Historical archive of submitted stock requisition orders.',
+    description: 'Historical register of submitted stock requisition orders.',
     is_in_sidebar: true,
   },
   {
@@ -210,11 +210,11 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
   },
   {
     form_id: 'PUR_1509',
-    title: 'Purchase Invoices Audit',
+    title: 'Purchase Invoices Register',
     type: 'Main Screen',
     route: '/supplier/records',
     permission_code: 'PMS-Vendor-Module',
-    description: 'Historical archive of supplier purchase vouchers and payment details.',
+    description: 'Historical register of supplier purchase vouchers and payment details.',
     is_in_sidebar: true,
   },
 
@@ -270,16 +270,16 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     type: 'Main Screen',
     route: '/customer/returns',
     permission_code: 'PMS-Sale-Module',
-    description: 'Audit log of returned invoices and refund payments.',
+    description: 'Register of returned invoices and refund payments.',
     is_in_sidebar: true,
   },
   {
     form_id: 'SALE_1410',
-    title: 'Sales Invoices Audit Log',
+    title: 'Sales Invoices Register',
     type: 'Main Screen',
     route: '/customer/sales',
     permission_code: 'PMS-Sale-Module',
-    description: 'Historical archive of retail/wholesale receipts with reprint.',
+    description: 'Historical register of retail/wholesale receipts with reprint.',
     is_in_sidebar: true,
   },
 
@@ -324,11 +324,11 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
   },
   {
     form_id: 'DUE_1302',
-    title: 'Due Paid Collections Audit',
+    title: 'Due Paid Collections Register',
     type: 'Sub-Screen',
     route: '/pms-due-paid-payments',
     permission_code: 'PMS-Customer-Module',
-    description: 'Audit log of historical due payment collections.',
+    description: 'Register of historical due payment collections.',
     is_in_sidebar: true,
   },
 
