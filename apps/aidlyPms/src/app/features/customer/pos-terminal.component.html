@@ -166,7 +166,10 @@
                   [nzLabel]="p.name + (p.strength ? ' ' + p.strength : '') + ' • Avail: ' + getAvailableStock(p) + ' pcs' + (p.rak ? ' [Rak: ' + p.rak + ']' : '')"
                   nzCustomContent
                 >
-                  <div class="h-[48px] flex items-center justify-between border-b border-slate-100 last:border-0 w-full">
+                  <div 
+                    (click)="onProductOptionSelected(p)"
+                    class="h-[48px] flex items-center justify-between border-b border-slate-100 last:border-0 w-full cursor-pointer"
+                  >
                     <div class="flex-1 min-w-0 pr-2">
                       <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs truncate">
                         <span>{{ p.name }}</span>
@@ -276,11 +279,13 @@
           <!-- Add Line Button -->
           <div class="col-span-12 md:col-span-2">
             <button
+              #addBtn
+              id="pos-add-btn"
               type="button"
               nz-button
               nzType="primary"
               (click)="addEntryToCart()"
-              class="w-full rounded-md font-semibold"
+              class="w-full rounded-md font-semibold transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             >
               Add (Enter)
               @if (getEntryLineTotal() > 0) {

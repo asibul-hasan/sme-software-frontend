@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, HostListener, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, HostListener, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -429,6 +429,8 @@ interface CustomerOption {
   templateUrl: './pos-terminal.component.html',
 })
 export class PosTerminalComponent implements OnInit {
+  @ViewChild('addBtn', { read: ElementRef }) addBtn?: ElementRef<HTMLButtonElement>;
+
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
@@ -765,6 +767,17 @@ export class PosTerminalComponent implements OnInit {
     } else if (event.key === 'F10' || (event.ctrlKey && event.key === 'Enter')) {
       event.preventDefault();
       this.confirmCheckout();
+    } else if (event.key === 'Enter') {
+      const activeEl = document.activeElement;
+      const isInputOrButton = activeEl && ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(activeEl.tagName);
+      const isModalOpen = this.isCustomerModalVisible || this.isHeldOrdersModalVisible || 
+                          this.isReceiptModalVisible || this.isProductModalVisible || 
+                          this.isEditItemModalVisible || this.isQuickGenericModalVisible || 
+                          this.isQuickCompanyModalVisible;
+      if (!isInputOrButton && !isModalOpen && (this.selectedProductText || this.selectedProductObj)) {
+        event.preventDefault();
+        this.addEntryToCart();
+      }
     }
   }
 
@@ -871,6 +884,35 @@ export class PosTerminalComponent implements OnInit {
       this.entryPrice = this.isWholesale() ? found.saleWholesale : found.saleRetail;
       this.entryQty = this.isWholesale() ? 1 : 1;
     }
+    this.focusAddButton();
+  }
+
+  onProductOptionSelected(product: CatalogProduct): void {
+    this.selectedProductObj = product;
+    this.selectedProductText = product.name;
+    this.entryPrice = this.isWholesale() ? product.saleWholesale : product.saleRetail;
+    this.entryQty = this.isWholesale() ? 1 : 1;
+    this.focusAddButton();
+  }
+
+  focusAddButton(): void {
+    const doFocus = () => {
+      const btn = this.addBtn?.nativeElement || (document.getElementById('pos-add-btn') as HTMLButtonElement);
+      if (btn) {
+        btn.focus();
+      }
+    };
+    setTimeout(doFocus, 50);
+    setTimeout(doFocus, 150);
+  }
+
+  focusProductSearch(): void {
+    setTimeout(() => {
+      const inputEl = document.querySelector('nz-select input') as HTMLElement;
+      if (inputEl) {
+        inputEl.focus();
+      }
+    }, 80);
   }
 
   getEntryLineTotal(): number {
@@ -1010,6 +1052,7 @@ export class PosTerminalComponent implements OnInit {
     this.entryQty = 1;
     this.entryPrice = 0;
     this.entryDiscountValue = 0;
+    this.focusProductSearch();
   }
 
   updateItemQty(item: CartItem, delta: number): void {
