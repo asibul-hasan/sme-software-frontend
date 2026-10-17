@@ -203,12 +203,58 @@ nz-select-top-control {
   font-weight: 600 !important;
 }
 
+.ant-select-item-option-selected.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: var(--primary-hover, #4338ca) !important;
+  color: #ffffff !important;
+}
+
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-content {
   color: #ffffff !important;
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
   color: #ffffff !important;
+}
+
+/* Ensure custom content text & badges in selected select options remain fully visible and high-contrast */
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-900,
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-800,
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-700,
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-600 {
+  color: #ffffff !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-500,
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-400 {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-indigo-600 {
+  color: #ffffff !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-indigo-50 {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-emerald-100 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #047857 !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-amber-100 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #b45309 !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-rose-100 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #be123c !important;
 }
 
 .ant-select-item-empty {

@@ -125,6 +125,38 @@ interface CustomerOption {
     ::ng-deep .product-search-dropdown .ant-select-item-option-content {
       width: 100% !important;
     }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-900,
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-800,
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-700,
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-600 {
+      color: #ffffff !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-500,
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-slate-400 {
+      color: rgba(255, 255, 255, 0.88) !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .text-indigo-600 {
+      color: #ffffff !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-indigo-50 {
+      background-color: rgba(255, 255, 255, 0.22) !important;
+      color: #ffffff !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .border-slate-100 {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-emerald-100 {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      color: #047857 !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-amber-100 {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      color: #b45309 !important;
+    }
+    ::ng-deep .product-search-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .bg-rose-100 {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      color: #be123c !important;
+    }
 
     /* POS Checkout Drawer Styles from Prototype */
     .checkout-drawer {
