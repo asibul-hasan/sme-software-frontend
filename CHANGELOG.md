@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.0...v1.2.1) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** contrast colors for selected product in search dropdown ([c232a45](https://github.com/asibul-hasan/sme-software-frontend/commit/c232a456e13679b777f42987077fca38b16c896c))
+
 ## [1.2.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.1.0...v1.2.0) (2026-10-17)
 
 
