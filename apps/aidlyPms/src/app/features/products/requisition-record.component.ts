@@ -220,6 +220,10 @@ export class RequisitionRecordComponent implements OnInit {
   }
 
   cancelRecord(r: RequisitionRecord): void {
+    if (r.status === 'Approved') {
+      this.msg.warning('Approved requisitions cannot be cancelled or deleted.');
+      return;
+    }
     this.modal
       .confirmAction(`Cancel Requisition ${r.reqCode}?`, 'Cancelling will invalidate this procurement record.', 'Cancel Requisition', true)
       .subscribe(confirmed => {

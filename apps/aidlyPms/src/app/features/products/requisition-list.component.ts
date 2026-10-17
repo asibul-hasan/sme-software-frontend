@@ -87,6 +87,8 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   selectedCompanyNo: number | null = null;
   remarks = '';
 
+  isApproved = computed(() => (this.loadedRequisitionStatus() || '').trim().toLowerCase() === 'approved');
+
   // Data lookups
   suppliers = signal<SuppSupplier[]>([]);
   companies = signal<ProdCompany[]>([]);
@@ -160,6 +162,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   onLineItemChange(): void {
+    if (this.isApproved()) return;
     this.items.update(list => [...list]);
   }
 
@@ -168,10 +171,12 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   handleKeyboardEvent(event: KeyboardEvent): void {
     if (event.key === 'F2') {
       event.preventDefault();
-      this.openProductSelector();
+      if (!this.isApproved()) {
+        this.openProductSelector();
+      }
     } else if (event.key === 'F8') {
       event.preventDefault();
-      if (!this.isSaving() && this.items().length > 0) {
+      if (!this.isApproved() && !this.isSaving() && this.items().length > 0) {
         this.saveRequisition();
       }
     }
@@ -239,6 +244,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Master Action: Populate Low Stock Items
   populateLowStock(): void {
+    if (this.isApproved()) {
+      this.msg.warning('This requisition is approved and locked. Low-stock items cannot be added.');
+      return;
+    }
     this.isLoadingLowStock.set(true);
     const companyFilter = this.selectedCompanyNo || undefined;
 
@@ -304,6 +313,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Detail Item Management & Product Catalog Selector (F2)
   openProductSelector(): void {
+    if (this.isApproved()) {
+      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+      return;
+    }
     this.productSearchQuery = '';
     this.clearSelection();
     this.isProductSelectorVisible = true;
@@ -397,6 +410,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   populateSelectedProducts(): void {
+    if (this.isApproved()) {
+      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+      return;
+    }
     const selected = Array.from(this.selectedProductsMap.values());
     if (selected.length === 0) {
       this.msg.warning('Please select at least one medicine to populate.');
@@ -458,6 +475,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   addProductToRequisition(p: ProdProduct, event?: MouseEvent): void {
+    if (this.isApproved()) {
+      this.msg.warning('This requisition is approved and locked. Items cannot be added.');
+      return;
+    }
     if (event) {
       event.stopPropagation();
     }
@@ -493,11 +514,19 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   removeItem(item: RequisitionItemRow): void {
+    if (this.isApproved()) {
+      this.msg.warning('Approved requisition items cannot be deleted.');
+      return;
+    }
     this.items.update(list => list.filter(i => i.product_no !== item.product_no));
     this.msg.info(`Removed ${item.product_name} from plan.`);
   }
 
   clearAllItems(): void {
+    if (this.isApproved()) {
+      this.msg.warning('Approved requisition items cannot be deleted.');
+      return;
+    }
     this.modal
       .confirmDelete('All Requisition Items', 'Are you sure you want to clear all items from the current requisition draft?')
       .subscribe(confirmed => {
@@ -604,6 +633,11 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
   // Final Save to Backend (Create or Update)
   saveRequisition(): void {
+    if (this.isApproved()) {
+      this.msg.warning('This requisition is already approved and locked from editing.');
+      return;
+    }
+
     if (this.items().length === 0) {
       this.msg.warning('Please add at least one product item to create a requisition.');
       return;
