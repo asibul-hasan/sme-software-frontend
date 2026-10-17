@@ -192,3 +192,25 @@ export type IncomeCategory = AccIncomeCategory;
 export type IncomeVoucher = AccIncome;
 export type CashReconciliation = AccReconciliation;
 export type FinancialLedgerEntry = AccTransactionLedger;
+
+export interface TrialBalanceRow {
+  account_no: number;
+  account_code?: string | null;
+  account_name: string;
+  account_category: number;
+  total_debit: number;
+  total_credit: number;
+  net_balance: number;
+}
+
+export interface LedgerStatementRow {
+  ledger_no: number;
+  transaction_date: string;
+  transaction_type: number;
+  source_document_type: string;
+  source_document_no: string;
+  debit_amount: number;
+  credit_amount: number;
+  balance_after: number;
+  narration?: string | null;
+}

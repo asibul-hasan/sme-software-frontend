@@ -36,6 +36,8 @@ export interface FastMovingProduct {
   generic_name?: string;
   total_sold_pcs: number;
   total_revenue: number;
+  total_profit?: number;
+  profit_margin_pct?: number;
 }
 
 export interface CashbookEntry {
@@ -46,6 +48,9 @@ export interface CashbookEntry {
   cash_in: number;
   cash_out: number;
   balance: number;
+  account_no?: number;
+  account_name?: string;
+  account_type?: number;
 }
 
 export interface DailySalesTrend {
@@ -58,6 +63,24 @@ export interface DailySalesTrend {
   net_profit: number;
 }
 
+export interface FinancialReportSummary {
+  from_date: string;
+  to_date: string;
+  total_sales: number;
+  total_sales_count: number;
+  total_profit: number;
+  total_purchases: number;
+  total_expenses: number;
+  total_incomes: number;
+  cash_collected: number;
+  due_collected: number;
+  supplier_paid: number;
+  sale_returns: number;
+  purchase_returns: number;
+  net_profit: number;
+  net_cash_flow: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -68,18 +91,37 @@ export class DashboardService {
     return this.api.get<DashboardSummary>('dashboard/summary');
   }
 
-  getAnalytics(limit = 10, sort = 'desc'): Observable<ApiResponse<FastMovingProduct[]>> {
-    return this.api.get<FastMovingProduct[]>('dashboard/analytics', { limit, sort });
+  getAnalytics(
+    paramsOrLimit?: number | { fromDate?: string; toDate?: string; limit?: number; sort?: string; sortBy?: string },
+    sort = 'desc'
+  ): Observable<ApiResponse<FastMovingProduct[]>> {
+    let params: Record<string, unknown> = {};
+    if (typeof paramsOrLimit === 'number') {
+      params = { limit: paramsOrLimit, sort };
+    } else if (paramsOrLimit) {
+      params = { ...paramsOrLimit };
+    }
+    return this.api.get<FastMovingProduct[]>('dashboard/analytics', params);
   }
 
-  getCashbook(date?: string): Observable<ApiResponse<CashbookEntry[]>> {
-    const params: Record<string, unknown> = {};
-    if (date) params['date'] = date;
+  getCashbook(
+    dateOrParams?: string | { date?: string; fromDate?: string; toDate?: string; accountNo?: number; accountType?: number }
+  ): Observable<ApiResponse<CashbookEntry[]>> {
+    let params: Record<string, unknown> = {};
+    if (typeof dateOrParams === 'string') {
+      params = { date: dateOrParams };
+    } else if (dateOrParams) {
+      params = { ...dateOrParams };
+    }
     return this.api.get<CashbookEntry[]>('dashboard/cashbook', params);
   }
 
-  getTrends(): Observable<ApiResponse<DailySalesTrend[]>> {
-    return this.api.get<DailySalesTrend[]>('dashboard/trends');
+  getTrends(params?: { fromDate?: string; toDate?: string }): Observable<ApiResponse<DailySalesTrend[]>> {
+    return this.api.get<DailySalesTrend[]>('dashboard/trends', params as Record<string, unknown>);
+  }
+
+  getReportSummary(params?: { fromDate?: string; toDate?: string }): Observable<ApiResponse<FinancialReportSummary>> {
+    return this.api.get<FinancialReportSummary>('dashboard/report-summary', params as Record<string, unknown>);
   }
 
   getBranches(): Observable<ApiResponse<any[]>> {

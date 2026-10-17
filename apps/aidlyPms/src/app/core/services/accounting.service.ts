@@ -10,6 +10,8 @@ import {
   AccIncomeCategory,
   AccAdditionalBalance,
   AccReconciliation,
+  TrialBalanceRow,
+  LedgerStatementRow,
 } from '../models/accounting.models';
 
 @Injectable({
@@ -114,11 +116,15 @@ export class AccountingService {
   }
 
   // Financial Reports
-  getTrialBalance(params?: Record<string, unknown>): Observable<ApiResponse<Record<string, unknown>>> {
-    return this.api.get<Record<string, unknown>>('acc/reports/trial-balance', params);
+  getTrialBalance(params?: Record<string, unknown>): Observable<ApiResponse<TrialBalanceRow[]>> {
+    return this.api.get<TrialBalanceRow[]>('acc/trial-balance', params);
+  }
+
+  getAccountLedger(accountNo: number, params?: Record<string, unknown>): Observable<ApiResponse<LedgerStatementRow[]>> {
+    return this.api.get<LedgerStatementRow[]>(`acc/ledger/${accountNo}`, params);
   }
 
   getCashbook(params?: Record<string, unknown>): Observable<ApiResponse<Record<string, unknown>[]>> {
-    return this.api.get<Record<string, unknown>[]>('acc/reports/cashbook', params);
+    return this.api.get<Record<string, unknown>[]>('dashboard/cashbook', params);
   }
 }

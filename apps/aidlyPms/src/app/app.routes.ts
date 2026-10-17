@@ -52,6 +52,8 @@ import { SubscriptionComponent } from './features/subscription/subscription.comp
 import { BranchSwitcherComponent } from './features/subscription/branch-switcher.component';
 
 import { ModuleScreenViewComponent } from './features/common/module-screen-view.component';
+import { CashbookReportComponent } from './features/reports/cashbook-report.component';
+import { AnalyticsReportComponent } from './features/reports/analytics-report.component';
 import { LoginComponent } from './features/auth/login.component';
 import { authGuard } from './core/guards/auth.guard';
 import { managerGuard } from './core/guards/role.guard';
@@ -67,8 +69,8 @@ export const appRoutes: Route[] = [
 
       // Dashboard & Executive Analytics (DASH_2301 - DASH_2303) - Restricted to Manager
       { path: 'dashboard', component: DashboardComponent, canActivate: [managerGuard] },
-      { path: 'dashboard/analytics', component: ModuleScreenViewComponent, canActivate: [managerGuard] },
-      { path: 'dashboard/cashbook', component: ModuleScreenViewComponent, canActivate: [managerGuard] },
+      { path: 'dashboard/analytics', component: AnalyticsReportComponent, canActivate: [managerGuard] },
+      { path: 'dashboard/cashbook', component: CashbookReportComponent, canActivate: [managerGuard] },
 
       // Products & Inventory (PROD_1601 - PROD_1610)
       { path: 'products', redirectTo: 'products/list', pathMatch: 'full' },
@@ -117,6 +119,9 @@ export const appRoutes: Route[] = [
       { path: 'accounting/expenses/add', component: ExpenseAddComponent, canActivate: [managerGuard] },
       { path: 'accounting/income', component: IncomeComponent, canActivate: [managerGuard] },
       { path: 'accounting/additional-balance', component: AdditionalBalanceComponent, canActivate: [managerGuard] },
+      { path: 'accounting/reports', redirectTo: 'dashboard/cashbook', pathMatch: 'full' },
+      { path: 'accounting/cashbook', redirectTo: 'dashboard/cashbook', pathMatch: 'full' },
+      { path: 'accounting/analytics', redirectTo: 'dashboard/analytics', pathMatch: 'full' },
 
       // Doctors Portal (DOC_1701 - DOC_1703)
       { path: 'doctors-portal/list', component: DoctorListComponent },
