@@ -69,6 +69,7 @@ export interface SaleInvoice {
   // Navigation
   customer?: CustCustomer;
   customer_name?: string;
+  customer_phone?: string;
   items?: readonly SaleInvoiceItem[];
   payments?: readonly SaleInvoicePayment[];
 }
@@ -80,6 +81,7 @@ export interface SaleInvoiceItem {
   sale_invoice_no: number;
   product_no: number;
   batch_no: number;
+  batch_number?: string;
   sale_mode: number;
   sale_qty: number;
   box_qty: number;

@@ -15,10 +15,14 @@ export interface SaleReturnItem {
   return_qty: number;
   unit_price: number;
   total_price: number;
+  batch_number?: string;
+  sale_invoice_item_no?: number | null;
+  disposition?: number;
 }
 
 export interface CreateSaleReturnPayload {
   original_invoice_no: string;
+  sale_invoice_no?: number;
   customer_no: number;
   return_amount: number;
   refund_method?: string;

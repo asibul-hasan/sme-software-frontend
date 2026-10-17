@@ -1,167 +1,209 @@
 <div class="space-y-4">
   <app-page-header
-    title="Customer Sales Return"
-    subtitle="Process customer medicine returns, stock restorations, and cash refunds"
-    formId="SALE_1405"
-    [breadcrumbs]="[{ label: 'POS Terminal', url: '/customer/sale' }, { label: 'Sale Return' }]"
+    title="Customer Return Invoices"
+    subtitle="Process customer medicine returns, stock restorations, and cash refunds directly from sales invoices"
+    formId="SALE_1409"
+    [breadcrumbs]="[
+      { label: 'POS Terminal', url: '/customer/sale' },
+      { label: 'Sales Records', url: '/customer/sales' },
+      { label: 'Return Invoice' }
+    ]"
   >
     <div actions class="flex items-center gap-2">
       <a nz-button nzType="default" routerLink="/customer/sales" class="rounded-md">
-        <span nz-icon nzType="history"></span> View Sales Records
+        <span nz-icon nzType="history"></span> View Sales Invoices Audit Log
       </a>
     </div>
   </app-page-header>
 
-  <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-    <!-- Left: Line Entry + Return Lines -->
-    <div class="xl:col-span-2 space-y-4">
-      <!-- Return Item Entry Card -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
-        <h3 class="font-semibold text-slate-800 text-sm mb-3">Return Item Entry</h3>
+  <!-- Top: Invoice Lookup & Active Banner -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
+    @if (!invoiceDetails) {
+      <div class="max-w-2xl">
+        <h3 class="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
+          <span nz-icon nzType="file-search" class="text-sky-600"></span>
+          Select Sales Invoice to Return
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">
+          Enter or scan the sales invoice number below. All sold items will be populated automatically for return.
+        </p>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="col-span-2">
-            <label class="text-xs font-medium text-slate-600 block mb-1">Product *</label>
-            <div class="flex gap-1.5">
-              <nz-select
-                nzShowSearch
-                nzPlaceHolder="Search product to return..."
-                [(ngModel)]="selectedProductNo"
-                (ngModelChange)="onProductSelect($event)"
-                class="flex-1"
-              >
-                @for (p of availableProducts(); track p.product_no) {
-                  <nz-option [nzValue]="p.product_no" [nzLabel]="p.product_name"></nz-option>
-                }
-              </nz-select>
-              <button
-                type="button"
-                (click)="isProductModalOpen = true"
-                nz-tooltip
-                nzTooltipTitle="Quick Add Product"
-                class="btn-quick-add"
-              >
-                <span nz-icon nzType="plus"></span>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">Box</label>
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <span nz-icon nzType="barcode" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></span>
             <input
-              type="number"
+              type="text"
               nz-input
-              placeholder="0"
-              [(ngModel)]="currentLine.box"
-              class="rounded-md"
-              (keyup.enter)="addLine()"
+              [(ngModel)]="originalInvoice"
+              (keyup.enter)="loadInvoice()"
+              placeholder="Enter Sales Invoice No (e.g. INV-2026-1028 or ID)"
+              class="pl-9 rounded-md w-full"
             />
           </div>
 
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">Sale Price (৳)</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0.00"
-              [(ngModel)]="currentLine.salePrice"
-              class="rounded-md"
-              (keyup.enter)="addLine()"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">QTY/Box</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="10"
-              [(ngModel)]="currentLine.qtyBox"
-              class="rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">Total QTY (Pcs)</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0"
-              [(ngModel)]="currentLine.totalQty"
-              class="rounded-md"
-              (keyup.enter)="addLine()"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">Expiry Date</label>
-            <input
-              type="date"
-              nz-input
-              [(ngModel)]="currentLine.expiryDate"
-              class="rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs font-medium text-slate-600 block mb-1">MIN QTY</label>
-            <input
-              type="number"
-              nz-input
-              placeholder="0"
-              [(ngModel)]="currentLine.minQty"
-              class="rounded-md"
-            />
-          </div>
-        </div>
-
-        <div class="mt-4">
           <button
             type="button"
             nz-button
             nzType="primary"
-            (click)="addLine()"
+            (click)="loadInvoice()"
+            [nzLoading]="isLoadingInvoice()"
             class="rounded-md"
           >
-            + Add Return Line (Enter)
+            <span nz-icon nzType="download"></span> Load Invoice Items
+          </button>
+
+          <a nz-button nzType="default" routerLink="/customer/sales" class="rounded-md">
+            Browse Records
+          </a>
+        </div>
+      </div>
+    } @else {
+      <!-- Active Invoice Info Banner -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-sky-50/70 border border-sky-200 rounded-lg p-3.5">
+        <div class="flex items-start md:items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <span nz-icon nzType="check-circle" class="text-lg"></span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-slate-900 text-sm">Invoice #{{ originalInvoice }}</h3>
+              <nz-tag nzColor="blue">Loaded from Audit Log</nz-tag>
+              <span class="text-xs text-slate-500">Date: {{ invoiceDate || 'N/A' }}</span>
+            </div>
+            <div class="text-xs text-slate-600 mt-0.5 flex items-center gap-3 flex-wrap">
+              <span>Customer: <strong class="text-slate-800">{{ customerName }}</strong> <span *ngIf="customerPhone" class="text-slate-500">({{ customerPhone }})</span></span>
+              <span class="text-slate-300">|</span>
+              <span>Invoice Total: <strong class="text-slate-800 font-mono">৳ {{ invoiceTotal | number: '1.2-2' }}</strong></span>
+              <span class="text-slate-300">|</span>
+              <span>Total Lines: <strong class="text-slate-800 font-mono">{{ lines().length }}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="clearLoadedInvoice()"
+            class="rounded-md text-xs"
+          >
+            <span nz-icon nzType="close"></span> Change Invoice
           </button>
         </div>
       </div>
+    }
+  </div>
 
-      <!-- Return Lines Table -->
+  <!-- Main Grid: Items Table (Left) + Return Summary (Right) -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <!-- Left: Invoice Return Items Table -->
+    <div class="xl:col-span-2 space-y-4">
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 class="font-semibold text-slate-800 text-sm">Return Items</h3>
-          <span class="text-xs text-slate-500 font-mono">
-            {{ lines().length }} item(s) returned
-          </span>
+        <div class="px-5 py-3.5 border-b border-slate-100 flex flex-wrap justify-between items-center bg-slate-50/70 gap-2">
+          <div>
+            <h3 class="font-semibold text-slate-800 text-sm flex items-center gap-2">
+              <span nz-icon nzType="shopping-cart" class="text-slate-600"></span>
+              Invoice Items for Return
+            </h3>
+            <p class="text-[11px] text-slate-500">Select products and set return quantity. Uncheck items not being returned.</p>
+          </div>
+
+          @if (lines().length > 0) {
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                nz-button
+                nzType="default"
+                nzSize="small"
+                (click)="resetAllToSold()"
+                class="rounded-md text-xs"
+              >
+                Return All Items
+              </button>
+              <button
+                type="button"
+                nz-button
+                nzType="default"
+                nzSize="small"
+                (click)="toggleAll(true)"
+                class="rounded-md text-xs"
+              >
+                Select All
+              </button>
+              <button
+                type="button"
+                nz-button
+                nzType="default"
+                nzSize="small"
+                (click)="toggleAll(false)"
+                class="rounded-md text-xs"
+              >
+                Deselect All
+              </button>
+            </div>
+          }
         </div>
 
-        <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+        <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
           <table class="w-full text-sm text-left border-collapse">
             <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
               <tr>
-                <th class="p-3">Product</th>
-                <th class="p-3 text-center">Box</th>
-                <th class="p-3 text-center">Total QTY</th>
-                <th class="p-3 text-right">Sale Price</th>
+                <th class="p-3 w-10 text-center">
+                  <label
+                    nz-checkbox
+                    [nzChecked]="lines().length > 0 && selectedLines().length === lines().length"
+                    [nzIndeterminate]="selectedLines().length > 0 && selectedLines().length < lines().length"
+                    (nzCheckedChange)="toggleAll($event)"
+                  ></label>
+                </th>
+                <th class="p-3">Product Name & Batch</th>
+                <th class="p-3 text-center">Sold QTY</th>
+                <th class="p-3 text-right">Unit Price</th>
+                <th class="p-3 text-center w-36">Return QTY</th>
                 <th class="p-3 text-right">Refund Total</th>
                 <th class="p-3 text-center w-16">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
               @for (l of lines(); track l.id; let idx = $index) {
-                <tr class="hover:bg-slate-50/70 transition-colors">
-                  <td class="p-3 font-semibold text-slate-900 text-xs">
-                    {{ l.name }}
-                    @if (l.expiryDate) {
-                      <span class="block text-[11px] text-slate-400 font-normal">Exp: {{ l.expiryDate }}</span>
+                <tr class="hover:bg-slate-50/70 transition-colors" [class.bg-rose-50/30]="l.selected">
+                  <td class="p-3 text-center">
+                    <label nz-checkbox [(ngModel)]="l.selected" (ngModelChange)="toggleLineSelect(l)"></label>
+                  </td>
+                  <td class="p-3">
+                    <div class="font-semibold text-slate-900 text-xs">{{ l.name }}</div>
+                    @if (l.batchNumber) {
+                      <span class="inline-block text-[11px] text-slate-500 font-mono mt-0.5">
+                        Batch: {{ l.batchNumber }}
+                      </span>
                     }
                   </td>
-                  <td class="p-3 text-center font-mono text-xs">{{ l.box }}</td>
-                  <td class="p-3 text-center font-mono text-xs font-semibold text-slate-700">{{ l.totalQty }} pcs</td>
-                  <td class="p-3 text-right font-mono text-xs">৳ {{ l.salePrice.toFixed(2) }}</td>
-                  <td class="p-3 text-right font-mono text-xs font-bold text-rose-600">
+                  <td class="p-3 text-center">
+                    <span class="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      {{ l.soldQty }} pcs
+                    </span>
+                  </td>
+                  <td class="p-3 text-right font-mono text-xs text-slate-700">
+                    ৳ {{ l.salePrice.toFixed(2) }}
+                  </td>
+                  <td class="p-3 text-center">
+                    <div class="inline-flex flex-col items-center">
+                      <input
+                        type="number"
+                        nz-input
+                        [min]="1"
+                        [max]="l.soldQty"
+                        [(ngModel)]="l.returnQty"
+                        (ngModelChange)="onLineQtyChange(l)"
+                        [disabled]="!l.selected"
+                        class="w-24 text-center rounded-md font-mono text-sm py-1 border-slate-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                      />
+                      <span class="text-[10px] text-slate-400 mt-0.5">max: {{ l.soldQty }} pcs</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-right font-mono text-xs font-bold" [class.text-rose-600]="l.selected" [class.text-slate-300]="!l.selected">
                     ৳ {{ l.total.toFixed(2) }}
                   </td>
                   <td class="p-3 text-center">
@@ -169,7 +211,7 @@
                       type="button"
                       (click)="removeLine(idx)"
                       nz-tooltip
-                      nzTooltipTitle="Remove Item"
+                      nzTooltipTitle="Exclude from Return"
                       class="btn-tbl-action btn-tbl-delete inline-flex"
                     >
                       <span nz-icon nzType="delete"></span>
@@ -178,8 +220,18 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="6" class="p-8 text-center text-slate-400 text-xs">
-                    No return items added yet. Select medicine above and specify quantity to refund.
+                  <td colspan="7" class="p-12 text-center text-slate-400">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                      <span nz-icon nzType="inbox" class="text-3xl text-slate-300"></span>
+                      <p class="text-xs text-slate-500">
+                        No invoice items loaded yet.
+                      </p>
+                      <p class="text-[11px] text-slate-400">
+                        Enter a sales invoice number in the search box above, or click
+                        <strong class="text-slate-600">Sale Return</strong> directly from the
+                        <a routerLink="/customer/sales" class="text-sky-600 underline">Sales Invoices Audit Log</a>.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               }
@@ -187,69 +239,29 @@
           </table>
         </div>
 
-        <div class="table-sticky-footer bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 font-medium">
-          <span>Items: <strong class="text-slate-800 font-mono">{{ lines().length }}</strong></span>
+        <div class="table-sticky-footer bg-slate-50 border-t border-slate-200 px-4 py-3 flex items-center justify-between text-xs text-slate-600 font-medium">
+          <div class="flex items-center gap-3">
+            <span>Selected Items: <strong class="text-slate-800 font-mono">{{ totalReturnItems() }}</strong> / {{ lines().length }}</span>
+            <span class="text-slate-300">|</span>
+            <span>Return Units: <strong class="text-slate-800 font-mono">{{ totalReturnPcs() }} pcs</strong></span>
+          </div>
           <div class="flex items-center gap-4 font-mono">
-            <span>Total Refund Price: <strong class="text-rose-600 font-bold">৳ {{ grossTotal() | number: '1.2-2' }}</strong></span>
+            <span>Gross Refund: <strong class="text-rose-600 font-bold text-sm">৳ {{ grossTotal() | number: '1.2-2' }}</strong></span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Return Summary Card -->
+    <!-- Right: Return Summary & Refund Details Card -->
     <div>
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5 sticky top-4 space-y-4">
-        <h3 class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-3">
-          Return Summary
+        <h3 class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-2">
+          <span nz-icon nzType="calculator" class="text-slate-600"></span>
+          Return & Refund Summary
         </h3>
 
         <div class="space-y-3">
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-600">Total Items:</span>
-            <span class="font-mono font-medium">{{ lines().length }}</span>
-          </div>
-
-          <div class="flex justify-between text-sm border-b border-slate-100 pb-3">
-            <span class="text-slate-600">Total Price:</span>
-            <span class="font-mono font-bold text-slate-900">৳ {{ grossTotal().toFixed(2) }}</span>
-          </div>
-
-          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
-            <span class="text-sm font-medium text-slate-700">Deduct Discount</span>
-            <label nz-checkbox [(ngModel)]="discountEnabled"></label>
-          </div>
-
-          @if (discountEnabled) {
-            <div>
-              <label class="text-xs font-semibold text-slate-600 block mb-1">Discount Deduction (৳)</label>
-              <input
-                type="number"
-                nz-input
-                [(ngModel)]="discountAmount"
-                class="rounded-md"
-              />
-            </div>
-          }
-
-          <div class="py-2.5 px-3 bg-slate-100 border border-slate-200 rounded-lg flex justify-between items-center">
-            <span class="text-sm font-bold text-slate-800">Final Refund Amount</span>
-            <span class="font-mono font-bold text-rose-600 text-base">
-              ৳ {{ finalRefund().toFixed(2) }}
-            </span>
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              Paid (Cash Refunded ৳)
-            </label>
-            <input
-              type="number"
-              nz-input
-              [(ngModel)]="paidRefund"
-              class="rounded-md font-mono"
-            />
-          </div>
-
+          <!-- Customer Selection / Display -->
           <div>
             <label class="text-xs font-semibold text-slate-700 block mb-1">Customer</label>
             <div class="flex gap-1.5">
@@ -270,27 +282,98 @@
             </div>
           </div>
 
+          <!-- Original Invoice Reference -->
           <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Inventory Action</label>
-            <nz-select [(ngModel)]="inventoryType" class="w-full">
-              <nz-option nzValue="CUSTOMER RETURNED" nzLabel="CUSTOMER RETURNED (Restock)"></nz-option>
-              <nz-option nzValue="DAMAGED / EXPIRED" nzLabel="DAMAGED / EXPIRED (Write-off)"></nz-option>
-            </nz-select>
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
-              Original Invoice Number <span class="text-rose-500">*</span>
-            </label>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Original Invoice Reference</label>
             <input
               type="text"
               nz-input
-              placeholder="e.g. INV-2026-1028"
               [(ngModel)]="originalInvoice"
-              class="rounded-md"
+              readonly
+              class="rounded-md bg-slate-50 font-mono text-xs"
             />
           </div>
 
+          <!-- Metrics summary -->
+          <div class="p-3 bg-slate-50 rounded-lg space-y-2 border border-slate-100 text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-600">Items to Return:</span>
+              <span class="font-mono font-bold text-slate-800">{{ totalReturnItems() }} item(s)</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-600">Return Quantity:</span>
+              <span class="font-mono font-bold text-slate-800">{{ totalReturnPcs() }} pcs</span>
+            </div>
+            <div class="flex justify-between border-t border-slate-200 pt-2">
+              <span class="text-slate-600">Gross Refund Amount:</span>
+              <span class="font-mono font-bold text-slate-900">৳ {{ grossTotal() | number: '1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Deduct Discount -->
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
+            <span class="text-xs font-medium text-slate-700">Deduct Original Discount</span>
+            <label nz-checkbox [(ngModel)]="discountEnabled" (ngModelChange)="onDiscountToggle()"></label>
+          </div>
+
+          @if (discountEnabled) {
+            <div>
+              <label class="text-xs font-semibold text-slate-600 block mb-1">Discount Deduction (৳)</label>
+              <input
+                type="number"
+                nz-input
+                [(ngModel)]="discountAmount"
+                (ngModelChange)="onDiscountChange()"
+                placeholder="0.00"
+                class="rounded-md font-mono"
+              />
+            </div>
+          }
+
+          <!-- Final Refund Box -->
+          <div class="py-3 px-3 bg-rose-50 border border-rose-200 rounded-lg flex justify-between items-center">
+            <div>
+              <span class="text-xs font-bold text-rose-900 block">Total Cash Refund</span>
+              <span class="text-[11px] text-rose-600">Payable to customer</span>
+            </div>
+            <span class="font-mono font-extrabold text-rose-600 text-lg">
+              ৳ {{ finalRefund() | number: '1.2-2' }}
+            </span>
+          </div>
+
+          <!-- Refund Payment Method -->
+          <div>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Refund Method</label>
+            <nz-select [(ngModel)]="refundMethod" class="w-full">
+              <nz-option nzValue="Cash" nzLabel="Cash Drawer"></nz-option>
+              <nz-option nzValue="Card" nzLabel="Card / Bank"></nz-option>
+              <nz-option nzValue="bKash" nzLabel="bKash MFS"></nz-option>
+              <nz-option nzValue="Nagad" nzLabel="Nagad MFS"></nz-option>
+            </nz-select>
+          </div>
+
+          <!-- Inventory Disposition -->
+          <div>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Inventory Restock Action</label>
+            <nz-select [(ngModel)]="inventoryType" class="w-full">
+              <nz-option nzValue="CUSTOMER RETURNED" nzLabel="Restock to Inventory (Good Condition)"></nz-option>
+              <nz-option nzValue="DAMAGED / EXPIRED" nzLabel="Write-off / Dispose (Damaged / Expired)"></nz-option>
+            </nz-select>
+          </div>
+
+          <!-- Return Reason -->
+          <div>
+            <label class="text-xs font-semibold text-slate-700 block mb-1">Return Reason / Note</label>
+            <nz-select [(ngModel)]="returnReason" class="w-full">
+              <nz-option nzValue="Customer Return" nzLabel="Customer requested return"></nz-option>
+              <nz-option nzValue="Wrong Medicine" nzLabel="Wrong medicine dispensed"></nz-option>
+              <nz-option nzValue="Doctor Changed Prescription" nzLabel="Doctor changed prescription"></nz-option>
+              <nz-option nzValue="Damaged / Packaging Issue" nzLabel="Damaged / packaging defect"></nz-option>
+              <nz-option nzValue="Other" nzLabel="Other / Miscellaneous"></nz-option>
+            </nz-select>
+          </div>
+
+          <!-- Submit Button -->
           <button
             type="button"
             nz-button
@@ -298,7 +381,9 @@
             nzType="primary"
             nzBlock
             (click)="processReturn()"
-            class="rounded-lg h-10 font-medium"
+            [nzLoading]="isSubmitting()"
+            [disabled]="selectedLines().length === 0"
+            class="rounded-lg h-11 font-semibold text-sm shadow-xs"
           >
             <span nz-icon nzType="rollback"></span> ↩ Process Return & Refund
           </button>
@@ -330,33 +415,6 @@
       <div>
         <label class="block text-xs font-semibold text-slate-700 mb-1">Address / Note</label>
         <input type="text" nz-input placeholder="e.g. Cumilla" [(ngModel)]="newCustomerAddress" class="rounded-md" />
-      </div>
-    </div>
-  </ng-container>
-</nz-modal>
-
-<!-- Quick Add Product Modal -->
-<nz-modal
-  [(nzVisible)]="isProductModalOpen"
-  nzTitle="Quick Add Product"
-  nzOkText="Add Product"
-  (nzOnCancel)="isProductModalOpen = false"
-  (nzOnOk)="saveProduct()"
-  nzWidth="500px"
->
-  <ng-container *nzModalContent>
-    <div class="space-y-3 py-1">
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Brand Name *</label>
-        <input type="text" nz-input placeholder="e.g. Napa 500mg" [(ngModel)]="newProductName" class="rounded-md" />
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Generic Name</label>
-        <input type="text" nz-input placeholder="e.g. Paracetamol" [(ngModel)]="newProductGeneric" class="rounded-md" />
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Default Sale Price (৳)</label>
-        <input type="number" nz-input placeholder="0.00" [(ngModel)]="newProductPrice" class="rounded-md" />
       </div>
     </div>
   </ng-container>
