@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.7](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.6...v1.2.7) (2026-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **forms:** rename audit screens and logs to register ([586d931](https://github.com/asibul-hasan/sme-software-frontend/commit/586d931afb4edd18498c4a276e97ab957564f5ce))
+
 ## [1.2.6](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.2.5...v1.2.6) (2026-10-17)
 
 
