@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.5.1...v1.6.0) (2026-10-18)
+
+
+### 🚀 Features
+
+* **pms:** move discount ৳/% toggle to the beginning of discount inputs across forms ([c86662c](https://github.com/asibul-hasan/sme-software-frontend/commit/c86662cb408e5ccd0347587a6b7a4a6eac023d8b))
+
 ## [1.5.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.5.0...v1.5.1) (2026-10-18)
 
 
