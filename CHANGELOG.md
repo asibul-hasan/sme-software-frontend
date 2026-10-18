@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.2...v1.4.3) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **purchase,requisition:** reactive discount, voucher modal, and stock fixes ([cab3745](https://github.com/asibul-hasan/sme-software-frontend/commit/cab3745f985994d0e508c7e74a34ad63456b81a2))
+
 ## [1.4.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.1...v1.4.2) (2026-10-18)
 
 
