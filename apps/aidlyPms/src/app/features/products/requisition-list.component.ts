@@ -140,6 +140,49 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
     return this.items().reduce((sum, item) => sum + this.calculateLineTotal(item), 0);
   });
 
+  hasBelowMinItems = computed(() => {
+    return this.items().some(i => this.isBelowMinRestock(i));
+  });
+
+  belowMinCount = computed(() => {
+    return this.items().filter(i => this.isBelowMinRestock(i)).length;
+  });
+
+  getMinRequiredBoxes(item: { min_stock_qty_pcs?: number; quantity_in_box?: number }): number {
+    const minQty = item.min_stock_qty_pcs || 0;
+    const qtyInBox = item.quantity_in_box || 1;
+    return minQty > 0 ? Math.max(1, Math.ceil(minQty / qtyInBox)) : 1;
+  }
+
+  isBelowMinRestock(item: RequisitionItemRow): boolean {
+    if (!item.min_stock_qty_pcs || item.min_stock_qty_pcs <= 0) return false;
+    const totalPcs = (item.box_qty || 0) * (item.quantity_in_box || 1);
+    return totalPcs < item.min_stock_qty_pcs;
+  }
+
+  setMinimumRequiredBoxes(item: RequisitionItemRow): void {
+    item.box_qty = this.getMinRequiredBoxes(item);
+    this.onLineItemChange();
+    this.msg.info(`Adjusted ${item.product_name} to ${item.box_qty} boxes (${item.box_qty * item.quantity_in_box} pcs).`);
+  }
+
+  fixAllBelowMinItems(): void {
+    let fixed = 0;
+    this.items.update(list =>
+      list.map(item => {
+        if (this.isBelowMinRestock(item)) {
+          fixed++;
+          return {
+            ...item,
+            box_qty: this.getMinRequiredBoxes(item),
+          };
+        }
+        return item;
+      })
+    );
+    this.msg.success(`Adjusted ${fixed} item(s) to meet minimum restock quantity.`);
+  }
+
   ngOnInit(): void {
     this.loadSuppliers();
     this.loadCompanies();
@@ -216,14 +259,20 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
               list.map(item => {
                 const prod = this.allProducts.find(p => p.product_no === item.product_no);
                 if (!prod) return item;
+                const minQty = prod.min_stock_qty_pcs ?? item.min_stock_qty_pcs;
+                const qtyInBox = prod.quantity_per_box ?? item.quantity_in_box;
+                const minRequiredBoxes = minQty > 0 ? Math.max(1, Math.ceil(minQty / qtyInBox)) : 1;
+                const boxQty = !this.isLocked() ? Math.max(item.box_qty, minRequiredBoxes) : item.box_qty;
                 return {
                   ...item,
                   product_name: item.product_name && !item.product_name.startsWith('Product #') ? item.product_name : prod.product_name,
                   generic_name: item.generic_name !== 'General' ? item.generic_name : (prod.generic_name || 'General'),
                   company_name: item.company_name !== 'Pharmaceuticals Ltd.' ? item.company_name : (prod.company_name || 'Pharmaceuticals Ltd.'),
                   current_stock_pcs: prod.stock_qty ?? item.current_stock_pcs,
-                  min_stock_qty_pcs: prod.min_stock_qty_pcs ?? item.min_stock_qty_pcs,
-                  shortfall_pcs: Math.max(0, (prod.min_stock_qty_pcs ?? item.min_stock_qty_pcs) - (prod.stock_qty ?? 0)),
+                  min_stock_qty_pcs: minQty,
+                  shortfall_pcs: Math.max(0, minQty - (prod.stock_qty ?? 0)),
+                  quantity_in_box: qtyInBox,
+                  box_qty: boxQty,
                 };
               })
             );
@@ -265,11 +314,16 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
             const list = [...current];
             for (const p of incoming) {
               const existingIdx = list.findIndex(i => i.product_no === p.product_no);
-              const boxQty = p.suggested_box_qty > 0 ? p.suggested_box_qty : 1;
-              const unitCost = p.purchase_price_per_piece > 0 ? p.purchase_price_per_piece : (p.cost_per_box / (p.quantity_per_box || 1));
+              const qtyInBox = p.quantity_per_box || 1;
+              const minQty = p.min_stock_qty_pcs || 10;
+              const shortfall = p.shortfall_pcs || 0;
+              const targetPcs = Math.max(minQty, shortfall);
+              const minRequiredBoxes = Math.max(1, Math.ceil(targetPcs / qtyInBox));
+              const boxQty = Math.max(p.suggested_box_qty || 1, minRequiredBoxes);
+              const unitCost = p.purchase_price_per_piece > 0 ? p.purchase_price_per_piece : (p.cost_per_box / qtyInBox);
 
               if (existingIdx >= 0) {
-                // Keep the max box qty
+                // Keep the max box qty, guaranteeing at least minRequiredBoxes
                 list[existingIdx].box_qty = Math.max(list[existingIdx].box_qty, boxQty);
                 list[existingIdx].current_stock_pcs = p.current_stock_pcs;
                 list[existingIdx].min_stock_qty_pcs = p.min_stock_qty_pcs;
@@ -286,7 +340,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
                   current_stock_pcs: p.current_stock_pcs,
                   min_stock_qty_pcs: p.min_stock_qty_pcs,
                   shortfall_pcs: p.shortfall_pcs,
-                  quantity_in_box: p.quantity_per_box || 1,
+                  quantity_in_box: qtyInBox,
                   box_qty: boxQty,
                   unit_cost: unitCost,
                   vat_percent: p.vat_percent || 0,
@@ -434,12 +488,13 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
         const minQty = p.min_stock_qty_pcs || 10;
         const curStock = p.stock_qty || 0;
         const shortfall = Math.max(0, minQty - curStock);
-        const suggestedBoxes = shortfall > 0 ? Math.ceil(shortfall / qtyInBox) : 1;
+        const targetPieces = Math.max(minQty, shortfall);
+        const suggestedBoxes = Math.max(1, Math.ceil(targetPieces / qtyInBox));
 
         if (existingIdx >= 0) {
           list[existingIdx] = {
             ...list[existingIdx],
-            box_qty: list[existingIdx].box_qty + 1,
+            box_qty: Math.max(list[existingIdx].box_qty + 1, suggestedBoxes),
           };
           incrementedCount++;
         } else {
@@ -491,11 +546,12 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
     const minQty = p.min_stock_qty_pcs || 10;
     const curStock = p.stock_qty || 0;
     const shortfall = Math.max(0, minQty - curStock);
-    const suggestedBoxes = shortfall > 0 ? Math.ceil(shortfall / qtyInBox) : 1;
+    const targetPieces = Math.max(minQty, shortfall);
+    const suggestedBoxes = Math.max(1, Math.ceil(targetPieces / qtyInBox));
 
     if (existing) {
       this.items.update(list =>
-        list.map(i => (i.product_no === p.product_no ? { ...i, box_qty: i.box_qty + 1 } : i))
+        list.map(i => (i.product_no === p.product_no ? { ...i, box_qty: Math.max(i.box_qty + 1, suggestedBoxes) } : i))
       );
       this.msg.success(`Incremented box quantity for ${p.product_name}`);
     } else {
@@ -566,8 +622,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
           const mappedRows: RequisitionItemRow[] = (req.items || []).map(item => {
             const prod = this.allProducts.find(p => p.product_no === item.product_no);
             const qtyInBox = item.quantity_in_box || prod?.quantity_per_box || 1;
-            const boxQty = item.box_qty || 1;
             const minQtyPcs = item.min_qty_pcs ?? prod?.min_stock_qty_pcs ?? 10;
+            const minRequiredBoxes = minQtyPcs > 0 ? Math.max(1, Math.ceil(minQtyPcs / qtyInBox)) : 1;
+            // If editable and previous box_qty was below min restock qty, ensure it is at least minRequiredBoxes
+            const boxQty = item.box_qty ? Math.max(item.box_qty, minRequiredBoxes) : minRequiredBoxes;
             const currentStock = prod?.stock_qty ?? 0;
             const shortfall = Math.max(0, minQtyPcs - currentStock);
             const unitCost = item.btp || prod?.purchase_price_per_piece || 0;
@@ -651,6 +709,29 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
 
     if (this.items().length === 0) {
       this.msg.warning('Please add at least one product item to create a requisition.');
+      return;
+    }
+
+    // Validation: Check if any item has total pieces less than minimum restock quantity
+    const belowMinItems = this.items().filter(i => this.isBelowMinRestock(i));
+    if (belowMinItems.length > 0) {
+      const itemErrors = belowMinItems
+        .map(i => {
+          const totalPcs = (i.box_qty || 0) * (i.quantity_in_box || 1);
+          const minBoxes = this.getMinRequiredBoxes(i);
+          return `• ${i.product_name}: Current ${totalPcs} pcs (Minimum restock: ${i.min_stock_qty_pcs} pcs, requires at least ${minBoxes} box${minBoxes > 1 ? 'es' : ''})`;
+        })
+        .join('\n');
+
+      this.modal.confirmAction(
+        'Minimum Restock Quantity Warning',
+        `The following items have requisition quantity less than the minimum restock requirement:\n\n${itemErrors}\n\nPlease adjust the box quantity to meet or exceed the minimum restock requirement before saving.`,
+        'Understood',
+        false
+      );
+      this.msg.warning(
+        `Cannot save requisition: ${belowMinItems.length} item(s) below minimum restock requirement.`
+      );
       return;
     }
 

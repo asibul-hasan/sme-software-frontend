@@ -252,6 +252,17 @@
         >
           <span nz-icon nzType="search"></span> Search & Add (F2)
         </button>
+        @if (hasBelowMinItems() && !isLocked()) {
+          <button
+            nz-button
+            nzType="dashed"
+            nzSize="small"
+            class="rounded border-rose-300 text-rose-700 bg-rose-50 hover:bg-rose-100 font-semibold"
+            (click)="fixAllBelowMinItems()"
+          >
+            <span nz-icon nzType="warning" class="text-rose-500"></span> Set All to Min Restock ({{ belowMinCount() }})
+          </button>
+        }
         @if (items().length > 0 && !isLocked()) {
           <button
             nz-button
@@ -378,14 +389,27 @@
               <!-- Box Qty (Editable only when not locked) -->
               <td class="p-2.5 text-center">
                 @if (!isLocked()) {
-                  <nz-input-number
-                    class="w-20 rounded text-center font-mono font-bold"
-                    nzSize="small"
-                    [nzMin]="1"
-                    [nzStep]="1"
-                    [(ngModel)]="item.box_qty"
-                    (ngModelChange)="onLineItemChange()"
-                  ></nz-input-number>
+                  <div class="flex flex-col items-center">
+                    <nz-input-number
+                      class="w-20 rounded text-center font-mono font-bold"
+                      [class.border-rose-500]="isBelowMinRestock(item)"
+                      nzSize="small"
+                      [nzMin]="1"
+                      [nzStep]="1"
+                      [(ngModel)]="item.box_qty"
+                      (ngModelChange)="onLineItemChange()"
+                    ></nz-input-number>
+                    @if (isBelowMinRestock(item)) {
+                      <button
+                        type="button"
+                        class="text-[10px] text-indigo-600 hover:text-indigo-800 underline border-0 bg-transparent cursor-pointer mt-0.5"
+                        (click)="setMinimumRequiredBoxes(item)"
+                        title="Set to minimum required boxes"
+                      >
+                        Set min ({{ getMinRequiredBoxes(item) }} bxs)
+                      </button>
+                    }
+                  </div>
                 } @else {
                   <span class="font-mono font-bold text-xs text-slate-800">{{ item.box_qty }}</span>
                 }
@@ -397,8 +421,18 @@
               </td>
 
               <!-- Total Pieces -->
-              <td class="p-2.5 text-center font-mono text-xs font-bold text-slate-800">
-                {{ item.box_qty * item.quantity_in_box }}
+              <td class="p-2.5 text-center font-mono text-xs font-bold">
+                <span
+                  [class.text-rose-600]="isBelowMinRestock(item)"
+                  [class.text-slate-800]="!isBelowMinRestock(item)"
+                >
+                  {{ item.box_qty * item.quantity_in_box }}
+                </span>
+                @if (isBelowMinRestock(item)) {
+                  <div class="text-[10px] text-rose-500 font-semibold leading-tight mt-0.5">
+                    Below min ({{ item.min_stock_qty_pcs }})
+                  </div>
+                }
               </td>
 
               <!-- Unit Cost / BTP (Editable only when not locked) -->
