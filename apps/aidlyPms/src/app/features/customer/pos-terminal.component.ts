@@ -1808,7 +1808,7 @@ export class PosTerminalComponent implements OnInit {
             {
               account_no: 1,
               payment_method: this.selectedPaymentType(),
-              amount: this.totalPaid(),
+              amount: Math.max(0, Math.round((this.totalPaid() - this.changeDue()) * 100) / 100),
             },
           ],
     };
