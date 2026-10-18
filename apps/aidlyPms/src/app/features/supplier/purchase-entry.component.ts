@@ -21,7 +21,23 @@ import {
 import { ProductService } from '../../core/services/product.service';
 import { SupplierService, CreatePurchasePayload } from '../../core/services/supplier.service';
 import { ModalService } from '../../core/services/modal.service';
+import { PrintService } from '../../core/services/print.service';
 import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
+
+interface SavedPurchaseSummary {
+  invoiceNo: string;
+  supplierName: string;
+  supplierPhone?: string;
+  purchaseDate: string;
+  lines: PurchaseLine[];
+  grossTotal: number;
+  discountAmount: number;
+  finalPrice: number;
+  paidAmount: number;
+  balanceDue: number;
+  totalQtyPcs: number;
+  paymentMethod: string;
+}
 
 interface PurchaseLine {
   id: string;
@@ -78,6 +94,7 @@ export class PurchaseEntryComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly supplierService = inject(SupplierService);
   private readonly modal = inject(ModalService);
+  private readonly printService = inject(PrintService);
   readonly Math = Math;
   readonly DiscountType = DiscountType;
 
@@ -112,9 +129,12 @@ export class PurchaseEntryComponent implements OnInit {
     expiryDate: '',
   };
 
-  discountType: number = DiscountType.Flat;
-  discountValue = 0;
-  paidAmount = 0;
+  discountType = signal<number>(DiscountType.Flat);
+  discountValue = signal<number>(0);
+  paidAmount = signal<number>(0);
+
+  isSavedSuccessOpen = signal<boolean>(false);
+  savedInvoiceSummary = signal<SavedPurchaseSummary | null>(null);
 
   grossTotal = computed(() => {
     return this.lines().reduce((sum, item) => sum + item.total, 0);
@@ -126,9 +146,9 @@ export class PurchaseEntryComponent implements OnInit {
 
   discountAmount = computed(() => {
     const gross = this.grossTotal();
-    const val = Number(this.discountValue) || 0;
+    const val = Number(this.discountValue()) || 0;
     if (val <= 0) return 0;
-    if (this.discountType === DiscountType.Flat) {
+    if (this.discountType() === DiscountType.Flat) {
       return Math.min(gross, val);
     } else {
       return Math.round((gross * val) / 100 * 100) / 100;
@@ -141,7 +161,7 @@ export class PurchaseEntryComponent implements OnInit {
   });
 
   balanceDue = computed(() => {
-    return this.finalPrice() - (Number(this.paidAmount) || 0);
+    return this.finalPrice() - (Number(this.paidAmount()) || 0);
   });
 
   // Quick Product Modal
@@ -219,7 +239,7 @@ export class PurchaseEntryComponent implements OnInit {
             const converted: PurchaseLine[] = req.items.map((it: any) => {
               const box = it.box_qty || 1;
               const qtyBox = it.quantity_in_box || 10;
-              const totalPcs = it.min_qty_pcs || (box * qtyBox);
+              const totalPcs = it.requested_pcs_qty || (box * qtyBox);
               const btp = Number(it.btp_vat) || Number(it.btp) || 0;
               const lineTotal = Number(it.total_price) || (box * btp);
 
@@ -581,9 +601,9 @@ export class PurchaseEntryComponent implements OnInit {
           calculation_mode: this.calcMode,
           inventory_type: this.inventoryType,
           gross_total_price: this.grossTotal(),
-          discount_type: this.discountType,
-          discount_value: Number(this.discountValue) || 0,
-          paid_amount: Number(this.paidAmount) || 0,
+          discount_type: this.discountType(),
+          discount_value: Number(this.discountValue()) || 0,
+          paid_amount: Number(this.paidAmount()) || 0,
           due_amount: this.balanceDue() > 0 ? this.balanceDue() : 0,
         },
         items: this.lines().map((l, idx) => {
@@ -606,7 +626,7 @@ export class PurchaseEntryComponent implements OnInit {
           {
             account_no: 1,
             payment_method: 1,
-            amount: Number(this.paidAmount) || 0,
+            amount: Number(this.paidAmount()) || 0,
           }
         ],
       };
@@ -615,13 +635,34 @@ export class PurchaseEntryComponent implements OnInit {
         next: (res) => {
           const invId = res.data?.inventory_number || (res.data?.purchase_invoice_no ? `PUR-${res.data.purchase_invoice_no}` : '');
           this.generatedPurchaseId = invId || `PUR-${Date.now().toString().slice(-4)}`;
+          const sup = this.suppliers().find(s => s.id === this.selectedSupplierId);
+
+          const summary: SavedPurchaseSummary = {
+            invoiceNo: this.invoiceNumber?.trim() || this.generatedPurchaseId,
+            supplierName: sup?.name || 'Registered Supplier',
+            supplierPhone: sup?.phone || '',
+            purchaseDate: this.purchaseDate ? formatDateToDdMmYyyy(this.purchaseDate) : formatDateToDdMmYyyy(new Date()),
+            lines: [...this.lines()],
+            grossTotal: this.grossTotal(),
+            discountAmount: this.discountAmount(),
+            finalPrice: this.finalPrice(),
+            paidAmount: Number(this.paidAmount()) || 0,
+            balanceDue: this.balanceDue(),
+            totalQtyPcs: this.totalQuantityPcs(),
+            paymentMethod: (Number(this.paidAmount()) || 0) >= this.finalPrice() ? 'Cash / Full Paid' : 'Credit / Partial',
+          };
+
+          this.savedInvoiceSummary.set(summary);
+          this.isSavedSuccessOpen.set(true);
+
           this.msg.success(
-            `Purchase Invoice ${this.generatedPurchaseId} of ৳ ${this.finalPrice().toLocaleString()} received and stock updated successfully!`
+            `Purchase Invoice ${summary.invoiceNo} of ৳ ${summary.finalPrice.toLocaleString()} received and stock updated successfully!`
           );
+
           this.lines.set([]);
           this.invoiceNumber = '';
-          this.paidAmount = 0;
-          this.discountValue = 0;
+          this.paidAmount.set(0);
+          this.discountValue.set(0);
           this.selectedRequisitionNo = null;
           this.loadApprovedRequisitions();
         },
@@ -644,13 +685,50 @@ export class PurchaseEntryComponent implements OnInit {
     this.currentLine.barcode = `RCV-${dateStr}-${String(seq).padStart(3, '0')}`;
   }
 
+  printSavedVoucher(): void {
+    const summary = this.savedInvoiceSummary();
+    if (!summary) return;
+
+    this.printService.printPurchaseVoucher({
+      ref: summary.invoiceNo,
+      date: summary.purchaseDate,
+      supplier: summary.supplierName,
+      supplierPhone: summary.supplierPhone,
+      type: 'Commercial Medicine Stock',
+      lines: summary.lines.map(l => ({
+        name: l.product,
+        qty: l.totalQtyPcs,
+        unitPrice: l.btpVat,
+        total: l.total,
+        batch: l.barcode,
+        exp: l.expiryDate,
+      })),
+      gross: summary.grossTotal,
+      disc: summary.discountAmount,
+      net: summary.finalPrice,
+      paid: summary.paidAmount,
+      due: summary.balanceDue,
+      paymentMode: summary.paymentMethod,
+    });
+  }
+
+  closeSuccessModal(): void {
+    this.isSavedSuccessOpen.set(false);
+  }
+
+  startNewPurchase(): void {
+    this.isSavedSuccessOpen.set(false);
+    this.resetForm();
+  }
+
   resetForm(): void {
     this.lines.set([]);
     this.invoiceNumber = '';
-    this.paidAmount = 0;
-    this.discountValue = 0;
+    this.paidAmount.set(0);
+    this.discountValue.set(0);
     this.selectedRequisitionNo = null;
     this.selectedSupplierId = null;
     this.generatedPurchaseId = '';
+    this.savedInvoiceSummary.set(null);
   }
 }

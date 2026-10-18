@@ -367,6 +367,11 @@
                   <span class="text-[10px] text-slate-400 mt-0.5">
                     Min: {{ item.min_stock_qty_pcs }} pcs
                   </span>
+                  @if (item.shortfall_pcs > 0) {
+                    <span class="text-[10px] font-semibold text-rose-600 font-mono mt-0.5">
+                      Shortfall: {{ item.shortfall_pcs }} pcs
+                    </span>
+                  }
                 </div>
               </td>
 

@@ -205,7 +205,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
   }
 
   loadCatalogProducts(): void {
-    this.productService.getProducts({ pageSize: 100 }).subscribe({
+    this.productService.getProducts({ pageSize: 500 }).subscribe({
       next: res => {
         if (res.success && res.data) {
           this.allProducts = [...(res.data.items || [])];
@@ -253,7 +253,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
     this.isLoadingLowStock.set(true);
     const companyFilter = this.selectedCompanyNo || undefined;
 
-    this.productService.getLowStockProducts(companyFilter, true).subscribe({
+    this.productService.getLowStockProducts(companyFilter, false).subscribe({
       next: res => {
         this.isLoadingLowStock.set(false);
         if (res.success && res.data && res.data.length > 0) {
@@ -434,6 +434,7 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
         const minQty = p.min_stock_qty_pcs || 10;
         const curStock = p.stock_qty || 0;
         const shortfall = Math.max(0, minQty - curStock);
+        const suggestedBoxes = shortfall > 0 ? Math.ceil(shortfall / qtyInBox) : 1;
 
         if (existingIdx >= 0) {
           list[existingIdx] = {
@@ -452,11 +453,11 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
             min_stock_qty_pcs: minQty,
             shortfall_pcs: shortfall,
             quantity_in_box: qtyInBox,
-            box_qty: 1,
+            box_qty: suggestedBoxes,
             unit_cost: unitCost,
             vat_percent: 0,
             sale_qty_6mth_pcs: 0,
-            is_from_low_stock: false,
+            is_from_low_stock: shortfall > 0,
           });
           addedCount++;
         }
@@ -487,6 +488,10 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
     const existing = this.items().find(i => i.product_no === p.product_no);
     const qtyInBox = p.quantity_per_box || 1;
     const unitCost = p.purchase_price_per_piece || (p.cost_per_box ? p.cost_per_box / qtyInBox : 0);
+    const minQty = p.min_stock_qty_pcs || 10;
+    const curStock = p.stock_qty || 0;
+    const shortfall = Math.max(0, minQty - curStock);
+    const suggestedBoxes = shortfall > 0 ? Math.ceil(shortfall / qtyInBox) : 1;
 
     if (existing) {
       this.items.update(list =>
@@ -500,18 +505,18 @@ export class RequisitionListComponent implements OnInit, OnDestroy {
         generic_name: p.generic_name || 'General',
         company_name: p.company_name || 'Pharmaceuticals Ltd.',
         company_no: p.company_no,
-        current_stock_pcs: p.stock_qty || 0,
-        min_stock_qty_pcs: p.min_stock_qty_pcs || 10,
-        shortfall_pcs: Math.max(0, (p.min_stock_qty_pcs || 10) - (p.stock_qty || 0)),
+        current_stock_pcs: curStock,
+        min_stock_qty_pcs: minQty,
+        shortfall_pcs: shortfall,
         quantity_in_box: qtyInBox,
-        box_qty: 1,
+        box_qty: suggestedBoxes,
         unit_cost: unitCost,
         vat_percent: 0,
         sale_qty_6mth_pcs: 0,
-        is_from_low_stock: false,
+        is_from_low_stock: shortfall > 0,
       };
       this.items.update(list => [newLine, ...list]);
-      this.msg.success(`Added ${p.product_name} to requisition`);
+      this.msg.success(`Added ${p.product_name} (${suggestedBoxes} box${suggestedBoxes > 1 ? 'es' : ''}) to requisition`);
     }
   }
 

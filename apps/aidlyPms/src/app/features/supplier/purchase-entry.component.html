@@ -505,27 +505,28 @@
                 type="number"
                 nz-input
                 placeholder="0"
-                [(ngModel)]="discountValue"
+                [ngModel]="discountValue()"
+                (ngModelChange)="discountValue.set(+$event || 0)"
                 class="rounded-l-md font-mono text-right text-xs flex-1"
               />
               <div class="flex rounded-r-md border border-l-0 border-slate-300 overflow-hidden bg-slate-100 shrink-0">
                 <button
                   type="button"
-                  (click)="discountType = DiscountType.Flat"
+                  (click)="discountType.set(DiscountType.Flat)"
                   class="px-2.5 py-1 text-xs font-bold border-0 cursor-pointer transition-colors"
-                  [class.bg-indigo-600]="discountType === DiscountType.Flat"
-                  [class.text-white]="discountType === DiscountType.Flat"
-                  [class.text-slate-600]="discountType !== DiscountType.Flat"
+                  [class.bg-indigo-600]="discountType() === DiscountType.Flat"
+                  [class.text-white]="discountType() === DiscountType.Flat"
+                  [class.text-slate-600]="discountType() !== DiscountType.Flat"
                 >
                   ৳
                 </button>
                 <button
                   type="button"
-                  (click)="discountType = DiscountType.Percentage"
+                  (click)="discountType.set(DiscountType.Percentage)"
                   class="px-2.5 py-1 text-xs font-bold border-0 cursor-pointer transition-colors"
-                  [class.bg-indigo-600]="discountType === DiscountType.Percentage"
-                  [class.text-white]="discountType === DiscountType.Percentage"
-                  [class.text-slate-600]="discountType !== DiscountType.Percentage"
+                  [class.bg-indigo-600]="discountType() === DiscountType.Percentage"
+                  [class.text-white]="discountType() === DiscountType.Percentage"
+                  [class.text-slate-600]="discountType() !== DiscountType.Percentage"
                 >
                   %
                 </button>
@@ -539,7 +540,7 @@
               <label class="text-xs font-semibold text-slate-700 m-0">Paid Now (৳)</label>
               <button
                 type="button"
-                (click)="paidAmount = finalPrice()"
+                (click)="paidAmount.set(finalPrice())"
                 class="text-xs text-indigo-600 hover:underline font-semibold cursor-pointer"
               >
                 Pay Full
@@ -548,7 +549,8 @@
             <input
               type="number"
               nz-input
-              [(ngModel)]="paidAmount"
+              [ngModel]="paidAmount()"
+              (ngModelChange)="paidAmount.set(+$event || 0)"
               class="rounded-md font-mono text-sm text-right font-bold text-slate-900 bg-sky-50/40 border-sky-200"
             />
           </div>
@@ -782,5 +784,151 @@
         />
       </div>
     </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Saved Purchase Voucher Modal -->
+<nz-modal
+  [nzVisible]="isSavedSuccessOpen()"
+  [nzTitle]="savedModalTitle"
+  [nzFooter]="savedModalFooter"
+  [nzWidth]="850"
+  [nzCentered]="true"
+  [nzClosable]="true"
+  (nzOnCancel)="closeSuccessModal()"
+>
+  <ng-template #savedModalTitle>
+    <div class="flex items-center gap-2 text-slate-800">
+      <span nz-icon nzType="check-circle" nzTheme="fill" class="text-emerald-500 text-lg"></span>
+      <span class="font-bold text-base">Purchase Intake Received &amp; Stock Updated</span>
+    </div>
+  </ng-template>
+
+  <ng-template #savedModalFooter>
+    <div class="flex items-center justify-between w-full">
+      <button
+        type="button"
+        nz-button
+        (click)="closeSuccessModal()"
+        class="border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-lg px-4 h-9 cursor-pointer"
+      >
+        Close
+      </button>
+
+      <div class="flex items-center gap-2">
+        <a
+          routerLink="/supplier/purchase/record"
+          nz-button
+          class="border border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 text-xs font-semibold rounded-lg px-3.5 h-9 inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <span nz-icon nzType="unordered-list"></span>
+          <span>View in Purchase Register</span>
+        </a>
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          (click)="printSavedVoucher()"
+          class="border border-slate-700 text-slate-800 hover:bg-slate-50 text-xs font-semibold rounded-lg px-4 h-9 inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <span nz-icon nzType="printer"></span>
+          <span>Print Purchase Voucher</span>
+        </button>
+        <button
+          type="button"
+          nz-button
+          nzType="primary"
+          (click)="startNewPurchase()"
+          class="btn-save text-xs font-bold rounded-lg px-4 h-9 inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <span nz-icon nzType="plus"></span>
+          <span>New Purchase Intake</span>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-container *nzModalContent>
+    @if (savedInvoiceSummary(); as inv) {
+      <div class="space-y-4 text-xs">
+        <!-- Voucher Info Bar -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Invoice / Ref #</span>
+            <span class="font-mono font-bold text-slate-900 text-sm">{{ inv.invoiceNo }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Supplier</span>
+            <span class="font-semibold text-slate-800">{{ inv.supplierName }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Inward Date</span>
+            <span class="font-mono text-slate-700">{{ inv.purchaseDate }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Total Items</span>
+            <span class="font-bold text-indigo-700 font-mono">{{ inv.lines.length }} items ({{ inv.totalQtyPcs }} pcs)</span>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
+          <table class="w-full border-collapse text-left">
+            <thead class="bg-slate-100/80 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+              <tr>
+                <th class="p-2">#</th>
+                <th class="p-2">Medicine Formulation</th>
+                <th class="p-2 text-center">Batch #</th>
+                <th class="p-2 text-center">Expiry</th>
+                <th class="p-2 text-center">Box x Pcs</th>
+                <th class="p-2 text-center">Total Pcs</th>
+                <th class="p-2 text-right">Unit BTP</th>
+                <th class="p-2 text-right">Line Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (line of inv.lines; track line.id; let idx = $index) {
+                <tr class="hover:bg-slate-50/50">
+                  <td class="p-2 text-slate-400 font-mono">{{ idx + 1 }}</td>
+                  <td class="p-2 font-semibold text-slate-800">{{ line.product }}</td>
+                  <td class="p-2 text-center font-mono text-slate-600">{{ line.barcode || 'N/A' }}</td>
+                  <td class="p-2 text-center font-mono text-slate-600">{{ line.expiryDate || 'N/A' }}</td>
+                  <td class="p-2 text-center font-mono">{{ line.box }} x {{ line.qtyBox }}</td>
+                  <td class="p-2 text-center font-mono font-bold text-slate-900">{{ line.totalQtyPcs }} pcs</td>
+                  <td class="p-2 text-right font-mono">৳ {{ line.btpVat | number: '1.2-2' }}</td>
+                  <td class="p-2 text-right font-mono font-bold text-slate-900">৳ {{ line.total | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Financial Summary Grid -->
+        <div class="bg-slate-900 text-white rounded-xl p-4 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Gross Total</span>
+            <span class="font-mono font-bold text-slate-200 text-sm">৳ {{ inv.grossTotal | number: '1.2-2' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Discount</span>
+            <span class="font-mono font-bold text-amber-400 text-sm">- ৳ {{ inv.discountAmount | number: '1.2-2' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Net Payable</span>
+            <span class="font-mono font-bold text-white text-base">৳ {{ inv.finalPrice | number: '1.2-2' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Paid Amount</span>
+            <span class="font-mono font-bold text-emerald-400 text-sm">৳ {{ inv.paidAmount | number: '1.2-2' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Balance Due</span>
+            <span class="font-mono font-bold text-sm" [class.text-rose-400]="inv.balanceDue > 0" [class.text-emerald-400]="inv.balanceDue <= 0">
+              ৳ {{ inv.balanceDue | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
   </ng-container>
 </nz-modal>
