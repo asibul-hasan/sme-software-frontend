@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.7.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.6.0...v1.7.0) (2026-10-18)
+
+
+### 🚀 Features
+
+* **requisition:** enforce minimum restock quantity default population and save validation ([b528bd1](https://github.com/asibul-hasan/sme-software-frontend/commit/b528bd17b35721390d3916d8835969493631d89b))
+
 ## [1.6.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.5.1...v1.6.0) (2026-10-18)
 
 
