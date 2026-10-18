@@ -497,19 +497,11 @@
             </div>
           </div>
 
-          <!-- Discount Input Row with ৳ / % pill buttons -->
+          <!-- Discount Input Row with ৳ / % pill buttons at beginning -->
           <div class="space-y-1">
             <label class="text-xs font-semibold text-slate-700 block">Discount</label>
             <div class="flex">
-              <input
-                type="number"
-                nz-input
-                placeholder="0"
-                [ngModel]="discountValue()"
-                (ngModelChange)="discountValue.set(+$event || 0)"
-                class="rounded-l-md font-mono text-right text-xs flex-1"
-              />
-              <div class="flex rounded-r-md border border-l-0 border-slate-300 overflow-hidden bg-slate-100 shrink-0">
+              <div class="flex rounded-l-md border border-r-0 border-slate-300 overflow-hidden bg-slate-100 shrink-0">
                 <button
                   type="button"
                   (click)="discountType.set(DiscountType.Flat)"
@@ -531,6 +523,14 @@
                   %
                 </button>
               </div>
+              <input
+                type="number"
+                nz-input
+                placeholder="0"
+                [ngModel]="discountValue()"
+                (ngModelChange)="discountValue.set(+$event || 0)"
+                class="rounded-r-md rounded-l-none font-mono text-right text-xs flex-1"
+              />
             </div>
           </div>
 
