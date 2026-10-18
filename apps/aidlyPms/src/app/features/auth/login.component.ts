@@ -25,7 +25,7 @@ import { AuthService } from '../../core/auth/auth.service';
           <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 mb-3">
             <span nz-icon nzType="medicine-box" nzTheme="outline" class="text-2xl"></span>
           </div>
-          <h1 class="text-2xl font-bold text-slate-800 tracking-tight mb-1">Aidly PMS</h1>
+          <h1 class="text-2xl font-bold text-slate-800 tracking-tight mb-1">Demo Pharmacy</h1>
           <p class="text-xs text-slate-500 font-medium">Pharmacy Management & Point of Sale</p>
         </div>
 
