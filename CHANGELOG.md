@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.3...v1.5.0) (2026-10-18)
+
+
+### 🚀 Features
+
+* **pms:** add proportional discount, due adjustments, and routing aliases to sale return ([ca9deaf](https://github.com/asibul-hasan/sme-software-frontend/commit/ca9deaf3d9b35cfeb3d699fc870bc81b639e2ba6))
+
 ## [1.4.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.2...v1.4.3) (2026-10-18)
 
 
