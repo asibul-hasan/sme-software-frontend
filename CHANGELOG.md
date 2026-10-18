@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.5.0...v1.5.1) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** send net payment excluding change amount in single-tender checkout ([5309867](https://github.com/asibul-hasan/sme-software-frontend/commit/5309867d04462d04a58dc48af137a97872c48649))
+
 ## [1.5.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.3...v1.5.0) (2026-10-18)
 
 
