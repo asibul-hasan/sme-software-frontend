@@ -25,6 +25,9 @@ export interface CreateSaleReturnPayload {
   sale_invoice_no?: number;
   customer_no: number;
   return_amount: number;
+  cash_paid_refund?: number;
+  discount_deduction?: number;
+  discount_percent?: number;
   refund_method?: string;
   account_no?: number;
   reason?: string;

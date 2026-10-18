@@ -73,12 +73,29 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   invoiceDate = '';
   invoiceTotal = 0;
 
+  // Invoice financial breakdown
+  originalGrossTotal = 0;
+  originalDiscountAmount = 0;
+  originalDiscountPercent = 0; // Stored with 6 to 8 decimal digits precision, e.g. 8.57142857
+  originalPaidAmount = 0;
+  originalDueAmount = 0;
+
+  // View discount percent: strictly 2 decimal digits without rounding (truncated)
+  get displayDiscountPercent(): string {
+    const pct = this.originalDiscountPercent;
+    if (!pct || pct <= 0) return '0.00';
+    const str = pct.toFixed(8);
+    const dotIndex = str.indexOf('.');
+    if (dotIndex === -1) return `${str}.00`;
+    return str.substring(0, dotIndex + 3);
+  }
+
   // Return options & refunds
   discountEnabled = false;
   discountAmount = 0;
   paidRefund = 0;
   refundMethod = 'Cash';
-  inventoryType = 'CUSTOMER RETURNED';
+  inventoryType = 'CUSTOMER RETURNED'; // Always restock to inventory by default
   returnReason = 'Customer Return';
 
   // Customer modal for quick add if needed
@@ -142,7 +159,27 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
         this.customerName = inv.customer_name || (inv.customer ? inv.customer.name : 'Walk-in Customer');
         this.customerPhone = inv.customer_phone || (inv.customer ? inv.customer.phone || '' : '');
         this.invoiceDate = inv.sale_timestamp ? new Date(inv.sale_timestamp).toLocaleString('en-GB') : '';
-        this.invoiceTotal = Number(inv.final_price) || 0;
+        const finalPrice = Number(inv.final_price) || 0;
+        this.invoiceTotal = finalPrice;
+        this.originalGrossTotal = Number(inv.gross_total_price) || 0;
+        this.originalDueAmount = Number(inv.due_amount) || 0;
+        this.originalPaidAmount = Math.max(0, finalPrice - this.originalDueAmount);
+
+        let disc = Number(inv.discount_value) || 0;
+        if (disc <= 0 && this.originalGrossTotal > finalPrice) {
+          disc = Math.max(0, this.originalGrossTotal - finalPrice);
+        }
+        this.originalDiscountAmount = disc;
+
+        // Auto-calculate high precision discount percentage (6 to 8 decimals)
+        if (this.originalGrossTotal > 0 && disc > 0) {
+          const pct = (disc / this.originalGrossTotal) * 100;
+          this.originalDiscountPercent = Number(pct.toFixed(8));
+          this.discountEnabled = true;
+        } else {
+          this.originalDiscountPercent = 0;
+          this.discountEnabled = false;
+        }
 
         const items = inv.items || [];
         if (items.length === 0) {
@@ -187,10 +224,16 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     this.customerPhone = '';
     this.invoiceDate = '';
     this.invoiceTotal = 0;
+    this.originalGrossTotal = 0;
+    this.originalDiscountAmount = 0;
+    this.originalDiscountPercent = 0;
+    this.originalPaidAmount = 0;
+    this.originalDueAmount = 0;
     this.lines.set([]);
     this.paidRefund = 0;
     this.discountAmount = 0;
     this.discountEnabled = false;
+    this.inventoryType = 'CUSTOMER RETURNED';
     // Clear URL query parameters
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
@@ -243,10 +286,37 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     return this.selectedLines().reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
   });
 
-  finalRefund = computed(() => {
+  calculatedDiscountDeduction = computed(() => {
+    if (!this.discountEnabled || this.originalDiscountPercent <= 0) return 0;
     const gross = this.grossTotal();
-    if (!this.discountEnabled) return gross;
-    return Math.max(0, gross - (Number(this.discountAmount) || 0));
+    return Math.round(gross * (this.originalDiscountPercent / 100) * 100) / 100;
+  });
+
+  netRefund = computed(() => {
+    const gross = this.grossTotal();
+    const disc = this.calculatedDiscountDeduction();
+    return Math.max(0, Math.round((gross - disc) * 100) / 100);
+  });
+
+  // Business rule: Cash refund is given against paid amount.
+  // If invoice had unpaid due, cash refund cannot exceed actual cash paid by customer.
+  cashRefund = computed(() => {
+    const net = this.netRefund();
+    if (this.originalDueAmount > 0) {
+      return Math.min(net, this.originalPaidAmount);
+    }
+    return net;
+  });
+
+  // Remaining return balance relieves the customer's due
+  dueAdjustment = computed(() => {
+    const net = this.netRefund();
+    const cash = this.cashRefund();
+    return Math.max(0, Math.round((net - cash) * 100) / 100);
+  });
+
+  finalRefund = computed(() => {
+    return this.cashRefund();
   });
 
   onDiscountToggle(): void {
@@ -270,13 +340,15 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting.set(true);
-    const dispositionCode = this.inventoryType === 'DAMAGED / EXPIRED' ? 3 : 1;
 
     const payload: CreateSaleReturnPayload = {
       original_invoice_no: this.originalInvoice.trim(),
       sale_invoice_no: this.saleInvoiceNo || undefined,
       customer_no: this.selectedCustomer || 1,
-      return_amount: this.finalRefund(),
+      return_amount: this.cashRefund(),
+      cash_paid_refund: this.cashRefund(),
+      discount_deduction: this.calculatedDiscountDeduction(),
+      discount_percent: this.originalDiscountPercent,
       refund_method: this.refundMethod || 'Cash',
       reason: this.returnReason || 'Customer Return',
       items: activeLines.map(l => ({
@@ -286,7 +358,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
         total_price: l.total,
         batch_number: l.batchNumber || undefined,
         sale_invoice_item_no: l.saleInvoiceItemNo || undefined,
-        disposition: dispositionCode,
+        disposition: 1, // Always restock to inventory by default
       })),
     };
 

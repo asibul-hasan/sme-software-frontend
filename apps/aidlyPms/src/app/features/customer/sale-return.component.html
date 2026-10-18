@@ -70,10 +70,20 @@
               <nz-tag nzColor="blue">Loaded from Sales Register</nz-tag>
               <span class="text-xs text-slate-500">Date: {{ invoiceDate || 'N/A' }}</span>
             </div>
-            <div class="text-xs text-slate-600 mt-0.5 flex items-center gap-3 flex-wrap">
+            <div class="text-xs text-slate-600 mt-1 flex items-center gap-2.5 flex-wrap">
               <span>Customer: <strong class="text-slate-800">{{ customerName }}</strong> <span *ngIf="customerPhone" class="text-slate-500">({{ customerPhone }})</span></span>
               <span class="text-slate-300">|</span>
-              <span>Invoice Total: <strong class="text-slate-800 font-mono">৳ {{ invoiceTotal | number: '1.2-2' }}</strong></span>
+              <span>Gross: <strong class="text-slate-800 font-mono">৳ {{ originalGrossTotal | number: '1.2-2' }}</strong></span>
+              <span class="text-slate-300">|</span>
+              <span nz-tooltip [nzTooltipTitle]="'Exact discount rate: ' + originalDiscountPercent + '%'">
+                Discount: <strong class="text-amber-700 font-mono">৳ {{ originalDiscountAmount | number: '1.2-2' }} ({{ displayDiscountPercent }}%)</strong>
+              </span>
+              <span class="text-slate-300">|</span>
+              <span>Paid: <strong class="text-emerald-700 font-mono">৳ {{ originalPaidAmount | number: '1.2-2' }}</strong></span>
+              @if (originalDueAmount > 0) {
+                <span class="text-slate-300">|</span>
+                <span>Due: <strong class="text-rose-600 font-mono">৳ {{ originalDueAmount | number: '1.2-2' }}</strong></span>
+              }
               <span class="text-slate-300">|</span>
               <span>Total Lines: <strong class="text-slate-800 font-mono">{{ lines().length }}</strong></span>
             </div>
@@ -305,39 +315,58 @@
               <span class="font-mono font-bold text-slate-800">{{ totalReturnPcs() }} pcs</span>
             </div>
             <div class="flex justify-between border-t border-slate-200 pt-2">
-              <span class="text-slate-600">Gross Refund Amount:</span>
+              <span class="text-slate-600">Gross Return Total:</span>
               <span class="font-mono font-bold text-slate-900">৳ {{ grossTotal() | number: '1.2-2' }}</span>
             </div>
-          </div>
 
-          <!-- Deduct Discount -->
-          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
-            <span class="text-xs font-medium text-slate-700">Deduct Original Discount</span>
-            <label nz-checkbox [(ngModel)]="discountEnabled" (ngModelChange)="onDiscountToggle()"></label>
-          </div>
+            <!-- Proportional Discount Deduction -->
+            @if (originalDiscountPercent > 0) {
+              <div class="flex justify-between text-amber-700 font-medium">
+                <span nz-tooltip [nzTooltipTitle]="'High-precision rate: ' + originalDiscountPercent + '%'">
+                  Discount ({{ displayDiscountPercent }}%):
+                </span>
+                <span class="font-mono font-bold">-৳ {{ calculatedDiscountDeduction() | number: '1.2-2' }}</span>
+              </div>
+            }
 
-          @if (discountEnabled) {
-            <div>
-              <label class="text-xs font-semibold text-slate-600 block mb-1">Discount Deduction (৳)</label>
-              <input
-                type="number"
-                nz-input
-                [(ngModel)]="discountAmount"
-                (ngModelChange)="onDiscountChange()"
-                placeholder="0.00"
-                class="rounded-md font-mono"
-              />
+            <div class="flex justify-between border-t border-slate-200 pt-2 text-slate-900 font-semibold">
+              <span>Net Return Value:</span>
+              <span class="font-mono">৳ {{ netRefund() | number: '1.2-2' }}</span>
             </div>
-          }
+
+            <!-- If customer had unpaid due on invoice, show due relief breakdown -->
+            @if (dueAdjustment() > 0) {
+              <div class="p-2 bg-amber-50/80 rounded border border-amber-200 text-[11px] space-y-1 text-amber-900 mt-2">
+                <div class="flex justify-between">
+                  <span>Customer Paid on Invoice:</span>
+                  <span class="font-mono font-semibold">৳ {{ originalPaidAmount | number: '1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between text-emerald-800">
+                  <span>Credit to Relieve Unpaid Due:</span>
+                  <span class="font-mono font-bold">-৳ {{ dueAdjustment() | number: '1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between text-rose-800 font-bold border-t border-amber-200 pt-1">
+                  <span>Cash Refund (Max Paid):</span>
+                  <span class="font-mono">৳ {{ cashRefund() | number: '1.2-2' }}</span>
+                </div>
+              </div>
+            }
+          </div>
 
           <!-- Final Refund Box -->
           <div class="py-3 px-3 bg-rose-50 border border-rose-200 rounded-lg flex justify-between items-center">
             <div>
               <span class="text-xs font-bold text-rose-900 block">Total Cash Refund</span>
-              <span class="text-[11px] text-rose-600">Payable to customer</span>
+              <span class="text-[11px] text-rose-600">
+                @if (originalDueAmount > 0) {
+                  Disbursed against paid amount
+                } @else {
+                  Payable to customer
+                }
+              </span>
             </div>
             <span class="font-mono font-extrabold text-rose-600 text-lg">
-              ৳ {{ finalRefund() | number: '1.2-2' }}
+              ৳ {{ cashRefund() | number: '1.2-2' }}
             </span>
           </div>
 
@@ -349,15 +378,6 @@
               <nz-option nzValue="Card" nzLabel="Card / Bank"></nz-option>
               <nz-option nzValue="bKash" nzLabel="bKash MFS"></nz-option>
               <nz-option nzValue="Nagad" nzLabel="Nagad MFS"></nz-option>
-            </nz-select>
-          </div>
-
-          <!-- Inventory Disposition -->
-          <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Inventory Restock Action</label>
-            <nz-select [(ngModel)]="inventoryType" class="w-full">
-              <nz-option nzValue="CUSTOMER RETURNED" nzLabel="Restock to Inventory (Good Condition)"></nz-option>
-              <nz-option nzValue="DAMAGED / EXPIRED" nzLabel="Write-off / Dispose (Damaged / Expired)"></nz-option>
             </nz-select>
           </div>
 

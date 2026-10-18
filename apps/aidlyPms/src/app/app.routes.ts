@@ -104,6 +104,10 @@ export const appRoutes: Route[] = [
       { path: 'customer/list', component: CustomerListComponent },
       { path: 'customer/add', component: CustomerAddComponent },
       { path: 'customer/returns', component: SaleReturnComponent },
+      { path: 'customer/return', redirectTo: 'customer/returns', pathMatch: 'full' },
+      { path: 'customer/sale/return', redirectTo: 'customer/returns', pathMatch: 'full' },
+      { path: 'purchase/return', redirectTo: 'customer/returns', pathMatch: 'full' },
+      { path: 'purchase-return', redirectTo: 'customer/returns', pathMatch: 'full' },
       { path: 'customer/sales', component: SaleRecordComponent },
 
       // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
