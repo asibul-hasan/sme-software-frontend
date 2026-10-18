@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.1...v1.4.2) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **auth:** update login page brand name to Demo Pharmacy ([7104b98](https://github.com/asibul-hasan/sme-software-frontend/commit/7104b98302f8e3c725a5e3744c754b5d8a037258))
+
 ## [1.4.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.4.0...v1.4.1) (2026-10-17)
 
 
