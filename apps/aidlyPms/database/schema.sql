@@ -639,7 +639,7 @@ CREATE TABLE IF NOT EXISTS sale_invoices (
     received_by_user_no BIGINT REFERENCES sys_users(user_no) ON DELETE SET NULL,
     salesman_user_no BIGINT REFERENCES sys_users(user_no) ON DELETE SET NULL,
     is_quick_printed BOOLEAN NOT NULL,
-    exchange_of_return_no BIGINT REFERENCES sale_returns(sale_return_no) ON DELETE SET NULL,
+    exchange_of_return_no BIGINT,
     sale_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -1321,6 +1321,19 @@ INSERT INTO sys_role_permissions (role_no, permission_no, pharmacy_no, branch_no
 SELECT 10, permission_no, 1, 1 FROM sys_permissions
 WHERE code IN ('PMS-Sale-Module', 'PMS-Customer-Module', 'PMS-Product-Module', 'PMS-Barcode-Module', 'sale.return')
 ON CONFLICT DO NOTHING;
+
+-- Exchange Return Circular FK (Added after both tables exist)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'fk_si_exchange_return'
+    ) THEN
+        ALTER TABLE sale_invoices
+        ADD CONSTRAINT fk_si_exchange_return
+        FOREIGN KEY (exchange_of_return_no) REFERENCES sale_returns(sale_return_no)
+        ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- END OF SCHEMA

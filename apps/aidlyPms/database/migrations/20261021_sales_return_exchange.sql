@@ -4,6 +4,8 @@
 --              return window configuration, and permissions.
 -- ============================================================================
 
+BEGIN;
+
 -- 1. Add columns to sale_returns
 ALTER TABLE sale_returns
     ADD COLUMN IF NOT EXISTS refund_method SMALLINT,
@@ -121,7 +123,7 @@ SELECT
     COALESCE(acc.account_no, def_acc.account_no, 1),
     COALESCE(s.payment_method, 1),
     GREATEST(0.01, COALESCE(s.customer_will_pay - s.change_amount, s.final_price - s.due_amount, 0)),
-    s.mfs_trx_id,
+    NULL, -- gateway_reference (s.mfs_trx_id does not exist on sale_invoices)
     s.sale_timestamp
 FROM sale_invoices s
 CROSS JOIN (SELECT COALESCE(MAX(sale_payment_no), 0) AS max_pay FROM sale_invoice_payments) m
@@ -143,3 +145,5 @@ WHERE s.document_status = 2
   AND NOT EXISTS (
       SELECT 1 FROM sale_invoice_payments p WHERE p.sale_invoice_no = s.sale_invoice_no
   );
+
+COMMIT;
