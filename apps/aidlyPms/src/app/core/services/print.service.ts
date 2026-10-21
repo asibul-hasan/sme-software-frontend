@@ -30,6 +30,7 @@ export interface SaleInvoicePrintData {
   branchAddress?: string;
   branchPhone?: string;
   dlNumber?: string;
+  binNumber?: string;
   lines: Array<{
     name: string;
     qty: number;
@@ -59,6 +60,7 @@ export interface PurchaseVoucherPrintData {
   branchAddress?: string;
   branchPhone?: string;
   dlNumber?: string;
+  binNumber?: string;
   lines: Array<{
     name: string;
     qty: number;
@@ -85,6 +87,7 @@ export interface RequisitionPrintData {
   branchAddress?: string;
   branchPhone?: string;
   dlNumber?: string;
+  binNumber?: string;
   lines: Array<{
     name: string;
     boxQty: number;
@@ -106,6 +109,7 @@ export interface DueReceiptPrintData {
   branchAddress?: string;
   branchPhone?: string;
   dlNumber?: string;
+  binNumber?: string;
 }
 
 function fmtMoney(amount: number | string | undefined | null): string {
@@ -128,6 +132,7 @@ export class PrintService {
     branch: 'Main Branch (Banani), Dhaka',
     phone: '+880 1700-000000',
     dl: 'DL-2024-DH-8841',
+    bin: 'BIN-192837465-0101',
   };
 
   /**
@@ -536,6 +541,7 @@ export class PrintService {
     const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
     const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
     const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
+    const binNumber = data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin;
 
     const dateStr = data.date || new Date().toLocaleDateString('en-GB');
     const timeStr = data.time || new Date().toLocaleTimeString('en-GB');
@@ -567,7 +573,7 @@ export class PrintService {
           <header class="doc-header">
             <h1 class="pharmacy-title">${branchName}</h1>
             <p class="pharmacy-branch">${branchAddress}</p>
-            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber} <span class="sep">|</span> BIN: ${binNumber}</p>
             <div class="header-divider"></div>
           </header>
 
@@ -651,6 +657,7 @@ export class PrintService {
     const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
     const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
     const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
+    const binNumber = data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin;
 
     // Resolve paper roll width from settings:
     // paper_type: 2 -> 58mm/57mm, 3 -> 72mm, 1 (default) -> 80mm
@@ -690,7 +697,7 @@ export class PrintService {
         <div style="font-size: 13px; font-weight: bold; text-transform: uppercase;">${branchName}</div>
         <div style="font-size: 10px;">${branchAddress}</div>
         <div style="font-size: 10px;">Hotline: ${branchPhone}</div>
-        <div style="font-size: 10px; font-weight: 600;">DL: ${dlNumber}</div>
+        <div style="font-size: 10px; font-weight: 600;">DL: ${dlNumber} <span style="margin: 0 4px;">|</span> BIN: ${binNumber}</div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
 
         <div style="font-size: 10px; text-align: left; line-height: 1.3;">
@@ -750,6 +757,7 @@ export class PrintService {
     const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
     const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
     const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
+    const binNumber = data.binNumber || this.defaultPharmacy.bin;
 
     const rowsHtml = data.lines.map((i) => `
       <tr>
@@ -769,7 +777,7 @@ export class PrintService {
           <header class="doc-header">
             <h1 class="pharmacy-title">${branchName}</h1>
             <p class="pharmacy-branch">${branchAddress}</p>
-            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber} <span class="sep">|</span> BIN: ${binNumber}</p>
             <div class="header-divider"></div>
           </header>
 
@@ -842,6 +850,7 @@ export class PrintService {
     const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
     const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
     const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
+    const binNumber = data.binNumber || this.defaultPharmacy.bin;
 
     const rowsHtml = data.lines.map((i, idx) => `
       <tr>
@@ -859,7 +868,7 @@ export class PrintService {
           <header class="doc-header">
             <h1 class="pharmacy-title">${branchName}</h1>
             <p class="pharmacy-branch">${branchAddress}</p>
-            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber} <span class="sep">|</span> BIN: ${binNumber}</p>
             <div class="header-divider"></div>
           </header>
 
@@ -932,6 +941,7 @@ export class PrintService {
     const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
     const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
     const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
+    const binNumber = data.binNumber || this.defaultPharmacy.bin;
 
     const receiptHtml = `
       <div class="invoice-container">
@@ -939,7 +949,7 @@ export class PrintService {
           <header class="doc-header">
             <h1 class="pharmacy-title">${branchName}</h1>
             <p class="pharmacy-branch">${branchAddress}</p>
-            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber}</p>
+            <p class="pharmacy-meta">Hotline: ${branchPhone} <span class="sep">|</span> DL: ${dlNumber} <span class="sep">|</span> BIN: ${binNumber}</p>
             <div class="header-divider"></div>
           </header>
 

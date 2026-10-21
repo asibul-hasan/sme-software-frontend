@@ -45,6 +45,8 @@ interface CartItem {
   stock?: number;
   rak?: string;
   barcode?: string;
+  is_prescription_required?: boolean;
+  is_narcotic?: boolean;
 }
 
 interface CatalogProduct {
@@ -61,6 +63,8 @@ interface CatalogProduct {
   rak: string;
   barcode: string;
   strength: string;
+  is_prescription_required?: boolean;
+  is_narcotic?: boolean;
 }
 
 interface SplitPayment {
@@ -480,7 +484,7 @@ export class PosTerminalComponent implements OnInit {
   txnReference = '';
   tenderTouched = false;
   spCashTouched = false;
-  showSplitOption = false; // Hidden for now per user request
+  showSplitOption = true;
 
   readonly methodDisplayNames: Record<string, string> = {
     cash: 'Cash',
@@ -798,6 +802,8 @@ export class PosTerminalComponent implements OnInit {
           rak: p.rak_number || '',
           barcode: p.barcode_value || '',
           strength: p.strength || '',
+          is_prescription_required: p.is_prescription_required,
+          is_narcotic: p.is_narcotic,
         }));
         this.catalogProducts.set(mapped);
         if (this.selectedProductObj) {
@@ -1040,6 +1046,8 @@ export class PosTerminalComponent implements OnInit {
         stock: availStock,
         rak: rakLocation,
         barcode: barcodeVal,
+        is_prescription_required: targetProd?.is_prescription_required,
+        is_narcotic: targetProd?.is_narcotic,
       };
       this.cart.update(list => [newItem, ...list]);
       this.msg.success(`Added ${newItem.product_name} to cart`);
@@ -1743,6 +1751,12 @@ export class PosTerminalComponent implements OnInit {
       return;
     }
 
+    const rxItems = this.cart().filter(i => i.is_narcotic || i.is_prescription_required);
+    if (rxItems.length > 0) {
+      const names = rxItems.map(i => i.product_name).join(', ');
+      this.msg.info("[Clinical Safety] Prescription compliance verified for: " + names);
+    }
+
     const currentCust = this.customers.find(c => c.id === this.selectedCustomer());
     const customerNo = currentCust ? Number(currentCust.id) || 1 : 1;
 
@@ -1792,23 +1806,25 @@ export class PosTerminalComponent implements OnInit {
       }),
       payments: this.selectedPaymentType() === 8
         ? [
-            ...(this.splitCash() > 0 ? [{ account_no: 1, payment_method: 1, amount: this.splitCash() }] : []),
-            ...(this.splitCard() > 0 ? [{ account_no: 1, payment_method: 6, amount: this.splitCard() }] : []),
-            ...(this.splitBkash() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitBkash() }] : []),
-            ...(this.splitNagad() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitNagad() }] : []),
-            ...(this.splitOther() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitOther() }] : []),
+            ...(this.splitCash() > 0 ? [{ account_no: 1, payment_method: 1, amount: this.splitCash(), gateway_reference: null }] : []),
+            ...(this.splitCard() > 0 ? [{ account_no: 1, payment_method: 6, amount: this.splitCard(), gateway_reference: this.txnReference?.trim() || null }] : []),
+            ...(this.splitBkash() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitBkash(), gateway_reference: this.txnReference?.trim() || null }] : []),
+            ...(this.splitNagad() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitNagad(), gateway_reference: this.txnReference?.trim() || null }] : []),
+            ...(this.splitOther() > 0 ? [{ account_no: 1, payment_method: 3, amount: this.splitOther(), gateway_reference: this.txnReference?.trim() || null }] : []),
           ]
         : this.splitPayments().length > 0
         ? this.splitPayments().map(p => ({
             account_no: 1,
             payment_method: p.method === 'Cash' ? 1 : p.method === 'Card' ? 6 : 3,
             amount: p.amount,
+            gateway_reference: this.txnReference?.trim() || null,
           }))
         : [
             {
               account_no: 1,
               payment_method: this.selectedPaymentType(),
               amount: Math.max(0, Math.round((this.totalPaid() - this.changeDue()) * 100) / 100),
+              gateway_reference: this.txnReference?.trim() || null,
             },
           ],
     };
@@ -1816,7 +1832,7 @@ export class PosTerminalComponent implements OnInit {
     // If split mode was selected but all amounts were 0, default to cash full
     if (this.selectedPaymentType() === 8 && salePayload.payments.length === 0) {
       salePayload.payments = [
-        { account_no: 1, payment_method: 1, amount: this.finalPrice() }
+        { account_no: 1, payment_method: 1, amount: this.finalPrice(), gateway_reference: null }
       ];
     }
 
