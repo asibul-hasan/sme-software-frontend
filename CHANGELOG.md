@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.2...v1.12.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **database:** add schema_pre_migration baseline for upgrade testing ([3e8ab45](https://github.com/asibul-hasan/sme-software-frontend/commit/3e8ab4557dbc40debf1dc37a95fad77a6f228fdb))
+
+
+### 🐛 Bug Fixes
+
+* **schema:** resolve circular FK and synchronize db_script with schema ([941fda2](https://github.com/asibul-hasan/sme-software-frontend/commit/941fda26bc63640f42e9624c5c2322a0d17c8269))
+
 ## [1.11.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.1...v1.11.2) (2026-10-21)
 
 
