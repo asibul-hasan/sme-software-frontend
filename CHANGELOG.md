@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.12.0...v1.12.1) (2026-10-21)
+
+
+### 🐛 Bug Fixes
+
+* **security:** implement branch switcher, escape print html, add migrations ([f8d18ae](https://github.com/asibul-hasan/sme-software-frontend/commit/f8d18aeaf4f868fb526d49f99c2388c8197b2424))
+
 ## [1.12.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.2...v1.12.0) (2026-10-21)
 
 
