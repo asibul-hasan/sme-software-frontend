@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.9.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.8.1...v1.9.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **pos:** add safe sales return, exchange, schema parity, and fix CI deployment ([f00a371](https://github.com/asibul-hasan/sme-software-frontend/commit/f00a37177c3ba59645b190ef1b79e9f09f987a68))
+* **pos:** update pos-sale.service to send void payload with reason and approval ([8be9b75](https://github.com/asibul-hasan/sme-software-frontend/commit/8be9b751cb037cb8df5afac8808b22ec6f4b78d2))
+
 ## [1.8.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.8.0...v1.8.1) (2026-10-21)
 
 
