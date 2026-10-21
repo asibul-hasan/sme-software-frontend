@@ -89,6 +89,12 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
           </button>
         </div>
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          <a nz-button nzType="default" routerLink="/menus" class="rounded-md">
+            <span nz-icon nzType="menu"></span> Menus
+          </a>
+          <a nz-button nzType="default" routerLink="/roles/permissions" class="rounded-md">
+            <span nz-icon nzType="key"></span> Menu Permissions
+          </a>
           <a nz-button nzType="default" routerLink="/roles/add" class="rounded-md">
             <span nz-icon nzType="plus"></span> Role Form
           </a>
@@ -107,7 +113,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                 <th class="p-3 w-16 text-center">ID</th>
                 <th class="p-3">Role Alias</th>
                 <th class="p-3 text-center">Permissions</th>
-                <th class="p-3 text-center w-36">Action</th>
+                <th class="p-3 text-center w-40">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-800">
@@ -127,6 +133,15 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                   </td>
                   <td class="p-3 text-center">
                     <div class="inline-flex items-center gap-1.5 justify-center">
+                      <a
+                        [routerLink]="['/roles/permissions']"
+                        [queryParams]="{ roleNo: r.id }"
+                        nz-tooltip
+                        nzTooltipTitle="Configure Menu Permissions"
+                        class="btn-tbl-action btn-tbl-neutral text-emerald-600 hover:text-emerald-700"
+                      >
+                        <span nz-icon nzType="safety-certificate"></span>
+                      </a>
                       <button
                         type="button"
                         (click)="openEditModal(r)"

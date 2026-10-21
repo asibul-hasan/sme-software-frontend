@@ -43,6 +43,10 @@ import { RepAddComponent } from './features/representatives/rep-add.component';
 
 import { RoleListComponent } from './features/roles/role-list.component';
 import { RoleAddComponent } from './features/roles/role-add.component';
+import { RoleMenuPermissionComponent } from './features/roles/role-menu-permission.component';
+
+import { MenuListComponent } from './features/menus/menu-list.component';
+import { MenuFormComponent } from './features/menus/menu-form.component';
 
 import { SaleConfigComponent } from './features/settings/sale-config.component';
 import { InvoiceConfigComponent } from './features/settings/invoice-config.component';
@@ -141,9 +145,17 @@ export const appRoutes: Route[] = [
       { path: 'representative', component: RepListComponent, canActivate: [managerGuard] },
       { path: 'representative/add', component: RepAddComponent, canActivate: [managerGuard] },
 
-      // Roles & RBAC (ROLE_1901 - ROLE_1902) - Restricted to Manager
+      // Roles & RBAC (ROLE_1901 - ROLE_1903) - Restricted to Manager
       { path: 'roles', component: RoleListComponent, canActivate: [managerGuard] },
       { path: 'roles/add', component: RoleAddComponent, canActivate: [managerGuard] },
+      { path: 'roles/permissions', component: RoleMenuPermissionComponent, canActivate: [managerGuard] },
+      { path: 'roles/:id/permissions', component: RoleMenuPermissionComponent, canActivate: [managerGuard] },
+
+      // System Menus Management (MENU_1904 - MENU_1905) - Restricted to Manager
+      { path: 'menus', component: MenuListComponent, canActivate: [managerGuard] },
+      { path: 'menus/add', component: MenuFormComponent, canActivate: [managerGuard] },
+      { path: 'menus/edit/:id', component: MenuFormComponent, canActivate: [managerGuard] },
+      { path: 'menus/permissions', redirectTo: 'roles/permissions', pathMatch: 'full' },
 
       // System & POS Settings (CFG_2001 - CFG_2005) - Restricted to Manager
       { path: 'settings/sale-config', component: SaleConfigComponent, canActivate: [managerGuard] },

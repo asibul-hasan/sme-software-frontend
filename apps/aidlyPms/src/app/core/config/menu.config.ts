@@ -180,7 +180,6 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     is_in_sidebar: true,
   },
 
-
   // Suppliers & Purchase Invoicing
   {
     form_id: 'PUR_1503',
@@ -466,6 +465,33 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     permission_code: 'Role-Module',
     description: 'Create role with granular checklist across 20 permission nodes.',
     is_in_sidebar: true,
+  },
+  {
+    form_id: 'ROLE_1903',
+    title: 'Role Menu Permissions Matrix',
+    type: 'Main Screen',
+    route: '/roles/permissions',
+    permission_code: 'Role-Module',
+    description: 'Assign granular permissions (View, Create, Edit, Delete) per menu for each role.',
+    is_in_sidebar: true,
+  },
+  {
+    form_id: 'MENU_1904',
+    title: 'Menu Management',
+    type: 'Main Screen',
+    route: '/menus',
+    permission_code: 'Role-Module',
+    description: 'Manage system navigation routes, icons, parent hierarchy, and availability.',
+    is_in_sidebar: true,
+  },
+  {
+    form_id: 'MENU_1905',
+    title: 'Create System Menu',
+    type: 'Main Screen',
+    route: '/menus/add',
+    permission_code: 'Role-Module',
+    description: 'Add new system route, navigation icon, and hierarchical parent.',
+    is_in_sidebar: false,
   },
 
   // System & POS Configuration
@@ -760,7 +786,7 @@ export const SYSTEM_MENU_CONFIG: readonly SystemModule[] = [
         name_bn: 'ইউজার ও রোল',
         icon: 'safety-certificate',
         legacy_series: 1900,
-        form_ids: ['ROLE_1901', 'ROLE_1902'],
+        form_ids: ['ROLE_1901', 'ROLE_1902', 'ROLE_1903', 'MENU_1904', 'MENU_1905'],
       },
       {
         key: 'shop-rules',

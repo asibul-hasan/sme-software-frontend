@@ -283,7 +283,7 @@ export class MenuFormComponent implements OnInit {
   loadMenus(): void {
     this.menuService.getMenus().subscribe({
       next: (res) => {
-        if (res.is_success && res.data) {
+        if (res.success && res.data) {
           this.menus.set(res.data);
           this.rootMenus.set(res.data.filter((m) => !m.parent_menu_no));
           if (!this.isEditMode()) {
@@ -297,7 +297,7 @@ export class MenuFormComponent implements OnInit {
   loadMenuDetail(id: number): void {
     this.menuService.getMenuById(id).subscribe({
       next: (res) => {
-        if (res.is_success && res.data) {
+        if (res.success && res.data) {
           const m = res.data;
           this.menuTitle = m.title;
           this.menuPath = m.path || '';
@@ -342,7 +342,7 @@ export class MenuFormComponent implements OnInit {
       this.menuService.updateMenu(this.menuId, payload).subscribe({
         next: (res) => {
           this.submitting.set(false);
-          if (res.is_success) {
+          if (res.success) {
             this.message.success('Menu updated successfully');
             this.router.navigate(['/menus']);
           } else {
@@ -358,7 +358,7 @@ export class MenuFormComponent implements OnInit {
       this.menuService.createMenu(payload).subscribe({
         next: (res) => {
           this.submitting.set(false);
-          if (res.is_success) {
+          if (res.success) {
             this.message.success('Menu created successfully');
             this.router.navigate(['/menus']);
           } else {

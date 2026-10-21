@@ -342,7 +342,7 @@ export class MenuListComponent implements OnInit {
   loadMenus(): void {
     this.menuService.getMenus().subscribe({
       next: (res) => {
-        if (res.is_success && res.data) {
+        if (res.success && res.data) {
           this.menus.set(res.data);
         }
       },
@@ -406,7 +406,7 @@ export class MenuListComponent implements OnInit {
       this.menuService.updateMenu(this.editingMenuNo()!, payload).subscribe({
         next: (res) => {
           this.modalSaving.set(false);
-          if (res.is_success) {
+          if (res.success) {
             this.message.success('Menu updated successfully');
             this.modalVisible.set(false);
             this.loadMenus();
@@ -423,7 +423,7 @@ export class MenuListComponent implements OnInit {
       this.menuService.createMenu(payload).subscribe({
         next: (res) => {
           this.modalSaving.set(false);
-          if (res.is_success) {
+          if (res.success) {
             this.message.success('Menu created successfully');
             this.modalVisible.set(false);
             this.loadMenus();
@@ -452,7 +452,7 @@ export class MenuListComponent implements OnInit {
       })
       .subscribe({
         next: (res) => {
-          if (res.is_success) {
+          if (res.success) {
             this.message.success(`Menu "${m.title}" status updated`);
             this.loadMenus();
           } else {
@@ -469,7 +469,7 @@ export class MenuListComponent implements OnInit {
     if (confirm(`Are you sure you want to delete the menu "${m.title}"?`)) {
       this.menuService.deleteMenu(m.menu_no).subscribe({
         next: (res) => {
-          if (res.is_success) {
+          if (res.success) {
             this.message.success('Menu deleted successfully');
             this.loadMenus();
           } else {

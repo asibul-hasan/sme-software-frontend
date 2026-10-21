@@ -377,19 +377,20 @@ export class RoleMenuPermissionComponent implements OnInit {
   loadRoles(): void {
     this.roleService.getRoles().subscribe({
       next: (res) => {
-        if (res.is_success && res.data) {
+        if (res.success && res.data) {
           this.roles.set(res.data);
 
+          const roleList = res.data;
           // Check if queryParam has roleNo
           this.route.queryParams.subscribe((params) => {
             if (params['roleNo']) {
               const rNo = Number(params['roleNo']);
               this.selectedRoleNo.set(rNo);
               this.loadRolePermissions(rNo);
-            } else if (res.data.length > 0 && !this.selectedRoleNo()) {
+            } else if (roleList.length > 0 && !this.selectedRoleNo()) {
               // Default to first role (e.g. PMS Manager)
-              this.selectedRoleNo.set(res.data[0].role_no);
-              this.loadRolePermissions(res.data[0].role_no);
+              this.selectedRoleNo.set(roleList[0].role_no);
+              this.loadRolePermissions(roleList[0].role_no);
             }
           });
         }
@@ -414,7 +415,7 @@ export class RoleMenuPermissionComponent implements OnInit {
     this.roleService.getRoleMenuPermissions(roleNo).subscribe({
       next: (res) => {
         this.loading.set(false);
-        if (res.is_success && res.data) {
+        if (res.success && res.data) {
           this.permissionItems.set(res.data);
         } else {
           this.message.error(res.message || 'Failed to load permissions');
@@ -499,7 +500,7 @@ export class RoleMenuPermissionComponent implements OnInit {
     this.roleService.saveRoleMenuPermissions(rNo, this.permissionItems()).subscribe({
       next: (res) => {
         this.saving.set(false);
-        if (res.is_success) {
+        if (res.success) {
           this.message.success('Menu permissions saved successfully');
         } else {
           this.message.error(res.message || 'Failed to save menu permissions');
