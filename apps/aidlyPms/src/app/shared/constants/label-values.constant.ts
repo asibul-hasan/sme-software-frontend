@@ -57,6 +57,7 @@ export const PaymentMethod = {
   Card: 6,
   Due: 7,
   Split: 8,
+  ReturnCredit: 9,
 } as const;
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 

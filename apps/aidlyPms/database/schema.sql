@@ -637,6 +637,7 @@ CREATE TABLE IF NOT EXISTS sale_invoices (
     received_by_user_no BIGINT REFERENCES sys_users(user_no) ON DELETE SET NULL,
     salesman_user_no BIGINT REFERENCES sys_users(user_no) ON DELETE SET NULL,
     is_quick_printed BOOLEAN NOT NULL,
+    exchange_of_return_no BIGINT REFERENCES sale_returns(sale_return_no) ON DELETE SET NULL,
     sale_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -697,6 +698,9 @@ CREATE TABLE IF NOT EXISTS sale_returns (
     cash_paid_refund NUMERIC NOT NULL,
     inventory_type SMALLINT NOT NULL,
     return_status SMALLINT NOT NULL,
+    refund_method SMALLINT,
+    exchange_invoice_no BIGINT REFERENCES sale_invoices(sale_invoice_no) ON DELETE SET NULL,
+    idempotency_key UUID UNIQUE,
     created_by_user_no BIGINT REFERENCES sys_users(user_no) ON DELETE SET NULL,
     return_date TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -1018,6 +1022,7 @@ CREATE TABLE IF NOT EXISTS cfg_sale_configs (
     max_sale_discount_percent NUMERIC NOT NULL,
     is_max_discount_enabled BOOLEAN NOT NULL,
     business_type SMALLINT NOT NULL,
+    return_window_days INT NOT NULL DEFAULT 7,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT uq_sale_config_branch UNIQUE (pharmacy_no, branch_no)
 );
@@ -1288,7 +1293,8 @@ INSERT INTO sys_permissions (permission_no, code, module_group, name, descriptio
 (17, 'POS-Shop-Generic-Module', 'Products', 'Generic Directory', 'Manage drug active generic ingredients', CURRENT_TIMESTAMP),
 (18, 'Permission-Module', 'Administration', 'Permissions ACL', 'Configure system access rights', CURRENT_TIMESTAMP),
 (19, 'Pharmacy-Module', 'Administration', 'Pharmacy Settings', 'Configure store preferences and print settings', CURRENT_TIMESTAMP),
-(20, 'Role-Module', 'Administration', 'Role Management', 'Create and modify employee authorization roles', CURRENT_TIMESTAMP)
+(20, 'Role-Module', 'Administration', 'Role Management', 'Create and modify employee authorization roles', CURRENT_TIMESTAMP),
+(21, 'sale.return', 'Sales', 'Sales Return & Exchange', 'Process customer sales returns and item exchanges', CURRENT_TIMESTAMP)
 ON CONFLICT (permission_no) DO NOTHING;
 
 -- Default Subscription Plan
@@ -1310,7 +1316,7 @@ ON CONFLICT DO NOTHING;
 -- Assign POS and Customer permissions to PMS Salesman (Role 10)
 INSERT INTO sys_role_permissions (role_no, permission_no, pharmacy_no, branch_no)
 SELECT 10, permission_no, 1, 1 FROM sys_permissions
-WHERE code IN ('PMS-Sale-Module', 'PMS-Customer-Module', 'PMS-Product-Module', 'PMS-Barcode-Module')
+WHERE code IN ('PMS-Sale-Module', 'PMS-Customer-Module', 'PMS-Product-Module', 'PMS-Barcode-Module', 'sale.return')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================

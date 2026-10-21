@@ -8,6 +8,7 @@ on:
       - 'apps/aidlyPms/**'
       - 'package.json'
       - 'package-lock.json'
+      - '.npmrc'
       - '.github/workflows/deploy-pms.yml'
   workflow_dispatch:
 
@@ -26,10 +27,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
       - name: Build Aidly PMS project
         env:
@@ -81,4 +83,3 @@ jobs:
             fi
           done
           echo "Storage cleanup complete."
-

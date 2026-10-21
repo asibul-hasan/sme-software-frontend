@@ -62,6 +62,7 @@ export interface SaleInvoice {
   received_by_user_no: number;
   salesman_user_no: number;
   is_quick_printed: boolean;
+  exchange_of_return_no?: number | null;
   sale_timestamp: string;
   created_at: string;
   updated_at: string;
@@ -93,6 +94,8 @@ export interface SaleInvoiceItem {
   vat_amount?: number;
   net_amount?: number;
   total_price: number;
+  already_returned_qty?: number;
+  returnable_qty?: number;
 
   // Navigation
   product?: ProdProduct;
@@ -129,6 +132,9 @@ export interface SaleReturn {
   cash_paid_refund: number;
   inventory_type: number;
   return_status?: number;
+  refund_method?: number;
+  exchange_invoice_no?: number | null;
+  idempotency_key?: string | null;
   created_by_user_no: number;
   return_date: string;
   created_at: string;
@@ -168,3 +174,41 @@ export interface SaleReturnItem {
 export type Customer = CustCustomer;
 export type SaleOrder = SaleInvoice;
 export type SaleOrderItem = SaleInvoiceItem;
+
+export interface ReturnLineReq {
+  sale_invoice_item_no: number;
+  qty_pcs: number;
+  reason_code: number;
+  disposition: number;
+}
+
+export interface ReturnReq {
+  sale_invoice_no: number;
+  lines: ReturnLineReq[];
+  refund_method?: number;
+  idempotency_key?: string;
+  note?: string;
+}
+
+export interface ExchangeCartLineReq {
+  product_no: number;
+  quantity: number;
+  unit_type?: number;
+}
+
+export interface ExchangeReq {
+  return_req: ReturnReq;
+  new_items: ExchangeCartLineReq[];
+  settlement_payment_method?: number;
+}
+
+export interface ExchangeResult {
+  return_no: number;
+  return_number: string;
+  refund_total: number;
+  new_invoice_no?: number | null;
+  new_sales_number?: string | null;
+  new_invoice_total?: number;
+  settlement_difference: number;
+  message: string;
+}

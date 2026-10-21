@@ -20,6 +20,7 @@ export interface CfgSaleConfig {
   max_sale_discount_percent: number;
   is_max_discount_enabled: boolean;
   business_type: number;
+  return_window_days?: number;
   updated_at: string;
 }
 
