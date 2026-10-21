@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.9.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.9.0...v1.9.1) (2026-10-21)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** resolve TypeScript strict types for catalog products and exchange response ([9f7e235](https://github.com/asibul-hasan/sme-software-frontend/commit/9f7e2350bf761d4a5e986196c4df841296eaf60f))
+
 ## [1.9.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.8.1...v1.9.0) (2026-10-21)
 
 
