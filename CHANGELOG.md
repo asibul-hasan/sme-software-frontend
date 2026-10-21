@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.15.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.14.0...v1.15.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **menus:** implement Menu and Role Permission web client forms and routing ([ccced5e](https://github.com/asibul-hasan/sme-software-frontend/commit/ccced5e871c8e9119e8bc409b0b74e73276755de))
+
+
+### 🐛 Bug Fixes
+
+* **database:** add DEFAULT TRUE to sys_roles.status and add menu UI components ([c7374e6](https://github.com/asibul-hasan/sme-software-frontend/commit/c7374e6103d2a48cd82f240a90e504054b635b53))
+
 ## [1.14.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.13.0...v1.14.0) (2026-10-21)
 
 
