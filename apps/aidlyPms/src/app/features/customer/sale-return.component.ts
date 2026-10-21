@@ -135,7 +135,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
 
   // Exchange Cart State
   newItems = signal<ExchangeCartLine[]>([]);
-  catalogProducts = signal<ProdProduct[]>([]);
+  catalogProducts = signal<readonly ProdProduct[]>([]);
   isSearchingProducts = signal(false);
   selectedNewProductNo: number | null = null;
   newProductQty = 1;
@@ -189,7 +189,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.isSearchingProducts.set(false);
         if (res.data?.items) {
-          this.catalogProducts.set(res.data.items);
+          this.catalogProducts.set([...res.data.items]);
         }
       },
       error: () => this.isSearchingProducts.set(false),
@@ -547,7 +547,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     this.posSaleService.processExchange(payload).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
-        this.exchangeSuccessData = res.data;
+        this.exchangeSuccessData = res.data ?? null;
         this.isSuccessModalVisible = true;
       },
       error: (err) => {
