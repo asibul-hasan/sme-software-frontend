@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.11.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.0...v1.11.1) (2026-10-21)
+
+
+### 🔧 Maintenance & Chores
+
+* **database:** synchronize db_script.sql with schema.sql and DGDA compliance fields ([77f9004](https://github.com/asibul-hasan/sme-software-frontend/commit/77f9004ad8b5504a218f18b2e4a9dd2b70087895))
+
 ## [1.11.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.10.0...v1.11.0) (2026-10-21)
 
 
