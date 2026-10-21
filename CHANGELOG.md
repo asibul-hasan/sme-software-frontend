@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.11.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.10.0...v1.11.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **compliance:** add DGDA dar_number, drug_schedule dropdowns, and doctor bmdc_reg_no ([e2bce90](https://github.com/asibul-hasan/sme-software-frontend/commit/e2bce904b9fdaef4088629bb703ac86fe5573f31))
+* **compliance:** refactor drug_schedule to frontend-driven lookup and document rules ([06d773a](https://github.com/asibul-hasan/sme-software-frontend/commit/06d773a585427aa7ff6f51507587595ce56724ea))
+
 ## [1.10.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.9.1...v1.10.0) (2026-10-21)
 
 
