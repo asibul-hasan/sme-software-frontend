@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.14.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.13.0...v1.14.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **database:** add sys_menus and sys_role_menu_permissions schema ([b87dfd2](https://github.com/asibul-hasan/sme-software-frontend/commit/b87dfd21e4a9aa4f55a14f8627ec2317ee5b5869))
+
+
+### 🐛 Bug Fixes
+
+* **database:** scope fk constraint check to current schema and synchronize migrations ([c010078](https://github.com/asibul-hasan/sme-software-frontend/commit/c010078a675239da85efaf7a812a89cbb27fea2f))
+
+
+### 📝 Documentation
+
+* add AGENTS.md with mandatory pull before push rule ([1f21de4](https://github.com/asibul-hasan/sme-software-frontend/commit/1f21de4a6bd4a69e0d72055633e4befa448eea00))
+
 ## [1.13.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.12.1...v1.13.0) (2026-10-21)
 
 
