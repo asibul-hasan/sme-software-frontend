@@ -180,6 +180,11 @@
                         @if (p.strength) {
                           <span class="text-[10px] text-slate-500 font-normal">({{ p.strength }})</span>
                         }
+                        @if (p.drug_schedule && p.drug_schedule !== 'OTC') {
+                          <span class="text-[9px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                            {{ p.drug_schedule }}
+                          </span>
+                        }
                       </div>
                       <div class="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
                         <span class="truncate">{{ p.generic }}</span>
@@ -423,7 +428,14 @@
                   >
                     <!-- Details -->
                     <td class="p-3">
-                      <p class="font-bold text-slate-900 m-0 text-xs">{{ item.product_name }}</p>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <p class="font-bold text-slate-900 m-0 text-xs">{{ item.product_name }}</p>
+                        @if (item.drug_schedule && item.drug_schedule !== 'OTC') {
+                          <span [class]="item.drug_schedule === 'NARCOTIC' ? 'text-[9px] font-bold px-1 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-200' : 'text-[9px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-800 border border-purple-200'">
+                            {{ item.drug_schedule }}
+                          </span>
+                        }
+                      </div>
                       <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
                         <span>{{ item.generic_name }}</span>
                         @if (item.manufacturer) {

@@ -72,9 +72,18 @@ export class ProductAddComponent implements OnInit {
     country: 'Bangladesh',
     barcode: '',
     rakNumber: 'A-01 (General OTC)',
+    darNumber: '',
+    drugSchedule: 'OTC' as 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC',
     minStock: 50,
     isMedicine: true,
   };
+
+  readonly drugScheduleOptions: { label: string; value: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC' }[] = [
+    { label: 'OTC (Over-The-Counter)', value: 'OTC' },
+    { label: 'POM (Prescription Only Medicine)', value: 'POM' },
+    { label: 'Antibiotic (Schedule-G)', value: 'ANTIBIOTIC' },
+    { label: 'Narcotic / Controlled (Schedule-II)', value: 'NARCOTIC' },
+  ];
 
   isSaving = false;
 
@@ -521,6 +530,10 @@ export class ProductAddComponent implements OnInit {
       barcode_value: this.form.barcode,
       rak_number: this.form.rakNumber,
       min_stock_qty_pcs: this.form.minStock,
+      dar_number: this.form.darNumber?.trim() || null,
+      drug_schedule: this.form.drugSchedule,
+      is_prescription_required: this.form.drugSchedule !== 'OTC',
+      is_narcotic: this.form.drugSchedule === 'NARCOTIC',
       is_medicine: this.form.isMedicine,
       is_active: true,
       stock_qty: 0,

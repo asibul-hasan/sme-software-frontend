@@ -105,7 +105,17 @@
 </ng-template>
 
 <ng-template #medNameTpl let-item>
-  <span class="font-semibold text-slate-900">{{ item.product_name }}</span>
+    <div class="flex flex-col">
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <span class="font-semibold text-slate-900">{{ item.product_name }}</span>
+      @if (item.drug_schedule) {
+        <span [class]="getScheduleBadgeClass(item.drug_schedule)">{{ item.drug_schedule }}</span>
+      }
+    </div>
+    @if (item.dar_number) {
+      <span class="text-[11px] text-slate-400 font-mono tracking-tight">DAR: {{ item.dar_number }}</span>
+    }
+  </div>
 </ng-template>
 
 <ng-template #avgPurchaseTpl let-item>
@@ -554,6 +564,32 @@
               <span nz-icon nzType="plus"></span>
             </button>
           </div>
+        </div>
+
+        <!-- DGDA DAR Number -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">DGDA DAR No</span>
+          <input
+            type="text"
+            nz-input
+            placeholder="e.g. DAR 024-0012-045"
+            [(ngModel)]="formModel.dar_number"
+            class="rounded-md"
+          />
+        </div>
+
+        <!-- Drug Schedule Classification -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">Drug Schedule Class</span>
+          <nz-select
+            class="w-full"
+            [(ngModel)]="formModel.drug_schedule"
+            nzPlaceHolder="Select regulatory class"
+          >
+            @for (s of drugScheduleOptions; track s.value) {
+              <nz-option [nzValue]="s.value" [nzLabel]="s.label"></nz-option>
+            }
+          </nz-select>
         </div>
 
         <!-- Barcode -->

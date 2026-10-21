@@ -47,6 +47,8 @@ interface CartItem {
   barcode?: string;
   is_prescription_required?: boolean;
   is_narcotic?: boolean;
+  dar_number?: string | null;
+  drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
 }
 
 interface CatalogProduct {
@@ -65,6 +67,8 @@ interface CatalogProduct {
   strength: string;
   is_prescription_required?: boolean;
   is_narcotic?: boolean;
+  dar_number?: string | null;
+  drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
 }
 
 interface SplitPayment {
@@ -802,7 +806,9 @@ export class PosTerminalComponent implements OnInit {
           rak: p.rak_number || '',
           barcode: p.barcode_value || '',
           strength: p.strength || '',
-          is_prescription_required: p.is_prescription_required,
+          dar_number: p.dar_number || null,
+          drug_schedule: (p.drug_schedule as any) || 'OTC',
+          is_prescription_required: p.is_prescription_required || (p.drug_schedule && p.drug_schedule !== 'OTC'),
           is_narcotic: p.is_narcotic,
         }));
         this.catalogProducts.set(mapped);
@@ -1047,7 +1053,9 @@ export class PosTerminalComponent implements OnInit {
         rak: rakLocation,
         barcode: barcodeVal,
         is_prescription_required: targetProd?.is_prescription_required,
-        is_narcotic: targetProd?.is_narcotic,
+        is_narcotic: targetProd?.is_narcotic || targetProd?.drug_schedule === 'NARCOTIC',
+        dar_number: targetProd?.dar_number || null,
+        drug_schedule: targetProd?.drug_schedule || 'OTC',
       };
       this.cart.update(list => [newItem, ...list]);
       this.msg.success(`Added ${newItem.product_name} to cart`);

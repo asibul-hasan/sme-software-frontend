@@ -145,7 +145,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
     barcode_value: '',
     is_medicine: true,
     stock_qty: 0,
+    dar_number: '',
+    drug_schedule: 'OTC' as 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC',
   };
+
+  readonly drugScheduleOptions: { label: string; value: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC' }[] = [
+    { label: 'OTC (Over-The-Counter)', value: 'OTC' },
+    { label: 'POM (Prescription Only Medicine)', value: 'POM' },
+    { label: 'Antibiotic (Schedule-G)', value: 'ANTIBIOTIC' },
+    { label: 'Narcotic / Controlled (Schedule-II)', value: 'NARCOTIC' },
+  ];
 
   ngOnInit(): void {
     this.columns = [
@@ -596,6 +605,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
       barcode_value: '',
       is_medicine: true,
       stock_qty: 100,
+      dar_number: '',
+      drug_schedule: 'OTC' as 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC',
     };
     this.isModalVisible = true;
   }
@@ -629,6 +640,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
       barcode_value: product.barcode_value || '',
       is_medicine: product.is_medicine,
       stock_qty: product.stock_qty ?? 0,
+      dar_number: product.dar_number || '',
+      drug_schedule: (product.drug_schedule as any) || 'OTC',
     };
     this.isModalVisible = true;
   }
@@ -684,6 +697,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.formModel.sale_price_per_piece ||
         this.formModel.sale_price_per_box / (this.formModel.quantity_per_box || 1),
       rak_number: this.formModel.rak_number,
+      dar_number: this.formModel.dar_number?.trim() || null,
+      drug_schedule: this.formModel.drug_schedule,
+      is_prescription_required: this.formModel.drug_schedule !== 'OTC',
+      is_narcotic: this.formModel.drug_schedule === 'NARCOTIC',
       min_stock_qty_pcs: this.formModel.min_stock_qty_pcs,
       barcode_value: this.formModel.barcode_value,
       is_medicine: this.formModel.is_medicine,
@@ -751,5 +768,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
           });
         }
       });
+  }
+
+  getScheduleBadgeClass(schedule?: string): string {
+    switch (schedule) {
+      case 'ANTIBIOTIC': return 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200';
+      case 'NARCOTIC': return 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 border border-rose-200';
+      case 'POM': return 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200';
+      default: return 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 border border-emerald-200';
+    }
   }
 }

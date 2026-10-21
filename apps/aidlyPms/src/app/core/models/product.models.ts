@@ -52,6 +52,8 @@ export interface ProdProduct {
   is_narcotic?: boolean;
   min_stock_qty_pcs: number;
   rak_number?: string | null;
+  dar_number?: string | null;
+  drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
   is_active: boolean;
   created_at: string;
   updated_at: string;

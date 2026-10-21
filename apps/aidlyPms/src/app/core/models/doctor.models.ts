@@ -20,6 +20,7 @@ export interface DocDoctor {
   description_bn?: string | null;
   password_hash?: string | null;
   signature_image_url?: string | null;
+  bmdc_reg_no?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

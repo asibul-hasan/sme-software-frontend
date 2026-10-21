@@ -24,6 +24,7 @@ interface DoctorRow {
   gender: string;
   desc: string;
   descBn: string;
+  bmdcRegNo: string;
 }
 
 @Component({
@@ -100,7 +101,16 @@ interface DoctorRow {
             <tbody class="divide-y divide-slate-100 text-slate-800">
               @for (d of doctors(); track d.id) {
                 <tr class="hover:bg-slate-50/70 transition-colors">
-                  <td class="p-3 font-semibold text-slate-900">{{ d.name }}</td>
+                  <td class="p-3">
+                    <div class="font-semibold text-slate-900">{{ d.name }}</div>
+                    @if (d.bmdcRegNo) {
+                      <div class="mt-0.5">
+                        <span class="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                          BMDC: {{ d.bmdcRegNo }}
+                        </span>
+                      </div>
+                    }
+                  </td>
                   <td class="p-3 text-slate-700 font-medium font-bengali">{{ d.nameBn }}</td>
                   <td class="p-3 font-mono text-xs text-slate-600">{{ d.phone }}</td>
                   <td class="p-3 text-xs text-slate-600">{{ d.gender }}</td>
@@ -244,6 +254,20 @@ interface DoctorRow {
             </div>
 
             <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                BMDC Reg. No.
+                <span class="text-slate-400 font-normal ml-1">(e.g. A-12345)</span>
+              </label>
+              <input
+                type="text"
+                nz-input
+                placeholder="A-XXXXX"
+                [(ngModel)]="form.bmdcRegNo"
+                class="rounded-md text-xs"
+              />
+            </div>
+
+            <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
               <nz-select [(ngModel)]="form.gender" class="w-full">
                 <nz-option nzValue="Male" nzLabel="Male"></nz-option>
@@ -326,6 +350,7 @@ export class DoctorListComponent implements OnInit {
     gender: 'Male',
     desc: '',
     descBn: '',
+    bmdcRegNo: '',
   };
 
   ngOnInit(): void {
@@ -353,6 +378,7 @@ export class DoctorListComponent implements OnInit {
           gender: d.gender || 'Male',
           desc: d.description_en || d.descriptionEn || 'MBBS',
           descBn: d.description_bn || d.descriptionBn || '',
+          bmdcRegNo: d.bmdc_reg_no || d.bmdcRegNo || '',
         }));
         this.doctors.set(rows);
       },
@@ -382,6 +408,7 @@ export class DoctorListComponent implements OnInit {
       gender: 'Male',
       desc: '',
       descBn: '',
+      bmdcRegNo: '',
     };
     this.isModalVisible = true;
   }
@@ -398,6 +425,7 @@ export class DoctorListComponent implements OnInit {
       gender: d.gender,
       desc: d.desc,
       descBn: d.descBn,
+      bmdcRegNo: d.bmdcRegNo,
     };
     this.isModalVisible = true;
   }
@@ -423,6 +451,7 @@ export class DoctorListComponent implements OnInit {
       first_name_bn: this.form.nameBn.trim() || firstName,
       phone: fullPhone,
       gender: this.form.gender,
+      bmdc_reg_no: this.form.bmdcRegNo.trim() || undefined,
       description_en: this.form.desc.trim() || undefined,
       description_bn: this.form.descBn.trim() || undefined,
       is_active: true,

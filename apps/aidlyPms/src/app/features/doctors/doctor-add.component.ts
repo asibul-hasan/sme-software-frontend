@@ -141,6 +141,21 @@ import { DoctorService } from '../../core/services/doctor.service';
             </div>
 
             <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                BMDC Reg. No.
+                <span class="text-slate-400 font-normal ml-1">(e.g. A-12345)</span>
+              </label>
+              <input
+                type="text"
+                nz-input
+                placeholder="A-XXXXX"
+                [(ngModel)]="bmdcRegNo"
+                name="bmdcRegNo"
+                class="rounded-md"
+              />
+            </div>
+
+            <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
               <nz-select [(ngModel)]="gender" name="gender" class="w-full">
                 <nz-option nzValue="Male" nzLabel="Male"></nz-option>
@@ -227,6 +242,7 @@ export class DoctorAddComponent {
   descBn = '';
   phone = '';
   gender = 'Male';
+  bmdcRegNo = '';
   hasSignature = false;
   password = '';
   confirmPassword = '';
@@ -261,6 +277,7 @@ export class DoctorAddComponent {
       description_bn: this.descBn.trim() || undefined,
       phone: fullPhone,
       gender: this.gender,
+      bmdc_reg_no: this.bmdcRegNo.trim() || undefined,
       is_active: true,
     }).subscribe({
       next: (res) => {
