@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.10.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.9.1...v1.10.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **cash:** add 4-check day-end reconciliation badge, universal sale.return migration, backfill payments, and reusable idempotency key ([9c007d4](https://github.com/asibul-hasan/sme-software-frontend/commit/9c007d48739f688b6b3b9f5654d4f47aedc5fbcc))
+
+
+### 🐛 Bug Fixes
+
+* **pms:** remove corrupt symlink CLAUDE.md causing checkout failure ([b582bab](https://github.com/asibul-hasan/sme-software-frontend/commit/b582baba775eb2ded3e18bf04e6d97d82d9ee803))
+
 ## [1.9.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.9.0...v1.9.1) (2026-10-21)
 
 
