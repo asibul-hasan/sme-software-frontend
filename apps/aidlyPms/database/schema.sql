@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS prod_products (
     min_stock_qty_pcs INT NOT NULL,
     rak_number VARCHAR(50),
     dar_number VARCHAR(50),
-    drug_schedule VARCHAR(20) DEFAULT 'OTC' CHECK (drug_schedule IN ('OTC', 'POM', 'ANTIBIOTIC', 'NARCOTIC')),
+    drug_schedule VARCHAR(50),
     is_active BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,

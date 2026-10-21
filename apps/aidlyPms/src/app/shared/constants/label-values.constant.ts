@@ -321,6 +321,22 @@ export const DEFAULT_RAKS: readonly string[] = [
   'Fridge-01 (Insulin & Vaccines)',
 ] as const;
 
+// 13. Drug Schedule Class (DGDA / Model Pharmacy)
+export const DRUG_SCHEDULE_OPTIONS: readonly LabelOption<string>[] = [
+  { label: 'OTC (Over-The-Counter)', value: 'OTC' },
+  { label: 'POM (Prescription Only Medicine)', value: 'POM' },
+  { label: 'Antibiotic (Schedule-G)', value: 'ANTIBIOTIC' },
+  { label: 'Narcotic / Controlled (Schedule-II)', value: 'NARCOTIC' },
+] as const;
+
+export const DrugSchedule = {
+  OTC: 'OTC',
+  POM: 'POM',
+  Antibiotic: 'ANTIBIOTIC',
+  Narcotic: 'NARCOTIC',
+} as const;
+export type DrugSchedule = (typeof DrugSchedule)[keyof typeof DrugSchedule];
+
 /**
  * Unified Dictionary Map for Dynamic Lookup
  */
@@ -339,6 +355,7 @@ export const LABEL_VALUES = {
   paper_type: PAPER_TYPE_OPTIONS,
   subscription_status: SUBSCRIPTION_STATUS_OPTIONS,
   billing_cycle: BILLING_CYCLE_OPTIONS,
+  drug_schedule: DRUG_SCHEDULE_OPTIONS,
 } as const;
 
 export type LabelValueKey = keyof typeof LABEL_VALUES;

@@ -19,6 +19,7 @@ import {
   DEFAULT_COMPANIES,
   DEFAULT_GENERICS,
   DEFAULT_RAKS,
+  DRUG_SCHEDULE_OPTIONS,
 } from '../../shared/constants/label-values.constant';
 import { ProductService } from '../../core/services/product.service';
 import { ProdCompany, ProdGeneric, ProdProduct } from '../../core/models';
@@ -78,12 +79,7 @@ export class ProductAddComponent implements OnInit {
     isMedicine: true,
   };
 
-  readonly drugScheduleOptions: { label: string; value: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC' }[] = [
-    { label: 'OTC (Over-The-Counter)', value: 'OTC' },
-    { label: 'POM (Prescription Only Medicine)', value: 'POM' },
-    { label: 'Antibiotic (Schedule-G)', value: 'ANTIBIOTIC' },
-    { label: 'Narcotic / Controlled (Schedule-II)', value: 'NARCOTIC' },
-  ];
+  readonly drugScheduleOptions = DRUG_SCHEDULE_OPTIONS;
 
   isSaving = false;
 

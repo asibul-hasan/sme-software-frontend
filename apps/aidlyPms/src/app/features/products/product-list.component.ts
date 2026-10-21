@@ -23,6 +23,7 @@ import {
   DEFAULT_COMPANIES,
   DEFAULT_GENERICS,
   DEFAULT_RAKS,
+  DRUG_SCHEDULE_OPTIONS,
 } from '../../shared/constants/label-values.constant';
 import { ProdProduct, ProdCompany, ProdGeneric, ProdProductBatch } from '../../core/models';
 import { ModalService } from '../../core/services/modal.service';
@@ -149,12 +150,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     drug_schedule: 'OTC' as 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC',
   };
 
-  readonly drugScheduleOptions: { label: string; value: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC' }[] = [
-    { label: 'OTC (Over-The-Counter)', value: 'OTC' },
-    { label: 'POM (Prescription Only Medicine)', value: 'POM' },
-    { label: 'Antibiotic (Schedule-G)', value: 'ANTIBIOTIC' },
-    { label: 'Narcotic / Controlled (Schedule-II)', value: 'NARCOTIC' },
-  ];
+  readonly drugScheduleOptions = DRUG_SCHEDULE_OPTIONS;
 
   ngOnInit(): void {
     this.columns = [
