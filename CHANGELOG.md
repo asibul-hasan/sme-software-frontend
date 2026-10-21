@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.11.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.1...v1.11.2) (2026-10-21)
+
+
+### 🐛 Bug Fixes
+
+* **shared:** widen getOptionLabel and getOptionValue generic types for string options ([4a2747b](https://github.com/asibul-hasan/sme-software-frontend/commit/4a2747ba15c39e67a057863490d3460e0e57e91f))
+
 ## [1.11.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.11.0...v1.11.1) (2026-10-21)
 
 
