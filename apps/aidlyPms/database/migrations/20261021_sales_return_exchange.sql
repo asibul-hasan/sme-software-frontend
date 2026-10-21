@@ -78,11 +78,68 @@ VALUES (
 )
 ON CONFLICT (code) DO NOTHING;
 
--- 6. Grant 'sale.return' permission to PMS Manager (Role 9) and PMS Salesman (Role 10) across all branches
+-- 6. Grant 'sale.return' permission to EVERY role across all tenants that currently has any sale permission
 INSERT INTO sys_role_permissions (role_no, permission_no, pharmacy_no, branch_no)
-SELECT r.role_no, p.permission_no, r.pharmacy_no, r.branch_no
-FROM sys_roles r
-CROSS JOIN sys_permissions p
-WHERE p.code = 'sale.return'
-  AND r.alias IN ('PMS Manager', 'PMS Salesman')
+SELECT DISTINCT
+    rp.role_no,
+    ret_perm.permission_no,
+    rp.pharmacy_no,
+    rp.branch_no
+FROM sys_role_permissions rp
+JOIN sys_permissions p ON rp.permission_no = p.permission_no
+CROSS JOIN (
+    SELECT permission_no FROM sys_permissions WHERE code = 'sale.return' LIMIT 1
+) ret_perm
+WHERE (p.code ILIKE '%sale%' OR p.module_group ILIKE '%sale%')
+  AND NOT EXISTS (
+      SELECT 1 FROM sys_role_permissions existing
+      WHERE existing.role_no = rp.role_no
+        AND existing.permission_no = ret_perm.permission_no
+        AND existing.pharmacy_no = rp.pharmacy_no
+        AND existing.branch_no = rp.branch_no
+  )
 ON CONFLICT DO NOTHING;
+
+-- 7. Backfill historical sale_invoice_payments for existing invoices (net of change)
+--    Ensures day-end reconciliation reports tie out accurately for historical shifts.
+INSERT INTO sale_invoice_payments (
+    sale_payment_no,
+    pharmacy_no,
+    branch_no,
+    sale_invoice_no,
+    account_no,
+    payment_method,
+    amount,
+    gateway_reference,
+    created_at
+)
+SELECT
+    (COALESCE(m.max_pay, 0) + ROW_NUMBER() OVER (ORDER BY s.sale_invoice_no)),
+    s.pharmacy_no,
+    s.branch_no,
+    s.sale_invoice_no,
+    COALESCE(acc.account_no, def_acc.account_no, 1),
+    COALESCE(s.payment_method, 1),
+    GREATEST(0.01, COALESCE(s.customer_will_pay - s.change_amount, s.final_price - s.due_amount, 0)),
+    s.mfs_trx_id,
+    s.sale_timestamp
+FROM sale_invoices s
+CROSS JOIN (SELECT COALESCE(MAX(sale_payment_no), 0) AS max_pay FROM sale_invoice_payments) m
+LEFT JOIN acc_transaction_accounts acc ON acc.pharmacy_no = s.pharmacy_no
+                                       AND acc.branch_no = s.branch_no
+                                       AND acc.account_code = CASE s.payment_method
+                                           WHEN 2 THEN '10201'
+                                           WHEN 3 THEN '10202'
+                                           WHEN 4 THEN '10203'
+                                           WHEN 5 THEN '10204'
+                                           WHEN 6 THEN '10205'
+                                           ELSE '10101'
+                                       END
+LEFT JOIN acc_transaction_accounts def_acc ON def_acc.pharmacy_no = s.pharmacy_no
+                                           AND def_acc.branch_no = s.branch_no
+                                           AND def_acc.account_code = '10101'
+WHERE s.document_status = 2
+  AND GREATEST(COALESCE(s.customer_will_pay - s.change_amount, 0), COALESCE(s.final_price - s.due_amount, 0)) > 0
+  AND NOT EXISTS (
+      SELECT 1 FROM sale_invoice_payments p WHERE p.sale_invoice_no = s.sale_invoice_no
+  );

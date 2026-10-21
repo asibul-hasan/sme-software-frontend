@@ -208,10 +208,40 @@ interface CashItem {
             <span class="text-xs font-semibold text-slate-600">Date :</span>
             <nz-date-picker
               [(ngModel)]="closerDate"
+              (ngModelChange)="loadDayEndReconciliation()"
               nzFormat="dd-MM-yyyy"
               class="w-40 rounded-md text-xs py-1"
             ></nz-date-picker>
           </div>
+
+          <!-- Day-End 4-Point Audit Reconciliation Badge -->
+          @if (dayEndRecon()) {
+            <div class="p-3 rounded-lg border text-xs" [ngClass]="dayEndRecon()?.all_checks_passed ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'">
+              <div class="flex items-center justify-between font-semibold">
+                <span class="flex items-center gap-1.5">
+                  <span nz-icon [nzType]="dayEndRecon()?.all_checks_passed ? 'check-circle' : 'warning'" [nzTheme]="'fill'" [class]="dayEndRecon()?.all_checks_passed ? 'text-emerald-600' : 'text-amber-600'"></span>
+                  Day-End Reconciliation Audit: {{ dayEndRecon()?.overall_status }}
+                </span>
+                <span class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-full" [ngClass]="dayEndRecon()?.all_checks_passed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'">
+                  {{ dayEndRecon()?.all_checks_passed ? '4/4 Checks Passed' : 'Audit Variance' }}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 pt-2 border-t border-slate-200/60 font-mono text-[11px]">
+                <div class="flex items-center gap-1" [class.text-emerald-700]="dayEndRecon()?.drawer_check?.passed" [class.text-rose-700]="!dayEndRecon()?.drawer_check?.passed">
+                  <span>{{ dayEndRecon()?.drawer_check?.passed ? '✓' : '✗' }} Drawer</span>
+                </div>
+                <div class="flex items-center gap-1" [class.text-emerald-700]="dayEndRecon()?.net_sales_check?.passed" [class.text-rose-700]="!dayEndRecon()?.net_sales_check?.passed">
+                  <span>{{ dayEndRecon()?.net_sales_check?.passed ? '✓' : '✗' }} Net Sales</span>
+                </div>
+                <div class="flex items-center gap-1" [class.text-emerald-700]="dayEndRecon()?.trial_balance_check?.passed" [class.text-rose-700]="!dayEndRecon()?.trial_balance_check?.passed">
+                  <span>{{ dayEndRecon()?.trial_balance_check?.passed ? '✓' : '✗' }} TB (Clearing=0)</span>
+                </div>
+                <div class="flex items-center gap-1" [class.text-emerald-700]="dayEndRecon()?.stock_batch_check?.passed" [class.text-rose-700]="!dayEndRecon()?.stock_batch_check?.passed">
+                  <span>{{ dayEndRecon()?.stock_batch_check?.passed ? '✓' : '✗' }} Stock / Batch</span>
+                </div>
+              </div>
+            </div>
+          }
 
           <!-- 2 Column Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -443,8 +473,23 @@ export class CashHandoverComponent implements OnInit {
     return this.calculatedTotalCash() + this.calculatedTotalBank();
   }
 
+  dayEndRecon = signal<any>(null);
+
+  loadDayEndReconciliation(): void {
+    const d = this.closerDate ? formatDateToDdMmYyyy(this.closerDate) : formatDateToDdMmYyyy(new Date());
+    this.api.get<any>(`cash/day-end-reconciliation?date=${d}`).subscribe({
+      next: res => {
+        if (res.data) {
+          this.dayEndRecon.set(res.data);
+        }
+      },
+      error: () => this.dayEndRecon.set(null),
+    });
+  }
+
   openCashCloser(): void {
     this.isCashCloserOpen = true;
+    this.loadDayEndReconciliation();
   }
 
   closeCashCloser(): void {

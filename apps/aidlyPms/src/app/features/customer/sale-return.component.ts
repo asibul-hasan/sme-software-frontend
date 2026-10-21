@@ -133,6 +133,9 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   refundMethod = 1; // 1: Cash, 2: StoreCredit, 3: OriginalChannel
   globalReturnReason = 'Customer Return';
 
+  // Idempotency Key (Generated once per screen open/loaded invoice, preserved across retries)
+  currentIdempotencyKey = crypto.randomUUID();
+
   // Exchange Cart State
   newItems = signal<ExchangeCartLine[]>([]);
   catalogProducts = signal<readonly ProdProduct[]>([]);
@@ -369,6 +372,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     this.originalDueAmount = 0;
     this.lines.set([]);
     this.newItems.set([]);
+    this.currentIdempotencyKey = crypto.randomUUID();
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 
@@ -483,7 +487,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
         disposition: l.disposition,
       })),
       refund_method: this.refundMethod,
-      idempotency_key: crypto.randomUUID(),
+      idempotency_key: this.currentIdempotencyKey,
       note: this.globalReturnReason || 'Customer Return',
     };
 
@@ -533,7 +537,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
           disposition: l.disposition,
         })),
         refund_method: 1, // Cash drawer clearing
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: this.currentIdempotencyKey,
         note: `Exchange against ${this.originalInvoice}`,
       },
       new_items: newCart.map(i => ({
