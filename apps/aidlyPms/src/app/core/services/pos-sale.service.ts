@@ -72,8 +72,11 @@ export class PosSaleService {
     return this.api.getPaged<SaleReturnRecord>('pos/sales/returns', params);
   }
 
-  voidSale(saleInvoiceNo: number): Observable<ApiResponse<boolean>> {
-    return this.api.delete<boolean>(`pos/sales/${saleInvoiceNo}`);
+  voidSale(
+    saleInvoiceNo: number,
+    payload?: { reason?: string; approval_note?: string; approved_by_user_no?: number }
+  ): Observable<ApiResponse<boolean>> {
+    return this.api.post<boolean>(`pos/sales/${saleInvoiceNo}/void`, payload ?? { reason: 'Counter void requested' });
   }
 }
 
