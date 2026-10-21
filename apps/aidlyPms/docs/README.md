@@ -1,50 +1,51 @@
-# Aidly PMS — Documentation Repository
+# Aidly PMS — Architecture & Technical Documentation
 
-This directory contains the business architecture, middleware data contracts, and technical specifications for the **Aidly Pharmacy Management System & POS (Aidly PMS)**.
-
----
-
-## 📁 Documentation Inventory
-
-### 1. 📘 Business Architecture & Middleware Specification
-- **[`MIDDLEWARE-FIELD-TO-FIELD-BUSINESS-SPECIFICATION.md`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/docs/MIDDLEWARE-FIELD-TO-FIELD-BUSINESS-SPECIFICATION.md)**
-  - Master field-to-field data dictionaries across all 10 modules:
-    - `sys_` Core System, Multi-Tenancy & Multi-Branch (`pharmacy_no` Business Tenant & `branch_no` Physical Store standard, gap-safe document sequencing, outbox, idempotency, audit trail)
-    - `prod_` Products, Generics, Formulations & Master Catalog (Schedule H prescription & narcotic flags; `company_no` retained strictly for Pharmaceutical Manufacturers like Square/Beximco)
-    - `inv_` Stock Ledger, Batches, Inter-Branch Transfers (`inv_transfers`), Stocktakes & Adjustments (`inv_adjustments`), and Universal Stock Movement
-    - `supp_` & `pur_` Suppliers, Procurement, Supplier Payments (`pur_supplier_payments`) & Supplier Debit Note Returns (`pur_purchase_returns`)
-    - `cust_` & `sale_` POS Sales Engine, Split Tender Payments (`sale_invoice_payments`), Prescription Linkages & Over-Return Protected Sales Returns
-    - `cash_` & `due_` Shift Closings with Blind Count, Multi-Tender Digital Settlements & Customer Due Collections
-    - `acc_` Chart of Accounts (5 root categories), Operating Expenses, Incomes, Reconciliations & Universal Financial Ledger
-    - `doc_` Doctor E-Prescription Portal (Bilingual EN/BN)
-    - `cfg_` Business Configurations & 80mm Thermal Receipt Printing
-    - `sub_` SaaS Subscriptions & Payment Gateways
-  - **The Universal Two-Tier Transaction Ledger Architecture**:
-    - `acc_transaction_ledger`: Single centralized table for all financial double-entry postings (with COGS & inventory relief on every sale).
-    - `inv_stock_movement`: Single centralized table for all physical stock movements.
-  - **Core Engineering Principles**:
-    - Middleware is the sole calculation authority (`BigDecimal` / arbitrary-precision decimal).
-    - Synchronous database transaction posting for ledgers + Transactional Outbox for asynchronous external side-effects.
-    - Strict financial data preservation (`ON DELETE RESTRICT` across all financial and ledger tables).
+This directory contains the business architecture, middleware data contracts, clinical safety blueprints, POS specifications, and market standard gap analyses for the **Aidly Pharmacy Management System & POS (`apps/aidlyPms`)**.
 
 ---
 
-### 2. 💾 PostgreSQL Database Schemas
-Located in [`apps/aidlyPms/database/`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/):
-- **[`schema.sql`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/schema.sql)** & **[`db_script.sql`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/db_script.sql)**:
-  - 57 relational tables strictly implementing PostgreSQL 14+ standards.
-  - Standardized Option A tenancy: `pharmacy_no` (Business Tenant/Org) + `branch_no` (Physical Outlet) on all tables; `company_no` scoped strictly to drug manufacturers in `prod_companies`.
-  - Byte-identical schema files verified by SHA-256 checksums.
-  - Partitioned B-Tree indexes, parent-FK indexes on all line items, and declarative CHECK constraints.
-  - Zero database triggers, no default auto-sequences, and explicit application-managed identifiers.
-- **[`menu.md`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/menu.md)** & **[`menu.json`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/menu.json)**:
-  - Complete navigation structure, screens, and permission nodes.
-- **[`label_values.json`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/database/label_values.json)**:
-  - Dictionary of frontend lookup codes and dropdown options stored as `SMALLINT` in PostgreSQL.
+## 📁 PMS Documentation Index
 
----
+### 1. 📘 Core Business & Middleware Specifications
+- **[`MIDDLEWARE-FIELD-TO-FIELD-BUSINESS-SPECIFICATION.md`](./MIDDLEWARE-FIELD-TO-FIELD-BUSINESS-SPECIFICATION.md)**:
+  - Master field-to-field data dictionaries across all 10 pharmacy modules:
+    - `sys_`: Multi-tenancy (`pharmacy_no`), physical branch (`branch_no`), gap-safe document sequencing, outbox, idempotency, audit trail.
+    - `prod_`: Medicine catalog, generics, strengths, formulations, Schedule-H / narcotic flags, manufacturer tracking.
+    - `inv_`: Physical stock ledger, batches, FEFO allocation, inter-branch transfers (`inv_transfers`), stocktakes & adjustments (`inv_adjustments`).
+    - `supp_` & `pur_`: Suppliers, pharmaceutical procurement, bonus strips costing, supplier payments, and purchase returns.
+    - `cust_` & `sale_`: Retail & wholesale POS engine, split tender payments (`sale_invoice_payments`), prescription linkages.
+    - `cash_` & `due_`: Blind cash closing, digital settlements (bKash/Nagad), customer due collections.
+    - `acc_`: Double-entry pharmacy chart of accounts, COGS relief, expenses, incomes, bank/cash reconciliation.
+    - `doc_`: Doctor E-Prescription Portal (Bilingual EN/BN).
+    - `cfg_`: 80mm thermal receipt printing, SMS alerts, loyalty configs.
+    - `sub_`: SaaS subscriptions & billing.
 
-### 3. 🎨 UI & Frontend Guidelines
-- **[`claude.md`](file:///c:/pridesys/apps/sme/aidlyErp/sme-software-frontend/apps/aidlyPms/claude.md)**:
-  - Architecture standards for the Angular + NG-ZORRO frontend.
-  - Universal `BaseEntity` data-binding rules and zero hardcoded business data policy.
+### 2. 🛒 POS & Sales Engine
+- **[`pos-build-plan.md`](./pos-build-plan.md)**:
+  - Technical architecture for the high-speed keyboard-first POS counter terminal.
+  - Multi-tender split payment workflows (Cash, Card, bKash, Nagad, Rocket, Upay).
+  - Wholesale vs retail packaging conversions (Pcs per Box, Strip per Box).
+  - Fast barcode scanning and virtualized medicine catalog dropdowns.
+
+### 3. ⚖️ Financial & Inventory Accounting
+- **[`acc-business-doc.md`](./acc-business-doc.md)**:
+  - Dual-ledger financial accounting rules for pharmacy businesses.
+  - Real-time COGS posting and inventory asset relief on every confirmed sale invoice.
+  - Supplier accounts payable and customer accounts receivable settlement cycles.
+- **[`PUR-COMPLETION-PLAN.md`](./PUR-COMPLETION-PLAN.md)**:
+  - Implementation roadmap for goods receiving notes (GRN), purchase invoices, and bonus strips costing.
+- **[`inv_schema_postgres.sql`](./inv_schema_postgres.sql)**:
+  - Complete PostgreSQL DDL reference for inventory stock movements, transfers, and adjustments.
+
+### 4. 🏥 Clinical Safety, DGDA & Market Standards
+- **[`aidly_pms_market_standard_roadmap.md`](./aidly_pms_market_standard_roadmap.md)**:
+  - Ground-truth evaluation of Aidly PMS against Bangladesh pharmacy market standards (DGDA Model Pharmacy guidelines & NBR Mushak-6.3 compliance).
+  - Server-side FEFO expiry guards and hard blocks on sales of expired stock.
+  - Statutory BIN & Drug License receipt printing requirements.
+  - Pareto ABC & FSN velocity stock reporting.
+
+### 5. 💾 Database Schemas & Dictionaries
+Located in [`apps/aidlyPms/database/`](../database/):
+- **[`schema.sql`](../database/schema.sql)** & **[`db_script.sql`](../database/db_script.sql)**: 57 relational tables with 100% field-to-field parity.
+- **[`label_values.json`](../database/label_values.json)**: Dictionary of frontend lookup codes and dropdown options stored as `SMALLINT` in PostgreSQL.
+- **[`menu.json`](../database/menu.json)** & **[`menu.md`](../database/menu.md)**: Full navigation taxonomy with Bengali (`name_bn`) translations.
