@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.8.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.8.0...v1.8.1) (2026-10-21)
+
+
+### 📝 Documentation
+
+* **repo:** organize documentation under apps/aidlyPms and apps/web-client ([0dca63b](https://github.com/asibul-hasan/sme-software-frontend/commit/0dca63b95abb6cb6c0c78a91316d184e992b6396))
+
 ## [1.8.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.7.0...v1.8.0) (2026-10-21)
 
 
