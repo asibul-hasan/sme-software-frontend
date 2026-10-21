@@ -361,28 +361,28 @@ export const LABEL_VALUES = {
 export type LabelValueKey = keyof typeof LABEL_VALUES;
 
 /**
- * Helper to retrieve text label for a given numeric value
+ * Helper to retrieve text label for a given value (number or string)
  */
 export function getOptionLabel(
-  optionsOrKey: readonly LabelOption[] | LabelValueKey,
-  value: number | null | undefined,
+  optionsOrKey: readonly LabelOption<any>[] | LabelValueKey,
+  value: number | string | null | undefined,
   fallback = '—'
 ): string {
   if (value === null || value === undefined) return fallback;
   const list = typeof optionsOrKey === 'string' ? LABEL_VALUES[optionsOrKey] : optionsOrKey;
-  const match = list.find(item => item.value === value);
+  const match = (list as readonly LabelOption<any>[]).find(item => String(item.value) === String(value));
   return match ? match.label : fallback;
 }
 
 /**
- * Helper to retrieve numeric value for a given label string
+ * Helper to retrieve value for a given label string
  */
-export function getOptionValue(
-  optionsOrKey: readonly LabelOption[] | LabelValueKey,
+export function getOptionValue<T extends string | number = number>(
+  optionsOrKey: readonly LabelOption<any>[] | LabelValueKey,
   label: string | null | undefined
-): number | undefined {
+): T | undefined {
   if (!label) return undefined;
   const list = typeof optionsOrKey === 'string' ? LABEL_VALUES[optionsOrKey] : optionsOrKey;
-  const match = list.find(item => item.label.toLowerCase() === label.trim().toLowerCase());
-  return match?.value;
+  const match = (list as readonly LabelOption<any>[]).find(item => item.label.toLowerCase() === label.trim().toLowerCase());
+  return match?.value as T | undefined;
 }
