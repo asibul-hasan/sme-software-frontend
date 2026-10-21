@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.8.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.7.0...v1.8.0) (2026-10-21)
+
+
+### 🚀 Features
+
+* **pos:** add split tender, MFS TrxID, clinical Rx checks, and BIN slips ([5279b60](https://github.com/asibul-hasan/sme-software-frontend/commit/5279b60f364f4ee23426c854ba657ea960b553a0))
+
 ## [1.7.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.6.0...v1.7.0) (2026-10-18)
 
 
