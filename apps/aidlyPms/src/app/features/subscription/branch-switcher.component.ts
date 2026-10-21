@@ -6,6 +6,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 interface BranchItem {
   id: number;
@@ -85,18 +86,20 @@ export class BranchSwitcherComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly router = inject(Router);
   private readonly api = inject(ApiService);
+  private readonly authService = inject(AuthService);
 
   branches = signal<BranchItem[]>([]);
 
   ngOnInit(): void {
+    const currentBranch = this.authService.activeBranch();
     this.api.get<any[]>('sys/branches').subscribe({
       next: res => {
         if (res.data && res.data.length > 0) {
-          this.branches.set(res.data.map((b, i) => ({
+          this.branches.set(res.data.map(b => ({
             id: b.branch_no,
             name: b.name,
             address: [b.address, b.district, b.postal_code].filter(Boolean).join(', '),
-            active: i === 0
+            active: currentBranch ? b.branch_no === currentBranch.branch_no : false
           })));
         }
       }
@@ -104,12 +107,19 @@ export class BranchSwitcherComponent implements OnInit {
   }
 
   switchBranch(target: BranchItem): void {
-    this.branches.update(list =>
-      list.map(b => ({ ...b, active: b.id === target.id }))
-    );
     this.api.post<any>('sys/switch-branch', { branch_no: target.id }).subscribe({
-      next: () => this.msg.success(`Switched active pharmacy branch to "${target.name}"!`),
-      error: () => this.msg.success(`Switched active pharmacy branch to "${target.name}"!`)
+      next: (res) => {
+        if (res?.data?.branch) {
+          this.authService.switchBranch(res.data.branch, res.data.token);
+        }
+        this.branches.update(list =>
+          list.map(b => ({ ...b, active: b.id === target.id }))
+        );
+        this.msg.success(`Switched active pharmacy branch to "${target.name}"!`);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || `Failed to switch branch`);
+      }
     });
   }
 

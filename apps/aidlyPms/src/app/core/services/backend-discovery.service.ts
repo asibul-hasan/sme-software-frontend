@@ -6,7 +6,6 @@ export type BackendStatus = 'checking' | 'connected' | 'reconnecting' | 'offline
 
 export interface BackendEndpointConfig {
   localOrigin: string;
-  candidatePorts: number[];
   remoteOrigin: string;
 }
 
@@ -16,10 +15,9 @@ export interface BackendEndpointConfig {
 export class BackendDiscoveryService {
   private readonly notification = inject(NotificationService);
 
-  // Configuration constants
+  // Configuration constants - static configured origin without multi-port probing
   readonly config: BackendEndpointConfig = {
     localOrigin: 'http://localhost:5275',
-    candidatePorts: [5275, 5000, 8080],
     remoteOrigin: 'https://asibul-07-infoaidtech.hf.space',
   };
 
@@ -44,30 +42,27 @@ export class BackendDiscoveryService {
 
   /**
    * Initializes the backend discovery on application startup.
-   * Probes localhost first (with a short timeout).
-   * If local is active -> connects to local.
-   * Else -> connects to Hugging Face live.
-   * Starts background reconnect polling.
+   * Checks configured localOrigin directly without arbitrary port probing.
    */
   async initialize(): Promise<void> {
     this.status.set('checking');
 
-    const localFound = await this.probeLocalCandidates(1500);
+    const localResult = await this.checkHealth(this.config.localOrigin, 1500);
 
-    if (localFound) {
+    if (localResult.ok) {
       this.mode.set('local');
-      this.currentOrigin.set(localFound.origin);
-      this.activePort.set(localFound.port);
-      this.latencyMs.set(localFound.latency);
+      this.currentOrigin.set(this.config.localOrigin);
+      this.activePort.set(5275);
+      this.latencyMs.set(localResult.latency);
       this.status.set('connected');
-      console.log(`[BackendDiscovery] Connected to local backend at ${localFound.origin} (${localFound.latency}ms)`);
+      console.log(`[BackendDiscovery] Connected to local backend at ${this.config.localOrigin} (${localResult.latency}ms)`);
     } else {
-      // Fallback to Hugging Face live backend
+      // Fallback to configured remote live backend
       this.mode.set('remote');
       this.currentOrigin.set(this.config.remoteOrigin);
       this.activePort.set(null);
       this.status.set('connected');
-      console.log(`[BackendDiscovery] Localhost unreachable. Connected to Hugging Face live at ${this.config.remoteOrigin}`);
+      console.log(`[BackendDiscovery] Connected to live backend at ${this.config.remoteOrigin}`);
 
       // Verify remote health in background
       this.probeRemoteHealth(3000).then(res => {
@@ -82,7 +77,7 @@ export class BackendDiscoveryService {
   }
 
   /**
-   * Tests health of a specific local port
+   * Tests health of a specific origin
    */
   async checkHealth(origin: string, timeoutMs = 1500): Promise<{ ok: boolean; latency: number }> {
     const start = performance.now();
@@ -110,32 +105,16 @@ export class BackendDiscoveryService {
   }
 
   /**
-   * Probes candidate local ports in order (5275, 5000, 8080)
-   */
-  private async probeLocalCandidates(timeoutMs = 1500): Promise<{ origin: string; port: number; latency: number } | null> {
-    for (const port of this.config.candidatePorts) {
-      const origin = `http://localhost:${port}`;
-      const result = await this.checkHealth(origin, timeoutMs);
-      if (result.ok) {
-        return { origin, port, latency: result.latency };
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Probes Hugging Face live backend
+   * Probes remote backend
    */
   async probeRemoteHealth(timeoutMs = 3000): Promise<{ ok: boolean; latency: number }> {
     return this.checkHealth(this.config.remoteOrigin, timeoutMs);
   }
 
   /**
-   * Starts periodic polling:
-   * When connected to Remote -> repeatedly polls localhost to reconnect as soon as it turns on.
-   * When connected to Local -> keeps latency updated and verifies health.
+   * Starts periodic health monitoring on the active origin
    */
-  startPolling(intervalMs = 10000): void {
+  startPolling(intervalMs = 15000): void {
     if (this.pollIntervalTimer) {
       clearInterval(this.pollIntervalTimer);
     }
@@ -156,28 +135,23 @@ export class BackendDiscoveryService {
 
     try {
       if (this.mode() === 'remote') {
-        // While running on remote, check if localhost backend has become available!
-        const localFound = await this.probeLocalCandidates(1200);
+        const localCheck = await this.checkHealth(this.config.localOrigin, 1200);
 
-        if (localFound) {
-          // Localhost is back! Reconnect to localhost
-          const prevOrigin = this.currentOrigin();
+        if (localCheck.ok) {
           this.mode.set('local');
-          this.currentOrigin.set(localFound.origin);
-          this.activePort.set(localFound.port);
-          this.latencyMs.set(localFound.latency);
+          this.currentOrigin.set(this.config.localOrigin);
+          this.activePort.set(5275);
+          this.latencyMs.set(localCheck.latency);
           this.status.set('connected');
           this.lastChecked.set(new Date());
 
-          console.log(`[BackendDiscovery] Localhost detected! Reconnected to ${localFound.origin} (was on ${prevOrigin})`);
+          console.log(`[BackendDiscovery] Local backend detected at ${this.config.localOrigin}. Switched to local.`);
           this.notification.success(
             'Reconnected to Localhost',
-            `Local backend detected on port ${localFound.port}. Switched traffic back to local server.`
+            `Local backend detected at ${this.config.localOrigin}. Switched traffic back to local server.`
           );
         }
       } else {
-        // While running on local, verify local is still responding
-        const currentPort = this.activePort() || 5275;
         const currentOrigin = this.currentOrigin();
         const check = await this.checkHealth(currentOrigin, 1200);
 
@@ -185,7 +159,6 @@ export class BackendDiscoveryService {
           this.latencyMs.set(check.latency);
           this.status.set('connected');
         } else {
-          // Localhost stopped responding! Fallback to Hugging Face
           this.handleConnectionFailure(currentOrigin);
         }
         this.lastChecked.set(new Date());
@@ -196,11 +169,11 @@ export class BackendDiscoveryService {
   }
 
   /**
-   * Handles immediate connection failure (e.g. from errorInterceptor when an API call gets connection refused)
+   * Handles immediate connection failure
    */
   handleConnectionFailure(failedUrl?: string): void {
     if (this.mode() === 'local') {
-      console.warn(`[BackendDiscovery] Local backend unreachable (${failedUrl || this.currentOrigin()}). Failing over to Hugging Face...`);
+      console.warn(`[BackendDiscovery] Local backend unreachable (${failedUrl || this.currentOrigin()}). Failing over to remote...`);
       
       this.mode.set('remote');
       this.currentOrigin.set(this.config.remoteOrigin);
@@ -210,13 +183,13 @@ export class BackendDiscoveryService {
 
       this.notification.warning(
         'Switched to Cloud Live Backend',
-        'Local backend is not responding. Traffic routed to Hugging Face live server (will auto-reconnect when local is online).'
+        'Local backend is not responding. Traffic routed to remote server (will auto-reconnect when local is online).'
       );
     }
   }
 
   /**
-   * Manual trigger (e.g. user clicks status pill in header to refresh status)
+   * Manual trigger
    */
   async recheckNow(): Promise<void> {
     this.status.set('checking');
@@ -245,12 +218,10 @@ export class BackendDiscoveryService {
   private setupWindowListeners(): void {
     if (typeof window === 'undefined') return;
 
-    // Immediately re-check whenever user returns to the browser tab
     window.addEventListener('focus', () => {
       this.pollCycle();
     });
 
-    // Re-check when internet connection recovers
     window.addEventListener('online', () => {
       this.pollCycle();
     });

@@ -112,6 +112,16 @@ export interface DueReceiptPrintData {
   binNumber?: string;
 }
 
+export function escapeHtml(val: unknown): string {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function fmtMoney(amount: number | string | undefined | null): string {
   const num = Number(amount) || 0;
   return num.toLocaleString('en-US', {
@@ -537,21 +547,21 @@ export class PrintService {
     }
 
     const activeBranch = this.authService.activeBranch();
-    const branchName = data.branchName || activeBranch?.name || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
-    const binNumber = data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin;
+    const branchName = escapeHtml(data.branchName || activeBranch?.name || this.defaultPharmacy.name);
+    const branchAddress = escapeHtml(data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch);
+    const branchPhone = escapeHtml(data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone);
+    const dlNumber = escapeHtml(data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl);
+    const binNumber = escapeHtml(data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin);
 
-    const dateStr = data.date || new Date().toLocaleDateString('en-GB');
-    const timeStr = data.time || new Date().toLocaleTimeString('en-GB');
+    const dateStr = escapeHtml(data.date || new Date().toLocaleDateString('en-GB'));
+    const timeStr = escapeHtml(data.time || new Date().toLocaleTimeString('en-GB'));
 
     const rowsHtml = data.lines.length > 0
       ? data.lines.map((item) => `
         <tr>
           <td class="td-item">
-            <div class="font-bold">${item.name}</div>
-            ${item.batch ? `<div style="font-size: 9.5px; color: #64748b;">Batch: ${item.batch} ${item.exp ? '· Exp: ' + item.exp : ''}</div>` : ''}
+            <div class="font-bold">${escapeHtml(item.name)}</div>
+            ${item.batch ? `<div style="font-size: 9.5px; color: #64748b;">Batch: ${escapeHtml(item.batch)} ${item.exp ? '· Exp: ' + escapeHtml(item.exp) : ''}</div>` : ''}
           </td>
           <td class="td-qty text-center font-mono">${item.qty}</td>
           <td class="td-price text-right font-mono">৳ ${fmtMoney(item.price)}</td>
@@ -583,14 +593,14 @@ export class PrintService {
           <!-- Metadata Card -->
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Bill No:</span> <strong class="meta-val font-mono">${data.inv}</strong></div>
-              <div class="meta-item"><span class="meta-label">Customer:</span> <span class="meta-val">${data.customer}${data.customerPhone ? ' (' + data.customerPhone + ')' : ''}</span></div>
-              <div class="meta-item"><span class="meta-label">Salesman:</span> <span class="meta-val">${data.salesman || 'Admin'}</span></div>
+              <div class="meta-item"><span class="meta-label">Bill No:</span> <strong class="meta-val font-mono">${escapeHtml(data.inv)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Customer:</span> <span class="meta-val">${escapeHtml(data.customer)}${data.customerPhone ? ' (' + escapeHtml(data.customerPhone) + ')' : ''}</span></div>
+              <div class="meta-item"><span class="meta-label">Salesman:</span> <span class="meta-val">${escapeHtml(data.salesman || 'Admin')}</span></div>
             </div>
             <div class="meta-col meta-right">
               <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${dateStr}</span></div>
               <div class="meta-item"><span class="meta-label">Time:</span> <span class="meta-val font-mono">${timeStr}</span></div>
-              <div class="meta-item"><span class="meta-label">Payment:</span> <span class="meta-val">${data.paymentMethod || 'Cash Counter'}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment:</span> <span class="meta-val">${escapeHtml(data.paymentMethod || 'Cash Counter')}</span></div>
             </div>
           </section>
 
@@ -653,11 +663,11 @@ export class PrintService {
     const activeBranch = this.authService.activeBranch();
     const invCfg = this.settingsService.invoiceConfig();
 
-    const branchName = data.branchName || activeBranch?.name || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl;
-    const binNumber = data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin;
+    const branchName = escapeHtml(data.branchName || activeBranch?.name || this.defaultPharmacy.name);
+    const branchAddress = escapeHtml(data.branchAddress || activeBranch?.address || this.defaultPharmacy.branch);
+    const branchPhone = escapeHtml(data.branchPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone);
+    const dlNumber = escapeHtml(data.dlNumber || activeBranch?.drug_license_no || this.defaultPharmacy.dl);
+    const binNumber = escapeHtml(data.binNumber || activeBranch?.bin_no || this.defaultPharmacy.bin);
 
     // Resolve paper roll width from settings:
     // paper_type: 2 -> 58mm/57mm, 3 -> 72mm, 1 (default) -> 80mm
@@ -677,14 +687,14 @@ export class PrintService {
     const showServedBy = invCfg?.show_served_by_row ?? true;
     const showCustomer = invCfg?.show_customer_name ?? true;
     const showPhone = invCfg?.show_customer_phone ?? true;
-    const topHeaderText = invCfg?.top_row_text?.trim();
-    const bottomDisclaimer = invCfg?.bottom_row_text?.trim() || 'Medicines cannot be returned without receipt within 7 days.';
+    const topHeaderText = escapeHtml(invCfg?.top_row_text?.trim());
+    const bottomDisclaimer = escapeHtml(invCfg?.bottom_row_text?.trim() || 'Medicines cannot be returned without receipt within 7 days.');
 
-    const dateStr = data.date || new Date().toLocaleDateString('en-GB');
+    const dateStr = escapeHtml(data.date || new Date().toLocaleDateString('en-GB'));
 
     const rowsHtml = data.lines.map((i) => `
       <tr>
-        <td style="padding: 2px 0; text-align: left; font-size: ${baseFontSize};">${i.name}</td>
+        <td style="padding: 2px 0; text-align: left; font-size: ${baseFontSize};">${escapeHtml(i.name)}</td>
         <td style="padding: 2px 0; text-align: center; font-size: ${baseFontSize};">${i.qty}</td>
         <td style="padding: 2px 0; text-align: right; font-size: ${baseFontSize};">${fmtMoney(i.price)}</td>
         <td style="padding: 2px 0; text-align: right; font-size: ${baseFontSize}; font-weight: bold;">${fmtMoney(i.total)}</td>
@@ -701,11 +711,11 @@ export class PrintService {
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
 
         <div style="font-size: 10px; text-align: left; line-height: 1.3;">
-          <div style="display: flex; justify-content: space-between;"><span>Bill No:</span><strong>${data.inv}</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Bill No:</span><strong>${escapeHtml(data.inv)}</strong></div>
           <div style="display: flex; justify-content: space-between;"><span>Date:</span><span>${dateStr}</span></div>
-          ${showCustomer ? `<div style="display: flex; justify-content: space-between;"><span>Customer:</span><span>${data.customer}</span></div>` : ''}
-          ${showPhone && data.customerPhone ? `<div style="display: flex; justify-content: space-between;"><span>Phone:</span><span>${data.customerPhone}</span></div>` : ''}
-          ${showServedBy ? `<div style="display: flex; justify-content: space-between;"><span>Served By:</span><span>${data.salesman || 'Admin'}</span></div>` : ''}
+          ${showCustomer ? `<div style="display: flex; justify-content: space-between;"><span>Customer:</span><span>${escapeHtml(data.customer)}</span></div>` : ''}
+          ${showPhone && data.customerPhone ? `<div style="display: flex; justify-content: space-between;"><span>Phone:</span><span>${escapeHtml(data.customerPhone)}</span></div>` : ''}
+          ${showServedBy ? `<div style="display: flex; justify-content: space-between;"><span>Served By:</span><span>${escapeHtml(data.salesman || 'Admin')}</span></div>` : ''}
         </div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
 
@@ -753,17 +763,17 @@ export class PrintService {
    * Generates and prints an executive A4 Goods Receiving Note (GRN) / Purchase Voucher.
    */
   printPurchaseVoucher(data: PurchaseVoucherPrintData): void {
-    const branchName = data.branchName || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
-    const binNumber = data.binNumber || this.defaultPharmacy.bin;
+    const branchName = escapeHtml(data.branchName || this.defaultPharmacy.name);
+    const branchAddress = escapeHtml(data.branchAddress || this.defaultPharmacy.branch);
+    const branchPhone = escapeHtml(data.branchPhone || this.defaultPharmacy.phone);
+    const dlNumber = escapeHtml(data.dlNumber || this.defaultPharmacy.dl);
+    const binNumber = escapeHtml(data.binNumber || this.defaultPharmacy.bin);
 
     const rowsHtml = data.lines.map((i) => `
       <tr>
         <td class="td-item">
-          <div class="font-bold">${i.name}</div>
-          ${i.batch ? `<div style="font-size: 9.5px; color: #64748b;">Batch: ${i.batch} ${i.exp ? '· Exp: ' + i.exp : ''}</div>` : ''}
+          <div class="font-bold">${escapeHtml(i.name)}</div>
+          ${i.batch ? `<div style="font-size: 9.5px; color: #64748b;">Batch: ${escapeHtml(i.batch)} ${i.exp ? '· Exp: ' + escapeHtml(i.exp) : ''}</div>` : ''}
         </td>
         <td class="td-qty text-center font-mono">${i.qty}</td>
         <td class="td-price text-right font-mono">৳ ${fmtMoney(i.unitPrice)}</td>
@@ -785,13 +795,13 @@ export class PrintService {
 
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Voucher #:</span> <strong class="meta-val font-mono">${data.ref}</strong></div>
-              <div class="meta-item"><span class="meta-label">Vendor / Supplier:</span> <strong class="meta-val">${data.supplier}${data.supplierPhone ? ' (' + data.supplierPhone + ')' : ''}</strong></div>
-              <div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-val">${data.type || 'Commercial Medicine Stock'}</span></div>
+              <div class="meta-item"><span class="meta-label">Voucher #:</span> <strong class="meta-val font-mono">${escapeHtml(data.ref)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Vendor / Supplier:</span> <strong class="meta-val">${escapeHtml(data.supplier)}${data.supplierPhone ? ' (' + escapeHtml(data.supplierPhone) + ')' : ''}</strong></div>
+              <div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-val">${escapeHtml(data.type || 'Commercial Medicine Stock')}</span></div>
             </div>
             <div class="meta-col meta-right">
-              <div class="meta-item"><span class="meta-label">Inward Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.paymentMode || 'Credit Supplier Payable'}</span></div>
+              <div class="meta-item"><span class="meta-label">Inward Date:</span> <span class="meta-val font-mono">${escapeHtml(data.date)}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${escapeHtml(data.paymentMode || 'Credit Supplier Payable')}</span></div>
               <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Received & Stocked</span></div>
             </div>
           </section>
@@ -846,16 +856,16 @@ export class PrintService {
    * Generates and prints an executive A4 Commercial Purchase Requisition Order.
    */
   printRequisitionOrder(data: RequisitionPrintData): void {
-    const branchName = data.branchName || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
-    const binNumber = data.binNumber || this.defaultPharmacy.bin;
+    const branchName = escapeHtml(data.branchName || this.defaultPharmacy.name);
+    const branchAddress = escapeHtml(data.branchAddress || this.defaultPharmacy.branch);
+    const branchPhone = escapeHtml(data.branchPhone || this.defaultPharmacy.phone);
+    const dlNumber = escapeHtml(data.dlNumber || this.defaultPharmacy.dl);
+    const binNumber = escapeHtml(data.binNumber || this.defaultPharmacy.bin);
 
     const rowsHtml = data.lines.map((i, idx) => `
       <tr>
         <td class="text-center font-mono" style="width: 32px;">${idx + 1}</td>
-        <td class="td-item font-bold">${i.name}</td>
+        <td class="td-item font-bold">${escapeHtml(i.name)}</td>
         <td class="td-qty text-center font-mono font-bold">${i.boxQty}</td>
         <td class="td-price text-right font-mono">৳ ${fmtMoney(i.btp)}</td>
         <td class="td-total text-right font-mono font-bold">৳ ${fmtMoney(i.totalPrice)}</td>
@@ -876,13 +886,13 @@ export class PrintService {
 
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Requisition #:</span> <strong class="meta-val font-mono">${data.reqCode}</strong></div>
-              <div class="meta-item"><span class="meta-label">Supplier Assigned:</span> <strong class="meta-val">${data.supplier}</strong></div>
-              <div class="meta-item"><span class="meta-label">Originator:</span> <span class="meta-val">${data.createdBy}</span></div>
+              <div class="meta-item"><span class="meta-label">Requisition #:</span> <strong class="meta-val font-mono">${escapeHtml(data.reqCode)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Supplier Assigned:</span> <strong class="meta-val">${escapeHtml(data.supplier)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Originator:</span> <span class="meta-val">${escapeHtml(data.createdBy)}</span></div>
             </div>
             <div class="meta-col meta-right">
-              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-              <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val font-bold text-emerald">${data.status}</span></div>
+              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${escapeHtml(data.date)}</span></div>
+              <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val font-bold text-emerald">${escapeHtml(data.status)}</span></div>
               <div class="meta-item"><span class="meta-label">Order Type:</span> <span class="meta-val">Regular Stock Replenishment</span></div>
             </div>
           </section>
@@ -937,11 +947,11 @@ export class PrintService {
    * Generates and prints an executive A4 Customer Due Settlement Money Receipt.
    */
   printDueReceipt(data: DueReceiptPrintData): void {
-    const branchName = data.branchName || this.defaultPharmacy.name;
-    const branchAddress = data.branchAddress || this.defaultPharmacy.branch;
-    const branchPhone = data.branchPhone || this.defaultPharmacy.phone;
-    const dlNumber = data.dlNumber || this.defaultPharmacy.dl;
-    const binNumber = data.binNumber || this.defaultPharmacy.bin;
+    const branchName = escapeHtml(data.branchName || this.defaultPharmacy.name);
+    const branchAddress = escapeHtml(data.branchAddress || this.defaultPharmacy.branch);
+    const branchPhone = escapeHtml(data.branchPhone || this.defaultPharmacy.phone);
+    const dlNumber = escapeHtml(data.dlNumber || this.defaultPharmacy.dl);
+    const binNumber = escapeHtml(data.binNumber || this.defaultPharmacy.bin);
 
     const receiptHtml = `
       <div class="invoice-container">
@@ -957,13 +967,13 @@ export class PrintService {
 
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Receipt #:</span> <strong class="meta-val font-mono">${data.receipt}</strong></div>
-              <div class="meta-item"><span class="meta-label">Customer:</span> <strong class="meta-val">${data.customer}</strong></div>
-              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${data.phone || 'N/A'}</span></div>
+              <div class="meta-item"><span class="meta-label">Receipt #:</span> <strong class="meta-val font-mono">${escapeHtml(data.receipt)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Customer:</span> <strong class="meta-val">${escapeHtml(data.customer)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${escapeHtml(data.phone || 'N/A')}</span></div>
             </div>
             <div class="meta-col meta-right">
-              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${data.date}</span></div>
-              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${data.method}</span></div>
+              <div class="meta-item"><span class="meta-label">Date:</span> <span class="meta-val font-mono">${escapeHtml(data.date)}</span></div>
+              <div class="meta-item"><span class="meta-label">Payment Mode:</span> <span class="meta-val">${escapeHtml(data.method)}</span></div>
               <div class="meta-item"><span class="meta-label">Status:</span> <span class="meta-val text-emerald font-bold">Collected & Settled</span></div>
             </div>
           </section>
@@ -981,7 +991,7 @@ export class PrintService {
           ${data.note ? `
             <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc; font-size: 11px; margin-bottom: 20px;">
               <span style="color: #64748b; font-weight: 600;">Settlement Narration:</span>
-              <span style="color: #0f172a; margin-left: 6px;">${data.note}</span>
+              <span style="color: #0f172a; margin-left: 6px;">${escapeHtml(data.note)}</span>
             </div>
           ` : ''}
         </div>
@@ -1052,12 +1062,12 @@ export class PrintService {
             <tr>
               <td class="text-center font-mono">${index + 1}</td>
               <td class="font-mono">${dateStr}</td>
-              <td class="font-bold font-mono">${entry.doc_no || '—'}</td>
-              <td>${entry.doc_type || 'Ledger Entry'}</td>
+              <td class="font-bold font-mono">${escapeHtml(entry.doc_no || '—')}</td>
+              <td>${escapeHtml(entry.doc_type || 'Ledger Entry')}</td>
               <td class="text-right font-mono">${debit > 0 ? '৳ ' + fmtMoney(debit) : '—'}</td>
               <td class="text-right font-mono text-emerald">${credit > 0 ? '৳ ' + fmtMoney(credit) : '—'}</td>
               <td class="text-right font-mono font-bold ${balance > 0 ? 'text-rose' : 'text-emerald'}">৳ ${fmtMoney(balance)}</td>
-              <td>${entry.note || entry.payment_method || '—'}</td>
+              <td>${escapeHtml(entry.note || entry.payment_method || '—')}</td>
             </tr>
           `;
         }).join('')
@@ -1085,9 +1095,9 @@ export class PrintService {
 
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Customer Name:</span> <strong class="meta-val">${customer.name}</strong></div>
-              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${customer.phone || 'N/A'}</span></div>
-              <div class="meta-item"><span class="meta-label">Customer Type:</span> <span class="meta-val">${customer.type || 'Regular Customer'}</span></div>
+              <div class="meta-item"><span class="meta-label">Customer Name:</span> <strong class="meta-val">${escapeHtml(customer.name)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${escapeHtml(customer.phone || 'N/A')}</span></div>
+              <div class="meta-item"><span class="meta-label">Customer Type:</span> <span class="meta-val">${escapeHtml(customer.type || 'Regular Customer')}</span></div>
             </div>
             <div class="meta-col meta-right">
               <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>
@@ -1186,12 +1196,12 @@ export class PrintService {
             <tr>
               <td class="text-center font-mono">${index + 1}</td>
               <td class="font-mono">${dateStr}</td>
-              <td class="font-bold font-mono">${entry.doc_no || '—'}</td>
-              <td>${entry.doc_type || 'Ledger Entry'}</td>
+              <td class="font-bold font-mono">${escapeHtml(entry.doc_no || '—')}</td>
+              <td>${escapeHtml(entry.doc_type || 'Ledger Entry')}</td>
               <td class="text-right font-mono">${debit > 0 ? '৳ ' + fmtMoney(debit) : '—'}</td>
               <td class="text-right font-mono text-emerald">${credit > 0 ? '৳ ' + fmtMoney(credit) : '—'}</td>
               <td class="text-right font-mono font-bold ${balance > 0 ? 'text-rose' : 'text-emerald'}">৳ ${fmtMoney(balance)}</td>
-              <td>${entry.note || '—'}</td>
+              <td>${escapeHtml(entry.note || '—')}</td>
             </tr>
           `;
         }).join('')
@@ -1219,9 +1229,9 @@ export class PrintService {
 
           <section class="meta-card">
             <div class="meta-col">
-              <div class="meta-item"><span class="meta-label">Supplier / Vendor:</span> <strong class="meta-val">${supplier.name}</strong></div>
-              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${supplier.phone || 'N/A'}</span></div>
-              ${supplier.note ? `<div class="meta-item"><span class="meta-label">Note:</span> <span class="meta-val">${supplier.note}</span></div>` : ''}
+              <div class="meta-item"><span class="meta-label">Supplier / Vendor:</span> <strong class="meta-val">${escapeHtml(supplier.name)}</strong></div>
+              <div class="meta-item"><span class="meta-label">Contact Phone:</span> <span class="meta-val font-mono">${escapeHtml(supplier.phone || 'N/A')}</span></div>
+              ${supplier.note ? `<div class="meta-item"><span class="meta-label">Note:</span> <span class="meta-val">${escapeHtml(supplier.note)}</span></div>` : ''}
             </div>
             <div class="meta-col meta-right">
               <div class="meta-item"><span class="meta-label">Statement Date:</span> <span class="meta-val font-mono">${today} ${printTime}</span></div>

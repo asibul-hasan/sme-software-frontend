@@ -79,9 +79,13 @@ export class AuthService {
     );
   }
 
-  switchBranch(branch: PharmacyBranch): void {
+  switchBranch(branch: PharmacyBranch, token?: string): void {
     this.activeBranch.set(branch);
     localStorage.setItem(ACTIVE_BRANCH_KEY, JSON.stringify(branch));
+    if (token) {
+      this.token.set(token);
+      localStorage.setItem(TOKEN_KEY, token);
+    }
   }
 
   setSession(token: string, user: User, branch: PharmacyBranch): void {
