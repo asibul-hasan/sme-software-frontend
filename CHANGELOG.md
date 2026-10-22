@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.21.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.20.0...v1.21.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **ux:** streamline pos checkout, sale return, grn conversion, and expiry quarantine ([fc1ed98](https://github.com/asibul-hasan/sme-software-frontend/commit/fc1ed98428b86ecc67d509a0e2dfe5e87be857c8))
+
 ## [1.20.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.19.0...v1.20.0) (2026-10-22)
 
 
