@@ -148,6 +148,7 @@
           <label for="pos-search-input" class="sr-only">Search medicine, generic, barcode, rak</label>
           <input
             id="pos-search-input"
+            autofocus
             aria-label="Search medicine, generic, barcode, rak (F1)"
             type="text"
             [ngModel]="currentSearchTerm()"
@@ -674,8 +675,8 @@
             <label for="pos-tender-input" class="m-0 cursor-pointer">Received from customer (৳)</label>
             <div class="flex items-center gap-1.5">
               <button type="button" class="linkbtn" (click)="setExactPayment()">Exact (F4)</button>
-              <button type="button" (click)="triggerFastCashPay()" class="px-1.5 py-0.2 bg-teal-50 text-teal-800 hover:bg-teal-100 rounded text-[10px] font-bold border border-teal-200 cursor-pointer">
-                ⚡ F8 Fast Cash
+              <button type="button" (click)="triggerFastCashPay()" nz-tooltip nzTooltipTitle="Instantly complete cash sale & auto-print thermal receipt (F8)" class="px-2 py-0.5 bg-teal-50 text-teal-800 hover:bg-teal-100 rounded text-[11px] font-bold border border-teal-200 cursor-pointer shadow-2xs">
+                ⚡ F8 Fast Cash & Print
               </button>
             </div>
           </div>

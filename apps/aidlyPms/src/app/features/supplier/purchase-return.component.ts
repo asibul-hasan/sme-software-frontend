@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -400,6 +400,7 @@ export class PurchaseReturnComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly supplierService = inject(SupplierService);
   private readonly productService = inject(ProductService);
+  private readonly route = inject(ActivatedRoute);
 
   activeTab = signal<'entry' | 'history'>('entry');
   suppliers = signal<SuppSupplier[]>([]);
@@ -436,6 +437,52 @@ export class PurchaseReturnComponent implements OnInit {
     this.supplierService.getSuppliers({ pageSize: 100 }).subscribe(res => {
       if (res.data?.items) {
         this.suppliers.set([...res.data.items]);
+      }
+    });
+
+    this.route.queryParamMap.subscribe(params => {
+      const batchIdsStr = params.get('batches') || params.get('batch');
+      const productsParam = params.get('products') || params.get('product');
+
+      if (batchIdsStr) {
+        const batchIds = batchIdsStr.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0);
+        if (batchIds.length > 0) {
+          this.loadBatchesForReturn(batchIds, productsParam);
+        }
+      } else if (productsParam) {
+        this.searchProducts(productsParam);
+      }
+    });
+  }
+
+  loadBatchesForReturn(batchIds: number[], fallbackName?: string | null): void {
+    this.productService.getBatches().subscribe({
+      next: (res) => {
+        const allBatches = res.data || [];
+        const matched = allBatches.filter(b => batchIds.includes(b.batch_no));
+        if (matched.length > 0) {
+          const lines: ReturnCartLine[] = matched.map(b => {
+            const unitCost = (b.cost_per_box && b.quantity_in_box)
+              ? Math.round((b.cost_per_box / b.quantity_in_box) * 100) / 100
+              : 0;
+            const qty = b.total_quantity_pcs || 1;
+            return {
+              productNo: b.product_no,
+              productName: b.product_name || (fallbackName ? decodeURIComponent(fallbackName) : `Batch #${b.batch_number}`),
+              batchNo: b.batch_no,
+              batchNumber: b.batch_number || 'DEFAULT',
+              expiryDate: b.expiry_date || null,
+              availableStock: qty,
+              returnQty: qty,
+              unitCost: unitCost,
+              totalCost: Math.round(qty * unitCost * 100) / 100,
+              reasonCode: 2, // Expired Batch
+            };
+          });
+
+          this.lines.set(lines);
+          this.msg.success(`Loaded ${lines.length} expiring batch(es) for supplier return.`);
+        }
       }
     });
   }

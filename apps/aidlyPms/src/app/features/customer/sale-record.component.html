@@ -329,6 +329,9 @@
   </ng-container>
   <ng-template #detailsFooter>
     <button nz-button nzType="default" (click)="isDetailsOpen = false">Close</button>
+    <button nz-button nzType="dashed" class="text-amber-700 border-amber-300 hover:bg-amber-50" (click)="initiateReturn(selectedSale!); isDetailsOpen = false">
+      <span nz-icon nzType="rollback"></span> Return Items / Exchange
+    </button>
     <button nz-button nzType="primary" (click)="printReceipt(selectedSale!)">
       <span nz-icon nzType="printer"></span> Print Receipt
     </button>

@@ -106,6 +106,18 @@
                    [attr.aria-label]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'View in Planner (Locked)' : 'Edit in Planner'">
                     <span nz-icon [nzType]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'eye' : 'edit'"></span>
                   </a>
+                  @if (r.status === 'Approved') {
+                    <button
+                      type="button"
+                      (click)="convertToPurchase(r)"
+                      nz-tooltip
+                      nzTooltipTitle="Convert to Purchase / GRN Intake"
+                      class="btn-quick-convert inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 transition-colors shadow-2xs active:scale-95"
+                      aria-label="Convert to Purchase / GRN">
+                      <span nz-icon nzType="shopping-cart"></span>
+                      <span>Convert to GRN</span>
+                    </button>
+                  }
                   @if (r.status !== 'Approved' && r.status !== 'Cancelled' && r.status !== 'Fulfilled') {
                     <button
                       type="button"
@@ -258,6 +270,16 @@
             <span nz-icon [nzType]="(activeRecord.status === 'Approved' || activeRecord.status === 'Fulfilled') ? 'eye' : 'edit'"></span>
             {{ (activeRecord.status === 'Approved' || activeRecord.status === 'Fulfilled') ? 'View in Planner' : 'Edit in Planner' }}
           </a>
+        }
+        @if (activeRecord && activeRecord.status === 'Approved') {
+          <button
+            nz-button
+            nzType="primary"
+            class="bg-emerald-600 hover:bg-emerald-500 border-emerald-600 text-white font-semibold"
+            (click)="convertToPurchase(activeRecord); isDetailsVisible = false"
+          >
+            <span nz-icon nzType="shopping-cart"></span> Convert to Purchase / GRN
+          </button>
         }
       </div>
       <div class="flex items-center gap-2">

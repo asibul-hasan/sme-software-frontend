@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, HostListener, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, HostListener, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -458,7 +458,7 @@ interface CustomerOption {
   `],
   templateUrl: './pos-terminal.component.html',
 })
-export class PosTerminalComponent implements OnInit {
+export class PosTerminalComponent implements OnInit, AfterViewInit {
   @ViewChild('addBtn', { read: ElementRef }) addBtn?: ElementRef<HTMLButtonElement>;
 
   private readonly msg = inject(NzMessageService);
@@ -943,9 +943,13 @@ export class PosTerminalComponent implements OnInit {
   }
 
   triggerFastCashPay(): void {
+    if (this.cart().length === 0) {
+      this.msg.warning('Cannot checkout an empty basket. Search and add medicines first (F1).');
+      return;
+    }
     this.setMethod('cash');
     this.setExactPayment();
-    this.msg.info(`Fast Cash: Exact ৳ ${this.payableTotal().toFixed(2)} ready (F8)`);
+    this.confirmCheckout(true);
   }
 
   closeAllModals(): void {
@@ -1134,6 +1138,10 @@ export class PosTerminalComponent implements OnInit {
         this.genericsList = res.data.map(g => g.name);
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.focusProductSearch();
   }
 
   setBusinessMode(mode: number): void {
@@ -2060,7 +2068,7 @@ export class PosTerminalComponent implements OnInit {
     }, format);
   }
 
-  confirmCheckout(): void {
+  confirmCheckout(autoPrintThermal: boolean = false): void {
     if (this.cart().length === 0) {
       this.msg.warning('Cannot checkout an empty basket.');
       return;
@@ -2179,8 +2187,8 @@ export class PosTerminalComponent implements OnInit {
 
           this.msg.success(`Sale ${res.data.sales_number} completed! Total: ৳ ${this.finalPrice().toFixed(2)}`);
 
-          if (this.quickPrint) {
-            this.isReceiptModalVisible = true;
+          if (autoPrintThermal || this.quickPrint) {
+            this.triggerBrowserPrint('thermal');
           }
 
           // Immediately deduct sold quantities in local catalog signal
@@ -2212,8 +2220,9 @@ export class PosTerminalComponent implements OnInit {
           this.orderNote = '';
           this.txnReference = '';
 
-          // Refresh authoritative product stock from backend
+          // Refresh authoritative product stock from backend and re-focus search input
           this.loadProducts();
+          this.focusProductSearch();
         } else {
           this.msg.error(res.message || 'Failed to complete sale');
         }

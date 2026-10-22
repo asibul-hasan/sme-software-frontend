@@ -32,6 +32,30 @@
       </button>
     </div>
     <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
+      @if (selectedCount() > 0) {
+        <span class="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
+          Selected: <strong class="text-indigo-600">{{ selectedCount() }}</strong> batch(es) ({{ selectedTotalUnits() }} pcs)
+        </span>
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          nzDanger
+          class="rounded-md font-semibold text-xs inline-flex items-center gap-1"
+          (click)="quarantineSelected()"
+        >
+          <span nz-icon nzType="safety-certificate"></span> Quarantine Selected
+        </button>
+        <button
+          type="button"
+          nz-button
+          nzType="primary"
+          class="rounded-md font-semibold text-xs bg-amber-600 hover:bg-amber-500 border-amber-600 text-white inline-flex items-center gap-1"
+          (click)="createSupplierExpiryReturn()"
+        >
+          <span nz-icon nzType="rollback"></span> Create Supplier Expiry Return
+        </button>
+      }
       <button nz-button nzType="default" class="rounded-md" (click)="exportReport()">
         <span nz-icon nzType="download"></span> Expiry Report
       </button>
@@ -42,9 +66,18 @@
     <!-- Table Scroll Container -->
     <nz-spin [nzSpinning]="isLoading()" class="flex-1 min-h-0 flex flex-col w-full">
     <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
-      <table class="w-full text-sm text-left border-collapse min-w-[700px]">
+      <table class="w-full text-sm text-left border-collapse min-w-[750px]">
         <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
           <tr>
+            <th class="p-3 text-center w-10">
+              <label
+                nz-checkbox
+                [nzChecked]="isAllSelected()"
+                [nzIndeterminate]="isIndeterminate()"
+                (nzCheckedChange)="toggleSelectAll($event)"
+                aria-label="Select all batches"
+              ></label>
+            </th>
             <th class="p-3">Details</th>
             <th class="p-3 text-center">Expiry Date</th>
             <th class="p-3 text-right">Available Qty</th>
@@ -56,7 +89,15 @@
         </thead>
         <tbody class="divide-y divide-slate-100 text-slate-800">
           @for (item of filteredItems(); track item.id) {
-            <tr class="hover:bg-slate-50/70 transition-colors">
+            <tr class="hover:bg-slate-50/70 transition-colors" [class.bg-indigo-50/40]="selectedBatchIds().has(item.id)">
+              <td class="p-3 text-center">
+                <label
+                  nz-checkbox
+                  [nzChecked]="selectedBatchIds().has(item.id)"
+                  (nzCheckedChange)="toggleSelectItem(item.id)"
+                  [attr.aria-label]="'Select ' + item.name"
+                ></label>
+              </td>
               <td class="p-3">
                 <p class="font-bold text-slate-900 m-0 text-xs">{{ item.name }}</p>
                 <p class="text-slate-400 m-0 text-[11px]">{{ item.form }} · {{ item.strength }} · {{ item.company }}</p>
@@ -102,7 +143,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="p-6 text-center">
+              <td colspan="8" class="p-6 text-center">
                 <app-empty-state
                   [title]="hasError() ? 'Failed to Load Expiry Records' : 'All Stock Safe & Fresh'"
                   [description]="hasError() ? 'Unable to reach batch expiry audit. Please check your connection and retry.' : ('Great news! No medicine batches are expiring within the selected ' + daysThreshold + ' days threshold.')"
@@ -131,6 +172,10 @@
         <span>Total Units: <strong class="text-slate-900 font-semibold font-mono">{{ totalExpiredQty() }}</strong> pcs</span>
         <span class="text-slate-300">|</span>
         <span class="font-semibold text-slate-700">Total Expired Value: <strong class="text-rose-700 font-mono text-sm">৳ {{ totalExpiredValue() | number: '1.2-2' }}</strong></span>
+        @if (selectedCount() > 0) {
+          <span class="text-slate-300">|</span>
+          <span class="font-semibold text-indigo-700">Selected: <strong class="font-mono">{{ selectedCount() }}</strong> batches ({{ selectedTotalUnits() }} pcs)</span>
+        }
       </div>
       <button nz-button nzType="default" nzSize="small" class="rounded" (click)="exportReport()">
         <span nz-icon nzType="download"></span> Expiry Report

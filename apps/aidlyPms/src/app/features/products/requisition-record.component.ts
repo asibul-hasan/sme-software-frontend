@@ -10,7 +10,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
@@ -55,6 +55,7 @@ export class RequisitionRecordComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly supplierService = inject(SupplierService);
   private readonly printService = inject(PrintService);
+  private readonly router = inject(Router);
 
   searchCode = '';
   selectedSupplier = '';
@@ -191,6 +192,14 @@ export class RequisitionRecordComponent implements OnInit {
         totalPrice: Number(item.total_price) || 0,
       })),
       totalEstimated: this.printingRecord.total || this.detailItems().reduce((sum, item) => sum + (Number(item.total_price) || 0), 0),
+    });
+  }
+
+  convertToPurchase(r: RequisitionRecord): void {
+    this.router.navigate(['/supplier/purchase'], {
+      queryParams: {
+        requisitionNo: r.id,
+      },
     });
   }
 

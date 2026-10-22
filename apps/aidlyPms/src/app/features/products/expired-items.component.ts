@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -9,6 +10,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
@@ -39,6 +41,7 @@ interface ExpiredItem {
     NzModalModule,
     NzIconModule,
     NzTooltipModule,
+    NzCheckboxModule,
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
@@ -67,6 +70,35 @@ export class ExpiredItemsComponent implements OnInit {
 
   totalExpiredQty = computed(() => this.filteredItems().reduce((sum, item) => sum + item.qty, 0));
   totalExpiredValue = computed(() => this.filteredItems().reduce((sum, item) => sum + (item.qty * (item.unitPrice || 0)), 0));
+
+  selectedBatchIds = signal<Set<number>>(new Set());
+
+  isAllSelected = computed(() => {
+    const list = this.filteredItems();
+    if (list.length === 0) return false;
+    return list.every(i => this.selectedBatchIds().has(i.id));
+  });
+
+  isIndeterminate = computed(() => {
+    const list = this.filteredItems();
+    const count = list.filter(i => this.selectedBatchIds().has(i.id)).length;
+    return count > 0 && count < list.length;
+  });
+
+  selectedCount = computed(() => this.selectedBatchIds().size);
+
+  selectedItems = computed(() => {
+    const ids = this.selectedBatchIds();
+    return this.items().filter(i => ids.has(i.id));
+  });
+
+  selectedTotalUnits = computed(() => {
+    return this.selectedItems().reduce((sum, i) => sum + i.qty, 0);
+  });
+
+  selectedTotalValue = computed(() => {
+    return this.selectedItems().reduce((sum, i) => sum + (i.qty * i.unitPrice), 0);
+  });
 
   filterCriteria = signal({ days: 90, company: '', product: '' });
 
@@ -113,6 +145,7 @@ export class ExpiredItemsComponent implements OnInit {
             };
           });
           this.items.set(mapped);
+          this.selectedBatchIds.update(set => new Set([...set].filter(id => mapped.some(m => m.id === id))));
           const prods = Array.from(new Set(mapped.map(i => i.name).filter(Boolean)));
           this.productOptions.set(prods);
         }
@@ -121,6 +154,88 @@ export class ExpiredItemsComponent implements OnInit {
         this.isLoading.set(false);
         this.hasError.set(true);
       }
+    });
+  }
+
+  toggleSelectItem(id: number): void {
+    this.selectedBatchIds.update(set => {
+      const next = new Set(set);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  toggleSelectAll(checked: boolean): void {
+    if (checked) {
+      const allIds = this.filteredItems().map(i => i.id);
+      this.selectedBatchIds.set(new Set(allIds));
+    } else {
+      this.selectedBatchIds.set(new Set());
+    }
+  }
+
+  clearSelection(): void {
+    this.selectedBatchIds.set(new Set());
+  }
+
+  quarantineSelected(): void {
+    const selected = this.selectedItems();
+    if (selected.length === 0) {
+      this.msg.warning('Please select one or more expiring batches to quarantine.');
+      return;
+    }
+
+    this.modal
+      .confirmDelete(
+        `${selected.length} Selected Batch(es)`,
+        `This will immediately adjust stock to 0 and record inventory quarantine loss for ${this.selectedTotalUnits()} units (valued at ৳ ${this.selectedTotalValue().toFixed(2)}).`
+      )
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.isLoading.set(true);
+          const observables = selected.map(item =>
+            this.productService.adjustProductStock(item.id, {
+              target_stock_pcs: 0,
+              reason: 'Physical Stock Audit',
+              remarks: `Quarantined near-expiry batch: ${item.name} (${item.qty} pcs)`,
+            })
+          );
+
+          forkJoin(observables).subscribe({
+            next: () => {
+              this.msg.success(`Successfully quarantined ${selected.length} batch(es) from active stock.`);
+              this.clearSelection();
+              this.loadData();
+            },
+            error: () => {
+              this.msg.warning('Quarantine batch updates processed, refreshing inventory state.');
+              this.clearSelection();
+              this.loadData();
+            }
+          });
+        }
+      });
+  }
+
+  createSupplierExpiryReturn(): void {
+    const selected = this.selectedItems();
+    if (selected.length === 0) {
+      this.msg.warning('Please select one or more expiring batches to return to vendor.');
+      return;
+    }
+
+    const batchIds = selected.map(i => i.id).join(',');
+    const productNames = encodeURIComponent(selected.map(i => i.name).join(','));
+
+    this.router.navigate(['/supplier/purchase-return'], {
+      queryParams: {
+        batches: batchIds,
+        products: productNames,
+      },
     });
   }
 

@@ -162,7 +162,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
 
     // Listen to query params for incoming return requests from Sales Invoices Register
     this.routeSub = this.route.queryParamMap.subscribe((params) => {
-      const inv = params.get('invoice');
+      const inv = params.get('invoiceId') || params.get('invoice') || params.get('invoiceNo') || params.get('inv');
       const saleInvoiceNo = params.get('saleInvoiceNo');
       const identifier = inv || saleInvoiceNo;
       if (identifier) {

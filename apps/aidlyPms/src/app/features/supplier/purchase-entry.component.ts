@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -95,6 +95,7 @@ export class PurchaseEntryComponent implements OnInit {
   private readonly supplierService = inject(SupplierService);
   private readonly modal = inject(ModalService);
   private readonly printService = inject(PrintService);
+  private readonly route = inject(ActivatedRoute);
   readonly Math = Math;
   readonly DiscountType = DiscountType;
 
@@ -201,6 +202,16 @@ export class PurchaseEntryComponent implements OnInit {
     this.loadProducts();
     this.loadCompaniesAndGenerics();
     this.loadApprovedRequisitions();
+
+    this.route.queryParamMap.subscribe(params => {
+      const reqNoStr = params.get('requisitionNo') || params.get('requisitionId') || params.get('requisition_no');
+      if (reqNoStr) {
+        const reqNo = Number(reqNoStr);
+        if (!isNaN(reqNo) && reqNo > 0) {
+          this.onRequisitionSelected(reqNo);
+        }
+      }
+    });
   }
 
   loadApprovedRequisitions(): void {

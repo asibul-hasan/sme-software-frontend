@@ -123,10 +123,12 @@ export const appRoutes: Route[] = [
       { path: 'customer/add', component: CustomerAddComponent },
       { path: 'customer/returns', component: SaleReturnComponent },
       { path: 'customer/return', redirectTo: 'customer/returns', pathMatch: 'full' },
+      { path: 'customer/sale-return', redirectTo: 'customer/returns', pathMatch: 'full' },
       { path: 'customer/sale/return', redirectTo: 'customer/returns', pathMatch: 'full' },
       { path: 'purchase/return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
       { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
       { path: 'customer/sales', component: SaleRecordComponent },
+      { path: 'customer/sale-records', redirectTo: 'customer/sales', pathMatch: 'full' },
 
       // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
       { path: 'cash', redirectTo: 'cash/receive', pathMatch: 'full' },

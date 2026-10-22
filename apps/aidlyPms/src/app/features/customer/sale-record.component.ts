@@ -309,6 +309,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   initiateReturn(s: SaleRecordRow): void {
     this.router.navigate(['/customer/returns'], {
       queryParams: {
+        invoiceId: s.inv,
         invoice: s.inv,
         saleInvoiceNo: s.sale_invoice_no,
       },
