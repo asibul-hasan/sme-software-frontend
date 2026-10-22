@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.17.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.16.0...v1.17.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* complete aidly pms items 0 to 7 enhancements and schema sync ([24b3962](https://github.com/asibul-hasan/sme-software-frontend/commit/24b39628f5519e3f840fb1f626d0052814651c83))
+
 ## [1.16.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.15.0...v1.16.0) (2026-10-22)
 
 
