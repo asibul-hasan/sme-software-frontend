@@ -469,7 +469,10 @@ button:has([nztype="file-done"]) {
    GLOBAL TABLE ACTION ICON BUTTONS (Full Software Parity)
    Size: 28x28px, rounded-base (6px), centered icon, hover transitions
    ───────────────────────────────────────────────────────────────── */
-.btn-tbl-action {
+.btn-tbl-action,
+td .btn-tbl-action,
+td button.btn-tbl-action,
+td a.btn-tbl-action {
   width: 28px !important;
   height: 28px !important;
   min-width: 28px !important;
@@ -489,6 +492,72 @@ button:has([nztype="file-done"]) {
   outline: none !important;
   box-sizing: border-box !important;
   vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  text-decoration: none !important;
+}
+
+/* Enforce strict, uniform 14px icon sizing across all table action buttons */
+.btn-tbl-action [nz-icon],
+.btn-tbl-action svg,
+.btn-tbl-action i,
+td .btn-tbl-action [nz-icon],
+td .btn-tbl-action svg,
+td .btn-tbl-action i {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Quick row text+icon action buttons (Return, Adjust, Edit) */
+.btn-quick-action,
+.btn-quick-return,
+.btn-quick-adjust,
+.btn-quick-edit {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  border-radius: 6px !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+  text-decoration: none !important;
+}
+
+.btn-quick-action [nz-icon],
+.btn-quick-return [nz-icon],
+.btn-quick-adjust [nz-icon],
+.btn-quick-edit [nz-icon],
+.btn-quick-action svg,
+.btn-quick-return svg,
+.btn-quick-adjust svg,
+.btn-quick-edit svg {
+  font-size: 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px !important;
+  min-height: 13px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .btn-tbl-action:disabled,

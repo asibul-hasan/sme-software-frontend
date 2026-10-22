@@ -158,12 +158,15 @@
 
               <td class="p-3 text-xs">
                 <p class="text-slate-600 mb-1 font-medium">{{ s.items }} items</p>
-                <nz-tag
-                  [nzColor]="s.payment === 'Due' ? 'warning' : s.payment === 'bKash' ? 'processing' : 'success'"
-                  class="text-[11px]"
-                >
-                  {{ s.payment }}
-                </nz-tag>
+                @if (s.payment === 'Due') {
+                  <span class="pms-badge-pay-due">Due</span>
+                } @else if (s.payment === 'bKash' || s.payment === 'Nagad' || s.payment === 'Rocket' || s.payment === 'MFS') {
+                  <span class="pms-badge-pay-mfs">{{ s.payment }}</span>
+                } @else if (s.payment === 'Card') {
+                  <span class="pms-badge-pay-card">Card</span>
+                } @else {
+                  <span class="pms-badge-pay-cash">{{ s.payment || 'Cash' }}</span>
+                }
               </td>
 
               <td class="p-3 font-mono text-xs">
@@ -274,9 +277,15 @@
           </div>
           <div>
             <span class="text-slate-400 block">Payment Method:</span>
-            <nz-tag [nzColor]="selectedSale.payment === 'Due' ? 'warning' : 'success'">
-              {{ selectedSale.payment }}
-            </nz-tag>
+            @if (selectedSale.payment === 'Due') {
+              <span class="pms-badge-pay-due">Due</span>
+            } @else if (selectedSale.payment === 'bKash' || selectedSale.payment === 'Nagad' || selectedSale.payment === 'Rocket' || selectedSale.payment === 'MFS') {
+              <span class="pms-badge-pay-mfs">{{ selectedSale.payment }}</span>
+            } @else if (selectedSale.payment === 'Card') {
+              <span class="pms-badge-pay-card">Card</span>
+            } @else {
+              <span class="pms-badge-pay-cash">{{ selectedSale.payment || 'Cash' }}</span>
+            }
           </div>
         </div>
 

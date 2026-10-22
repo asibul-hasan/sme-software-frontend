@@ -137,9 +137,9 @@ import { ModalService } from '../../core/services/modal.service';
                   </td>
                   <td class="p-3 text-center">
                     @if (m.status) {
-                      <nz-tag nzColor="success" class="text-xs">Active</nz-tag>
+                      <span class="pms-badge-active"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1"></span>Active</span>
                     } @else {
-                      <nz-tag nzColor="error" class="text-xs">Inactive</nz-tag>
+                      <span class="pms-badge-inactive"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1"></span>Inactive</span>
                     }
                   </td>
                   <td class="p-3 text-center">

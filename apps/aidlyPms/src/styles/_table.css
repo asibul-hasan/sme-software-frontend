@@ -299,6 +299,98 @@ tbody > tr:not(.ant-table-measure-row):hover > td,
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   FINANCIAL TENDER BADGES (Distinct Semantic Domain)
+   Teal for Cash, Sky for Card, Purple for MFS, Amber for Due
+   Prevents badge color collisions with emerald active status & buttons
+   ───────────────────────────────────────────────────────────────── */
+.pms-badge-pay-cash {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid rgba(13, 148, 136, 0.3);
+  white-space: nowrap !important;
+}
+
+.pms-badge-pay-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  white-space: nowrap !important;
+}
+
+.pms-badge-pay-mfs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #faf5ff;
+  color: #7e22ce;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  white-space: nowrap !important;
+}
+
+.pms-badge-pay-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  white-space: nowrap !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ENTITY STATUS BADGES (Active vs Inactive)
+   ───────────────────────────────────────────────────────────────── */
+.pms-badge-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  white-space: nowrap !important;
+}
+
+.pms-badge-inactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  white-space: nowrap !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    8. SINGLE-SOURCE CARD ARCHITECTURE & CARD TABLES
    Whenever a card or card-table is used across the software,
    it inherits this exact unified styling.
