@@ -10,6 +10,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 
@@ -38,6 +40,8 @@ interface ExpiredItem {
     NzIconModule,
     NzTooltipModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   templateUrl: './expired-items.component.html',
 })
@@ -56,6 +60,8 @@ export class ExpiredItemsComponent implements OnInit {
   activeProduct = '';
 
   items = signal<ExpiredItem[]>([]);
+  isLoading = signal(false);
+  hasError = signal(false);
   productOptions = signal<string[]>([]);
   companyOptions = signal<string[]>([]);
 
@@ -80,8 +86,11 @@ export class ExpiredItemsComponent implements OnInit {
   }
 
   loadData(): void {
+    this.isLoading.set(true);
+    this.hasError.set(false);
     this.productService.getNearExpiryBatches(Number(this.daysThreshold) || 90).subscribe({
       next: (res) => {
+        this.isLoading.set(false);
         if (res.success && res.data) {
           const mapped: ExpiredItem[] = res.data.map(b => {
             const expDate = b.expiry_date ? new Date(b.expiry_date) : new Date();
@@ -108,6 +117,10 @@ export class ExpiredItemsComponent implements OnInit {
           this.productOptions.set(prods);
         }
       },
+      error: () => {
+        this.isLoading.set(false);
+        this.hasError.set(true);
+      }
     });
   }
 

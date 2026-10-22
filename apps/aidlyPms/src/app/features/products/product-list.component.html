@@ -83,7 +83,17 @@
     [data]="filteredProducts"
     [columns]="columns"
     [total]="filteredProducts.length"
+    [loading]="isLoading"
     scrollX="1540px"
+    [emptyTitle]="hasError ? 'Failed to Load Medicines' : (hasActiveFilters() ? 'No Matching Medicines' : 'No Medicines in Catalog')"
+    [emptyDescription]="hasError ? 'Could not retrieve product records from the server.' : (hasActiveFilters() ? 'No medicines match your current search query or filter criteria.' : 'Start building your pharmacy catalog by adding your first medicine.')"
+    [emptyIcon]="hasError ? 'warning' : (hasActiveFilters() ? 'search' : 'medicine-box')"
+    [isFiltered]="hasActiveFilters()"
+    [errorState]="hasError"
+    [errorMessage]="errorMessage"
+    [emptyActionText]="hasError ? 'Retry Loading' : (hasActiveFilters() ? 'Clear Filters' : 'Add First Medicine')"
+    [emptyActionIcon]="hasError ? 'reload' : (hasActiveFilters() ? 'clear' : 'plus')"
+    (emptyActionClick)="onEmptyTableAction()"
   >
     <div tableFooter class="flex flex-wrap items-center gap-3 text-xs">
       <span>Total Products: <strong class="text-slate-800 font-semibold">{{ filteredProducts.length }}</strong></span>

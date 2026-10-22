@@ -16,6 +16,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
@@ -53,6 +54,7 @@ interface PurchaseRecordRow {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './purchase-record.component.html',
 })
@@ -62,6 +64,22 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
 
   records = signal<PurchaseRecordRow[]>([]);
   suppliers = signal<SuppSupplier[]>([]);
+  hasError = signal(false);
+  errorMessage = signal('');
+
+  hasActiveFilters = computed(() => {
+    return !!(this.searchInvoice.trim() || this.filterSupplier || this.filterType);
+  });
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadPurchases();
+    } else if (this.hasActiveFilters()) {
+      this.resetFilters();
+    } else {
+      this.router.navigate(['/supplier/purchase']);
+    }
+  }
 
   private readonly supplierService = inject(SupplierService);
   private readonly printService = inject(PrintService);
@@ -142,6 +160,7 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   loadPurchases(): void {
+    this.hasError.set(false);
     this.isLoading.set(true);
     const params: Record<string, unknown> = {
       pageIndex: 1,
@@ -177,6 +196,8 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading.set(false);
+        this.hasError.set(true);
+        this.errorMessage.set('Failed to retrieve purchase records.');
       },
     });
   }

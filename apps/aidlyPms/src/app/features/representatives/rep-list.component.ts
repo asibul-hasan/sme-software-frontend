@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { RepresentativeService, SysRepresentative } from '../../core/services/representative.service';
 import { RoleService, SysRole } from '../../core/services/role.service';
@@ -44,6 +46,8 @@ interface RepUser {
     NzTagModule,
     NzTooltipModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   templateUrl: './rep-list.component.html',
 })
@@ -55,6 +59,19 @@ export class RepListComponent implements OnInit {
 
   searchQuery = '';
   reps = signal<RepUser[]>([]);
+  isLoading = signal(false);
+  hasError = signal(false);
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadReps();
+    } else if (this.searchQuery.trim()) {
+      this.searchQuery = '';
+      this.loadReps();
+    } else {
+      this.openAddModal();
+    }
+  }
   availableRoles = signal<SysRole[]>([]);
 
   // Modal State
@@ -99,6 +116,8 @@ export class RepListComponent implements OnInit {
   }
 
   loadReps(): void {
+    this.isLoading.set(true);
+    this.hasError.set(false);
     const params: Record<string, unknown> = {
       pageIndex: 1,
       pageSize: 100,

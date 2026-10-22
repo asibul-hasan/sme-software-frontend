@@ -14,6 +14,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
@@ -43,6 +45,8 @@ interface SupplierRow {
     NzTooltipModule,
     NzTagModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   templateUrl: './supplier-list.component.html',
 })
@@ -59,6 +63,22 @@ export class SupplierListComponent implements OnInit, OnDestroy {
   searchPhone = '';
   dueOnly = false;
   isLoading = signal(false);
+  hasError = signal(false);
+  errorMessage = signal('');
+
+  hasActiveFilters = computed(() => {
+    return !!(this.searchName.trim() || this.searchPhone.trim() || this.dueOnly);
+  });
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadSuppliers();
+    } else if (this.hasActiveFilters()) {
+      this.resetFilters();
+    } else {
+      this.openAddModal();
+    }
+  }
   payMethods = ['Cash Counter', 'Bank Transfer', 'bKash Merchant', 'Nagad', 'BRAC Bank'];
 
   isAddPayMethodOpen = false;
@@ -89,6 +109,7 @@ export class SupplierListComponent implements OnInit, OnDestroy {
   }
 
   loadSuppliers(): void {
+    this.hasError.set(false);
     this.isLoading.set(true);
     const params: Record<string, unknown> = {
       pageIndex: 1,
@@ -113,6 +134,8 @@ export class SupplierListComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading.set(false);
+        this.hasError.set(true);
+        this.errorMessage.set('Failed to retrieve supplier directory.');
       },
     });
   }

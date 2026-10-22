@@ -206,8 +206,19 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="p-8 text-center text-slate-400 text-xs">
-                No sale records found matching your filters.
+              <td colspan="6" class="p-6 text-center">
+                <app-empty-state
+                  [title]="hasError() ? 'Failed to Load Invoices' : (hasActiveFilters() ? 'No Matching Sale Invoices' : 'No Sales Invoices Recorded')"
+                  [description]="hasError() ? 'Unable to reach sales records from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No invoices match your current search query or customer filters.' : 'Launch the POS Counter to start ringing up customer sales.')"
+                  [stateType]="hasError() ? 'error' : (hasActiveFilters() ? 'filtered' : 'empty')"
+                  icon="shopping-cart"
+                  [actionText]="hasError() ? 'Retry Loading' : (hasActiveFilters() ? 'Reset Filters' : 'Open POS Counter')"
+                  [actionIcon]="hasError() ? 'reload' : (hasActiveFilters() ? 'clear' : 'thunderbolt')"
+                  [actionRoute]="hasError() || hasActiveFilters() ? undefined : '/customer/pos'"
+                  (actionClick)="onEmptyTableAction()"
+                  [compact]="true"
+                  [transparent]="true"
+                ></app-empty-state>
               </td>
             </tr>
           }

@@ -8,6 +8,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProdGeneric } from '../../core/models/product.models';
@@ -24,6 +26,8 @@ import { ProdGeneric } from '../../core/models/product.models';
     NzIconModule,
     NzTooltipModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   templateUrl: './generic-list.component.html',
 })
@@ -36,6 +40,17 @@ export class GenericListComponent implements OnInit {
   generics = signal<ProdGeneric[]>([]);
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
+  hasError = signal<boolean>(false);
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadGenerics();
+    } else if (this.searchQuery.trim()) {
+      this.searchQuery = '';
+    } else {
+      this.openAddModal();
+    }
+  }
 
   filteredGenerics = computed(() => {
     const q = this.searchQuery.trim().toLowerCase();
@@ -52,6 +67,7 @@ export class GenericListComponent implements OnInit {
   }
 
   loadGenerics(): void {
+    this.hasError.set(false);
     this.isLoading.set(true);
     this.productService.getGenerics().subscribe({
       next: res => {

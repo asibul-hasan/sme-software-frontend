@@ -15,6 +15,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/accounting.models';
@@ -49,6 +50,7 @@ interface ExpenseRow {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    EmptyStateComponent,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -188,8 +190,18 @@ interface ExpenseRow {
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="3" class="p-8 text-center text-slate-400 text-xs">
-                    No expenses recorded matching the selected filter.
+                  <td colspan="3" class="p-6 text-center">
+                    <app-empty-state
+                      [title]="hasError() ? 'Failed to Load Expenses' : (hasActiveFilters() ? 'No Matching Expenses' : 'No Expenses Recorded')"
+                      [description]="hasError() ? 'Unable to reach expense ledger from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No expenses match the selected category or payment method filters.' : 'Keep your operational ledger accurate by recording utility bills, rent, or staff salaries.')"
+                      [stateType]="hasError() ? 'error' : (hasActiveFilters() ? 'filtered' : 'empty')"
+                      icon="dollar"
+                      [actionText]="hasError() ? 'Retry Loading' : (hasActiveFilters() ? 'Reset Filters' : 'Record First Expense')"
+                      [actionIcon]="hasError() ? 'reload' : (hasActiveFilters() ? 'clear' : 'plus')"
+                      (actionClick)="onEmptyTableAction()"
+                      [compact]="true"
+                      [transparent]="true"
+                    ></app-empty-state>
                   </td>
                 </tr>
               }
@@ -406,6 +418,19 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   private searchSub?: Subscription;
 
   isLoading = signal(false);
+  hasError = signal(false);
+
+  hasActiveFilters = computed(() => !!(this.filterCategory || this.filterPayment));
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadExpenses();
+    } else if (this.hasActiveFilters()) {
+      this.resetFilters();
+    } else {
+      this.openAddModal();
+    }
+  }
 
   // Initialize with standard 1-month date range default
   defaultDates = getDefaultMonthDates();
@@ -484,6 +509,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
 
   loadExpenses(): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     const params: Record<string, unknown> = {
       pageIndex: 1,
       pageSize: 50,
@@ -511,6 +537,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading.set(false);
+        this.hasError.set(true);
       },
     });
   }

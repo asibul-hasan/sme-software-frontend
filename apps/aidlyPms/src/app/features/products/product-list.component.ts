@@ -127,6 +127,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   companiesList: ProdCompany[] = [];
   genericsList: ProdGeneric[] = [];
   isLoading = false;
+  hasError = false;
+  errorMessage = "";
 
   formModel = {
     product_no: 0,
@@ -531,6 +533,21 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.loadProductsFromService();
   }
 
+  hasActiveFilters(): boolean {
+    return !!(this.searchQuery?.trim() || (this.companyFilter && this.companyFilter !== 'All') || this.selectedType !== null);
+  }
+
+  onEmptyTableAction(): void {
+    if (this.hasError) {
+      this.hasError = false;
+      this.loadProductsFromService();
+    } else if (this.hasActiveFilters()) {
+      this.resetFilters();
+    } else {
+      this.openAddMedicineModal();
+    }
+  }
+
   resetFilters(): void {
     this.searchQuery = '';
     this.companyFilter = 'All';
@@ -551,6 +568,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     if (this.selectedType !== null) {
       params['type'] = this.selectedType;
     }
+    this.hasError = false;
     this.productService.getProducts(params).subscribe({
       next: (res) => {
         this.isLoading = false;
@@ -567,6 +585,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading = false;
+        this.hasError = true;
+        this.errorMessage = 'Failed to retrieve medicine catalog from server.';
       },
     });
   }

@@ -12,6 +12,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { ProdProductBatch } from '../../core/models/product.models';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -131,6 +132,7 @@ interface CustomerOption {
     NzTooltipModule,
     NzSpinModule,
     NzTagModule,
+    EmptyStateComponent,
     PageHeaderComponent,
   ],
   styles: [`

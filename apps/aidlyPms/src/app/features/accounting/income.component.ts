@@ -12,6 +12,8 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccIncome, AccIncomeCategory, AccTransactionAccount } from '../../core/models/accounting.models';
@@ -46,6 +48,8 @@ interface IncomeRow {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -166,8 +170,18 @@ interface IncomeRow {
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="3" class="p-8 text-center text-slate-400 text-xs">
-                    No other revenue vouchers recorded.
+                  <td colspan="3" class="p-6 text-center">
+                    <app-empty-state
+                      [title]="hasError() ? 'Failed to Load Revenue Entries' : (filterCategoryNo ? 'No Matching Revenue Entries' : 'No Revenue Entries Recorded')"
+                      [description]="hasError() ? 'Unable to reach revenue records. Please check your connection and retry.' : (filterCategoryNo ? 'No entries match the selected income category.' : 'Record non-operating revenue, interest, scrap sales, or investment receipts.')"
+                      [stateType]="hasError() ? 'error' : (filterCategoryNo ? 'filtered' : 'empty')"
+                      icon="dollar"
+                      [actionText]="hasError() ? 'Retry Loading' : (filterCategoryNo ? 'Clear Filter' : 'Record First Revenue')"
+                      [actionIcon]="hasError() ? 'reload' : (filterCategoryNo ? 'clear' : 'plus')"
+                      (actionClick)="onEmptyTableAction()"
+                      [compact]="true"
+                      [transparent]="true"
+                    ></app-empty-state>
                   </td>
                 </tr>
               }
@@ -400,6 +414,19 @@ export class IncomeComponent implements OnInit {
   categories = signal<AccIncomeCategory[]>([]);
   accounts = signal<AccTransactionAccount[]>([]);
   incomes = signal<IncomeRow[]>([]);
+  isLoading = signal(false);
+  hasError = signal(false);
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadIncomes();
+    } else if (this.filterCategoryNo) {
+      this.filterCategoryNo = null;
+      this.loadIncomes();
+    } else {
+      this.openAddModal();
+    }
+  }
 
   totalIncomeAmount = computed(() => this.incomes().reduce((sum, inc) => sum + (inc.amount || 0), 0));
 
@@ -453,6 +480,8 @@ export class IncomeComponent implements OnInit {
   }
 
   loadIncomes(): void {
+    this.isLoading.set(true);
+    this.hasError.set(false);
     const params: Record<string, unknown> = {
       pageIndex: 1,
       pageSize: 100,

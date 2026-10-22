@@ -282,10 +282,21 @@
             }
           </div>
         } @else {
-          <div class="h-full flex flex-col items-center justify-center text-slate-400 p-8 space-y-2">
-            <span nz-icon nzType="search" class="text-3xl text-slate-300"></span>
-            <p class="font-medium text-sm text-slate-500 m-0">No matching medicines found</p>
-            <p class="text-xs text-slate-400 m-0">Press <kbd class="bg-slate-100 border px-1 rounded">F2</kbd> to quick-add this product to inventory</p>
+          <div class="h-full flex items-center justify-center p-4">
+            <app-empty-state
+              title="No Matching Medicines Found"
+              description="No medicines match your search. Press F2 to quick-add this item, or clear the search query."
+              stateType="filtered"
+              icon="search"
+              actionText="Quick Add Product (F2)"
+              actionIcon="plus"
+              (actionClick)="openQuickAddProduct()"
+              secondaryActionText="Clear Search"
+              secondaryActionIcon="clear"
+              (secondaryActionClick)="currentSearchTerm.set(''); focusProductSearch()"
+              [compact]="true"
+              [transparent]="true"
+            ></app-empty-state>
           </div>
         }
       </div>
@@ -510,10 +521,18 @@
               </tbody>
             </table>
           } @else {
-            <div class="h-full flex flex-col items-center justify-center text-slate-400 p-5 space-y-1">
-              <span nz-icon nzType="shopping-cart" class="text-2xl text-slate-300"></span>
-              <p class="font-medium text-xs text-slate-500 m-0">Basket is empty</p>
-              <p class="text-[10px] text-slate-400 m-0 text-center">Click cards on the left or press Enter to add</p>
+            <div class="h-full flex items-center justify-center p-3">
+              <app-empty-state
+                title="POS Basket is Empty"
+                description="Click medicines on the catalog, scan a barcode, or press F2 to register new medicines."
+                stateType="empty"
+                icon="shopping-cart"
+                actionText="Add Medicine (F2)"
+                actionIcon="plus"
+                (actionClick)="openQuickAddProduct()"
+                [compact]="true"
+                [transparent]="true"
+              ></app-empty-state>
             </div>
           }
         </div>

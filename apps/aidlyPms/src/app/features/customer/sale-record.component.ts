@@ -16,6 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
@@ -57,6 +58,7 @@ interface SaleRecordRow {
     NzDatePickerModule,
     NzPaginationModule,
     PageHeaderComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './sale-record.component.html',
 })
@@ -71,6 +73,22 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   sales = signal<SaleRecordRow[]>([]);
   customers = signal<Customer[]>([]);
   isLoading = signal(false);
+  hasError = signal(false);
+  errorMessage = signal('');
+
+  hasActiveFilters = computed(() => {
+    return !!(this.searchInvoice.trim() || this.filterCustomer || this.searchSalesman.trim());
+  });
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadRecords();
+    } else if (this.hasActiveFilters()) {
+      this.resetFilters();
+    } else {
+      this.router.navigate(['/customer/pos']);
+    }
+  }
 
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -197,6 +215,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   loadRecords(): void {
+    this.hasError.set(false);
     this.isLoading.set(true);
     const params: Record<string, unknown> = {
       pageIndex: 1,
@@ -235,6 +254,8 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading.set(false);
+        this.hasError.set(true);
+        this.errorMessage.set('Failed to retrieve sales records.');
       },
     });
   }

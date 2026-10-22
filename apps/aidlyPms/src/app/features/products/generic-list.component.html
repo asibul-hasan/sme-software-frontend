@@ -31,6 +31,7 @@
 
   <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
     <!-- Table Scroll Container -->
+    <nz-spin [nzSpinning]="isLoading()" class="flex-1 min-h-0 flex flex-col w-full">
     <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
       <table class="w-full text-sm text-left border-collapse min-w-[500px]">
         <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
@@ -70,14 +71,25 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="3" class="p-8 text-center text-slate-400 text-xs">
-                {{ isLoading() ? 'Loading generics from database...' : 'No generic compositions match your search.' }}
+              <td colspan="3" class="p-6 text-center">
+                <app-empty-state
+                  [title]="hasError() ? 'Failed to Load Generics' : (searchQuery.trim() ? 'No Matching Generics' : 'No Generic Formulations Added')"
+                  [description]="hasError() ? 'Unable to reach generic chemical database. Please check your connection and retry.' : (searchQuery.trim() ? 'No chemical formulations match your search query.' : 'Add generic active ingredients (e.g. Paracetamol, Omeprazole) to enable brand substitution in POS.')"
+                  [stateType]="hasError() ? 'error' : (searchQuery.trim() ? 'filtered' : 'empty')"
+                  icon="experiment"
+                  [actionText]="hasError() ? 'Retry Loading' : (searchQuery.trim() ? 'Clear Search' : 'Add First Generic')"
+                  [actionIcon]="hasError() ? 'reload' : (searchQuery.trim() ? 'clear' : 'plus')"
+                  (actionClick)="onEmptyTableAction()"
+                  [compact]="true"
+                  [transparent]="true"
+                ></app-empty-state>
               </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+    </nz-spin>
 
     <!-- Sticky Bottom Footer -->
     <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">

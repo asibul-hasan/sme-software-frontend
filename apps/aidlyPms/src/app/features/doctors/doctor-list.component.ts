@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { DoctorService } from '../../core/services/doctor.service';
 import { DocDoctor } from '../../core/models/doctor.models';
@@ -42,6 +44,8 @@ interface DoctorRow {
     NzTooltipModule,
     NzTagModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -151,8 +155,18 @@ interface DoctorRow {
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="6" class="p-8 text-center text-slate-400 text-xs">
-                    No doctors match your search query.
+                  <td colspan="6" class="p-6 text-center">
+                    <app-empty-state
+                      [title]="hasError() ? 'Failed to Load Doctors' : (searchName.trim() || '' ? 'No Matching Doctors' : 'No Doctors Registered')"
+                      [description]="hasError() ? 'Unable to reach doctor registry. Please check your connection and retry.' : (searchName.trim() || '' ? 'No physician profiles match your current search criteria.' : 'Register prescribing doctors with BMDC credentials for prescription management.')"
+                      [stateType]="hasError() ? 'error' : (searchName.trim() || '' ? 'filtered' : 'empty')"
+                      icon="user"
+                      [actionText]="hasError() ? 'Retry Loading' : (searchName.trim() || '' ? 'Clear Search' : 'Register First Doctor')"
+                      [actionIcon]="hasError() ? 'reload' : (searchName.trim() || '' ? 'clear' : 'user-add')"
+                      (actionClick)="onEmptyTableAction()"
+                      [compact]="true"
+                      [transparent]="true"
+                    ></app-empty-state>
                   </td>
                 </tr>
               }
@@ -331,6 +345,19 @@ export class DoctorListComponent implements OnInit {
 
   searchName = '';
   doctors = signal<DoctorRow[]>([]);
+  isLoading = signal(false);
+  hasError = signal(false);
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadDoctors();
+    } else if (this.searchName.trim()) {
+      this.searchName = '';
+      this.loadDoctors();
+    } else {
+      this.openAddModal();
+    }
+  }
 
   isModalVisible = false;
   modalMode: 'create' | 'edit' = 'create';

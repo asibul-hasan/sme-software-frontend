@@ -15,6 +15,8 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { PrintService } from '../../core/services/print.service';
@@ -53,6 +55,8 @@ interface CustomerRow {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   templateUrl: './customer-list.component.html',
 })
@@ -94,6 +98,30 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   customers = signal<CustomerRow[]>([]);
+  hasError = signal(false);
+  errorMessage = signal('');
+
+  hasActiveFilters = computed(() => {
+    return !!(this.searchName.trim() || this.searchPhone.trim() || this.filterType || this.dueOnly);
+  });
+
+  resetSearchFilters(): void {
+    this.searchName = '';
+    this.searchPhone = '';
+    this.filterType = '';
+    this.dueOnly = false;
+    this.loadCustomers();
+  }
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadCustomers();
+    } else if (this.hasActiveFilters()) {
+      this.resetSearchFilters();
+    } else {
+      this.openAddModal();
+    }
+  }
 
   filteredCustomers = computed(() => {
     const qName = this.searchName.trim().toLowerCase();
@@ -158,6 +186,7 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   loadCustomers(): void {
+    this.hasError.set(false);
     this.isLoading.set(true);
     const params: Record<string, unknown> = { pageSize: 100 };
     if (this.searchName.trim()) params['search'] = this.searchName.trim();
@@ -189,6 +218,8 @@ export class CustomerListComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading.set(false);
+        this.hasError.set(true);
+        this.errorMessage.set('Failed to retrieve customer directory.');
       },
     });
   }

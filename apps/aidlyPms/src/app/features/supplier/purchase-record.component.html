@@ -156,8 +156,19 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="p-8 text-center text-slate-400 text-xs">
-                No purchase records match your search criteria.
+              <td colspan="4" class="p-6 text-center">
+                <app-empty-state
+                  [title]="hasError() ? 'Failed to Load Purchase Records' : (hasActiveFilters() ? 'No Matching Purchase Records' : 'No Purchase Records Found')"
+                  [description]="hasError() ? 'Unable to reach purchase records from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No purchase invoices match your filter criteria.' : 'Create a purchase intake to add incoming stock batches from suppliers.')"
+                  [stateType]="hasError() ? 'error' : (hasActiveFilters() ? 'filtered' : 'empty')"
+                  icon="file-text"
+                  [actionText]="hasError() ? 'Retry Loading' : (hasActiveFilters() ? 'Reset Filters' : 'New Purchase Intake')"
+                  [actionIcon]="hasError() ? 'reload' : (hasActiveFilters() ? 'clear' : 'plus')"
+                  [actionRoute]="hasError() || hasActiveFilters() ? undefined : '/supplier/purchase'"
+                  (actionClick)="onEmptyTableAction()"
+                  [compact]="true"
+                  [transparent]="true"
+                ></app-empty-state>
               </td>
             </tr>
           }

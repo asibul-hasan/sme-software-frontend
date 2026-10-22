@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
 export interface TableColumn<T = unknown> {
   title: string;
@@ -20,7 +21,7 @@ export interface TableColumn<T = unknown> {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, NzTableModule, NzPaginationModule, NzEmptyModule],
+  imports: [CommonModule, NzTableModule, NzPaginationModule, NzEmptyModule, EmptyStateComponent],
   styles: [`
     :host {
       display: flex;
@@ -47,6 +48,7 @@ export interface TableColumn<T = unknown> {
           (nzQueryParams)="onQueryParamsChange($event)"
           [nzScroll]="{ x: scrollX }"
           nzSize="middle"
+          [nzNoResult]="customNoResult"
         >
           <thead>
             <tr>
@@ -92,6 +94,25 @@ export interface TableColumn<T = unknown> {
               </tr>
             }
           </tbody>
+          <ng-template #customNoResult>
+            <app-empty-state
+              [title]="emptyTitle"
+              [description]="emptyDescription"
+              [stateType]="errorState ? 'error' : (isFiltered ? 'filtered' : 'empty')"
+              [icon]="emptyIcon"
+              [actionText]="emptyActionText"
+              [actionIcon]="emptyActionIcon"
+              [actionRoute]="emptyActionRoute"
+              (actionClick)="emptyActionClick.emit()"
+              [secondaryActionText]="secondaryActionText"
+              [secondaryActionIcon]="secondaryActionIcon"
+              (secondaryActionClick)="secondaryActionClick.emit()"
+              [compact]="true"
+              [transparent]="true"
+            >
+              <ng-content select="[emptyActions]"></ng-content>
+            </app-empty-state>
+          </ng-template>
         </nz-table>
       </div>
 
@@ -136,6 +157,23 @@ export class DataTableComponent<T = unknown> {
   @Input() pageSizeOptions = [10, 20, 50, 100];
   @Input() showFooter = true;
   @Input() scrollX = '1100px';
+
+  // Empty & Error State Configuration
+  @Input() emptyTitle = 'No records found';
+  @Input() emptyDescription = 'No data available in this view.';
+  @Input() emptyIcon?: string;
+  @Input() emptyActionText?: string;
+  @Input() emptyActionIcon = 'plus';
+  @Input() emptyActionRoute?: string | any[];
+  @Output() emptyActionClick = new EventEmitter<void>();
+
+  @Input() secondaryActionText?: string;
+  @Input() secondaryActionIcon = 'reload';
+  @Output() secondaryActionClick = new EventEmitter<void>();
+
+  @Input() isFiltered = false;
+  @Input() errorState = false;
+  @Input() errorMessage?: string;
 
   @Output() queryParamsChange = new EventEmitter<NzTableQueryParams>();
   @Output() pageIndexChange = new EventEmitter<number>();

@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 
@@ -41,6 +43,8 @@ interface AccountRow {
     NzTagModule,
     NzTooltipModule,
     PageHeaderComponent,
+    EmptyStateComponent,
+    NzSpinModule,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -156,8 +160,18 @@ interface AccountRow {
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="3" class="p-8 text-center text-slate-400 text-xs">
-                    No transaction accounts match your filter.
+                  <td colspan="3" class="p-6 text-center">
+                    <app-empty-state
+                      [title]="hasError() ? 'Failed to Load Accounts' : (typeFilter ? 'No Matching Accounts' : 'No Financial Accounts Configured')"
+                      [description]="hasError() ? 'Unable to reach accounts ledger. Please check your connection and retry.' : (typeFilter ? 'No accounts match the selected account type filter.' : 'Configure cash registers, bank accounts, or MFS wallets (bKash/Nagad) for transaction posting.')"
+                      [stateType]="hasError() ? 'error' : (typeFilter ? 'filtered' : 'empty')"
+                      icon="bank"
+                      [actionText]="hasError() ? 'Retry Loading' : (typeFilter ? 'Clear Filter' : 'Create First Account')"
+                      [actionIcon]="hasError() ? 'reload' : (typeFilter ? 'clear' : 'plus')"
+                      (actionClick)="onEmptyTableAction()"
+                      [compact]="true"
+                      [transparent]="true"
+                    ></app-empty-state>
                   </td>
                 </tr>
               }
@@ -339,6 +353,17 @@ export class AccountsComponent implements OnInit {
   isLoading = signal(false);
 
   accounts = signal<AccountRow[]>([]);
+  hasError = signal(false);
+
+  onEmptyTableAction(): void {
+    if (this.hasError()) {
+      this.loadAccounts();
+    } else if (this.typeFilter) {
+      this.typeFilter = '';
+    } else {
+      this.openAddModal();
+    }
+  }
 
   filteredAccounts = computed(() => {
     const f = this.typeFilter;
