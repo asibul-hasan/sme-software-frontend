@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.18.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.17.1...v1.18.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **a11y:** WCAG 2.2 AA modal focus trap, escape-to-close, button aria-labels, and input label IDs ([580f630](https://github.com/asibul-hasan/sme-software-frontend/commit/580f63066ea42ab10a3c77caf7efe3681e30f275))
+* **pos:** split two-pane catalog layout, keyboard shortcuts F2/F4/F8, and auto-default tender ([61840a9](https://github.com/asibul-hasan/sme-software-frontend/commit/61840a902a75e67c0b6a6d4ff50ed9a781c0b3e9))
+* **responsive:** enlarge POS cart touch targets to 32px and prevent table overflow on 768px tablet ([283041e](https://github.com/asibul-hasan/sme-software-frontend/commit/283041ec7a5395e14bcf72fe795598c4b0cc8a24))
+* **tables:** add column sorting, pagination controls, and quick row actions ([a52d3be](https://github.com/asibul-hasan/sme-software-frontend/commit/a52d3bef676c7e6a1761e952f80ef99540cb5ef7))
+
+
+### 🐛 Bug Fixes
+
+* **trust:** replace stubs with real API calls, add branch switcher ([d77d4f2](https://github.com/asibul-hasan/sme-software-frontend/commit/d77d4f25e762eb66ef24ca1de9e4d7fb2b0454bc))
+
+
+### 🎨 UI & Styling
+
+* **design:** resolve badge color collisions and unify table action icon sizing ([1019a5b](https://github.com/asibul-hasan/sme-software-frontend/commit/1019a5b1e79b8c08067cfc826d326a950dad2756))
+
 ## [1.17.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.17.0...v1.17.1) (2026-10-22)
 
 
