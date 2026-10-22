@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.21.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.21.0...v1.21.1) (2026-10-22)
+
+
+### 🐛 Bug Fixes
+
+* **subscription:** sync schema parity and migrations for subscription hardening ([35f13f5](https://github.com/asibul-hasan/sme-software-frontend/commit/35f13f5d0afe7886738e435877321596d65877db))
+
 ## [1.21.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.20.0...v1.21.0) (2026-10-22)
 
 
