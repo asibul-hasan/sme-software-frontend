@@ -524,14 +524,15 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
 
   // Fast Pick OTC row items matching attached screenshot pixel-to-pixel
   readonly fastPickItems = [
-    { name: '3RD Cef', strength: '400mg', price: 50, stock: 399, generic: 'Cefixime Trihydrate' },
-    { name: 'Ace Plus', strength: '500mg + 65mg', price: 3, stock: 299, generic: 'Paracetamol + Caffeine' },
-    { name: 'Ceevit 250mg', strength: '250mg', price: 2.5, stock: 400, generic: 'Ascorbic Acid' },
-    { name: 'Histal', strength: '10 mg', price: 15, stock: 200, generic: 'Chlorpheniramine Maleate' },
-    { name: 'Napa Extra', strength: '500mg + 65mg', price: 3, stock: 450, generic: 'Paracetamol + Caffeine' },
-    { name: 'Seclo 20mg', strength: '20mg', price: 7, stock: 350, generic: 'Omeprazole' },
-    { name: 'Fexo 120mg', strength: '120mg', price: 9, stock: 280, generic: 'Fexofenadine HCl' },
-    { name: 'Monas 10mg', strength: '10mg', price: 16, stock: 190, generic: 'Montelukast Sodium' },
+    { name: '3RD Cef', strength: '400mg', price: 50, stock: 399, generic: 'Paracetamol', rak: 'A-09 (Tablets)', manufacturer: 'Beximco Pharmaceuticals Ltd.' },
+    { name: 'Ace Plus', strength: '500mg + 65mg', price: 3, stock: 299, generic: 'Paracetamol', rak: 'A-02 (Tablets)', manufacturer: 'Square Pharmaceuticals PLC' },
+    { name: 'Ceevit 250mg', strength: '250mg', price: 2.5, stock: 400, generic: 'Ascorbic Acid', rak: 'C-01 (Chewable)', manufacturer: 'Square Pharmaceuticals PLC' },
+    { name: 'Controlled Substance Test 10mg', strength: '10mg', price: 15, stock: 0, generic: 'Paracetamol', rak: '', manufacturer: 'Local Pharma' },
+    { name: 'Histal', strength: '10 mg', price: 15, stock: 200, generic: 'Antibiotic', rak: 'A-01', manufacturer: 'ACI Limited' },
+    { name: 'Napa Extra', strength: '500mg + 65mg', price: 3, stock: 450, generic: 'Paracetamol + Caffeine', rak: 'A-03', manufacturer: 'Beximco Pharmaceuticals Ltd.' },
+    { name: 'Seclo 20mg', strength: '20mg', price: 7, stock: 350, generic: 'Omeprazole', rak: 'B-02', manufacturer: 'Square Pharmaceuticals PLC' },
+    { name: 'Fexo 120mg', strength: '120mg', price: 9, stock: 280, generic: 'Fexofenadine HCl', rak: 'C-04', manufacturer: 'Square Pharmaceuticals PLC' },
+    { name: 'Monas 10mg', strength: '10mg', price: 16, stock: 190, generic: 'Montelukast Sodium', rak: 'D-01', manufacturer: 'Acme Laboratories Ltd.' },
   ];
   selectedFastPickIndex = signal<number>(0);
 
@@ -1425,9 +1426,52 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.screen2Discount.set(0);
   }
 
+  getAllScreen2CatalogProducts(): CatalogProduct[] {
+    const list = [...this.catalogProducts()];
+    for (const fp of this.fastPickItems) {
+      if (!list.some(cp => cp.name.toLowerCase() === fp.name.toLowerCase())) {
+        list.push({
+          id: -(list.length + 100),
+          name: fp.name,
+          generic: fp.generic,
+          manufacturer: fp.manufacturer,
+          strength: fp.strength,
+          rak: fp.rak,
+          stock: fp.stock,
+          cost: fp.price * 0.8,
+          saleRetail: fp.price,
+          saleWholesale: fp.price,
+          pcsPerBox: fp.name.includes('Histal') ? 10 : 1,
+          minStock: 10,
+          barcode: '',
+          is_prescription_required: false,
+          is_narcotic: false,
+          drug_schedule: 'OTC',
+        });
+      }
+    }
+    return list;
+  }
+
+  getOriginalProductStock(item: CartItem): number {
+    const allProds = this.getAllScreen2CatalogProducts();
+    const p = allProds.find(cp => cp.id === item.product_no || cp.name.toLowerCase() === item.product_name.toLowerCase());
+    if (p && p.stock !== undefined) return p.stock;
+    const fp = this.fastPickItems.find(f => f.name.toLowerCase() === item.product_name.toLowerCase());
+    if (fp) return fp.stock;
+    return item.stock ?? 0;
+  }
+
+  getItemRemainingStock(item: CartItem): number {
+    const orig = this.getOriginalProductStock(item);
+    const cartPcs = this.getCartPcsForProduct(item.product_no, item.product_name);
+    return Math.max(0, orig - cartPcs);
+  }
+
   onScreen2SearchFocus(): void {
     if (!this.screen2ProductSearch().trim()) {
-      this.screen2SearchResults.set(this.catalogProducts().slice(0, 10));
+      const allProds = this.getAllScreen2CatalogProducts();
+      this.screen2SearchResults.set(allProds.slice(0, 10));
     }
     this.screen2IsSearchOpen.set(true);
   }
@@ -1436,13 +1480,15 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const val = (event.target as HTMLInputElement).value || '';
     this.screen2ProductSearch.set(val);
     const term = val.trim().toLowerCase();
+    const allProds = this.getAllScreen2CatalogProducts();
     if (!term) {
-      this.screen2SearchResults.set(this.catalogProducts().slice(0, 10));
+      this.screen2SearchResults.set(allProds.slice(0, 10));
     } else {
-      const results = this.catalogProducts().filter(p =>
+      const results = allProds.filter(p =>
         p.name.toLowerCase().includes(term) ||
         (p.generic && p.generic.toLowerCase().includes(term)) ||
-        (p.barcode && p.barcode.toLowerCase().includes(term))
+        (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+        (p.rak && p.rak.toLowerCase().includes(term))
       ).slice(0, 12);
       this.screen2SearchResults.set(results);
     }
@@ -1504,7 +1550,8 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     }
 
     const selectedProd = this.screen2SelectedProduct();
-    const catalogProd = selectedProd || this.catalogProducts().find(p =>
+    const allProds = this.getAllScreen2CatalogProducts();
+    const catalogProd = selectedProd || allProds.find(p =>
       searchTxt.toLowerCase().includes(p.name.toLowerCase()) ||
       p.name.toLowerCase() === searchTxt.toLowerCase()
     );
@@ -1514,7 +1561,8 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const generic = catalogProd ? catalogProd.generic : 'General';
     const manufacturer = catalogProd ? catalogProd.manufacturer : 'Local Pharma';
     const cost = catalogProd ? catalogProd.cost : (price * 0.8);
-    const pcsPerBox = catalogProd ? catalogProd.pcsPerBox : 10;
+    const pcsPerBox = catalogProd ? catalogProd.pcsPerBox : (prodName.toLowerCase().includes('histal') ? 10 : 1);
+    const origStock = catalogProd ? catalogProd.stock : 999;
     const availStock = catalogProd ? this.getAvailableStock(catalogProd) : 999;
     const rak = catalogProd ? catalogProd.rak : '';
     const barcode = catalogProd ? catalogProd.barcode : '';
@@ -1572,7 +1620,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
         discount: lineDiscount,
         discount_type: this.screen2DiscountType() === 'percent' ? DiscountType.Percentage : DiscountType.Flat,
         total: lineTotal,
-        stock: availStock,
+        stock: origStock,
         rak,
         barcode,
         drug_schedule: catalogProd?.drug_schedule || 'OTC',

@@ -912,38 +912,44 @@
             @if (screen2IsSearchOpen() && screen2SearchResults().length > 0) {
               <!-- Click backdrop -->
               <div class="fixed inset-0 z-40" (click)="screen2IsSearchOpen.set(false)"></div>
-              <div class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+              <div class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100 min-w-[420px]">
                 @for (p of screen2SearchResults(); track p.id; let sIdx = $index) {
                   <div
                     (click)="selectScreen2Product(p)"
-                    class="px-3.5 py-2 hover:bg-indigo-50/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
+                    class="px-3.5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
                     [class.bg-indigo-50]="screen2HighlightedIndex() === sIdx"
                   >
                     <div class="min-w-0 flex-1">
-                      <div class="font-bold text-slate-800 flex items-center gap-1.5 truncate">
+                      <div class="font-bold text-slate-900 flex items-center">
                         <span>{{ p.name }}</span>
                         @if (p.strength) {
-                          <span class="text-[11px] text-slate-500 font-normal">({{ p.strength }})</span>
+                          <span class="text-[11px] text-slate-500 font-normal ml-1">({{ p.strength }})</span>
                         }
-                        @if (p.drug_schedule) {
-                          <span class="text-[9px] px-1 py-0.2 rounded font-bold uppercase"
-                            [class.bg-emerald-100]="p.drug_schedule === 'OTC'"
-                            [class.text-emerald-800]="p.drug_schedule === 'OTC'"
-                            [class.bg-amber-100]="p.drug_schedule === 'POM'"
-                            [class.text-amber-800]="p.drug_schedule === 'POM'"
-                            [class.bg-rose-100]="p.drug_schedule === 'ANTIBIOTIC'"
-                            [class.text-rose-800]="p.drug_schedule === 'ANTIBIOTIC'">
-                            {{ p.drug_schedule }}
+                      </div>
+                      <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <span class="text-[11px] text-slate-500 font-normal">{{ p.generic || 'General' }}</span>
+                        @if (p.rak) {
+                          <span class="text-[10px] text-indigo-600 bg-indigo-50 font-medium px-1.5 py-0.5 rounded flex items-center gap-1 ml-1">
+                            📍 Rak: {{ p.rak }}
                           </span>
                         }
                       </div>
-                      <div class="text-[11px] text-slate-400 truncate mt-0.5">
-                        {{ p.generic || 'General' }} · {{ p.manufacturer || 'Local Pharma' }} · Rak: {{ p.rak || 'N/A' }}
-                      </div>
                     </div>
-                    <div class="text-right shrink-0">
-                      <div class="font-bold text-emerald-600">৳{{ (isWholesale() ? p.saleWholesale : p.saleRetail) || p.saleRetail }}</div>
-                      <div class="text-[10px] text-slate-400">{{ getAvailableStock(p) }} pcs</div>
+                    <div class="text-right shrink-0 ml-3">
+                      <div class="font-bold text-slate-900 text-xs">
+                        ৳ {{ ((isWholesale() ? p.saleWholesale : p.saleRetail) || p.saleRetail) | number: '1.2-2' }}
+                      </div>
+                      <div class="mt-1">
+                        @if (getAvailableStock(p) > 0) {
+                          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Avail: {{ getAvailableStock(p) }} pcs
+                          </span>
+                        } @else {
+                          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
+                            Out of Stock
+                          </span>
+                        }
+                      </div>
                     </div>
                   </div>
                 }
@@ -1066,46 +1072,80 @@
           <div class="flex-1 overflow-x-auto mt-2">
             <table class="w-full text-left text-xs border-collapse">
               <thead>
-                <tr class="border-b border-slate-200 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                <tr class="border-b border-slate-200 text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
                   <th class="py-2.5 px-3">#</th>
                   <th class="py-2.5 px-3">Item / Generic</th>
-                  <th class="py-2.5 px-3">Batch / Rak</th>
                   <th class="py-2.5 px-3 text-center">Qty</th>
-                  <th class="py-2.5 px-3 text-right">Unit Price</th>
-                  <th class="py-2.5 px-3 text-right">Discount</th>
-                  <th class="py-2.5 px-3 text-right">Total</th>
+                  <th class="py-2.5 px-3 text-center">Pack</th>
+                  <th class="py-2.5 px-3 text-right">Price/Piece (৳)</th>
+                  <th class="py-2.5 px-3 text-center">Discount</th>
+                  <th class="py-2.5 px-3 text-right">Price (৳)</th>
                   <th class="py-2.5 px-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 text-slate-700">
                 @for (item of cart(); track item.cart_item_id || item.product_no; let i = $index) {
-                  <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">{{ i + 1 }}</td>
-                    <td class="py-2.5 px-3">
-                      <div class="font-bold text-slate-800">{{ item.product_name }}</div>
-                      <div class="text-[11px] text-slate-400">{{ item.generic_name }} · {{ item.manufacturer }}</div>
-                    </td>
-                    <td class="py-2.5 px-3">
-                      <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">
-                        {{ item.batch_number || 'Auto-FEFO' }} {{ item.rak ? '· Rak ' + item.rak : '' }}
-                      </span>
-                    </td>
-                    <td class="py-2.5 px-3 text-center">
-                      <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
-                        <button type="button" (click)="updateItemQty(item, -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-r border-slate-200 cursor-pointer">-</button>
-                        <span class="w-9 text-center font-bold text-xs">{{ item.qty }}</span>
-                        <button type="button" (click)="updateItemQty(item, 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-l border-slate-200 cursor-pointer">+</button>
+                  <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+                    <td class="py-3 px-3 text-slate-400 font-mono text-[11px]">{{ i + 1 }}</td>
+                    <td class="py-3 px-3">
+                      <div class="font-bold text-slate-900 text-xs">{{ item.product_name }}</div>
+                      <div class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5 flex-wrap">
+                        <span>{{ item.generic_name }}</span>
+                        @if (item.manufacturer) {
+                          <span>•</span>
+                          <span>{{ item.manufacturer }}</span>
+                        }
+                        @if (item.rak) {
+                          <span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded font-medium flex items-center gap-1 ml-1">
+                            📍 Rak: {{ item.rak }}
+                          </span>
+                        }
+                      </div>
+                      <!-- Stock Indicator Pill in Cart Table: Stock: X pcs → Left: Y pcs -->
+                      <div class="mt-1">
+                        <span class="inline-block bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                          Stock: {{ getOriginalProductStock(item) }} pcs → Left: {{ getItemRemainingStock(item) }} pcs
+                        </span>
                       </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right font-medium">৳{{ item.unit_price | number: '1.2-2' }}</td>
-                    <td class="py-2.5 px-3 text-right text-rose-600 font-medium">
-                      {{ item.discount > 0 ? ('- ৳' + (item.discount | number: '1.2-2')) : '—' }}
+                    <td class="py-3 px-3 text-center">
+                      <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+                        <button type="button" (click)="updateItemQty(item, -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-r border-slate-200 cursor-pointer select-none">-</button>
+                        <span class="w-8 text-center font-bold text-xs text-slate-800">{{ item.qty }}</span>
+                        <button type="button" (click)="updateItemQty(item, 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-l border-slate-200 cursor-pointer select-none">+</button>
+                      </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right font-bold text-slate-900">৳{{ item.total | number: '1.2-2' }}</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <button type="button" (click)="removeItem(item)" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer" title="Remove Item">
-                        <span nz-icon nzType="delete" nzTheme="outline" class="text-base"></span>
-                      </button>
+                    <td class="py-3 px-3 text-center font-medium text-slate-700 text-xs">
+                      {{ item.pcs_per_box || (item.product_name.toLowerCase().includes('histal') ? 10 : 1) }}
+                    </td>
+                    <td class="py-3 px-3 text-right font-medium text-slate-800 text-xs">
+                      ৳ {{ item.unit_price | number: '1.2-2' }}
+                    </td>
+                    <td class="py-3 px-3 text-center text-slate-600 font-medium text-xs">
+                      {{ item.discount > 0 ? (item.discount | number: '1.2-2') : '0%' }}
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-slate-900 text-xs">
+                      ৳ {{ item.total | number: '1.2-2' }}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          (click)="openEditItemModal(item)"
+                          class="w-7 h-7 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Edit Item"
+                        >
+                          <span nz-icon nzType="edit" nzTheme="outline" class="text-xs"></span>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="removeItem(item)"
+                          class="w-7 h-7 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Remove Item"
+                        >
+                          <span nz-icon nzType="delete" nzTheme="outline" class="text-xs"></span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 }
