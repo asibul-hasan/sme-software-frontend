@@ -492,26 +492,42 @@ export class ProductAddComponent implements OnInit {
       return;
     }
 
-    let companyNo = 1;
-    const matchedComp = this.companiesList.find(
-      c => c.name.toLowerCase() === this.form.company.toLowerCase()
-    );
-    if (matchedComp) {
-      companyNo = matchedComp.company_no;
+    let companyNo = 0;
+    if (this.form.company) {
+      const matchedComp = this.companiesList.find(
+        c => c.name.toLowerCase() === this.form.company.toLowerCase()
+      );
+      if (matchedComp) {
+        companyNo = matchedComp.company_no;
+      }
     }
 
-    let genericNo = 1;
-    const matchedGen = this.genericsList.find(
-      g => g.name.toLowerCase() === this.form.generic.toLowerCase()
-    );
-    if (matchedGen) {
-      genericNo = matchedGen.generic_no;
+    if (companyNo <= 0 && this.companiesList.length > 0) {
+      companyNo = this.companiesList[0].company_no;
     }
+
+    if (companyNo <= 0) {
+      this.msg.error('Please select or add a valid manufacturer company.');
+      return;
+    }
+
+    let genericNo: number | null = null;
+    if (this.form.generic && this.form.generic.trim()) {
+      const matchedGen = this.genericsList.find(
+        g => g.name.toLowerCase() === this.form.generic.trim().toLowerCase()
+      );
+      if (matchedGen) {
+        genericNo = matchedGen.generic_no;
+      }
+    }
+
+    const salePerPiece = this.form.salePricePiece || (this.form.salePriceBox / (this.form.qtyBox || 1));
+    const costPerPiece = this.form.costBox / (this.form.qtyBox || 1);
 
     const payload: Partial<ProdProduct> = {
       product_name: this.form.name.trim(),
       company_no: companyNo,
-      generic_no: genericNo,
+      generic_no: genericNo ?? undefined,
       strength: this.form.strength.trim(),
       volume: this.form.volume.trim(),
       medicine_type: this.form.medicineType,
@@ -519,9 +535,11 @@ export class ProductAddComponent implements OnInit {
       quantity_per_box: this.form.qtyBox,
       cost_per_box: this.form.costBox,
       sale_price_per_box: this.form.salePriceBox,
-      avg_purchase_price_per_piece: this.form.costBox / (this.form.qtyBox || 1),
-      purchase_price_per_piece: this.form.costBox / (this.form.qtyBox || 1),
-      sale_price_per_piece: this.form.salePricePiece || (this.form.salePriceBox / (this.form.qtyBox || 1)),
+      avg_purchase_price_per_piece: costPerPiece,
+      purchase_price_per_piece: costPerPiece,
+      sale_price_per_piece: salePerPiece,
+      wholesale_price_per_box: this.form.salePriceBox,
+      wholesale_price_per_piece: salePerPiece,
       country_of_origin: this.form.country || 'Bangladesh',
       barcode_value: this.form.barcode,
       rak_number: this.form.rakNumber,
