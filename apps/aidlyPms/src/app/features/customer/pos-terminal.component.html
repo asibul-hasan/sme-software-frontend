@@ -1,3 +1,41 @@
+<!-- POS Terminal Top Navigation & View Switcher -->
+<div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between shrink-0 shadow-2xs mb-2 rounded-xl">
+  <div class="flex items-center gap-3">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Terminal View:</span>
+    <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+      <button
+        type="button"
+        (click)="activeScreen.set('screen1')"
+        class="px-3 py-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer"
+        [class.bg-indigo-600]="activeScreen() === 'screen1'"
+        [class.text-white]="activeScreen() === 'screen1'"
+        [class.shadow-xs]="activeScreen() === 'screen1'"
+        [class.text-slate-600]="activeScreen() !== 'screen1'"
+        [class.bg-transparent]="activeScreen() !== 'screen1'"
+      >
+        Screen 1 (Existing)
+      </button>
+      <button
+        type="button"
+        (click)="activeScreen.set('screen2')"
+        class="px-3 py-1 text-xs font-bold rounded-md transition-all border-0 cursor-pointer"
+        [class.bg-indigo-600]="activeScreen() === 'screen2'"
+        [class.text-white]="activeScreen() === 'screen2'"
+        [class.shadow-xs]="activeScreen() === 'screen2'"
+        [class.text-slate-600]="activeScreen() !== 'screen2'"
+        [class.bg-transparent]="activeScreen() !== 'screen2'"
+      >
+        Screen 2 (New)
+      </button>
+    </div>
+  </div>
+  <div class="text-xs text-slate-500 hidden sm:flex items-center gap-2 font-medium">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+    <span>Live Terminal · Hotkeys: <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px]">F1</kbd> Search | <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px]">Enter</kbd> Add | <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px]">F10</kbd> Complete</span>
+  </div>
+</div>
+
+@if (activeScreen() === 'screen1') {
 <div class="min-h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] flex flex-col space-y-3">
   <!-- Header Bar -->
   <app-page-header
@@ -811,6 +849,700 @@
     </div>
   </div>
 </div>
+} @else {
+  <!-- Screen 2: Modern POS Terminal View (Pixel-to-Pixel match with media_1792701474686_83f1edf7.png) -->
+  <div class="min-h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-4 p-1 bg-slate-50">
+    <!-- Left Column (Fast Pick OTC, Entry Bar, Cart Items) -->
+    <div class="flex-1 flex flex-col gap-3 min-w-0">
+      <!-- Fast Pick OTC Row -->
+      <div class="bg-white rounded-xl border border-slate-200 p-2.5 shadow-2xs flex items-center gap-2.5 overflow-x-auto">
+        <span class="text-xs font-bold text-slate-700 whitespace-nowrap ml-1">Fast Pick OTC:</span>
+        <div class="flex items-center gap-2">
+          @for (item of fastPickItems; track item.name; let idx = $index) {
+            <div
+              (click)="selectFastPickItem(idx)"
+              class="group relative flex flex-col justify-center px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer transition-all select-none whitespace-nowrap shadow-2xs"
+              [class.border-cyan-400]="selectedFastPickIndex() === idx"
+            >
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-slate-800">{{ item.name }}</span>
+                <span class="text-[11px] text-slate-500 font-medium">({{ item.strength }})</span>
+                <span class="text-xs font-bold text-emerald-600">৳{{ item.price }}</span>
+                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">
+                  {{ item.stock }} pcs
+                </span>
+              </div>
+              @if (selectedFastPickIndex() === idx) {
+                <div class="absolute -bottom-1 left-2 right-2 h-0.5 bg-cyan-400 rounded-full"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Product / Medicine Entry Bar Card -->
+      <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs">
+        <div class="flex flex-wrap lg:flex-nowrap items-end gap-3">
+          <!-- Product / Medicine Field with Autocomplete Dropdown -->
+          <div class="flex-1 min-w-[260px] relative">
+            <div class="flex justify-between items-center mb-1">
+              <label for="screen2-search-input" class="text-xs font-semibold text-slate-700 m-0">
+                Product / Medicine <span class="text-rose-500">*</span>
+              </label>
+              <span class="text-[11px] text-slate-400">Press F1 to search</span>
+            </div>
+            <div class="relative">
+              <input
+                id="screen2-search-input"
+                type="text"
+                [ngModel]="screen2ProductSearch()"
+                (input)="onScreen2SearchInput($event)"
+                (focus)="onScreen2SearchFocus()"
+                (keydown)="onScreen2SearchKeydown($event)"
+                placeholder="Search name, generic, barcode (F1)..."
+                class="w-full h-9 pl-3 pr-8 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-indigo-600 transition-colors bg-white font-medium shadow-2xs"
+                autocomplete="off"
+              />
+              <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs">
+                <span nz-icon nzType="down" nzTheme="outline"></span>
+              </span>
+            </div>
+
+            <!-- Autocomplete Dropdown Menu -->
+            @if (screen2IsSearchOpen() && screen2SearchResults().length > 0) {
+              <!-- Click backdrop -->
+              <div class="fixed inset-0 z-40" (click)="screen2IsSearchOpen.set(false)"></div>
+              <div class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+                @for (p of screen2SearchResults(); track p.id; let sIdx = $index) {
+                  <div
+                    (click)="selectScreen2Product(p)"
+                    class="px-3.5 py-2 hover:bg-indigo-50/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
+                    [class.bg-indigo-50]="screen2HighlightedIndex() === sIdx"
+                  >
+                    <div class="min-w-0 flex-1">
+                      <div class="font-bold text-slate-800 flex items-center gap-1.5 truncate">
+                        <span>{{ p.name }}</span>
+                        @if (p.strength) {
+                          <span class="text-[11px] text-slate-500 font-normal">({{ p.strength }})</span>
+                        }
+                        @if (p.drug_schedule) {
+                          <span class="text-[9px] px-1 py-0.2 rounded font-bold uppercase"
+                            [class.bg-emerald-100]="p.drug_schedule === 'OTC'"
+                            [class.text-emerald-800]="p.drug_schedule === 'OTC'"
+                            [class.bg-amber-100]="p.drug_schedule === 'POM'"
+                            [class.text-amber-800]="p.drug_schedule === 'POM'"
+                            [class.bg-rose-100]="p.drug_schedule === 'ANTIBIOTIC'"
+                            [class.text-rose-800]="p.drug_schedule === 'ANTIBIOTIC'">
+                            {{ p.drug_schedule }}
+                          </span>
+                        }
+                      </div>
+                      <div class="text-[11px] text-slate-400 truncate mt-0.5">
+                        {{ p.generic || 'General' }} · {{ p.manufacturer || 'Local Pharma' }} · Rak: {{ p.rak || 'N/A' }}
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <div class="font-bold text-emerald-600">৳{{ (isWholesale() ? p.saleWholesale : p.saleRetail) || p.saleRetail }}</div>
+                      <div class="text-[10px] text-slate-400">{{ getAvailableStock(p) }} pcs</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Sale QTY -->
+          <div class="w-24 shrink-0">
+            <label for="screen2-qty-input" class="block text-xs font-semibold text-slate-700 mb-1">
+              Sale QTY <span class="text-rose-500">*</span>
+            </label>
+            <input
+              id="screen2-qty-input"
+              type="number"
+              min="1"
+              [ngModel]="screen2Qty()"
+              (ngModelChange)="screen2Qty.set($event)"
+              (keydown.enter)="addScreen2Item()"
+              class="w-full h-9 px-2 text-center text-xs font-bold text-slate-800 border border-slate-200 rounded-lg focus:outline-hidden focus:border-indigo-600 transition-colors shadow-2xs"
+            />
+          </div>
+
+          <!-- Sale Price (৳) -->
+          <div class="w-24 shrink-0">
+            <label for="screen2-price-input" class="block text-xs font-semibold text-slate-700 mb-1">
+              Sale Price (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              id="screen2-price-input"
+              type="number"
+              min="0"
+              step="0.5"
+              [ngModel]="screen2Price()"
+              (ngModelChange)="screen2Price.set($event)"
+              (keydown.enter)="addScreen2Item()"
+              class="w-full h-9 px-2 text-center text-xs font-bold text-slate-800 border border-slate-200 rounded-lg focus:outline-hidden focus:border-indigo-600 transition-colors shadow-2xs"
+            />
+          </div>
+
+          <!-- Discount (with ৳ / % toggle) -->
+          <div class="w-28 shrink-0">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Discount</label>
+            <div class="flex items-center h-9 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs focus-within:border-indigo-600">
+              <button
+                type="button"
+                (click)="screen2DiscountType.set('taka')"
+                class="h-full px-2 text-xs font-bold border-r border-slate-200 transition-colors cursor-pointer select-none"
+                [class.bg-indigo-600]="screen2DiscountType() === 'taka'"
+                [class.text-white]="screen2DiscountType() === 'taka'"
+                [class.bg-slate-100]="screen2DiscountType() !== 'taka'"
+                [class.text-slate-600]="screen2DiscountType() !== 'taka'"
+              >
+                ৳
+              </button>
+              <button
+                type="button"
+                (click)="screen2DiscountType.set('percent')"
+                class="h-full px-2 text-xs font-bold border-r border-slate-200 transition-colors cursor-pointer select-none"
+                [class.bg-indigo-600]="screen2DiscountType() === 'percent'"
+                [class.text-white]="screen2DiscountType() === 'percent'"
+                [class.bg-slate-100]="screen2DiscountType() !== 'percent'"
+                [class.text-slate-600]="screen2DiscountType() !== 'percent'"
+              >
+                %
+              </button>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="screen2Discount()"
+                (ngModelChange)="screen2Discount.set($event)"
+                (keydown.enter)="addScreen2Item()"
+                class="w-full h-full px-1.5 text-center text-xs font-semibold text-slate-800 border-0 focus:outline-hidden bg-transparent"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <!-- Add (Enter) Button -->
+          <button
+            type="button"
+            (click)="addScreen2Item()"
+            class="h-9 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer flex items-center justify-center shrink-0 shadow-xs active:scale-95"
+          >
+            Add (Enter)
+          </button>
+        </div>
+      </div>
+
+      <!-- CART ITEMS Card -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex-1 flex flex-col min-h-[460px]">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="text-xs font-extrabold text-slate-700 tracking-wider uppercase">
+            CART ITEMS ({{ cart().length }})
+          </div>
+          <button
+            type="button"
+            (click)="startNewInvoice()"
+            class="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-300 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <span nz-icon nzType="delete" nzTheme="outline"></span>
+            Clear Basket
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        @if (cart().length === 0) {
+          <div class="flex-1 flex flex-col items-center justify-center py-24 text-center select-none">
+            <svg class="w-14 h-14 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <div class="text-sm font-bold text-slate-700">Basket is currently empty</div>
+            <div class="text-xs text-slate-400 mt-1">
+              Select a medicine from the bar above or press <kbd class="px-1.5 py-0.5 text-[11px] font-mono bg-slate-100 border border-slate-300 rounded text-slate-600">Enter</kbd> to add
+            </div>
+          </div>
+        } @else {
+          <!-- Cart Items Table -->
+          <div class="flex-1 overflow-x-auto mt-2">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                  <th class="py-2.5 px-3">#</th>
+                  <th class="py-2.5 px-3">Item / Generic</th>
+                  <th class="py-2.5 px-3">Batch / Rak</th>
+                  <th class="py-2.5 px-3 text-center">Qty</th>
+                  <th class="py-2.5 px-3 text-right">Unit Price</th>
+                  <th class="py-2.5 px-3 text-right">Discount</th>
+                  <th class="py-2.5 px-3 text-right">Total</th>
+                  <th class="py-2.5 px-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                @for (item of cart(); track item.cart_item_id || item.product_no; let i = $index) {
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">{{ i + 1 }}</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-bold text-slate-800">{{ item.product_name }}</div>
+                      <div class="text-[11px] text-slate-400">{{ item.generic_name }} · {{ item.manufacturer }}</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                      <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">
+                        {{ item.batch_number || 'Auto-FEFO' }} {{ item.rak ? '· Rak ' + item.rak : '' }}
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                      <div class="inline-flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+                        <button type="button" (click)="updateItemQty(item, -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-r border-slate-200 cursor-pointer">-</button>
+                        <span class="w-9 text-center font-bold text-xs">{{ item.qty }}</span>
+                        <button type="button" (click)="updateItemQty(item, 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 font-bold border-l border-slate-200 cursor-pointer">+</button>
+                      </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-medium">৳{{ item.unit_price | number: '1.2-2' }}</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 font-medium">
+                      {{ item.discount > 0 ? ('- ৳' + (item.discount | number: '1.2-2')) : '—' }}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-bold text-slate-900">৳{{ item.total | number: '1.2-2' }}</td>
+                    <td class="py-2.5 px-3 text-center">
+                      <button type="button" (click)="removeItem(item)" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer" title="Remove Item">
+                        <span nz-icon nzType="delete" nzTheme="outline" class="text-base"></span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right Sidebar (Checkout & Settlement) -->
+    <div class="w-full lg:w-96 bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col justify-between shrink-0">
+      <div>
+        <!-- Customer Section -->
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Customer</label>
+        <div class="flex items-center gap-2 mb-3">
+          <nz-select
+            class="flex-1"
+            [(ngModel)]="selectedCustomer"
+            nzShowSearch
+            [nzPlaceHolder]="'Select customer...'"
+            aria-label="Select Customer"
+          >
+            @for (c of customers; track c.id) {
+              <nz-option [nzValue]="c.id" [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            (click)="openAddCustomerModal()"
+            class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center font-bold text-lg cursor-pointer shadow-xs transition-colors shrink-0"
+            title="Quick Add Customer"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- NET PAYABLE Card -->
+        <div class="bg-[#181d28] rounded-xl p-4 text-center text-white mb-3 shadow-sm">
+          <div class="text-[11px] font-bold tracking-widest text-slate-400 uppercase">NET PAYABLE</div>
+          <div class="text-3xl font-black text-white mt-1 tracking-tight">৳ {{ payableTotal() | number: '1.2-2' }}</div>
+        </div>
+
+        <!-- Summary Breakdown -->
+        <div class="space-y-1.5 text-xs pb-3 border-b border-slate-100 mb-3">
+          <div class="flex justify-between items-center text-slate-500 font-medium">
+            <span>Items</span>
+            <span class="font-bold text-slate-800">{{ cart().length }} ({{ totalCartPcs() }} pcs)</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-500 font-medium">
+            <span>Subtotal</span>
+            <span class="font-bold text-slate-800">৳ {{ subtotal() | number: '1.2-2' }}</span>
+          </div>
+          @if (discountAmount() > 0) {
+            <div class="flex justify-between items-center text-emerald-600 font-medium">
+              <span>Discount</span>
+              <span class="font-bold">- ৳ {{ discountAmount() | number: '1.2-2' }}</span>
+            </div>
+          }
+          <div class="pt-0.5">
+            <button
+              type="button"
+              (click)="screen2ShowDiscount.set(!screen2ShowDiscount())"
+              class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-transparent border-0 p-0 cursor-pointer"
+            >
+              {{ screen2ShowDiscount() ? '- Close discount' : '+ Add discount' }}
+            </button>
+            @if (screen2ShowDiscount()) {
+              <div class="flex items-center gap-2 mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                <select
+                  [ngModel]="globalDiscountType()"
+                  (ngModelChange)="globalDiscountType.set($event)"
+                  class="text-xs border border-slate-200 rounded px-1.5 py-1 bg-white font-medium"
+                >
+                  <option [ngValue]="1">% Percentage</option>
+                  <option [ngValue]="2">৳ Flat Taka</option>
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  [ngModel]="globalDiscountValue()"
+                  (ngModelChange)="globalDiscountValue.set($event)"
+                  placeholder="0"
+                  class="w-20 text-xs px-2 py-1 border border-slate-200 rounded text-right font-semibold"
+                />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment Method 2x4 Grid -->
+        <div class="text-xs font-semibold text-slate-700 mb-2">Payment method</div>
+        <div class="grid grid-cols-4 gap-2 mb-3">
+          <!-- Cash -->
+          <button
+            type="button"
+            (click)="setMethod('cash')"
+            class="h-10 rounded-lg flex items-center justify-center text-xs font-semibold transition-all cursor-pointer select-none"
+            [class.border-2]="selectedMethod() === 'cash'"
+            [class.border-indigo-600]="selectedMethod() === 'cash'"
+            [class.bg-indigo-50]="selectedMethod() === 'cash'"
+            [class.text-indigo-700]="selectedMethod() === 'cash'"
+            [class.font-bold]="selectedMethod() === 'cash'"
+            [class.border]="selectedMethod() !== 'cash'"
+            [class.border-slate-200]="selectedMethod() !== 'cash'"
+            [class.bg-white]="selectedMethod() !== 'cash'"
+            [class.text-slate-700]="selectedMethod() !== 'cash'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'cash'"
+          >
+            Cash
+          </button>
+
+          <!-- Card -->
+          <button
+            type="button"
+            (click)="setMethod('card')"
+            class="h-10 rounded-lg flex items-center justify-center text-xs font-semibold transition-all cursor-pointer select-none"
+            [class.border-2]="selectedMethod() === 'card'"
+            [class.border-indigo-600]="selectedMethod() === 'card'"
+            [class.bg-indigo-50]="selectedMethod() === 'card'"
+            [class.text-indigo-700]="selectedMethod() === 'card'"
+            [class.font-bold]="selectedMethod() === 'card'"
+            [class.border]="selectedMethod() !== 'card'"
+            [class.border-slate-200]="selectedMethod() !== 'card'"
+            [class.bg-white]="selectedMethod() !== 'card'"
+            [class.text-slate-700]="selectedMethod() !== 'card'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'card'"
+          >
+            Card
+          </button>
+
+          <!-- bKash -->
+          <button
+            type="button"
+            (click)="setMethod('bkash')"
+            class="h-10 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none p-1.5"
+            [class.border-2]="selectedMethod() === 'bkash'"
+            [class.border-indigo-600]="selectedMethod() === 'bkash'"
+            [class.bg-indigo-50]="selectedMethod() === 'bkash'"
+            [class.border]="selectedMethod() !== 'bkash'"
+            [class.border-slate-200]="selectedMethod() !== 'bkash'"
+            [class.bg-white]="selectedMethod() !== 'bkash'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'bkash'"
+            title="bKash"
+          >
+            <svg viewBox="168 0 158 150" class="w-6 h-6 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon fill="#D02053" points="225.42,71.2 234.67,112.76 295.16,82.13"/>
+              <polygon fill="#E2126E" points="242.63,9.1 225.43,71.21 295.18,82.13"/>
+              <polygon fill="#D02053" points="168.73,0 240.86,8.62 223.81,70.36"/>
+              <polygon fill="#9D1638" points="168.15,12.15 176.19,12.15 198.73,40.96"/>
+              <polygon fill="#D02053" points="297.09,81.74 276.12,52.72 310.04,46.65"/>
+              <polygon fill="#E2126E" points="293.59,90.24 295.74,83.78 242.81,110.64"/>
+              <polygon fill="#9D1638" points="223.94,72.84 234.98,122.49 202.2,149.14"/>
+              <polygon fill="#E2126E" points="306.73,61.4 325.98,61.07 312.07,46.92"/>
+            </svg>
+          </button>
+
+          <!-- Nagad -->
+          <button
+            type="button"
+            (click)="setMethod('nagad')"
+            class="h-10 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none p-1.5"
+            [class.border-2]="selectedMethod() === 'nagad'"
+            [class.border-indigo-600]="selectedMethod() === 'nagad'"
+            [class.bg-indigo-50]="selectedMethod() === 'nagad'"
+            [class.border]="selectedMethod() !== 'nagad'"
+            [class.border-slate-200]="selectedMethod() !== 'nagad'"
+            [class.bg-white]="selectedMethod() !== 'nagad'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'nagad'"
+            title="Nagad"
+          >
+            <svg viewBox="0 0 54 54" class="w-6 h-6 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#F7941D" d="M12.92 11.58C14.31 8.1 16.46 5.12 19.36 2.66C19.96 2.14 20.69 1.6 21.54 1.05C22.17 0.64 22.78 0.48 23.46 0.78C23.87 0.96 24.12 1.25 24.33 1.65C25.5 3.8 26.66 5.93 27.82 8.06C24.64 9.26 21.83 11.36 19.58 13.9C16.12 17.79 13.79 22.67 13.15 27.87C12.62 26.34 12.28 25.17 12 24C11.61 22.33 11.4 20.69 11.37 19.06C11.3 16.03 11.82 13.15 12.92 11.58Z"/>
+              <path fill="#F15A24" d="M29.36 8.76L26.95 4.24C30.54 1.79 34.74 0.69 39.07 0.79C39.82 0.81 40.47 1.25 40.7 1.96C40.93 5.97 41.05 9.07 41.18 12.15C38.44 11.88 35.66 11.88 32.94 12.25C27.88 12.94 23.18 15.04 19.65 18.66C18.14 20.22 16.88 21.96 15.87 23.88C16.71 18.46 20.51 13.95 25.04 11.04C26.41 10.16 27.85 9.4 29.36 8.76Z"/>
+              <path fill="#ED1C24" d="M31.36 40.09C28.96 41.46 26.48 42.2 23.88 42.43C20.73 42.71 17.49 42.23 14.57 40.96C11.08 39.45 8.25 37.12 6.09 33.96C4.1 31.04 2.98 27.55 2.8 24.06C2.65 20.92 3.22 17.92 4.51 15.04C6.38 12.02 8.79 9.51 11.72 7.51C11.79 9.8 10.39 14.39 10.04 19C9.86 21.44 10.04 23.89 10.59 26.35C11.8 31.8 14.98 36.82 19.96 39.46C21.64 40.36 23.42 40.89 25.3 41.07C27.36 41.27 29.38 40.95 31.36 40.09Z"/>
+              <path fill="#ED1C24" d="M42.36 13.39L42.1 8.25C43.43 8.11 44.74 8.29 45.95 8.61C48.2 9.2 50.31 10.11 52.27 11.34C53.26 12.89 53.13 13.79 52.77 14.49C51 17.22 49.26 19.92 47.54 22.58C45.45 20.59 43.06 19.15 40.35 18.29C37.25 17.29 33.95 17.07 30.7 17.45C27.14 17.86 23.61 18.94 20.3 20.45C22.44 18.08 24.98 16.32 27.91 15.11C32.43 13.23 37.45 12.85 42.32 13.43L42.36 13.39Z"/>
+              <path fill="#F15A24" d="M4.5 14.94C3.22 17.92 2.65 20.92 2.8 24.06C2.98 27.55 4.1 31.04 6.09 33.96C8.25 37.12 11.08 39.45 14.57 40.96C17.49 42.23 20.73 42.71 23.88 42.43C26.48 42.2 28.96 41.46 31.3 40.21C33.63 38.81 35.81 36.89 36.68 35.62C38.73 32.6 39.48 28.86 38.65 25.29C38.16 23.16 37.25 21.24 35.91 19.53C39.73 23.62 41.55 28.74 41.21 34.07C40.77 41.16 36.48 47.41 30.06 50.43C25.23 52.32 21.51 52.6 17.68 51.8C12.61 49.59 7.23 45.5 2.82 38.12C0.93 33.09 0.47 29.21 0.92 25.24C1.34 21.56 2.54 18.13 4.5 14.94Z"/>
+              <path fill="#F7941D" d="M17.68 51.8C25.23 52.32 28.83 50.96 30.06 50.43C36.48 47.41 40.77 41.16 41.21 34.07C41.55 28.74 39.73 23.62 36.14 19.66L35.11 18.62C38.52 18.72 41.29 19.86 43.57 21.77C47.14 24.77 49.16 29.29 49.05 33.96C49 36.02 48.54 38.04 47.67 40.01C45 44.5 42.37 47.18 39.14 49.26C35.41 51.66 31.1 52.98 26.67 53.16C23.82 53.27 20.96 52.88 18.08 51.98L17.68 51.8Z"/>
+            </svg>
+          </button>
+
+          <!-- Rocket -->
+          <button
+            type="button"
+            (click)="setMethod('rocket')"
+            class="h-10 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none p-1.5"
+            [class.border-2]="selectedMethod() === 'rocket'"
+            [class.border-indigo-600]="selectedMethod() === 'rocket'"
+            [class.bg-indigo-50]="selectedMethod() === 'rocket'"
+            [class.border]="selectedMethod() !== 'rocket'"
+            [class.border-slate-200]="selectedMethod() !== 'rocket'"
+            [class.bg-white]="selectedMethod() !== 'rocket'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'rocket'"
+            title="Rocket"
+          >
+            <svg viewBox="0 0 100 100" class="w-6 h-6 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="92" height="92" x="4" y="4" rx="20" fill="#8C3494"/>
+              <path d="M50 16 C43 25 38 40 38 55 C38 62 41 68 45 71 L37 77 C36 78 37 80 39 80 L44 80 L45 74 L55 74 L56 80 L61 80 C63 80 64 78 63 77 L55 71 C59 68 62 62 62 55 C62 40 57 25 50 16 Z" fill="#FFFFFF"/>
+              <circle cx="50" cy="42" r="5.5" fill="#8C3494"/>
+              <path d="M47 75 L50 85 L53 75 Z" fill="#F7941D"/>
+            </svg>
+          </button>
+
+          <!-- Upay -->
+          <button
+            type="button"
+            (click)="setMethod('upay')"
+            class="h-10 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none p-1.5"
+            [class.border-2]="selectedMethod() === 'upay'"
+            [class.border-indigo-600]="selectedMethod() === 'upay'"
+            [class.bg-indigo-50]="selectedMethod() === 'upay'"
+            [class.border]="selectedMethod() !== 'upay'"
+            [class.border-slate-200]="selectedMethod() !== 'upay'"
+            [class.bg-white]="selectedMethod() !== 'upay'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'upay'"
+            title="Upay"
+          >
+            <svg viewBox="0 0 150 140" class="w-6 h-6 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="25" cy="22" r="19" fill="#FBCE07"/>
+              <circle cx="125" cy="22" r="19" fill="#0D56A3"/>
+              <path fill="#0D56A3" d="M57.88 114.09C57.32 119.86 59.65 125.15 63.67 128.68C66.65 131.32 70.67 132.92 75.02 133C85.23 133.16 95.69 131.96 105.59 128.6C130.85 120.27 144.69 98.71 144.53 72.59V63.86C144.53 58.89 140.11 53.29 133.91 53.29H118.38C112.02 53.29 107.68 59.05 107.68 63.94V72.51C107.68 82.05 102.05 90.06 93.28 94.87C87.16 97.27 80.73 98.31 74.13 98.71C70.11 98.95 66.49 100.55 63.59 103.12C60.38 105.68 58.28 109.61 57.88 114.09Z"/>
+              <path fill="#FBCE07" d="M91.67 114.09C92.23 119.86 89.9 125.15 85.88 128.68C82.9 131.32 78.88 132.92 74.54 133C64.32 133.16 53.86 131.96 43.96 128.6C18.7 120.27 4.86 98.71 5.02 72.59V63.86C5.02 58.89 9.45 53.29 15.64 53.29H31.17C37.52 53.29 41.87 59.05 41.87 63.94V72.51C41.87 82.05 47.5 90.06 56.27 94.87C62.38 97.27 68.82 98.31 75.42 98.71C79.44 98.95 83.06 100.55 85.96 103.12C89.18 105.68 91.27 109.61 91.67 114.09Z"/>
+            </svg>
+          </button>
+
+          <!-- Split -->
+          <button
+            type="button"
+            (click)="setMethod('split')"
+            class="h-10 rounded-lg flex items-center justify-center text-xs font-semibold transition-all cursor-pointer select-none"
+            [class.border-2]="selectedMethod() === 'split'"
+            [class.border-indigo-600]="selectedMethod() === 'split'"
+            [class.bg-indigo-50]="selectedMethod() === 'split'"
+            [class.text-indigo-700]="selectedMethod() === 'split'"
+            [class.font-bold]="selectedMethod() === 'split'"
+            [class.border]="selectedMethod() !== 'split'"
+            [class.border-slate-200]="selectedMethod() !== 'split'"
+            [class.bg-white]="selectedMethod() !== 'split'"
+            [class.text-slate-700]="selectedMethod() !== 'split'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'split'"
+          >
+            Split
+          </button>
+
+          <!-- Due -->
+          <button
+            type="button"
+            (click)="setMethod('due')"
+            class="h-10 rounded-lg flex items-center justify-center text-xs font-semibold transition-all cursor-pointer select-none"
+            [class.border-2]="selectedMethod() === 'due'"
+            [class.border-indigo-600]="selectedMethod() === 'due'"
+            [class.bg-indigo-50]="selectedMethod() === 'due'"
+            [class.text-indigo-700]="selectedMethod() === 'due'"
+            [class.font-bold]="selectedMethod() === 'due'"
+            [class.border]="selectedMethod() !== 'due'"
+            [class.border-slate-200]="selectedMethod() !== 'due'"
+            [class.bg-white]="selectedMethod() !== 'due'"
+            [class.text-slate-700]="selectedMethod() !== 'due'"
+            [class.hover:bg-slate-50]="selectedMethod() !== 'due'"
+          >
+            Due
+          </button>
+        </div>
+
+        <!-- Split / MFS Details if Active -->
+        @if (selectedMethod() === 'split') {
+          <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 mb-3 space-y-1.5 text-xs">
+            <div class="flex justify-between items-center font-semibold text-slate-600">
+              <span>Split Payment Allocation</span>
+              <span class="text-[11px] text-slate-400">Total: ৳{{ payableTotal() | number: '1.2-2' }}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Cash</label>
+                <input type="number" min="0" [ngModel]="splitCash()" (ngModelChange)="onSplitCashChange($event)" class="w-full h-7 px-2 border border-slate-200 rounded text-xs text-right font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Card</label>
+                <input type="number" min="0" [ngModel]="splitCard() || ''" (ngModelChange)="onSplitChannelInput('card', $event)" placeholder="0" class="w-full h-7 px-2 border border-slate-200 rounded text-xs text-right font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">bKash</label>
+                <input type="number" min="0" [ngModel]="splitBkash() || ''" (ngModelChange)="onSplitChannelInput('bkash', $event)" placeholder="0" class="w-full h-7 px-2 border border-slate-200 rounded text-xs text-right font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Nagad</label>
+                <input type="number" min="0" [ngModel]="splitNagad() || ''" (ngModelChange)="onSplitChannelInput('nagad', $event)" placeholder="0" class="w-full h-7 px-2 border border-slate-200 rounded text-xs text-right font-bold" />
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (['card', 'bkash', 'nagad', 'rocket', 'upay'].includes(selectedMethod())) {
+          <div class="mb-3">
+            <label for="screen2-txn-ref" class="block text-[11px] font-semibold text-slate-600 mb-1">
+              {{ selectedMethod() === 'card' ? 'Card Last 4 Digits' : (methodDisplayNames[selectedMethod()] + ' Trx ID') }}
+            </label>
+            <input
+              id="screen2-txn-ref"
+              type="text"
+              [(ngModel)]="txnReference"
+              placeholder="e.g. TrxID or 4 digits"
+              class="w-full h-8 px-2.5 border border-slate-200 rounded-lg text-xs font-mono focus:outline-hidden focus:border-indigo-600"
+            />
+          </div>
+        }
+
+        <!-- Received from customer (৳) -->
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1">
+          <span>Received from customer (৳)</span>
+          <button
+            type="button"
+            (click)="setExactPayment()"
+            class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-transparent border-0 p-0 cursor-pointer"
+          >
+            Exact
+          </button>
+        </div>
+        <input
+          type="number"
+          min="0"
+          [ngModel]="tendered()"
+          (ngModelChange)="onTenderedChange($event)"
+          class="w-full h-10 px-3 border border-slate-200 rounded-lg text-right text-lg font-bold text-slate-800 focus:outline-hidden focus:border-indigo-600 mb-2 shadow-2xs"
+          placeholder="0"
+        />
+
+        <!-- Quick Tender Buttons -->
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <button
+            type="button"
+            (click)="setQuickCash(100)"
+            class="h-8 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+          >
+            ৳100
+          </button>
+          <button
+            type="button"
+            (click)="setQuickCash(500)"
+            class="h-8 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+          >
+            ৳500
+          </button>
+          <button
+            type="button"
+            (click)="setQuickCash(1000)"
+            class="h-8 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+          >
+            ৳1000
+          </button>
+        </div>
+
+        <!-- Status Pill -->
+        <div
+          class="text-center py-2 px-3 rounded-lg text-xs font-medium mb-3 transition-colors"
+          [class.bg-slate-100]="resultState().type === 'default'"
+          [class.text-slate-500]="resultState().type === 'default'"
+          [class.bg-emerald-50]="resultState().type === 'ok'"
+          [class.text-emerald-700]="resultState().type === 'ok'"
+          [class.bg-rose-50]="resultState().type === 'short'"
+          [class.text-rose-700]="resultState().type === 'short'"
+        >
+          {{ resultState().text }}
+        </div>
+
+        <!-- Add Note -->
+        <div class="mb-3">
+          <button
+            type="button"
+            (click)="screen2ShowNote.set(!screen2ShowNote())"
+            class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-transparent border-0 p-0 cursor-pointer"
+          >
+            {{ screen2ShowNote() ? '- Close note' : '+ Add note' }}
+          </button>
+          @if (screen2ShowNote()) {
+            <textarea
+              rows="2"
+              [(ngModel)]="orderNote"
+              placeholder="Write order note here..."
+              class="w-full mt-1.5 p-2 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:border-indigo-600"
+            ></textarea>
+          }
+        </div>
+
+        <!-- Complete Sale Button -->
+        @if (isCheckoutDisabled()) {
+          <button
+            type="button"
+            [disabled]="true"
+            class="w-full h-12 bg-[#86efac] text-emerald-800/80 font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-90 transition-all text-sm shadow-xs"
+          >
+            <span>✓ Complete sale</span>
+            <span class="bg-white/40 text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">F10</span>
+          </button>
+          <div class="text-center text-xs text-slate-400 mt-1">{{ checkoutDisabledReason() }}</div>
+        } @else {
+          <button
+            type="button"
+            (click)="confirmCheckout()"
+            class="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all text-sm active:scale-98"
+          >
+            <span>✓ Complete sale</span>
+            <span class="bg-white/20 text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">F10</span>
+          </button>
+        }
+      </div>
+
+      <!-- Footer Row -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-4 text-xs">
+        <label class="flex items-center gap-2 cursor-pointer text-slate-700 font-medium select-none">
+          <input
+            type="checkbox"
+            [(ngModel)]="quickPrint"
+            class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+          />
+          <span>Print receipt</span>
+        </label>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="printInvoice()"
+            class="text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-transparent border-0 p-0 cursor-pointer flex items-center gap-1"
+          >
+            🖨️ Re-print
+          </button>
+          <button
+            type="button"
+            (click)="startNewInvoice()"
+            class="text-xs text-rose-500 hover:text-rose-700 font-medium bg-transparent border-0 p-0 cursor-pointer"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- Quick Add Customer Modal -->
 <nz-modal

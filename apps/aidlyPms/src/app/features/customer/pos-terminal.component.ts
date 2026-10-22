@@ -506,6 +506,35 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     { id: 'otc', name: 'OTC', icon: 'check-circle' },
   ];
 
+  // Screen 1 vs Screen 2 Switcher & Screen 2 State
+  readonly activeScreen = signal<'screen1' | 'screen2'>('screen1');
+
+  // Screen 2 Product Entry Signals
+  screen2ProductSearch = signal<string>('');
+  screen2SelectedProduct = signal<CatalogProduct | null>(null);
+  screen2Qty = signal<number>(1);
+  screen2Price = signal<number>(0);
+  screen2Discount = signal<number>(0);
+  screen2DiscountType = signal<'percent' | 'taka'>('percent');
+  screen2IsSearchOpen = signal<boolean>(false);
+  screen2SearchResults = signal<CatalogProduct[]>([]);
+  screen2HighlightedIndex = signal<number>(0);
+  screen2ShowNote = signal<boolean>(false);
+  screen2ShowDiscount = signal<boolean>(false);
+
+  // Fast Pick OTC row items matching attached screenshot pixel-to-pixel
+  readonly fastPickItems = [
+    { name: '3RD Cef', strength: '400mg', price: 50, stock: 399, generic: 'Cefixime Trihydrate' },
+    { name: 'Ace Plus', strength: '500mg + 65mg', price: 3, stock: 299, generic: 'Paracetamol + Caffeine' },
+    { name: 'Ceevit 250mg', strength: '250mg', price: 2.5, stock: 400, generic: 'Ascorbic Acid' },
+    { name: 'Histal', strength: '10 mg', price: 15, stock: 200, generic: 'Chlorpheniramine Maleate' },
+    { name: 'Napa Extra', strength: '500mg + 65mg', price: 3, stock: 450, generic: 'Paracetamol + Caffeine' },
+    { name: 'Seclo 20mg', strength: '20mg', price: 7, stock: 350, generic: 'Omeprazole' },
+    { name: 'Fexo 120mg', strength: '120mg', price: 9, stock: 280, generic: 'Fexofenadine HCl' },
+    { name: 'Monas 10mg', strength: '10mg', price: 16, stock: 190, generic: 'Montelukast Sodium' },
+  ];
+  selectedFastPickIndex = signal<number>(0);
+
   // Entry Form State
   selectedProductText = '';
   selectedProductObj: CatalogProduct | null = null;
@@ -1211,7 +1240,8 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
 
   focusProductSearch(): void {
     setTimeout(() => {
-      const inputEl = document.getElementById('pos-search-input') as HTMLInputElement;
+      const targetId = this.activeScreen() === 'screen2' ? 'screen2-search-input' : 'pos-search-input';
+      const inputEl = document.getElementById(targetId) as HTMLInputElement;
       if (inputEl) {
         inputEl.focus();
         inputEl.select();
@@ -1365,6 +1395,204 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.entryQty = 1;
     this.entryPrice = 0;
     this.entryDiscountValue = 0;
+    this.focusProductSearch();
+  }
+
+  // ==========================================
+  // Screen 2 Helper Methods
+  // ==========================================
+  selectFastPickItem(index: number): void {
+    this.selectedFastPickIndex.set(index);
+    const item = this.fastPickItems[index];
+    if (!item) return;
+
+    const match = this.catalogProducts().find(p =>
+      p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+      (item.generic && p.generic && p.generic.toLowerCase().includes(item.generic.toLowerCase()))
+    );
+
+    if (match) {
+      this.screen2SelectedProduct.set(match);
+      this.screen2ProductSearch.set(`${match.name}${match.strength ? ' (' + match.strength + ')' : ''}`);
+      const price = this.isWholesale() ? match.saleWholesale : match.saleRetail;
+      this.screen2Price.set(price || item.price);
+    } else {
+      this.screen2SelectedProduct.set(null);
+      this.screen2ProductSearch.set(`${item.name} (${item.strength})`);
+      this.screen2Price.set(item.price);
+    }
+    this.screen2Qty.set(1);
+    this.screen2Discount.set(0);
+  }
+
+  onScreen2SearchFocus(): void {
+    if (!this.screen2ProductSearch().trim()) {
+      this.screen2SearchResults.set(this.catalogProducts().slice(0, 10));
+    }
+    this.screen2IsSearchOpen.set(true);
+  }
+
+  onScreen2SearchInput(event: Event): void {
+    const val = (event.target as HTMLInputElement).value || '';
+    this.screen2ProductSearch.set(val);
+    const term = val.trim().toLowerCase();
+    if (!term) {
+      this.screen2SearchResults.set(this.catalogProducts().slice(0, 10));
+    } else {
+      const results = this.catalogProducts().filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        (p.generic && p.generic.toLowerCase().includes(term)) ||
+        (p.barcode && p.barcode.toLowerCase().includes(term))
+      ).slice(0, 12);
+      this.screen2SearchResults.set(results);
+    }
+    this.screen2IsSearchOpen.set(true);
+    this.screen2HighlightedIndex.set(0);
+  }
+
+  onScreen2SearchKeydown(event: KeyboardEvent): void {
+    if (!this.screen2IsSearchOpen()) {
+      if (event.key === 'ArrowDown') {
+        this.screen2IsSearchOpen.set(true);
+        this.screen2SearchResults.set(this.catalogProducts().slice(0, 10));
+        event.preventDefault();
+      }
+      return;
+    }
+    const results = this.screen2SearchResults();
+    if (results.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.screen2HighlightedIndex.update(i => (i + 1) % results.length);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.screen2HighlightedIndex.update(i => (i - 1 + results.length) % results.length);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const selected = results[this.screen2HighlightedIndex()];
+      if (selected) {
+        this.selectScreen2Product(selected);
+      }
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.screen2IsSearchOpen.set(false);
+    }
+  }
+
+  selectScreen2Product(product: CatalogProduct): void {
+    this.screen2SelectedProduct.set(product);
+    this.screen2ProductSearch.set(`${product.name}${product.strength ? ' (' + product.strength + ')' : ''}`);
+    const price = this.isWholesale() ? product.saleWholesale : product.saleRetail;
+    this.screen2Price.set(price || 0);
+    this.screen2Qty.set(1);
+    this.screen2Discount.set(0);
+    this.screen2IsSearchOpen.set(false);
+  }
+
+  addScreen2Item(): void {
+    const searchTxt = this.screen2ProductSearch().trim();
+    if (!searchTxt) {
+      this.msg.warning('Please select or search a product first.');
+      return;
+    }
+    const qty = Number(this.screen2Qty()) || 1;
+    const price = Number(this.screen2Price()) || 0;
+    if (qty <= 0) {
+      this.msg.warning('Quantity must be greater than zero.');
+      return;
+    }
+
+    const selectedProd = this.screen2SelectedProduct();
+    const catalogProd = selectedProd || this.catalogProducts().find(p =>
+      searchTxt.toLowerCase().includes(p.name.toLowerCase()) ||
+      p.name.toLowerCase() === searchTxt.toLowerCase()
+    );
+
+    const prodNo = catalogProd ? catalogProd.id : 1;
+    const prodName = catalogProd ? catalogProd.name : searchTxt;
+    const generic = catalogProd ? catalogProd.generic : 'General';
+    const manufacturer = catalogProd ? catalogProd.manufacturer : 'Local Pharma';
+    const cost = catalogProd ? catalogProd.cost : (price * 0.8);
+    const pcsPerBox = catalogProd ? catalogProd.pcsPerBox : 10;
+    const availStock = catalogProd ? this.getAvailableStock(catalogProd) : 999;
+    const rak = catalogProd ? catalogProd.rak : '';
+    const barcode = catalogProd ? catalogProd.barcode : '';
+
+    let lineDiscount = 0;
+    const discVal = Number(this.screen2Discount()) || 0;
+    if (discVal > 0) {
+      if (this.screen2DiscountType() === 'percent') {
+        lineDiscount = (price * qty * discVal) / 100;
+      } else {
+        lineDiscount = discVal;
+      }
+    }
+    lineDiscount = Math.round(lineDiscount * 100) / 100;
+    const lineTotal = Math.round(Math.max(0, (price * qty) - lineDiscount) * 100) / 100;
+
+    const existingIndex = this.cart().findIndex(i =>
+      (catalogProd ? i.product_no === catalogProd.id : i.product_name === prodName) && i.unit_price === price
+    );
+
+    if (existingIndex > -1) {
+      this.cart.update(items => items.map((item, idx) => {
+        if (idx === existingIndex) {
+          const newQty = Math.round((item.qty + qty) * 100) / 100;
+          let newDisc = 0;
+          if (item.discount_type === DiscountType.Flat) {
+            newDisc = item.discount + lineDiscount;
+          } else {
+            const pct = (item.discount / (item.unit_price * item.qty)) * 100 || 0;
+            newDisc = Math.round(((item.unit_price * newQty * pct) / 100) * 100) / 100;
+          }
+          const newTot = Math.round(Math.max(0, (item.unit_price * newQty) - newDisc) * 100) / 100;
+          return {
+            ...item,
+            qty: newQty,
+            discount: newDisc,
+            total: newTot,
+            stock: item.stock ?? availStock,
+          };
+        }
+        return item;
+      }));
+      this.msg.success(`Updated ${prodName} quantity in basket`);
+    } else {
+      const newItem: CartItem = {
+        cart_item_id: Date.now(),
+        product_no: prodNo,
+        product_name: prodName,
+        generic_name: generic,
+        manufacturer,
+        cost_price: cost,
+        unit_price: price,
+        qty,
+        pcs_per_box: pcsPerBox,
+        discount: lineDiscount,
+        discount_type: this.screen2DiscountType() === 'percent' ? DiscountType.Percentage : DiscountType.Flat,
+        total: lineTotal,
+        stock: availStock,
+        rak,
+        barcode,
+        drug_schedule: catalogProd?.drug_schedule || 'OTC',
+        is_prescription_required: catalogProd?.is_prescription_required,
+        is_narcotic: catalogProd?.is_narcotic,
+        dar_number: catalogProd?.dar_number || null,
+      };
+      this.cart.update(list => [newItem, ...list]);
+      this.msg.success(`Added ${prodName} to basket`);
+    }
+
+    // Reset inputs
+    this.screen2ProductSearch.set('');
+    this.screen2SelectedProduct.set(null);
+    this.screen2Qty.set(1);
+    this.screen2Price.set(0);
+    this.screen2Discount.set(0);
+    this.screen2IsSearchOpen.set(false);
+    this.isManualTender.set(false);
+    this.tenderTouched = false;
     this.focusProductSearch();
   }
 
