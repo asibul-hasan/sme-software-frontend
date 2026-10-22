@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.16.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.15.0...v1.16.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **auth:** add role_name, status and SysRoleMenuPermission models ([8a42f9b](https://github.com/asibul-hasan/sme-software-frontend/commit/8a42f9b6cec61d10a2f9bc6e07f5bf08b3c120e3))
+
+
+### 🔧 Maintenance & Chores
+
+* **schema:** sync zero defaults, sequences, and migration order ([cd48c04](https://github.com/asibul-hasan/sme-software-frontend/commit/cd48c04fcff0b93e12dab3a4838aa7694948defb))
+
 ## [1.15.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.14.0...v1.15.0) (2026-10-21)
 
 
