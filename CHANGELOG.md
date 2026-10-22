@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.23.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.22.1...v1.23.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **pos:** add stock details in search dropdown and cart table for Screen 2 ([ac88b9b](https://github.com/asibul-hasan/sme-software-frontend/commit/ac88b9b9debb4c0c76bb14537047c69c0db8fba3))
+
 ## [1.22.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.22.0...v1.22.1) (2026-10-22)
 
 
