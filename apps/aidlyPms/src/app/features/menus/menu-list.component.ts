@@ -43,24 +43,22 @@ import { ModalService } from '../../core/services/modal.service';
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
           <nz-input-group [nzPrefix]="searchIcon" class="w-64 shrink-0 rounded-md">
-            <input
+            <input id="menu-list-search-by-title-or-path-6"
               type="text"
               nz-input
               placeholder="Search by title or path..."
               [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
-            />
+              (ngModelChange)="searchQuery.set($event)" aria-label="Search by title or path..." />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
           </ng-template>
 
-          <nz-select
+          <nz-select id="menu-list-filter-by-parent-7" nzId="menu-list-filter-by-parent-7"
             class="w-48 shrink-0"
             [ngModel]="parentFilter()"
             (ngModelChange)="parentFilter.set($event)"
-            nzPlaceHolder="Filter by parent"
-          >
+            nzPlaceHolder="Filter by parent" aria-label="Filter by parent">
             <nz-option nzValue="ALL" nzLabel="All Menus"></nz-option>
             <nz-option nzValue="ROOT" nzLabel="Root Modules Only"></nz-option>
             @for (p of rootMenus(); track p.menu_no) {
@@ -150,7 +148,7 @@ import { ModalService } from '../../core/services/modal.service';
                         nz-tooltip
                         nzTooltipTitle="Edit Menu"
                         class="btn-tbl-action btn-tbl-edit"
-                      >
+                       aria-label="Edit Menu">
                         <span nz-icon nzType="edit"></span>
                       </button>
                       <button
@@ -159,7 +157,7 @@ import { ModalService } from '../../core/services/modal.service';
                         nz-tooltip
                         [nzTooltipTitle]="m.status ? 'Deactivate Menu' : 'Activate Menu'"
                         class="btn-tbl-action btn-tbl-neutral text-amber-600 hover:text-amber-700"
-                      >
+                       [attr.aria-label]="m.status ? 'Deactivate Menu' : 'Activate Menu'">
                         <span nz-icon [nzType]="m.status ? 'pause-circle' : 'play-circle'"></span>
                       </button>
                       <button
@@ -168,7 +166,7 @@ import { ModalService } from '../../core/services/modal.service';
                         nz-tooltip
                         nzTooltipTitle="Delete Menu"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Menu">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -208,56 +206,52 @@ import { ModalService } from '../../core/services/modal.service';
         <ng-container *nzModalContent>
           <div class="space-y-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="menu-list-menu-title-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 Menu Title <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="menu-list-menu-title-1"
                 type="text"
                 nz-input
                 placeholder="e.g. Sales Invoice Register"
                 [(ngModel)]="formTitle"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Menu Title" />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label for="menu-list-route-path-2" class="block text-xs font-semibold text-slate-700 mb-1">
                   Route Path
                 </label>
-                <input
+                <input id="menu-list-route-path-2"
                   type="text"
                   nz-input
                   placeholder="e.g. /customer/sale"
                   [(ngModel)]="formPath"
-                  class="rounded-md"
-                />
+                  class="rounded-md" aria-label="Route Path" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label for="menu-list-ant-design-icon-3" class="block text-xs font-semibold text-slate-700 mb-1">
                   Ant Design Icon
                 </label>
-                <input
+                <input id="menu-list-ant-design-icon-3"
                   type="text"
                   nz-input
                   placeholder="e.g. shopping-cart, file-text"
                   [(ngModel)]="formIcon"
-                  class="rounded-md"
-                />
+                  class="rounded-md" aria-label="Ant Design Icon" />
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label for="menu-list-parent-menu-optional-4" class="block text-xs font-semibold text-slate-700 mb-1">
                   Parent Menu (Optional)
                 </label>
-                <nz-select
+                <nz-select id="menu-list-parent-menu-optional-4" nzId="menu-list-parent-menu-optional-4"
                   class="w-full"
                   [(ngModel)]="formParentNo"
                   nzPlaceHolder="None (Root Module)"
-                  nzAllowClear
-                >
+                  nzAllowClear aria-label="Parent Menu (Optional)">
                   @for (p of rootMenus(); track p.menu_no) {
                     <nz-option [nzValue]="p.menu_no" [nzLabel]="p.title"></nz-option>
                   }
@@ -265,16 +259,15 @@ import { ModalService } from '../../core/services/modal.service';
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label for="menu-list-display-order-5" class="block text-xs font-semibold text-slate-700 mb-1">
                   Display Order
                 </label>
-                <input
+                <input id="menu-list-display-order-5"
                   type="number"
                   nz-input
                   [(ngModel)]="formOrderNo"
                   min="1"
-                  class="rounded-md"
-                />
+                  class="rounded-md" aria-label="Display Order" />
               </div>
             </div>
 

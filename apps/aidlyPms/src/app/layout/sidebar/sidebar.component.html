@@ -17,7 +17,7 @@
         nz-tooltip
         nzTooltipTitle="OS Pharmacy PMS v2.0"
         nzTooltipPlacement="right"
-      >
+       aria-label="OS Pharmacy PMS v2.0">
         <span class="sb-rail-initial">℞</span>
       </a>
 
@@ -32,7 +32,7 @@
           nz-tooltip
           nzTooltipTitle="ড্যাশবোর্ড / Executive Dashboard"
           nzTooltipPlacement="right"
-        >
+         aria-label="ড্যাশবোর্ড / Executive Dashboard">
           <span class="sb-module-icon">
             <span nz-icon nzType="dashboard" class="text-base"></span>
           </span>
@@ -48,7 +48,7 @@
           nz-tooltip
           nzTooltipTitle="পয়েন্ট অফ সেল / POS Terminal"
           nzTooltipPlacement="right"
-        >
+         aria-label="পয়েন্ট অফ সেল / POS Terminal">
           <span class="sb-module-icon">
             <span nz-icon nzType="shopping-cart" class="text-base"></span>
           </span>
@@ -70,7 +70,7 @@
             nz-tooltip
             [nzTooltipTitle]="mod.module + ' (' + mod.module_bn + ')'"
             nzTooltipPlacement="right"
-          >
+           [attr.aria-label]="mod.module + ' (' + mod.module_bn + ')'">
             <span class="sb-module-icon">
               <span nz-icon [nzType]="mod.icon" class="text-base"></span>
             </span>
@@ -102,20 +102,19 @@
         <div class="sb-search-row flex items-center gap-2 flex-shrink-0">
           <div class="sb-search-wrap flex-1 min-w-0">
             <span nz-icon nzType="search" class="sb-search-icon"></span>
-            <input
+            <input id="sidebar-search-menu-1"
               type="text"
               class="sb-search-input"
               placeholder="Search menu..."
               [ngModel]="searchTerm()"
-              (ngModelChange)="searchTerm.set($event)"
-            />
+              (ngModelChange)="searchTerm.set($event)" aria-label="Search menu..." />
             @if (searchTerm()) {
               <button
                 type="button"
                 class="sb-search-clear"
                 (click)="searchTerm.set('')"
                 title="Clear search"
-              >
+               aria-label="Clear search">
                 <span nz-icon nzType="close"></span>
               </button>
             }
@@ -127,7 +126,7 @@
             nz-tooltip
             [nzTooltipTitle]="isAllExpanded() ? 'Collapse All' : 'Expand All'"
             nzTooltipPlacement="top"
-          >
+           [attr.aria-label]="isAllExpanded() ? 'Collapse All' : 'Expand All'">
             <span nz-icon [nzType]="isAllExpanded() ? 'compress' : 'expand'"></span>
           </button>
         </div>
@@ -145,7 +144,7 @@
                 nz-tooltip
                 [nzTooltipTitle]="sub.name + ' (' + sub.name_bn + ')'"
                 nzTooltipPlacement="right"
-              >
+               [attr.aria-label]="sub.name + ' (' + sub.name_bn + ')'">
                 <span nz-icon [nzType]="sub.icon" class="sb-sub-icon"></span>
                 <span class="sb-sub-label truncate">{{ sub.name }}</span>
                 <span class="sb-sub-bn truncate">({{ sub.name_bn }})</span>
@@ -169,7 +168,7 @@
                         nz-tooltip
                         [nzTooltipTitle]="screen.title + (screen.description ? ' — ' + screen.description : '')"
                         nzTooltipPlacement="right"
-                      >
+                       [attr.aria-label]="screen.title + (screen.description ? ' — ' + screen.description : '')">
                         <span nz-icon [nzType]="getScreenIcon(screen)" class="sb-form-icon"></span>
                         <span class="sb-form-label truncate">{{ screen.title }}</span>
                         @if (screen.badge) {

@@ -53,13 +53,12 @@ interface DoctorRow {
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
           <nz-input-group [nzPrefix]="searchIcon" class="w-64 shrink-0 rounded-md">
-            <input
+            <input id="doctor-list-search-doctor-8"
               type="text"
               nz-input
               placeholder="Search doctor..."
               [(ngModel)]="searchName"
-              (ngModelChange)="onSearchChange()"
-            />
+              (ngModelChange)="onSearchChange()" aria-label="Search doctor..." />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -126,7 +125,7 @@ interface DoctorRow {
                         nz-tooltip
                         nzTooltipTitle="View Prescriptions"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Prescriptions">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -135,7 +134,7 @@ interface DoctorRow {
                         nz-tooltip
                         nzTooltipTitle="Edit Doctor Profile"
                         class="btn-tbl-action btn-tbl-edit"
-                      >
+                       aria-label="Edit Doctor Profile">
                         <span nz-icon nzType="edit"></span>
                       </button>
                       <button
@@ -144,7 +143,7 @@ interface DoctorRow {
                         nz-tooltip
                         nzTooltipTitle="Delete Doctor"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Doctor">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -184,92 +183,86 @@ interface DoctorRow {
         <div class="space-y-3 py-1 text-xs">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-doctor-name-english-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 Doctor Name (English) <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="doctor-list-doctor-name-english-1"
                 type="text"
                 nz-input
                 placeholder="e.g. Dr. Mohammad Ali"
                 [(ngModel)]="form.name"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Doctor Name (English)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-doctor-name-2" class="block text-xs font-semibold text-slate-700 mb-1">
                 Doctor Name (বাংলা)
               </label>
-              <input
+              <input id="doctor-list-doctor-name-2"
                 type="text"
                 nz-input
                 placeholder="e.g. ডা. মোহাম্মদ আলী"
                 [(ngModel)]="form.nameBn"
-                class="rounded-md font-bengali"
-              />
+                class="rounded-md font-bengali" aria-label="Doctor Name (বাংলা)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-qualifications-degree-english-3" class="block text-xs font-semibold text-slate-700 mb-1">
                 Qualifications & Degree (English)
               </label>
-              <input
+              <input id="doctor-list-qualifications-degree-english-3"
                 type="text"
                 nz-input
                 placeholder="MBBS, FCPS (Medicine)"
                 [(ngModel)]="form.desc"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Qualifications & Degree (English)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-field-4" class="block text-xs font-semibold text-slate-700 mb-1">
                 ডিগ্রি ও পদবি (বাংলা)
               </label>
-              <input
+              <input id="doctor-list-field-4"
                 type="text"
                 nz-input
                 placeholder="এমবিবিএস, এফসিপিএস"
                 [(ngModel)]="form.descBn"
-                class="rounded-md font-bengali"
-              />
+                class="rounded-md font-bengali" aria-label="ডিগ্রি ও পদবি (বাংলা)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-phone-number-5" class="block text-xs font-semibold text-slate-700 mb-1">
                 Phone Number <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-1.5">
                 <span class="h-8 px-2 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
                   +880
                 </span>
-                <input
+                <input id="doctor-list-phone-number-5"
                   type="text"
                   nz-input
                   placeholder="1XXXXXXXXX"
                   [(ngModel)]="form.phoneSuffix"
-                  class="rounded-md flex-1 text-xs"
-                />
+                  class="rounded-md flex-1 text-xs" aria-label="Phone Number" />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-list-bmdc-reg-no-e-g-a-12345-6" class="block text-xs font-semibold text-slate-700 mb-1">
                 BMDC Reg. No.
                 <span class="text-slate-400 font-normal ml-1">(e.g. A-12345)</span>
               </label>
-              <input
+              <input id="doctor-list-bmdc-reg-no-e-g-a-12345-6"
                 type="text"
                 nz-input
                 placeholder="A-XXXXX"
                 [(ngModel)]="form.bmdcRegNo"
-                class="rounded-md text-xs"
-              />
+                class="rounded-md text-xs" aria-label="BMDC Reg. No. (e.g. A-12345)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-              <nz-select [(ngModel)]="form.gender" class="w-full">
+              <label for="doctor-list-gender-7" class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
+              <nz-select id="doctor-list-gender-7" nzId="doctor-list-gender-7" [(ngModel)]="form.gender" class="w-full" aria-label="Gender">
                 <nz-option nzValue="Male" nzLabel="Male"></nz-option>
                 <nz-option nzValue="Female" nzLabel="Female"></nz-option>
                 <nz-option nzValue="Other" nzLabel="Other"></nz-option>

@@ -6,20 +6,19 @@
     [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Expired Items' }]"
   >
     <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
-      <input
+      <input id="expired-items-days-1"
         type="number"
         nz-input
         [(ngModel)]="daysThreshold"
         placeholder="Days (<)"
-        class="w-24 shrink-0 rounded-md"
-      />
-      <nz-select class="w-48 shrink-0" [(ngModel)]="selectedProduct" nzShowSearch nzAllowClear nzPlaceHolder="Select product">
+        class="w-24 shrink-0 rounded-md" aria-label="Days (<)" />
+      <nz-select id="expired-items-select-product-2" nzId="expired-items-select-product-2" class="w-48 shrink-0" [(ngModel)]="selectedProduct" nzShowSearch nzAllowClear nzPlaceHolder="Select product" aria-label="Select product">
         <nz-option nzValue="" nzLabel="All Products"></nz-option>
         @for (p of productOptions(); track p) {
           <nz-option [nzValue]="p" [nzLabel]="p"></nz-option>
         }
       </nz-select>
-      <nz-select class="w-36 shrink-0" [(ngModel)]="selectedCompany" nzPlaceHolder="Select company">
+      <nz-select id="expired-items-select-company-3" nzId="expired-items-select-company-3" class="w-36 shrink-0" [(ngModel)]="selectedCompany" nzPlaceHolder="Select company" aria-label="Select company">
         <nz-option nzValue="" nzLabel="All Companies"></nz-option>
         @for (c of companyOptions(); track c) {
           <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
@@ -85,7 +84,7 @@
                     nz-tooltip
                     nzTooltipTitle="Supplier Return"
                     class="btn-tbl-action btn-tbl-warning"
-                  >
+                   aria-label="Supplier Return">
                     <span nz-icon nzType="rollback"></span>
                   </button>
                   <button
@@ -94,7 +93,7 @@
                     nz-tooltip
                     nzTooltipTitle="Disposal / Write-off"
                     class="btn-tbl-action btn-tbl-delete"
-                  >
+                   aria-label="Disposal / Write-off">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>

@@ -7,45 +7,41 @@
   >
     <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-        <nz-date-picker
+        <label for="purchase-record-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+        <nz-date-picker id="purchase-record-from-date-1" nzId="purchase-record-from-date-1"
           [(ngModel)]="fromDate"
           (ngModelChange)="onFilterChange()"
           nzFormat="dd-MM-yyyy"
           nzPlaceHolder="From Date"
-          class="w-32 shrink-0 rounded-md text-xs"
-        ></nz-date-picker>
+          class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-        <nz-date-picker
+        <label for="purchase-record-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+        <nz-date-picker id="purchase-record-to-date-2" nzId="purchase-record-to-date-2"
           [(ngModel)]="toDate"
           (ngModelChange)="onFilterChange()"
           nzFormat="dd-MM-yyyy"
           nzPlaceHolder="To Date"
-          class="w-32 shrink-0 rounded-md text-xs"
-        ></nz-date-picker>
+          class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Invoice / Challan #</label>
-        <input
+        <label for="purchase-record-invoice-challan-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Invoice / Challan #</label>
+        <input id="purchase-record-invoice-challan-3"
           type="text"
           nz-input
           placeholder="Search invoice #..."
           [(ngModel)]="searchInvoice"
           (ngModelChange)="onSearchChange()"
-          class="w-36 shrink-0 rounded-md text-xs"
-        />
+          class="w-36 shrink-0 rounded-md text-xs" aria-label="Invoice / Challan #" />
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Supplier</label>
-        <nz-select
+        <label for="purchase-record-supplier-4" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Supplier</label>
+        <nz-select id="purchase-record-supplier-4" nzId="purchase-record-supplier-4"
           [(ngModel)]="filterSupplier"
           (ngModelChange)="onFilterChange()"
           nzPlaceHolder="All Suppliers"
           class="w-40 shrink-0"
-          nzAllowClear
-        >
+          nzAllowClear aria-label="Supplier">
           <nz-option nzValue="" nzLabel="All Suppliers"></nz-option>
           @for (s of suppliers(); track s.supplier_no) {
             <nz-option [nzValue]="s.name" [nzLabel]="s.name"></nz-option>
@@ -53,14 +49,13 @@
         </nz-select>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Purchase Type</label>
-        <nz-select
+        <label for="purchase-record-purchase-type-5" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Purchase Type</label>
+        <nz-select id="purchase-record-purchase-type-5" nzId="purchase-record-purchase-type-5"
           [(ngModel)]="filterType"
           (ngModelChange)="onFilterChange()"
           nzPlaceHolder="All Types"
           class="w-44 shrink-0"
-          nzAllowClear
-        >
+          nzAllowClear aria-label="Purchase Type">
           <nz-option nzValue="" nzLabel="All Types"></nz-option>
           <nz-option nzValue="INVENTORY PURCHASED" nzLabel="INVENTORY PURCHASED"></nz-option>
           <nz-option nzValue="OPENING STOCK" nzLabel="OPENING STOCK"></nz-option>
@@ -126,7 +121,7 @@
                     nz-tooltip
                     nzTooltipTitle="View Invoice Details"
                     class="btn-tbl-action btn-tbl-view"
-                  >
+                   aria-label="View Invoice Details">
                     <span nz-icon nzType="eye"></span>
                   </button>
                   <button
@@ -135,7 +130,7 @@
                     nz-tooltip
                     nzTooltipTitle="Print Voucher"
                     class="btn-tbl-action btn-tbl-neutral"
-                  >
+                   aria-label="Print Voucher">
                     <span nz-icon nzType="printer"></span>
                   </button>
                   <button
@@ -144,7 +139,7 @@
                     nz-tooltip
                     nzTooltipTitle="Supplier Return"
                     class="btn-tbl-action btn-tbl-warning"
-                  >
+                   aria-label="Supplier Return">
                     <span nz-icon nzType="rollback"></span>
                   </button>
                   <button
@@ -153,7 +148,7 @@
                     nz-tooltip
                     nzTooltipTitle="Delete Invoice"
                     class="btn-tbl-action btn-tbl-delete"
-                  >
+                   aria-label="Delete Invoice">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>
@@ -362,8 +357,8 @@
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Return Reason</label>
-          <nz-select class="w-full" [(ngModel)]="returnReason">
+          <label for="purchase-record-return-reason-6" class="block font-semibold text-slate-700 mb-1">Return Reason</label>
+          <nz-select id="purchase-record-return-reason-6" nzId="purchase-record-return-reason-6" class="w-full" [(ngModel)]="returnReason" aria-label="Return Reason">
             <nz-option nzValue="Damaged / Expired Batch" nzLabel="Damaged / Near Expiry Batch"></nz-option>
             <nz-option nzValue="Wrong Medicine Received" nzLabel="Wrong Formulation / Excess Supplied"></nz-option>
             <nz-option nzValue="Price Discrepancy" nzLabel="Rate Higher Than Purchase Order"></nz-option>
@@ -386,12 +381,11 @@
                   <td class="p-2 font-medium text-slate-800">{{ item.name }}</td>
                   <td class="p-2 text-center font-mono text-slate-500">{{ item.qty }}</td>
                   <td class="p-2 text-center">
-                    <nz-input-number
+                    <nz-input-number id="purchase-record-field-8" nzId="purchase-record-field-8"
                       class="w-20"
                       [nzMin]="0"
                       [nzMax]="item.qty"
-                      [(ngModel)]="returnQtyMap[item.name]"
-                    ></nz-input-number>
+                      [(ngModel)]="returnQtyMap[item.name]" aria-label="Field"></nz-input-number>
                   </td>
                 </tr>
               }
@@ -400,14 +394,13 @@
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Additional Return Notes</label>
-          <textarea
+          <label for="purchase-record-additional-return-notes-7" class="block font-semibold text-slate-700 mb-1">Additional Return Notes</label>
+          <textarea id="purchase-record-additional-return-notes-7"
             nz-input
             rows="2"
             placeholder="Remarks for supplier debit note..."
             [(ngModel)]="returnNote"
-            class="rounded-md text-xs"
-          ></textarea>
+            class="rounded-md text-xs" aria-label="Additional Return Notes"></textarea>
         </div>
       </div>
     }

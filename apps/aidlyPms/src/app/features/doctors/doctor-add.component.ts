@@ -42,122 +42,114 @@ import { DoctorService } from '../../core/services/doctor.service';
         <form (ngSubmit)="submitDoctor()" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-first-name-english-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 First Name (English) <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="doctor-add-first-name-english-1"
                 type="text"
                 nz-input
                 placeholder="First name"
                 [(ngModel)]="firstName"
                 name="firstName"
                 class="rounded-md"
-                required
-              />
+                required aria-label="First Name (English)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Last Name (English)</label>
-              <input
+              <label for="doctor-add-last-name-english-2" class="block text-xs font-semibold text-slate-700 mb-1">Last Name (English)</label>
+              <input id="doctor-add-last-name-english-2"
                 type="text"
                 nz-input
                 placeholder="Last name"
                 [(ngModel)]="lastName"
                 name="lastName"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Last Name (English)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">প্রথম নাম (বাংলা)</label>
-              <input
+              <label for="doctor-add-field-3" class="block text-xs font-semibold text-slate-700 mb-1">প্রথম নাম (বাংলা)</label>
+              <input id="doctor-add-field-3"
                 type="text"
                 nz-input
                 placeholder="প্রথম নাম"
                 [(ngModel)]="firstNameBn"
                 name="firstNameBn"
-                class="rounded-md font-bengali"
-              />
+                class="rounded-md font-bengali" aria-label="প্রথম নাম (বাংলা)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">শেষ নাম (বাংলা)</label>
-              <input
+              <label for="doctor-add-field-4" class="block text-xs font-semibold text-slate-700 mb-1">শেষ নাম (বাংলা)</label>
+              <input id="doctor-add-field-4"
                 type="text"
                 nz-input
                 placeholder="শেষ নাম"
                 [(ngModel)]="lastNameBn"
                 name="lastNameBn"
-                class="rounded-md font-bengali"
-              />
+                class="rounded-md font-bengali" aria-label="শেষ নাম (বাংলা)" />
             </div>
 
             <div class="md:col-span-2">
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-description-degrees-english-5" class="block text-xs font-semibold text-slate-700 mb-1">
                 Description & Degrees (English)
               </label>
-              <textarea
+              <textarea id="doctor-add-description-degrees-english-5"
                 nz-input
                 rows="2"
                 placeholder="MBBS, FCPS (Medicine) — Qualifications & designation"
                 [(ngModel)]="desc"
                 name="desc"
-                class="rounded-md"
-              ></textarea>
+                class="rounded-md" aria-label="Description & Degrees (English)"></textarea>
             </div>
 
             <div class="md:col-span-2">
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-field-6" class="block text-xs font-semibold text-slate-700 mb-1">
                 বিবরণ ও ডিগ্রি (বাংলা)
               </label>
-              <textarea
+              <textarea id="doctor-add-field-6"
                 nz-input
                 rows="2"
                 placeholder="এমবিবিএস, এফসিপিএস — যোগ্যতা ও পদবি"
                 [(ngModel)]="descBn"
                 name="descBn"
-                class="rounded-md font-bengali"
-              ></textarea>
+                class="rounded-md font-bengali" aria-label="বিবরণ ও ডিগ্রি (বাংলা)"></textarea>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-phone-number-7" class="block text-xs font-semibold text-slate-700 mb-1">
                 Phone Number <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-2">
                 <span class="h-9 px-3 flex items-center bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-600 shrink-0">
                   +880
                 </span>
-                <input
+                <input id="doctor-add-phone-number-7"
                   type="text"
                   nz-input
                   placeholder="1XXXXXXXXX"
                   [(ngModel)]="phone"
                   name="phone"
                   class="rounded-md flex-1"
-                  required
-                />
+                  required aria-label="Phone Number" />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-bmdc-reg-no-e-g-a-12345-8" class="block text-xs font-semibold text-slate-700 mb-1">
                 BMDC Reg. No.
                 <span class="text-slate-400 font-normal ml-1">(e.g. A-12345)</span>
               </label>
-              <input
+              <input id="doctor-add-bmdc-reg-no-e-g-a-12345-8"
                 type="text"
                 nz-input
                 placeholder="A-XXXXX"
                 [(ngModel)]="bmdcRegNo"
                 name="bmdcRegNo"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="BMDC Reg. No. (e.g. A-12345)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-              <nz-select [(ngModel)]="gender" name="gender" class="w-full">
+              <label for="doctor-add-gender-9" class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
+              <nz-select id="doctor-add-gender-9" nzId="doctor-add-gender-9" [(ngModel)]="gender" name="gender" class="w-full" aria-label="Gender">
                 <nz-option nzValue="Male" nzLabel="Male"></nz-option>
                 <nz-option nzValue="Female" nzLabel="Female"></nz-option>
                 <nz-option nzValue="Other" nzLabel="Other"></nz-option>
@@ -165,34 +157,32 @@ import { DoctorService } from '../../core/services/doctor.service';
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-password-min-6-characters-10" class="block text-xs font-semibold text-slate-700 mb-1">
                 Password <span class="text-rose-500">*</span>
                 <span class="text-slate-400 font-normal ml-1">(Min 6 characters)</span>
               </label>
-              <input
+              <input id="doctor-add-password-min-6-characters-10"
                 type="password"
                 nz-input
                 placeholder="••••••"
                 [(ngModel)]="password"
                 name="password"
                 class="rounded-md"
-                required
-              />
+                required aria-label="Password (Min 6 characters)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="doctor-add-confirm-password-11" class="block text-xs font-semibold text-slate-700 mb-1">
                 Confirm Password <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="doctor-add-confirm-password-11"
                 type="password"
                 nz-input
                 placeholder="••••••"
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
                 class="rounded-md"
-                required
-              />
+                required aria-label="Confirm Password" />
             </div>
 
             <div class="md:col-span-2">

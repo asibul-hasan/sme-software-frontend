@@ -90,23 +90,21 @@ interface TransferCartLine {
           <div class="flex items-center gap-3">
             <div class="w-64">
               <nz-input-group [nzPrefix]="prefixIcon">
-                <input
+                <input id="stock-transfer-search-transfer-or-note-4"
                   type="text"
                   nz-input
                   placeholder="Search transfer # or note..."
                   [(ngModel)]="searchQuery"
-                  (ngModelChange)="loadTransfers()"
-                />
+                  (ngModelChange)="loadTransfers()" aria-label="Search transfer # or note..." />
               </nz-input-group>
               <ng-template #prefixIcon><i nz-icon nzType="search"></i></ng-template>
             </div>
             <div class="w-48">
-              <nz-select
+              <nz-select id="stock-transfer-filter-status-5" nzId="stock-transfer-filter-status-5"
                 [(ngModel)]="statusFilter"
                 (ngModelChange)="loadTransfers()"
                 class="w-full"
-                nzPlaceHolder="Filter status"
-              >
+                nzPlaceHolder="Filter status" aria-label="Filter status">
                 <nz-option [nzValue]="null" nzLabel="All Statuses"></nz-option>
                 <nz-option [nzValue]="1" nzLabel="In-Transit / Pending"></nz-option>
                 <nz-option [nzValue]="2" nzLabel="Received"></nz-option>
@@ -202,12 +200,11 @@ interface TransferCartLine {
         <div class="col-span-8 flex flex-col bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden">
           <div class="p-3 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
             <div class="w-1/3">
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Destination Branch *</label>
-              <nz-select
+              <label for="stock-transfer-destination-branch-1" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Destination Branch *</label>
+              <nz-select id="stock-transfer-destination-branch-1" nzId="stock-transfer-destination-branch-1"
                 [(ngModel)]="toBranchNo"
                 nzPlaceHolder="Select destination branch..."
-                class="w-full"
-              >
+                class="w-full" aria-label="Destination Branch">
                 <nz-option
                   *ngFor="let b of availableDestBranches()"
                   [nzValue]="b.branch_no"
@@ -217,16 +214,15 @@ interface TransferCartLine {
             </div>
 
             <div class="flex-1">
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Search Product to Transfer</label>
-              <nz-select
+              <label for="stock-transfer-search-product-to-transfer-2" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Search Product to Transfer</label>
+              <nz-select id="stock-transfer-search-product-to-transfer-2" nzId="stock-transfer-search-product-to-transfer-2"
                 [(ngModel)]="selectedProductNo"
                 (ngModelChange)="onProductSelect($event)"
                 nzPlaceHolder="Type medicine name or barcode..."
                 class="w-full"
                 nzShowSearch
                 [nzServerSearch]="true"
-                (nzOnSearch)="searchProducts($event)"
-              >
+                (nzOnSearch)="searchProducts($event)" aria-label="Search Product to Transfer">
                 <nz-option
                   *ngFor="let p of productSearchResults()"
                   [nzValue]="p.product_no"
@@ -257,14 +253,13 @@ interface TransferCartLine {
                   <td class="p-2 font-mono text-slate-600">{{ line.batchNumber || 'N/A' }}</td>
                   <td class="p-2 text-right font-mono text-slate-600">{{ line.availableStock }} pcs</td>
                   <td class="p-2 text-center">
-                    <input
+                    <input id="stock-transfer-field-6"
                       type="number"
                       min="1"
                       [max]="line.availableStock"
                       [(ngModel)]="line.qtyPcs"
                       (ngModelChange)="updateLineTotal(line)"
-                      class="w-20 px-2 py-1 text-center font-bold border border-slate-300 rounded focus:outline-indigo-500"
-                    />
+                      class="w-20 px-2 py-1 text-center font-bold border border-slate-300 rounded focus:outline-indigo-500" aria-label="Field" />
                   </td>
                   <td class="p-2 text-right font-mono">৳{{ line.unitCost | number:'1.2-2' }}</td>
                   <td class="p-2 text-right font-mono font-bold text-indigo-700">৳{{ line.totalCost | number:'1.2-2' }}</td>
@@ -317,13 +312,12 @@ interface TransferCartLine {
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Transfer Note / Instructions</label>
-              <textarea
+              <label for="stock-transfer-transfer-note-instructions-3" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Transfer Note / Instructions</label>
+              <textarea id="stock-transfer-transfer-note-instructions-3"
                 [(ngModel)]="note"
                 rows="3"
                 placeholder="Reason or courier details for this transfer shipment..."
-                class="w-full text-xs p-2 border border-slate-300 rounded focus:outline-indigo-500"
-              ></textarea>
+                class="w-full text-xs p-2 border border-slate-300 rounded focus:outline-indigo-500" aria-label="Transfer Note / Instructions"></textarea>
             </div>
           </div>
 

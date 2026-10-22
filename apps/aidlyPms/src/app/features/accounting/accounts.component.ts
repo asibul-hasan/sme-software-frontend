@@ -51,7 +51,7 @@ interface AccountRow {
         [breadcrumbs]="[{ label: 'Accounting', url: '/accounting/transaction' }, { label: 'Accounts' }]"
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
-          <nz-select [(ngModel)]="typeFilter" nzPlaceHolder="All Types" class="w-44 shrink-0">
+          <nz-select id="accounts-all-types-6" nzId="accounts-all-types-6" [(ngModel)]="typeFilter" nzPlaceHolder="All Types" class="w-44 shrink-0" aria-label="All Types">
             <nz-option nzValue="" nzLabel="All Types"></nz-option>
             <nz-option nzValue="Cash" nzLabel="Cash In Hand"></nz-option>
             <nz-option nzValue="Bank" nzLabel="Bank Account"></nz-option>
@@ -120,7 +120,7 @@ interface AccountRow {
                         nz-tooltip
                         nzTooltipTitle="View Statement"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Statement">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -129,7 +129,7 @@ interface AccountRow {
                         nz-tooltip
                         nzTooltipTitle="Edit Account"
                         class="btn-tbl-action btn-tbl-edit"
-                      >
+                       aria-label="Edit Account">
                         <span nz-icon nzType="edit"></span>
                       </button>
                       @if (a.has_transactions) {
@@ -147,7 +147,7 @@ interface AccountRow {
                           nz-tooltip
                           nzTooltipTitle="Delete Account"
                           class="btn-tbl-action btn-tbl-delete"
-                        >
+                         aria-label="Delete Account">
                           <span nz-icon nzType="delete"></span>
                         </button>
                       }
@@ -191,23 +191,22 @@ interface AccountRow {
         <div class="space-y-3 py-1 text-xs">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="accounts-account-name-holder-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 Account Name / Holder <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="accounts-account-name-holder-1"
                 type="text"
                 nz-input
                 placeholder="e.g. Counter Cash, Islami Bank Main"
                 [(ngModel)]="form.name"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Account Name / Holder" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="accounts-account-type-2" class="block text-xs font-semibold text-slate-700 mb-1">
                 Account Type <span class="text-rose-500">*</span>
               </label>
-              <nz-select [(ngModel)]="form.type" class="w-full">
+              <nz-select id="accounts-account-type-2" nzId="accounts-account-type-2" [(ngModel)]="form.type" class="w-full" aria-label="Account Type">
                 <nz-option nzValue="Cash" nzLabel="Cash In Hand"></nz-option>
                 <nz-option nzValue="Bank" nzLabel="Bank Account"></nz-option>
                 <nz-option nzValue="MFS" nzLabel="bKash / Nagad / Rocket"></nz-option>
@@ -215,39 +214,36 @@ interface AccountRow {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="accounts-phone-account-number-3" class="block text-xs font-semibold text-slate-700 mb-1">
                 Phone / Account Number
               </label>
-              <input
+              <input id="accounts-phone-account-number-3"
                 type="text"
                 nz-input
                 placeholder="e.g. +880 1711... or IBBL-4012-..."
                 [(ngModel)]="form.number"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Phone / Account Number" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Provider Description</label>
-              <input
+              <label for="accounts-provider-description-4" class="block text-xs font-semibold text-slate-700 mb-1">Provider Description</label>
+              <input id="accounts-provider-description-4"
                 type="text"
                 nz-input
                 placeholder="e.g. Bank Account, bKash Merchant, Drawer"
                 [(ngModel)]="form.provider"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Provider Description" />
             </div>
 
             @if (modalMode === 'create') {
               <div class="col-span-1 md:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Initial Opening Balance (৳)</label>
-                <input
+                <label for="accounts-initial-opening-balance-5" class="block text-xs font-semibold text-slate-700 mb-1">Initial Opening Balance (৳)</label>
+                <input id="accounts-initial-opening-balance-5"
                   type="number"
                   nz-input
                   placeholder="0.00"
                   [(ngModel)]="form.balance"
-                  class="rounded-md font-mono"
-                />
+                  class="rounded-md font-mono" aria-label="Initial Opening Balance (৳)" />
               </div>
             }
           </div>

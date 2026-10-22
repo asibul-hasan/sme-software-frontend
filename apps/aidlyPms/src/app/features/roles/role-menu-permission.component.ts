@@ -42,12 +42,11 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
           <!-- Role Selector -->
           <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-xs font-semibold text-slate-700">Select Role:</span>
-            <nz-select
+            <nz-select id="role-menu-permission-choose-role-1" nzId="role-menu-permission-choose-role-1"
               class="w-56 shrink-0"
               [ngModel]="selectedRoleNo()"
               (ngModelChange)="onRoleChange($event)"
-              nzPlaceHolder="Choose role..."
-            >
+              nzPlaceHolder="Choose role..." aria-label="Choose role...">
               @for (r of roles(); track r.role_no) {
                 <nz-option
                   [nzValue]="r.role_no"
@@ -59,13 +58,12 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
 
           <!-- Search Query -->
           <nz-input-group [nzPrefix]="searchIcon" class="w-52 shrink-0 rounded-md">
-            <input
+            <input id="role-menu-permission-search-menus-2"
               type="text"
               nz-input
               placeholder="Search menus..."
               [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
-            />
+              (ngModelChange)="searchQuery.set($event)" aria-label="Search menus..." />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -294,7 +292,7 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
                           class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
                           (click)="toggleRow(item, true)"
                           title="Grant All Rights for this menu"
-                        >
+                         aria-label="Grant All Rights for this menu">
                           All
                         </button>
                         <button
@@ -302,7 +300,7 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
                           class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
                           (click)="toggleRow(item, false)"
                           title="Revoke All Rights for this menu"
-                        >
+                         aria-label="Revoke All Rights for this menu">
                           None
                         </button>
                       </div>

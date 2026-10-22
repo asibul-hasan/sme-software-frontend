@@ -73,13 +73,12 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
           <nz-input-group [nzPrefix]="searchIcon" class="w-64 shrink-0 rounded-md">
-            <input
+            <input id="role-list-search-roles-2"
               type="text"
               nz-input
               placeholder="Search roles..."
               [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
-            />
+              (ngModelChange)="searchQuery.set($event)" aria-label="Search roles..." />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -139,7 +138,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                         nz-tooltip
                         nzTooltipTitle="Configure Menu Permissions"
                         class="btn-tbl-action btn-tbl-neutral text-emerald-600 hover:text-emerald-700"
-                      >
+                       aria-label="Configure Menu Permissions">
                         <span nz-icon nzType="safety-certificate"></span>
                       </a>
                       <button
@@ -148,7 +147,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                         nz-tooltip
                         nzTooltipTitle="Edit Role"
                         class="btn-tbl-action btn-tbl-edit"
-                      >
+                       aria-label="Edit Role">
                         <span nz-icon nzType="edit"></span>
                       </button>
                       <button
@@ -157,7 +156,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                         nz-tooltip
                         nzTooltipTitle="Clone Role"
                         class="btn-tbl-action btn-tbl-neutral"
-                      >
+                       aria-label="Clone Role">
                         <span nz-icon nzType="copy"></span>
                       </button>
                       @if (!r.isSystem) {
@@ -167,7 +166,7 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
                           nz-tooltip
                           nzTooltipTitle="Delete Role"
                           class="btn-tbl-action btn-tbl-delete"
-                        >
+                         aria-label="Delete Role">
                           <span nz-icon nzType="delete"></span>
                         </button>
                       }
@@ -207,16 +206,15 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
       <ng-container *nzModalContent>
         <div class="space-y-4 py-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="role-list-role-alias-name-1" class="block text-xs font-semibold text-slate-700 mb-1">
               Role Alias / Name <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="role-list-role-alias-name-1"
               type="text"
               nz-input
               placeholder="e.g. Lead Pharmacist, Billing Associate"
               [(ngModel)]="roleAlias"
-              class="rounded-md"
-            />
+              class="rounded-md" aria-label="Role Alias / Name" />
           </div>
 
           <div class="border-t border-slate-100 pt-3">

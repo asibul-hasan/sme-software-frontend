@@ -57,14 +57,13 @@
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <span nz-icon nzType="barcode" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></span>
-            <input
+            <input id="sale-return-enter-sales-invoice-no-e-g-inv-8"
               type="text"
               nz-input
               [(ngModel)]="originalInvoice"
               (keyup.enter)="loadInvoice()"
               placeholder="Enter Sales Invoice No (e.g. INV-2026-1028 or ID)"
-              class="pl-9 rounded-md w-full"
-            />
+              class="pl-9 rounded-md w-full" aria-label="Enter Sales Invoice No (e.g. INV-2026-1028 or ID)" />
           </div>
 
           <button
@@ -233,7 +232,7 @@
                     <div class="text-[10px] text-emerald-700 font-bold">Max: {{ l.returnableQty }}</div>
                   </td>
                   <td class="p-3 text-center">
-                    <input
+                    <input id="sale-return-line-qty-search-9"
                       type="number"
                       nz-input
                       [min]="1"
@@ -241,18 +240,17 @@
                       [(ngModel)]="l.returnQty"
                       (ngModelChange)="onLineQtyChange(l)"
                       [disabled]="!l.selected || l.returnableQty === 0"
-                      class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300"
-                    />
+                      class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300" aria-label="Line Qty Search" />
                   </td>
                   <td class="p-3">
-                    <nz-select [(ngModel)]="l.reasonCode" [disabled]="!l.selected" nzSize="small" class="w-full text-xs">
+                    <nz-select id="sale-return-field-10" nzId="sale-return-field-10" [(ngModel)]="l.reasonCode" [disabled]="!l.selected" nzSize="small" class="w-full text-xs" aria-label="Field">
                       @for (r of reasonOptions; track r.value) {
                         <nz-option [nzValue]="r.value" [nzLabel]="r.label"></nz-option>
                       }
                     </nz-select>
                   </td>
                   <td class="p-3">
-                    <nz-select [(ngModel)]="l.disposition" [disabled]="!l.selected" nzSize="small" class="w-full text-xs">
+                    <nz-select id="sale-return-field-11" nzId="sale-return-field-11" [(ngModel)]="l.disposition" [disabled]="!l.selected" nzSize="small" class="w-full text-xs" aria-label="Field">
                       @for (d of dispositionOptions; track d.value) {
                         <nz-option [nzValue]="d.value" [nzLabel]="d.label"></nz-option>
                       }
@@ -268,7 +266,7 @@
                       class="text-slate-400 hover:text-rose-600 transition-colors p-1"
                       nz-tooltip
                       nzTooltipTitle="Exclude Line"
-                    >
+                     aria-label="Exclude Line">
                       <span nz-icon nzType="delete"></span>
                     </button>
                   </td>
@@ -314,15 +312,14 @@
           <!-- Add Product to Exchange Bar -->
           <div class="p-3 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center gap-2">
             <div class="flex-1 min-w-[240px]">
-              <nz-select
+              <nz-select id="sale-return-search-medicine-name-to-add-to-12" nzId="sale-return-search-medicine-name-to-add-to-12"
                 [(ngModel)]="selectedNewProductNo"
                 nzShowSearch
                 nzServerSearch
                 (nzOnSearch)="onProductSearch($event)"
                 nzPlaceHolder="Search medicine name to add to exchange..."
                 class="w-full"
-                [nzLoading]="isSearchingProducts()"
-              >
+                [nzLoading]="isSearchingProducts()" aria-label="Search medicine name to add to exchange...">
                 @for (p of catalogProducts(); track p.product_no) {
                   <nz-option
                     [nzValue]="p.product_no"
@@ -333,14 +330,13 @@
             </div>
 
             <div class="w-24">
-              <input
+              <input id="sale-return-qty-13"
                 type="number"
                 nz-input
                 [min]="1"
                 [(ngModel)]="newProductQty"
                 placeholder="Qty"
-                class="rounded-md font-mono text-xs text-center"
-              />
+                class="rounded-md font-mono text-xs text-center" aria-label="Qty" />
             </div>
 
             <button
@@ -373,14 +369,13 @@
                     <td class="p-3 font-semibold text-slate-900 text-xs">{{ item.productName }}</td>
                     <td class="p-3 text-right font-mono text-xs text-slate-700">৳ {{ item.salePrice.toFixed(2) }}</td>
                     <td class="p-3 text-center">
-                      <input
+                      <input id="sale-return-field-14"
                         type="number"
                         nz-input
                         [min]="1"
                         [(ngModel)]="item.qtyPcs"
                         (ngModelChange)="updateExchangeItemQty(item, $event)"
-                        class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300"
-                      />
+                        class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300" aria-label="Field" />
                     </td>
                     <td class="p-3 text-right font-mono text-xs font-bold text-indigo-700">
                       ৳ {{ item.total.toFixed(2) }}
@@ -427,9 +422,9 @@
         <div class="space-y-3">
           <!-- Customer Selection / Display -->
           <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Customer</label>
+            <label for="sale-return-customer-1" class="text-xs font-semibold text-slate-700 block mb-1">Customer</label>
             <div class="flex gap-1.5">
-              <nz-select nzShowSearch [(ngModel)]="selectedCustomer" class="flex-1" nzPlaceHolder="Select customer...">
+              <nz-select id="sale-return-customer-1" nzId="sale-return-customer-1" nzShowSearch [(ngModel)]="selectedCustomer" class="flex-1" nzPlaceHolder="Select customer..." aria-label="Customer">
                 @for (c of customers(); track c.customer_no) {
                   <nz-option [nzValue]="c.customer_no" [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"></nz-option>
                 }
@@ -440,7 +435,7 @@
                 nz-tooltip
                 nzTooltipTitle="Quick Add Customer"
                 class="btn-quick-add"
-              >
+               aria-label="Quick Add Customer">
                 <span nz-icon nzType="plus"></span>
               </button>
             </div>
@@ -448,14 +443,13 @@
 
           <!-- Original Invoice Reference -->
           <div>
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Original Invoice Reference</label>
-            <input
+            <label for="sale-return-original-invoice-reference-2" class="text-xs font-semibold text-slate-700 block mb-1">Original Invoice Reference</label>
+            <input id="sale-return-original-invoice-reference-2"
               type="text"
               nz-input
               [(ngModel)]="originalInvoice"
               readonly
-              class="rounded-md bg-slate-50 font-mono text-xs"
-            />
+              class="rounded-md bg-slate-50 font-mono text-xs" aria-label="Original Invoice Reference" />
           </div>
 
           <!-- Financial Breakdown Box -->
@@ -516,8 +510,8 @@
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700 block mb-1">Disbursement Channel</label>
-              <nz-select [(ngModel)]="refundMethod" class="w-full">
+              <label for="sale-return-disbursement-channel-3" class="text-xs font-semibold text-slate-700 block mb-1">Disbursement Channel</label>
+              <nz-select id="sale-return-disbursement-channel-3" nzId="sale-return-disbursement-channel-3" [(ngModel)]="refundMethod" class="w-full" aria-label="Disbursement Channel">
                 <nz-option [nzValue]="1" nzLabel="Cash Drawer (Immediate Payout)"></nz-option>
                 <nz-option [nzValue]="2" nzLabel="Store Credit Balance (Customer Account)"></nz-option>
                 <nz-option [nzValue]="3" nzLabel="Original Payment Gateway"></nz-option>
@@ -573,8 +567,8 @@
 
             @if (exchangeDifference() > 0) {
               <div>
-                <label class="text-xs font-semibold text-slate-700 block mb-1">Customer Payment Method for Difference</label>
-                <nz-select [(ngModel)]="settlementPaymentMethod" class="w-full">
+                <label for="sale-return-customer-payment-method-for-di-4" class="text-xs font-semibold text-slate-700 block mb-1">Customer Payment Method for Difference</label>
+                <nz-select id="sale-return-customer-payment-method-for-di-4" nzId="sale-return-customer-payment-method-for-di-4" [(ngModel)]="settlementPaymentMethod" class="w-full" aria-label="Customer Payment Method for Difference">
                   @for (m of settlementMethods; track m.value) {
                     <nz-option [nzValue]="m.value" [nzLabel]="m.label"></nz-option>
                   }
@@ -676,16 +670,16 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Customer Name *</label>
-        <input type="text" nz-input placeholder="e.g. Rafiqul Islam" [(ngModel)]="newCustomerName" class="rounded-md" />
+        <label for="sale-return-customer-name-5" class="block text-xs font-semibold text-slate-700 mb-1">Customer Name *</label>
+        <input id="sale-return-customer-name-5" type="text" nz-input placeholder="e.g. Rafiqul Islam" [(ngModel)]="newCustomerName" class="rounded-md" aria-label="Customer Name" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone *</label>
-        <input type="text" nz-input placeholder="e.g. +8801700000000" [(ngModel)]="newCustomerPhone" class="rounded-md" />
+        <label for="sale-return-mobile-phone-6" class="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone *</label>
+        <input id="sale-return-mobile-phone-6" type="text" nz-input placeholder="e.g. +8801700000000" [(ngModel)]="newCustomerPhone" class="rounded-md" aria-label="Mobile Phone" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Address / Note</label>
-        <input type="text" nz-input placeholder="e.g. Cumilla" [(ngModel)]="newCustomerAddress" class="rounded-md" />
+        <label for="sale-return-address-note-7" class="block text-xs font-semibold text-slate-700 mb-1">Address / Note</label>
+        <input id="sale-return-address-note-7" type="text" nz-input placeholder="e.g. Cumilla" [(ngModel)]="newCustomerAddress" class="rounded-md" aria-label="Address / Note" />
       </div>
     </div>
   </ng-container>

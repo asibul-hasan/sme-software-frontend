@@ -48,49 +48,46 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <!-- Medicine Name -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-medicine-brand-name-1" class="block text-xs font-semibold text-slate-700 mb-1">
           Medicine / Brand Name <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-medicine-brand-name-1"
           type="text"
           nz-input
           placeholder="e.g. Napa Extra, Seclo 20mg"
           [(ngModel)]="form.name"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Medicine / Brand Name" />
       </div>
 
       <!-- Strength -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Strength / Potency</span>
-        <input
+        <label for="product-add-strength-potency-2" class="block text-xs font-semibold text-slate-700 mb-1">Strength / Potency</label>
+        <input id="product-add-strength-potency-2"
           type="text"
           nz-input
           placeholder="e.g. 500mg, 20mg, 10mg/5ml"
           [(ngModel)]="form.strength"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Strength / Potency" />
       </div>
 
       <!-- Volume -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Volume / Pack Size</span>
-        <input
+        <label for="product-add-volume-pack-size-3" class="block text-xs font-semibold text-slate-700 mb-1">Volume / Pack Size</label>
+        <input id="product-add-volume-pack-size-3"
           type="text"
           nz-input
           placeholder="e.g. 100ml, 10's Pack, 1 Vial"
           [(ngModel)]="form.volume"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Volume / Pack Size" />
       </div>
 
       <!-- Form / Medicine Type -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-medicine-form-dosage-4" class="block text-xs font-semibold text-slate-700 mb-1">
           Medicine Form (Dosage) <span class="text-rose-500">*</span>
-        </span>
+        </label>
         <div class="flex gap-1.5">
-          <nz-select class="flex-1" [(ngModel)]="form.medicineType">
+          <nz-select id="product-add-medicine-form-dosage-4" nzId="product-add-medicine-form-dosage-4" class="flex-1" [(ngModel)]="form.medicineType" aria-label="Medicine Form (Dosage)">
             @for (opt of medicineTypeOptions; track opt.value) {
               <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
             }
@@ -103,7 +100,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Medicine Type"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Medicine Type">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -111,11 +108,11 @@
 
       <!-- Unit Type -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-packaging-billing-unit-5" class="block text-xs font-semibold text-slate-700 mb-1">
           Packaging / Billing Unit <span class="text-rose-500">*</span>
-        </span>
+        </label>
         <div class="flex gap-1.5">
-          <nz-select class="flex-1" [(ngModel)]="form.unitType">
+          <nz-select id="product-add-packaging-billing-unit-5" nzId="product-add-packaging-billing-unit-5" class="flex-1" [(ngModel)]="form.unitType" aria-label="Packaging / Billing Unit">
             @for (opt of unitTypeOptions; track opt.value) {
               <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
             }
@@ -128,7 +125,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Unit Type"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Unit Type">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -136,68 +133,63 @@
 
       <!-- Quantity / Box -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-pieces-box-qty-per-box-6" class="block text-xs font-semibold text-slate-700 mb-1">
           Pieces / Box (Qty Per Box) <span class="text-rose-500">*</span>
-        </span>
-        <nz-input-number
+        </label>
+        <nz-input-number id="product-add-pieces-box-qty-per-box-6" nzId="product-add-pieces-box-qty-per-box-6"
           class="w-full"
           [nzMin]="1"
           [(ngModel)]="form.qtyBox"
-          (ngModelChange)="calculatePiecePrice()"
-        ></nz-input-number>
+          (ngModelChange)="calculatePiecePrice()" aria-label="Pieces / Box (Qty Per Box)"></nz-input-number>
       </div>
 
       <!-- Cost / Box (TP) -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-cost-price-box-7" class="block text-xs font-semibold text-slate-700 mb-1">
           Cost Price / Box (৳) <span class="text-rose-500">*</span>
-        </span>
-        <nz-input-number
+        </label>
+        <nz-input-number id="product-add-cost-price-box-7" nzId="product-add-cost-price-box-7"
           class="w-full"
           [nzMin]="0"
           [nzStep]="0.5"
-          [(ngModel)]="form.costBox"
-        ></nz-input-number>
+          [(ngModel)]="form.costBox" aria-label="Cost Price / Box (৳)"></nz-input-number>
       </div>
 
       <!-- Sale Price / Box (MRP) -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-sale-price-box-8" class="block text-xs font-semibold text-slate-700 mb-1">
           Sale Price / Box (৳) <span class="text-rose-500">*</span>
-        </span>
-        <nz-input-number
+        </label>
+        <nz-input-number id="product-add-sale-price-box-8" nzId="product-add-sale-price-box-8"
           class="w-full"
           [nzMin]="0"
           [nzStep]="0.5"
           [(ngModel)]="form.salePriceBox"
-          (ngModelChange)="calculatePiecePrice()"
-        ></nz-input-number>
+          (ngModelChange)="calculatePiecePrice()" aria-label="Sale Price / Box (৳)"></nz-input-number>
       </div>
 
       <!-- Sale Price / Piece -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-sale-price-piece-9" class="block text-xs font-semibold text-slate-700 mb-1">
           Sale Price / Piece (৳) <span class="text-rose-500">*</span>
-        </span>
-        <nz-input-number
+        </label>
+        <nz-input-number id="product-add-sale-price-piece-9" nzId="product-add-sale-price-piece-9"
           class="w-full"
           [nzMin]="0"
           [nzStep]="0.1"
-          [(ngModel)]="form.salePricePiece"
-        ></nz-input-number>
+          [(ngModel)]="form.salePricePiece" aria-label="Sale Price / Piece (৳)"></nz-input-number>
       </div>
 
       <!-- Rak Number -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Rak / Shelf Location</span>
+        <label for="product-add-rak-shelf-location-10" class="block text-xs font-semibold text-slate-700 mb-1">Rak / Shelf Location</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="product-add-rak-shelf-location-10" nzId="product-add-rak-shelf-location-10"
             nzShowSearch
             nzAllowClear
             class="flex-1"
             [(ngModel)]="form.rakNumber"
-            nzPlaceHolder="Select or enter shelf"
-          >
+            nzPlaceHolder="Select or enter shelf" aria-label="Rak / Shelf Location">
             @for (r of raks; track r) {
               <nz-option [nzValue]="r" [nzLabel]="r"></nz-option>
             }
@@ -210,7 +202,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Rak / Shelf"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Rak / Shelf">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -218,17 +210,16 @@
 
       <!-- Manufacturer / Company with Quick Add Modal -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-manufacturer-company-11" class="block text-xs font-semibold text-slate-700 mb-1">
           Manufacturer Company <span class="text-rose-500">*</span>
-        </span>
+        </label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="product-add-manufacturer-company-11" nzId="product-add-manufacturer-company-11"
             nzShowSearch
             nzAllowClear
             class="flex-1"
             [(ngModel)]="form.company"
-            nzPlaceHolder="Select company"
-          >
+            nzPlaceHolder="Select company" aria-label="Manufacturer Company">
             @for (c of companies; track c) {
               <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
             }
@@ -241,7 +232,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Manufacturer Company"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Manufacturer Company">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -249,15 +240,14 @@
 
       <!-- Generic Name with Quick Add Modal -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</span>
+        <label for="product-add-generic-formulation-12" class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="product-add-generic-formulation-12" nzId="product-add-generic-formulation-12"
             nzShowSearch
             nzAllowClear
             class="flex-1"
             [(ngModel)]="form.generic"
-            nzPlaceHolder="Select generic"
-          >
+            nzPlaceHolder="Select generic" aria-label="Generic Formulation">
             @for (g of generics; track g) {
               <nz-option [nzValue]="g" [nzLabel]="g"></nz-option>
             }
@@ -270,7 +260,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Generic Formulation"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Generic Formulation">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -278,24 +268,22 @@
 
       <!-- DGDA DAR Number -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">DGDA DAR No</span>
-        <input
+        <label for="product-add-dgda-dar-no-13" class="block text-xs font-semibold text-slate-700 mb-1">DGDA DAR No</label>
+        <input id="product-add-dgda-dar-no-13"
           type="text"
           nz-input
           placeholder="e.g. DAR 024-0012-045"
           [(ngModel)]="form.darNumber"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="DGDA DAR No" />
       </div>
 
       <!-- Drug Schedule Classification -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Drug Schedule Class</span>
-        <nz-select
+        <label for="product-add-drug-schedule-class-14" class="block text-xs font-semibold text-slate-700 mb-1">Drug Schedule Class</label>
+        <nz-select id="product-add-drug-schedule-class-14" nzId="product-add-drug-schedule-class-14"
           class="w-full"
           [(ngModel)]="form.drugSchedule"
-          nzPlaceHolder="Select regulatory class"
-        >
+          nzPlaceHolder="Select regulatory class" aria-label="Drug Schedule Class">
           @for (s of drugScheduleOptions; track s.value) {
             <nz-option [nzValue]="s.value" [nzLabel]="s.label"></nz-option>
           }
@@ -304,36 +292,33 @@
 
       <!-- Barcode Value -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Barcode / UPC</span>
-        <input
+        <label for="product-add-barcode-upc-15" class="block text-xs font-semibold text-slate-700 mb-1">Barcode / UPC</label>
+        <input id="product-add-barcode-upc-15"
           type="text"
           nz-input
           placeholder="Scan or enter barcode"
           [(ngModel)]="form.barcode"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Barcode / UPC" />
       </div>
 
       <!-- Country of Origin -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Country of Origin</span>
-        <input
+        <label for="product-add-country-of-origin-16" class="block text-xs font-semibold text-slate-700 mb-1">Country of Origin</label>
+        <input id="product-add-country-of-origin-16"
           type="text"
           nz-input
           placeholder="Bangladesh"
           [(ngModel)]="form.country"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Country of Origin" />
       </div>
 
       <!-- Reorder Level -->
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Min Reorder Level (Pcs)</span>
-        <nz-input-number
+        <label for="product-add-min-reorder-level-pcs-17" class="block text-xs font-semibold text-slate-700 mb-1">Min Reorder Level (Pcs)</label>
+        <nz-input-number id="product-add-min-reorder-level-pcs-17" nzId="product-add-min-reorder-level-pcs-17"
           class="w-full"
           [nzMin]="0"
-          [(ngModel)]="form.minStock"
-        ></nz-input-number>
+          [(ngModel)]="form.minStock" aria-label="Min Reorder Level (Pcs)"></nz-input-number>
       </div>
     </div>
 
@@ -372,16 +357,15 @@
   <ng-container *nzModalContent>
     <div class="space-y-3">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-company-name-18" class="block text-xs font-semibold text-slate-700 mb-1">
           Company Name <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-company-name-18"
           type="text"
           nz-input
           placeholder="e.g. Popular Pharmaceuticals"
           [(ngModel)]="newCompanyName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Company Name" />
       </div>
     </div>
   </ng-container>
@@ -399,16 +383,15 @@
   <ng-container *nzModalContent>
     <div class="space-y-3">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-generic-inn-name-19" class="block text-xs font-semibold text-slate-700 mb-1">
           Generic (INN) Name <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-generic-inn-name-19"
           type="text"
           nz-input
           placeholder="e.g. Pantoprazole Sodium"
           [(ngModel)]="newGenericName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Generic (INN) Name" />
       </div>
     </div>
   </ng-container>
@@ -426,16 +409,15 @@
   <ng-container *nzModalContent>
     <div class="space-y-3">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-medicine-type-dosage-form-name-20" class="block text-xs font-semibold text-slate-700 mb-1">
           Medicine Type / Dosage Form Name <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-medicine-type-dosage-form-name-20"
           type="text"
           nz-input
           placeholder="e.g. Inhaler, Eye Drop, Sachet"
           [(ngModel)]="newMedicineTypeName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Medicine Type / Dosage Form Name" />
       </div>
     </div>
   </ng-container>
@@ -453,16 +435,15 @@
   <ng-container *nzModalContent>
     <div class="space-y-3">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-unit-type-name-21" class="block text-xs font-semibold text-slate-700 mb-1">
           Unit Type Name <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-unit-type-name-21"
           type="text"
           nz-input
           placeholder="e.g. VIAL, AMPOULE, BLISTER"
           [(ngModel)]="newUnitTypeName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Unit Type Name" />
       </div>
     </div>
   </ng-container>
@@ -480,16 +461,15 @@
   <ng-container *nzModalContent>
     <div class="space-y-3">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="product-add-shelf-rak-identifier-22" class="block text-xs font-semibold text-slate-700 mb-1">
           Shelf / Rak Identifier <span class="text-rose-500">*</span>
-        </span>
-        <input
+        </label>
+        <input id="product-add-shelf-rak-identifier-22"
           type="text"
           nz-input
           placeholder="e.g. Rack C-04, Drawer 2"
           [(ngModel)]="newRakName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Shelf / Rak Identifier" />
       </div>
     </div>
   </ng-container>

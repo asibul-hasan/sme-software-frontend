@@ -57,7 +57,7 @@
           nz-tooltip
           nzTooltipTitle="Press F9 to park active order or recall held orders"
           class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-md flex items-center gap-1.5 transition-colors shadow-xs border-0 cursor-pointer"
-        >
+         aria-label="Press F9 to park active order or recall held orders">
           <span nz-icon nzType="pause-circle"></span>
           <span>F9 / Hold</span>
           @if (heldOrders().length > 0) {
@@ -117,8 +117,10 @@
       <div class="flex items-center gap-2 shrink-0">
         <div class="relative flex-1">
           <span nz-icon nzType="barcode" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none"></span>
+          <label for="pos-search-input" class="sr-only">Search medicine, generic, barcode, rak</label>
           <input
             id="pos-search-input"
+            aria-label="Search medicine, generic, barcode, rak (F1)"
             type="text"
             [ngModel]="currentSearchTerm()"
             (ngModelChange)="onSearchInput($event)"
@@ -132,7 +134,7 @@
                 (click)="currentSearchTerm.set(''); focusProductSearch()"
                 class="p-1 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs"
                 title="Clear search"
-              >
+               aria-label="Clear search">
                 ✕
               </button>
             }
@@ -269,13 +271,12 @@
           <span class="text-[10px] text-slate-400 font-normal">F3: Add Customer</span>
         </div>
         <div class="flex gap-1.5 items-center">
-          <nz-select
+          <nz-select id="pos-terminal-select-or-search-customer-16" nzId="pos-terminal-select-or-search-customer-16"
             class="flex-1"
             nzShowSearch
             nzPlaceHolder="Select or search customer..."
             [ngModel]="selectedCustomer()"
-            (ngModelChange)="onCustomerChange($event)"
-          >
+            (ngModelChange)="onCustomerChange($event)" aria-label="Select or search customer...">
             @for (c of customers; track c.id) {
               <nz-option
                 [nzValue]="c.id"
@@ -344,7 +345,7 @@
               class="text-[11px] rounded"
               (click)="startNewInvoice()"
               title="Clear cart"
-            >
+             aria-label="Clear cart">
               Clear
             </button>
           </div>
@@ -387,7 +388,7 @@
                         >
                           −
                         </button>
-                        <input
+                        <input id="pos-terminal-field-17"
                           type="number"
                           [ngModel]="item.qty"
                           (ngModelChange)="setItemQty(item, $event)"
@@ -395,7 +396,7 @@
                           min="0.01"
                           class="w-10 h-8 text-center font-mono font-bold text-xs border-0 border-x border-slate-200 outline-hidden p-0 text-slate-900 bg-white"
                           aria-label="Item quantity"
-                        />
+                         />
                         <button
                           type="button"
                           (click)="updateItemQty(item, isWholesale() ? 0.25 : 1)"
@@ -477,7 +478,7 @@
           [class.on]="selectedMethod() === 'cash'"
           (click)="setMethod('cash')"
           title="Cash (F8: Fast Cash)"
-        >
+         aria-label="Cash (F8: Fast Cash)">
           <span class="dot" style="background:#0d9488"></span>
           <span>Cash</span>
         </button>
@@ -486,7 +487,7 @@
           [class.on]="selectedMethod() === 'card'"
           (click)="setMethod('card')"
           title="Card POS"
-        >
+         aria-label="Card POS">
           <span class="dot" style="background:#0284c7"></span>
           <span>Card</span>
         </button>
@@ -571,7 +572,7 @@
       @if (selectedMethod() === 'cash') {
         <div>
           <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-            <span>Received from customer (৳)</span>
+            <label for="pos-tender-input" class="m-0 cursor-pointer">Received from customer (৳)</label>
             <div class="flex items-center gap-1.5">
               <button type="button" class="linkbtn" (click)="setExactPayment()">Exact (F4)</button>
               <button type="button" (click)="triggerFastCashPay()" class="px-1.5 py-0.2 bg-teal-50 text-teal-800 hover:bg-teal-100 rounded text-[10px] font-bold border border-teal-200 cursor-pointer">
@@ -586,6 +587,7 @@
             [ngModel]="tendered()"
             (ngModelChange)="onTenderedChange($event)"
             class="tender-input"
+            aria-label="Received from customer (৳)"
           />
           <div class="notes">
             <button type="button" (click)="setQuickCash(100)">৳100</button>
@@ -602,15 +604,14 @@
       @if (['card', 'bkash', 'nagad', 'rocket', 'upay'].includes(selectedMethod())) {
         <div>
           <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-            <span>{{ selectedMethod() === 'card' ? 'Card last 4 digits / approval code' : (methodDisplayNames[selectedMethod()] + ' transaction ID') }}</span>
+            <label for="pos-terminal-field-18" class="m-0 cursor-pointer">{{ selectedMethod() === 'card' ? 'Card last 4 digits / approval code' : (methodDisplayNames[selectedMethod()] + ' transaction ID') }}</label>
             <span class="font-normal text-slate-400">optional</span>
           </div>
-          <input
+          <input id="pos-terminal-field-18"
             type="text"
             [placeholder]="selectedMethod() === 'card' ? 'e.g. 4417' : 'e.g. 8N7A5K2Q1B'"
             [(ngModel)]="txnReference"
-            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono"
-          />
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono" aria-label="Transaction Reference" />
         </div>
       }
 
@@ -622,43 +623,39 @@
             <span class="font-normal text-slate-400">Cash covers balance</span>
           </div>
           <div class="sprow">
-            <span>Cash</span>
-            <input
+            <label for="pos-terminal-split-cash-search-19">Cash</label>
+            <input id="pos-terminal-split-cash-search-19"
               type="number"
               min="0"
               [ngModel]="splitCash()"
-              (ngModelChange)="onSplitCashChange($event)"
-            />
+              (ngModelChange)="onSplitCashChange($event)" aria-label="Split Cash Amount" />
           </div>
           <div class="sprow">
-            <span>Card</span>
-            <input
+            <label for="pos-terminal-0-20">Card</label>
+            <input id="pos-terminal-0-20"
               type="number"
               min="0"
               placeholder="0"
               [ngModel]="splitCard() || ''"
-              (ngModelChange)="onSplitChannelInput('card', $event)"
-            />
+              (ngModelChange)="onSplitChannelInput('card', $event)" aria-label="Split Card Amount" />
           </div>
           <div class="sprow">
-            <span>bKash</span>
-            <input
+            <label for="pos-terminal-0-21">bKash</label>
+            <input id="pos-terminal-0-21"
               type="number"
               min="0"
               placeholder="0"
               [ngModel]="splitBkash() || ''"
-              (ngModelChange)="onSplitChannelInput('bkash', $event)"
-            />
+              (ngModelChange)="onSplitChannelInput('bkash', $event)" aria-label="Split bKash Amount" />
           </div>
           <div class="sprow">
-            <span>Nagad</span>
-            <input
+            <label for="pos-terminal-0-22">Nagad</label>
+            <input id="pos-terminal-0-22"
               type="number"
               min="0"
               placeholder="0"
               [ngModel]="splitNagad() || ''"
-              (ngModelChange)="onSplitChannelInput('nagad', $event)"
-            />
+              (ngModelChange)="onSplitChannelInput('nagad', $event)" aria-label="Split Nagad Amount" />
           </div>
         </div>
       }
@@ -698,7 +695,7 @@
             (click)="printInvoice()"
             class="text-xs text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer font-medium p-0"
             title="Re-print last sale invoice"
-          >
+           aria-label="Re-print last sale invoice">
             🖨️ Re-print
           </button>
           <button
@@ -706,7 +703,7 @@
             (click)="startNewInvoice()"
             class="text-xs text-rose-500 hover:text-rose-700 bg-transparent border-0 cursor-pointer font-medium p-0"
             title="Clear basket"
-          >
+           aria-label="Clear basket">
             Clear
           </button>
         </div>
@@ -727,18 +724,17 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="customer-modal-phone-input" class="block text-xs font-semibold text-slate-700 mb-1">
           Mobile Phone <span class="text-rose-500">*</span>
           <span class="text-[10px] text-slate-400 font-normal ml-1">(Primary Identifier — 11 digits)</span>
-        </span>
+        </label>
         <input
           id="customer-modal-phone-input"
           type="text"
           nz-input
           placeholder="01XXXXXXXXX (11 digits)"
           [(ngModel)]="customerForm.phone"
-          class="rounded-md font-mono"
-        />
+          class="rounded-md font-mono" aria-label="Mobile Phone (Primary Identifier — 11 digits)" />
       </div>
       <div>
         <span class="block text-xs font-semibold text-slate-700 mb-1">
@@ -755,20 +751,20 @@
         />
       </div>
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Customer Tier</span>
-        <nz-select class="w-full" [(ngModel)]="customerForm.customer_type">
+        <label for="pos-terminal-customer-tier-2" class="block text-xs font-semibold text-slate-700 mb-1">Customer Tier</label>
+        <nz-select id="pos-terminal-customer-tier-2" nzId="pos-terminal-customer-tier-2" class="w-full" [(ngModel)]="customerForm.customer_type" aria-label="Customer Tier">
           @for (tier of customerTiers; track tier.value) {
             <nz-option [nzValue]="tier.value" [nzLabel]="tier.label"></nz-option>
           }
         </nz-select>
       </div>
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Address / Note</span>
-        <input type="text" nz-input placeholder="e.g. Kandirpar, Cumilla" [(ngModel)]="customerForm.address" class="rounded-md" />
+        <label for="pos-terminal-address-note-3" class="block text-xs font-semibold text-slate-700 mb-1">Address / Note</label>
+        <input id="pos-terminal-address-note-3" type="text" nz-input placeholder="e.g. Kandirpar, Cumilla" [(ngModel)]="customerForm.address" class="rounded-md" aria-label="Address / Note" />
       </div>
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Opening Due Balance (৳)</span>
-        <nz-input-number class="w-full" [nzMin]="0" [(ngModel)]="customerForm.current_due"></nz-input-number>
+        <label for="pos-terminal-opening-due-balance-4" class="block text-xs font-semibold text-slate-700 mb-1">Opening Due Balance (৳)</label>
+        <nz-input-number id="pos-terminal-opening-due-balance-4" nzId="pos-terminal-opening-due-balance-4" class="w-full" [nzMin]="0" [(ngModel)]="customerForm.current_due" aria-label="Opening Due Balance (৳)"></nz-input-number>
       </div>
     </div>
   </ng-container>
@@ -786,21 +782,20 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="pos-terminal-product-brand-name-5" class="block text-xs font-semibold text-slate-700 mb-1">
           Product Brand Name <span class="text-rose-500">*</span>
-        </span>
-        <input type="text" nz-input placeholder="e.g. Napa Extra 500mg" [(ngModel)]="quickProductForm.brand_name" class="rounded-md" />
+        </label>
+        <input id="pos-terminal-product-brand-name-5" type="text" nz-input placeholder="e.g. Napa Extra 500mg" [(ngModel)]="quickProductForm.brand_name" class="rounded-md" aria-label="Product Brand Name" />
       </div>
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</span>
+        <label for="pos-terminal-generic-formulation-6" class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="pos-terminal-generic-formulation-6" nzId="pos-terminal-generic-formulation-6"
             nzShowSearch
             nzAllowClear
             nzPlaceHolder="Select generic..."
             [(ngModel)]="quickProductForm.generic_name"
-            class="flex-1"
-          >
+            class="flex-1" aria-label="Generic Formulation">
             @for (g of genericsList; track g) {
               <nz-option [nzValue]="g" [nzLabel]="g"></nz-option>
             }
@@ -811,21 +806,20 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Generic"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Generic">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
       </div>
       <div>
-        <span class="block text-xs font-semibold text-slate-700 mb-1">Manufacturer Company</span>
+        <label for="pos-terminal-manufacturer-company-7" class="block text-xs font-semibold text-slate-700 mb-1">Manufacturer Company</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="pos-terminal-manufacturer-company-7" nzId="pos-terminal-manufacturer-company-7"
             nzShowSearch
             nzAllowClear
             nzPlaceHolder="Select company..."
             [(ngModel)]="quickProductForm.manufacturer"
-            class="flex-1"
-          >
+            class="flex-1" aria-label="Manufacturer Company">
             @for (c of companiesList; track c) {
               <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
             }
@@ -836,7 +830,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Manufacturer"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Manufacturer">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -844,13 +838,13 @@
       <div class="grid grid-cols-2 gap-3">
         @if (authService.canViewCostPrice()) {
           <div>
-            <span class="block text-xs font-semibold text-slate-700 mb-1">Unit Cost (৳)</span>
-            <input type="number" nz-input placeholder="0.00" [(ngModel)]="quickProductForm.cost_price" class="rounded-md" />
+            <label for="pos-terminal-unit-cost-8" class="block text-xs font-semibold text-slate-700 mb-1">Unit Cost (৳)</label>
+            <input id="pos-terminal-unit-cost-8" type="number" nz-input placeholder="0.00" [(ngModel)]="quickProductForm.cost_price" class="rounded-md" aria-label="Unit Cost (৳)" />
           </div>
         }
         <div [class.col-span-2]="!authService.canViewCostPrice()">
-          <span class="block text-xs font-semibold text-slate-700 mb-1">Sale Price (৳)</span>
-          <input type="number" nz-input placeholder="0.00" [(ngModel)]="quickProductForm.sale_price" class="rounded-md" />
+          <label for="pos-terminal-sale-price-9" class="block text-xs font-semibold text-slate-700 mb-1">Sale Price (৳)</label>
+          <input id="pos-terminal-sale-price-9" type="number" nz-input placeholder="0.00" [(ngModel)]="quickProductForm.sale_price" class="rounded-md" aria-label="Sale Price (৳)" />
         </div>
       </div>
     </div>
@@ -869,16 +863,15 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">
+      <label for="pos-terminal-generic-name-14" class="block text-xs font-semibold text-slate-700 mb-1">
         Generic Name <span class="text-rose-500">*</span>
       </label>
-      <input
+      <input id="pos-terminal-generic-name-14"
         type="text"
         nz-input
         placeholder="e.g. Pantoprazole Sodium"
         [(ngModel)]="newQuickGenericName"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Generic Name" />
     </div>
   </ng-container>
 </nz-modal>
@@ -895,16 +888,15 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">
+      <label for="pos-terminal-company-name-15" class="block text-xs font-semibold text-slate-700 mb-1">
         Company Name <span class="text-rose-500">*</span>
       </label>
-      <input
+      <input id="pos-terminal-company-name-15"
         type="text"
         nz-input
         placeholder="e.g. Popular Pharmaceuticals"
         [(ngModel)]="newQuickCompanyName"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Company Name" />
     </div>
   </ng-container>
 </nz-modal>
@@ -959,7 +951,7 @@
                 nz-tooltip
                 nzTooltipTitle="Discard Order"
                 class="btn-tbl-action btn-tbl-delete"
-              >
+               aria-label="Discard Order">
                 <span nz-icon nzType="delete"></span>
               </button>
             </div>
@@ -982,22 +974,22 @@
     @if (editingItem) {
       <div class="space-y-3 py-1">
         <div>
-          <span class="block text-xs font-semibold text-slate-700 mb-1">Product</span>
-          <input type="text" nz-input [disabled]="true" [ngModel]="editingItem.product_name" class="rounded-md bg-slate-50" />
+          <label for="pos-terminal-product-10" class="block text-xs font-semibold text-slate-700 mb-1">Product</label>
+          <input id="pos-terminal-product-10" type="text" nz-input [disabled]="true" [ngModel]="editingItem.product_name" class="rounded-md bg-slate-50" aria-label="Product" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <span class="block text-xs font-semibold text-slate-700 mb-1">{{ isWholesale() ? 'Box Qty' : 'Quantity' }}</span>
-            <input type="number" nz-input [(ngModel)]="editingItem.qty" min="0.01" class="rounded-md font-mono" />
+            <label for="pos-terminal-iswholesale-box-qty-quantity-11" class="block text-xs font-semibold text-slate-700 mb-1">{{ isWholesale() ? 'Box Qty' : 'Quantity' }}</label>
+            <input id="pos-terminal-iswholesale-box-qty-quantity-11" type="number" nz-input [(ngModel)]="editingItem.qty" min="0.01" class="rounded-md font-mono" [attr.aria-label]="isWholesale() ? 'Box Qty' : 'Quantity'" />
           </div>
           <div>
-            <span class="block text-xs font-semibold text-slate-700 mb-1">{{ isWholesale() ? 'Price/Box (৳)' : 'Unit Price (৳)' }}</span>
-            <input type="number" nz-input [(ngModel)]="editingItem.unit_price" min="0" class="rounded-md font-mono" />
+            <label for="pos-terminal-iswholesale-price-box-unit-pri-12" class="block text-xs font-semibold text-slate-700 mb-1">{{ isWholesale() ? 'Price/Box (৳)' : 'Unit Price (৳)' }}</label>
+            <input id="pos-terminal-iswholesale-price-box-unit-pri-12" type="number" nz-input [(ngModel)]="editingItem.unit_price" min="0" class="rounded-md font-mono" [attr.aria-label]="isWholesale() ? 'Price/Box (৳)' : 'Unit Price (৳)'" />
           </div>
         </div>
         <div>
-          <span class="block text-xs font-semibold text-slate-700 mb-1">Item Discount (৳)</span>
-          <input type="number" nz-input [(ngModel)]="editingItem.discount" min="0" class="rounded-md font-mono" />
+          <label for="pos-terminal-item-discount-13" class="block text-xs font-semibold text-slate-700 mb-1">Item Discount (৳)</label>
+          <input id="pos-terminal-item-discount-13" type="number" nz-input [(ngModel)]="editingItem.discount" min="0" class="rounded-md font-mono" aria-label="Item Discount (৳)" />
         </div>
         <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center text-xs">
           <span class="font-medium text-slate-600">Calculated Line Total:</span>

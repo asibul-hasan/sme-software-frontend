@@ -14,6 +14,7 @@ import { ApiService } from '../../core/services/api.service';
 import { SubPharmacySubscription, SubSubscriptionPayment } from '../../core/models';
 
 interface BillingHistoryRow {
+  paymentNo?: number;
   product: string;
   ref: string;
   date: string;
@@ -99,7 +100,11 @@ interface BillingHistoryRow {
         <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
           <p class="text-xs font-semibold text-slate-500 mb-0.5">License Tier</p>
           <div>
-            <nz-tag nzColor="success" class="text-[11px] font-semibold px-2 py-0.5">● Active Cloud</nz-tag>
+            @if (daysRemaining() > 0) {
+              <nz-tag nzColor="success" class="text-[11px] font-semibold px-2 py-0.5">● Active Cloud</nz-tag>
+            } @else {
+              <nz-tag nzColor="error" class="text-[11px] font-semibold px-2 py-0.5">● Expired</nz-tag>
+            }
           </div>
           <span class="text-[11px] text-slate-400 block mt-0.5">{{ planName() }}</span>
         </div>
@@ -132,19 +137,29 @@ interface BillingHistoryRow {
                     ৳ {{ h.amount.toFixed(2) }}
                   </td>
                   <td class="p-3 text-center">
-                    <nz-tag nzColor="success" class="text-[11px] font-semibold px-2 py-0.5">
+                    <nz-tag [nzColor]="h.status === 'Completed' ? 'success' : (h.status === 'Pending' ? 'warning' : 'default')" class="text-[11px] font-semibold px-2 py-0.5">
                       {{ h.status }}
                     </nz-tag>
                   </td>
                   <td class="p-3 text-center">
-                    <div class="inline-flex items-center justify-center">
+                    <div class="inline-flex items-center justify-center gap-1.5">
+                      @if (h.status === 'Pending') {
+                        <button
+                          type="button"
+                          (click)="verifyPayment(h)"
+                          nz-tooltip
+                          nzTooltipTitle="Verify and Activate Subscription"
+                          class="px-2 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded hover:bg-emerald-100 transition-colors">
+                          Verify & Activate
+                        </button>
+                      }
                       <button
                         type="button"
                         (click)="printInvoice(h)"
                         nz-tooltip
                         nzTooltipTitle="Print Billing Receipt"
                         class="btn-tbl-action btn-tbl-neutral"
-                      >
+                       aria-label="Print Billing Receipt">
                         <span nz-icon nzType="printer"></span>
                       </button>
                     </div>
@@ -190,7 +205,7 @@ interface BillingHistoryRow {
             <span class="font-mono text-2xl font-bold theme-highlight-title">
               ৳ {{ cycle === 'Monthly' ? '500.00' : '5,000.00' }}
             </span>
-            <span class="text-xs theme-highlight-subtitle block mt-1">Extends license valid through 30 days</span>
+            <span class="text-xs theme-highlight-subtitle block mt-1">Extends license valid through {{ cycle === 'Monthly' ? '30 days' : '365 days (1 Year)' }}</span>
           </div>
 
           <div>
@@ -254,15 +269,22 @@ export class SubscriptionComponent implements OnInit {
     this.api.get<SubSubscriptionPayment[]>('sub/payments').subscribe({
       next: res => {
         if (res.data && res.data.length > 0) {
-          this.history = res.data.map(p => ({
-            product: 'PMS Pro ' + (p.final_amount > 1000 ? 'Yearly' : 'Monthly'),
-            ref: p.transaction_reference,
-            date: new Date(p.payment_timestamp).toLocaleDateString('en-GB'),
-            start: new Date(p.payment_timestamp).toLocaleDateString('en-GB'),
-            end: new Date(new Date(p.payment_timestamp).getTime() + 30 * 86400000).toLocaleDateString('en-GB'),
-            amount: Number(p.final_amount),
-            status: p.payment_status
-          }));
+          this.history = res.data.map(p => {
+            const isYearly = p.final_amount > 1000;
+            const durationDays = isYearly ? 365 : 30;
+            const startDate = new Date(p.payment_timestamp);
+            const endDate = new Date(startDate.getTime() + durationDays * 86400000);
+            return {
+              paymentNo: p.subscription_payment_no,
+              product: 'PMS Pro ' + (isYearly ? 'Yearly' : 'Monthly'),
+              ref: p.transaction_reference,
+              date: startDate.toLocaleDateString('en-GB'),
+              start: startDate.toLocaleDateString('en-GB'),
+              end: endDate.toLocaleDateString('en-GB'),
+              amount: Number(p.final_amount),
+              status: p.payment_status
+            };
+          });
         }
       }
     });
@@ -284,6 +306,19 @@ export class SubscriptionComponent implements OnInit {
       },
       error: err => {
         this.msg.error(err?.error?.message || 'Subscription payment failed');
+      }
+    });
+  }
+
+  verifyPayment(h: BillingHistoryRow): void {
+    if (!h.paymentNo) return;
+    this.api.post<SubSubscriptionPayment>(`sub/payments/${h.paymentNo}/confirm`, {}).subscribe({
+      next: res => {
+        this.msg.success(res.message || 'Payment confirmed and subscription activated!');
+        this.loadSubscriptionData();
+      },
+      error: err => {
+        this.msg.error(err?.error?.message || 'Failed to verify payment');
       }
     });
   }

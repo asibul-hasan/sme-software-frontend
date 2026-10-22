@@ -52,8 +52,8 @@ interface BalanceEntry {
         [breadcrumbs]="[{ label: 'Accounting', url: '/accounting/transaction' }, { label: 'Additional Balance' }]"
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
-          <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="From Date"></nz-date-picker>
-          <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="toDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="To Date"></nz-date-picker>
+          <nz-date-picker id="additional-balance-from-date-5" nzId="additional-balance-from-date-5" class="w-32 shrink-0 rounded-md" [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="From Date" aria-label="From Date"></nz-date-picker>
+          <nz-date-picker id="additional-balance-to-date-6" nzId="additional-balance-to-date-6" class="w-32 shrink-0 rounded-md" [(ngModel)]="toDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="To Date" aria-label="To Date"></nz-date-picker>
           <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
@@ -109,7 +109,7 @@ interface BalanceEntry {
                         nz-tooltip
                         nzTooltipTitle="View Details"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Details">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -118,7 +118,7 @@ interface BalanceEntry {
                         nz-tooltip
                         nzTooltipTitle="Delete Capital Entry"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Capital Entry">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -159,13 +159,13 @@ interface BalanceEntry {
       <ng-container *nzModalContent>
         <div class="space-y-3 py-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
-            <nz-date-picker [(ngModel)]="form.date" nzFormat="dd-MM-yyyy" class="w-full rounded-md"></nz-date-picker>
+            <label for="additional-balance-date-1" class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
+            <nz-date-picker id="additional-balance-date-1" nzId="additional-balance-date-1" [(ngModel)]="form.date" nzFormat="dd-MM-yyyy" class="w-full rounded-md" aria-label="Date"></nz-date-picker>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Target Deposit Account *</label>
-            <nz-select [(ngModel)]="form.account_no" class="w-full" nzPlaceHolder="Select Account">
+            <label for="additional-balance-target-deposit-account-2" class="block text-xs font-semibold text-slate-700 mb-1">Target Deposit Account *</label>
+            <nz-select id="additional-balance-target-deposit-account-2" nzId="additional-balance-target-deposit-account-2" [(ngModel)]="form.account_no" class="w-full" nzPlaceHolder="Select Account" aria-label="Target Deposit Account">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
               }
@@ -173,27 +173,25 @@ interface BalanceEntry {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="additional-balance-amount-3" class="block text-xs font-semibold text-slate-700 mb-1">
               Amount (৳) <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="additional-balance-amount-3"
               type="number"
               nz-input
               placeholder="0.00"
               [(ngModel)]="form.amount"
-              class="rounded-md font-mono"
-            />
+              class="rounded-md font-mono" aria-label="Amount (৳)" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Source / Remarks</label>
-            <textarea
+            <label for="additional-balance-source-remarks-4" class="block text-xs font-semibold text-slate-700 mb-1">Source / Remarks</label>
+            <textarea id="additional-balance-source-remarks-4"
               nz-input
               rows="2"
               placeholder="e.g. Owner capital injection, personal loan..."
               [(ngModel)]="form.note"
-              class="rounded-md"
-            ></textarea>
+              class="rounded-md" aria-label="Source / Remarks"></textarea>
           </div>
         </div>
       </ng-container>

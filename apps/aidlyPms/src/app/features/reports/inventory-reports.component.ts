@@ -94,16 +94,15 @@ type ReportTab = 'abc-fsn' | 'margin' | 'expiry' | 'returns';
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div class="flex items-center gap-3">
             <div class="w-64">
-              <input
+              <input id="inventory-reports-search-product-or-generic-1"
                 type="text"
                 nz-input
                 placeholder="Search product or generic..."
-                [(ngModel)]="abcSearch"
-              />
+                [(ngModel)]="abcSearch" aria-label="Search product or generic..." />
             </div>
             <div class="flex items-center gap-1.5 text-xs text-slate-600">
               <span>Timeframe:</span>
-              <nz-select [(ngModel)]="abcDays" (ngModelChange)="loadAbcFsn()" style="width: 130px;">
+              <nz-select id="inventory-reports-field-2" nzId="inventory-reports-field-2" [(ngModel)]="abcDays" (ngModelChange)="loadAbcFsn()" style="width: 130px;" aria-label="Field">
                 <nz-option [nzValue]="30" nzLabel="Last 30 Days"></nz-option>
                 <nz-option [nzValue]="60" nzLabel="Last 60 Days"></nz-option>
                 <nz-option [nzValue]="90" nzLabel="Last 90 Days"></nz-option>
@@ -166,12 +165,11 @@ type ReportTab = 'abc-fsn' | 'margin' | 'expiry' | 'returns';
       <div *ngIf="currentTab() === 'margin'" class="flex-1 bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden flex flex-col p-3">
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div class="w-72">
-            <input
+            <input id="inventory-reports-search-product-company-3"
               type="text"
               nz-input
               placeholder="Search product, company..."
-              [(ngModel)]="marginSearch"
-            />
+              [(ngModel)]="marginSearch" aria-label="Search product, company..." />
           </div>
           <button nz-button (click)="loadMarginAnalysis()">
             <i nz-icon nzType="reload"></i> Refresh
@@ -250,14 +248,13 @@ type ReportTab = 'abc-fsn' | 'margin' | 'expiry' | 'returns';
           <div class="flex items-center justify-between pb-3 border-b border-slate-200">
             <div class="flex items-center gap-3">
               <div class="w-64">
-                <input
+                <input id="inventory-reports-filter-product-or-batch-4"
                   type="text"
                   nz-input
                   placeholder="Filter product or batch #..."
-                  [(ngModel)]="expirySearch"
-                />
+                  [(ngModel)]="expirySearch" aria-label="Filter product or batch #..." />
               </div>
-              <nz-select [(ngModel)]="expiryBucketFilter" style="width: 160px;">
+              <nz-select id="inventory-reports-field-5" nzId="inventory-reports-field-5" [(ngModel)]="expiryBucketFilter" style="width: 160px;" aria-label="Field">
                 <nz-option [nzValue]="'all'" nzLabel="All Risk Buckets"></nz-option>
                 <nz-option [nzValue]="'Expired'" nzLabel="Expired"></nz-option>
                 <nz-option [nzValue]="'0-30 Days'" nzLabel="0-30 Days"></nz-option>
@@ -318,12 +315,11 @@ type ReportTab = 'abc-fsn' | 'margin' | 'expiry' | 'returns';
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div class="flex items-center gap-3">
             <span class="text-xs text-slate-600 font-medium">Select Date:</span>
-            <input
+            <input id="inventory-reports-field-6"
               type="date"
               [(ngModel)]="returnsDate"
               (ngModelChange)="loadDailyReturns()"
-              class="px-2 py-1 text-xs border border-slate-300 rounded"
-            />
+              class="px-2 py-1 text-xs border border-slate-300 rounded" aria-label="Field" />
           </div>
           <button nz-button (click)="loadDailyReturns()">
             <i nz-icon nzType="reload"></i> Refresh

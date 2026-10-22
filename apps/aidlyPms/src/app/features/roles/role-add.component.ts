@@ -64,18 +64,17 @@ const OPS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE'];
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <form (ngSubmit)="submitRole()" class="space-y-5">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="role-add-role-alias-1" class="block text-xs font-semibold text-slate-700 mb-1">
               Role Alias <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="role-add-role-alias-1"
               type="text"
               nz-input
               placeholder="e.g. Senior Pharmacist, Inventory Auditor"
               [(ngModel)]="roleAlias"
               name="roleAlias"
               class="rounded-md max-w-sm"
-              required
-            />
+              required aria-label="Role Alias" />
           </div>
 
           <div class="border-t border-slate-100 pt-4">

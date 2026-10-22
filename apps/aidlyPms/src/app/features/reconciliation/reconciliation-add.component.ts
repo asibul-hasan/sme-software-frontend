@@ -42,10 +42,10 @@ import { AccTransactionAccount, AccReconciliation } from '../../core/models/acco
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <form (ngSubmit)="submitForm()" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-add-payment-from-source-account-1" class="block text-xs font-semibold text-slate-700 mb-1">
               Payment From (Source Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="fromAccountNo" name="fromAccountNo" class="w-full" nzPlaceHolder="Select Source Account">
+            <nz-select id="reconciliation-add-payment-from-source-account-1" nzId="reconciliation-add-payment-from-source-account-1" [(ngModel)]="fromAccountNo" name="fromAccountNo" class="w-full" nzPlaceHolder="Select Source Account" aria-label="Payment From (Source Account)">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
               }
@@ -53,10 +53,10 @@ import { AccTransactionAccount, AccReconciliation } from '../../core/models/acco
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-add-payment-to-destination-account-2" class="block text-xs font-semibold text-slate-700 mb-1">
               Payment To (Destination Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="toAccountNo" name="toAccountNo" class="w-full" nzPlaceHolder="Select Destination Account">
+            <nz-select id="reconciliation-add-payment-to-destination-account-2" nzId="reconciliation-add-payment-to-destination-account-2" [(ngModel)]="toAccountNo" name="toAccountNo" class="w-full" nzPlaceHolder="Select Destination Account" aria-label="Payment To (Destination Account)">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
               }
@@ -64,30 +64,28 @@ import { AccTransactionAccount, AccReconciliation } from '../../core/models/acco
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-add-amount-3" class="block text-xs font-semibold text-slate-700 mb-1">
               Amount (৳) <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="reconciliation-add-amount-3"
               type="number"
               nz-input
               placeholder="0.00"
               [(ngModel)]="amount"
               name="amount"
               class="rounded-md font-mono"
-              required
-            />
+              required aria-label="Amount (৳)" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Note / Reference</label>
-            <textarea
+            <label for="reconciliation-add-note-reference-4" class="block text-xs font-semibold text-slate-700 mb-1">Note / Reference</label>
+            <textarea id="reconciliation-add-note-reference-4"
               nz-input
               rows="3"
               placeholder="Bank deposit slip number or remarks..."
               [(ngModel)]="note"
               name="note"
-              class="rounded-md"
-            ></textarea>
+              class="rounded-md" aria-label="Note / Reference"></textarea>
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">

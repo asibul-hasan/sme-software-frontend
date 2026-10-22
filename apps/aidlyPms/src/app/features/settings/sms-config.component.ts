@@ -112,25 +112,23 @@ import { SettingsService } from '../../core/services/settings.service';
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">bKash Account Number</label>
-            <input
+            <label for="sms-config-bkash-account-number-1" class="block text-xs font-semibold text-slate-700 mb-1">bKash Account Number</label>
+            <input id="sms-config-bkash-account-number-1"
               type="text"
               nz-input
               placeholder="01XXXXXXXXX"
               [(ngModel)]="bkashNumber"
-              class="rounded-md font-mono"
-            />
+              class="rounded-md font-mono" aria-label="bKash Account Number" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Promo Coupon Code</label>
-            <input
+            <label for="sms-config-promo-coupon-code-2" class="block text-xs font-semibold text-slate-700 mb-1">Promo Coupon Code</label>
+            <input id="sms-config-promo-coupon-code-2"
               type="text"
               nz-input
               placeholder="Optional discount code"
               [(ngModel)]="coupon"
-              class="rounded-md uppercase font-mono text-xs"
-            />
+              class="rounded-md uppercase font-mono text-xs" aria-label="Promo Coupon Code" />
           </div>
         </div>
       </ng-container>

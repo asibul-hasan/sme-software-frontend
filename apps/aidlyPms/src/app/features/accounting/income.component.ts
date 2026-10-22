@@ -57,34 +57,31 @@ interface IncomeRow {
       >
         <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="income-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="income-from-date-1" nzId="income-from-date-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="income-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="income-to-date-2" nzId="income-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Income Category</label>
-            <nz-select
+            <label for="income-income-category-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Income Category</label>
+            <nz-select id="income-income-category-3" nzId="income-income-category-3"
               [(ngModel)]="filterCategoryNo"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Categories"
               class="w-44 shrink-0"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Income Category">
               <nz-option [nzValue]="null" nzLabel="All Categories"></nz-option>
               @for (cat of categories(); track cat.income_category_no) {
                 <nz-option [nzValue]="cat.income_category_no" [nzLabel]="cat.name"></nz-option>
@@ -152,7 +149,7 @@ interface IncomeRow {
                         nz-tooltip
                         nzTooltipTitle="View Receipt"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Receipt">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -161,7 +158,7 @@ interface IncomeRow {
                         nz-tooltip
                         nzTooltipTitle="Delete Voucher"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Voucher">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -204,11 +201,11 @@ interface IncomeRow {
         <div class="space-y-3 py-1 text-xs">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="income-category-4" class="block text-xs font-semibold text-slate-700 mb-1">
                 Category <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-1.5">
-                <nz-select [(ngModel)]="form.income_category_no" class="flex-1" nzPlaceHolder="Select Category">
+                <nz-select id="income-category-4" nzId="income-category-4" [(ngModel)]="form.income_category_no" class="flex-1" nzPlaceHolder="Select Category" aria-label="Category">
                   @for (c of categories(); track c.income_category_no) {
                     <nz-option [nzValue]="c.income_category_no" [nzLabel]="c.name"></nz-option>
                   }
@@ -219,31 +216,30 @@ interface IncomeRow {
                   nz-tooltip
                   nzTooltipTitle="Quick Add Category"
                   class="btn-quick-add"
-                >
+                 aria-label="Quick Add Category">
                   <span nz-icon nzType="plus"></span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="income-amount-5" class="block text-xs font-semibold text-slate-700 mb-1">
                 Amount (৳) <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="income-amount-5"
                 type="number"
                 nz-input
                 placeholder="0.00"
                 [(ngModel)]="form.amount"
-                class="rounded-md font-mono"
-              />
+                class="rounded-md font-mono" aria-label="Amount (৳)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="income-payment-account-6" class="block text-xs font-semibold text-slate-700 mb-1">
                 Payment Account <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-1.5">
-                <nz-select [(ngModel)]="form.account_no" class="flex-1" nzPlaceHolder="Select Account">
+                <nz-select id="income-payment-account-6" nzId="income-payment-account-6" [(ngModel)]="form.account_no" class="flex-1" nzPlaceHolder="Select Account" aria-label="Payment Account">
                   @for (acc of accounts(); track acc.account_no) {
                     <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
                   }
@@ -254,32 +250,30 @@ interface IncomeRow {
                   nz-tooltip
                   nzTooltipTitle="Quick Add Account"
                   class="btn-quick-add"
-                >
+                 aria-label="Quick Add Account">
                   <span nz-icon nzType="plus"></span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Received From</label>
-              <input
+              <label for="income-received-from-7" class="block text-xs font-semibold text-slate-700 mb-1">Received From</label>
+              <input id="income-received-from-7"
                 type="text"
                 nz-input
                 placeholder="Source of income / party name"
                 [(ngModel)]="form.received_from"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Received From" />
             </div>
 
             <div class="col-span-1 md:col-span-2">
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Note</label>
-              <input
+              <label for="income-note-8" class="block text-xs font-semibold text-slate-700 mb-1">Note</label>
+              <input id="income-note-8"
                 type="text"
                 nz-input
                 placeholder="Remarks..."
                 [(ngModel)]="form.note"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Note" />
             </div>
           </div>
         </div>
@@ -298,16 +292,15 @@ interface IncomeRow {
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="income-category-name-9" class="block text-xs font-semibold text-slate-700 mb-1">
             Category Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="income-category-name-9"
             type="text"
             nz-input
             placeholder="e.g. Capital, Rental Income"
             [(ngModel)]="newCategoryName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Category Name" />
         </div>
       </ng-container>
     </nz-modal>
@@ -324,16 +317,15 @@ interface IncomeRow {
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="income-account-name-bank-10" class="block text-xs font-semibold text-slate-700 mb-1">
             Account Name / Bank <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="income-account-name-bank-10"
             type="text"
             nz-input
             placeholder="e.g. Dutch-Bangla Bank Ltd."
             [(ngModel)]="newAccountName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Account Name / Bank" />
         </div>
       </ng-container>
     </nz-modal>

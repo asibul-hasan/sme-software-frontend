@@ -6,28 +6,26 @@
     [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Requisition Records' }]"
   >
     <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
-      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="fromDate" (ngModelChange)="loadRecords()" nzPlaceHolder="From Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
-      <nz-date-picker class="w-32 shrink-0" [(ngModel)]="toDate" (ngModelChange)="loadRecords()" nzPlaceHolder="To Date" nzFormat="dd-MM-yyyy"></nz-date-picker>
-      <nz-select class="w-36 shrink-0" [(ngModel)]="selectedSupplier" nzPlaceHolder="Supplier">
+      <nz-date-picker id="requisition-record-from-date-1" nzId="requisition-record-from-date-1" class="w-32 shrink-0" [(ngModel)]="fromDate" (ngModelChange)="loadRecords()" nzPlaceHolder="From Date" nzFormat="dd-MM-yyyy" aria-label="From Date"></nz-date-picker>
+      <nz-date-picker id="requisition-record-to-date-2" nzId="requisition-record-to-date-2" class="w-32 shrink-0" [(ngModel)]="toDate" (ngModelChange)="loadRecords()" nzPlaceHolder="To Date" nzFormat="dd-MM-yyyy" aria-label="To Date"></nz-date-picker>
+      <nz-select id="requisition-record-supplier-3" nzId="requisition-record-supplier-3" class="w-36 shrink-0" [(ngModel)]="selectedSupplier" nzPlaceHolder="Supplier" aria-label="Supplier">
         <nz-option nzValue="" nzLabel="All Suppliers"></nz-option>
         @for (s of suppliers(); track s) {
           <nz-option [nzValue]="s" [nzLabel]="s"></nz-option>
         }
       </nz-select>
-      <input
+      <input id="requisition-record-created-by-4"
         type="text"
         nz-input
         placeholder="Created by..."
         [(ngModel)]="createdBy"
-        class="w-32 shrink-0 rounded-md"
-      />
-      <input
+        class="w-32 shrink-0 rounded-md" aria-label="Created by..." />
+      <input id="requisition-record-requisition-code-5"
         type="text"
         nz-input
         placeholder="Requisition Code..."
         [(ngModel)]="searchCode"
-        class="w-40 shrink-0 rounded-md"
-      />
+        class="w-40 shrink-0 rounded-md" aria-label="Requisition Code..." />
       <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
         <span nz-icon nzType="clear"></span> Reset
       </button>
@@ -69,7 +67,7 @@
                   class="font-bold text-indigo-600 hover:text-indigo-900 hover:underline m-0 text-xs inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                   nz-tooltip
                   [nzTooltipTitle]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'View in Inventory Requisition Planner (Locked)' : 'Edit in Inventory Requisition Planner'"
-                >
+                 [attr.aria-label]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'View in Inventory Requisition Planner (Locked)' : 'Edit in Inventory Requisition Planner'">
                   <span>{{ r.reqCode }}</span>
                   <span nz-icon [nzType]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'lock' : 'form'" class="text-[11px] opacity-75"></span>
                 </a>
@@ -96,7 +94,7 @@
                     nz-tooltip
                     nzTooltipTitle="View Requisition Details"
                     class="btn-tbl-action btn-tbl-view"
-                  >
+                   aria-label="View Requisition Details">
                     <span nz-icon nzType="eye"></span>
                   </button>
                   <a
@@ -105,7 +103,7 @@
                     nz-tooltip
                     [nzTooltipTitle]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'View in Planner (Locked)' : 'Edit in Planner'"
                     class="btn-tbl-action text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200"
-                  >
+                   [attr.aria-label]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'View in Planner (Locked)' : 'Edit in Planner'">
                     <span nz-icon [nzType]="(r.status === 'Approved' || r.status === 'Fulfilled') ? 'eye' : 'edit'"></span>
                   </a>
                   @if (r.status !== 'Approved' && r.status !== 'Cancelled' && r.status !== 'Fulfilled') {
@@ -115,7 +113,7 @@
                       nz-tooltip
                       nzTooltipTitle="Approve Requisition"
                       class="btn-tbl-action text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 border border-emerald-200"
-                    >
+                     aria-label="Approve Requisition">
                       <span nz-icon nzType="check"></span>
                     </button>
                   }
@@ -125,7 +123,7 @@
                     nz-tooltip
                     nzTooltipTitle="Print Requisition"
                     class="btn-tbl-action btn-tbl-neutral"
-                  >
+                   aria-label="Print Requisition">
                     <span nz-icon nzType="printer"></span>
                   </button>
                   <button
@@ -135,7 +133,7 @@
                     [nzTooltipTitle]="(r.status === 'Approved' || r.status === 'Fulfilled') ? (r.status + ' requisition cannot be cancelled or deleted') : 'Cancel Requisition'"
                     class="btn-tbl-action btn-tbl-delete"
                     [disabled]="r.status === 'Cancelled' || r.status === 'Fulfilled' || r.status === 'Approved'"
-                  >
+                   [attr.aria-label]="(r.status === 'Approved' || r.status === 'Fulfilled') ? (r.status + ' requisition cannot be cancelled or deleted') : 'Cancel Requisition'">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>

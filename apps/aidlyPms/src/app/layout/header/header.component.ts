@@ -127,6 +127,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
         (click)="toggleCollapse.emit()"
         class="header-toggle-btn w-8 h-8 flex items-center justify-center rounded-lg"
         [title]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
       >
         <span nz-icon [nzType]="collapsed ? 'menu-unfold' : 'menu-fold'" class="text-sm"></span>
       </button>
@@ -154,7 +155,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
               [class.header-quick-action-btn-active]="isSalePosActive"
               nz-tooltip
               nzTooltipTitle="Sale POS Terminal (SALE_1401)"
-            >
+             aria-label="Sale POS Terminal (SALE_1401)">
               <span nz-icon nzType="shopping-cart" class="btn-icon-sale"></span>
               <span>Sale POS</span>
             </a>
@@ -167,7 +168,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
               [class.header-quick-action-btn-active]="isPurPosActive"
               nz-tooltip
               nzTooltipTitle="Purchase POS / Invoice Entry (PUR_1503)"
-            >
+             aria-label="Purchase POS / Invoice Entry (PUR_1503)">
               <span nz-icon nzType="shop" class="btn-icon-pur"></span>
               <span>Pur POS</span>
             </a>
@@ -181,7 +182,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
               [class.header-quick-action-btn-active]="isCashCloserActive"
               nz-tooltip
               nzTooltipTitle="Cash Closer & Shift Handover (CASH_1201)"
-            >
+             aria-label="Cash Closer & Shift Handover (CASH_1201)">
               <span nz-icon nzType="calculator" class="btn-icon-closer"></span>
               <span>Cash Closer</span>
             </button>
@@ -200,6 +201,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           [class.backend-checking]="discovery.status() === 'checking'"
           nz-tooltip
           [nzTooltipTitle]="backendTooltip"
+          aria-label="Recheck backend connection status"
         >
           @if (discovery.status() === 'checking') {
             <span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span>
@@ -225,6 +227,9 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           [nzDropdownMenu]="branchMenu"
           nzPlacement="bottomRight"
           class="header-branch-pill hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full cursor-pointer select-none hover:bg-white/10 transition-colors"
+          role="button"
+          tabindex="0"
+          aria-label="Switch active pharmacy branch"
           nz-tooltip
           nzTooltipTitle="Click to switch active pharmacy branch"
         >
@@ -265,6 +270,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
         <button
           type="button"
           class="header-icon-btn w-8 h-8 rounded-lg flex items-center justify-center relative"
+          aria-label="View notifications"
         >
           <span nz-icon nzType="bell" class="text-sm"></span>
           <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
@@ -276,6 +282,9 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           [nzDropdownMenu]="userMenu"
           nzPlacement="bottomRight"
           class="header-user-btn flex items-center gap-2 rounded-lg px-2.5 py-1 cursor-pointer select-none"
+          role="button"
+          tabindex="0"
+          aria-label="User account menu"
         >
           <div class="w-7 h-7 rounded-full theme-avatar-gradient flex items-center justify-center text-white text-xs font-bold shadow-xs border border-white/10">
             {{ (authService.currentUser()?.first_name || 'A').charAt(0).toUpperCase() }}

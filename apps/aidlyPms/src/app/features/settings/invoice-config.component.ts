@@ -37,23 +37,22 @@ import { CfgInvoiceConfig } from '../../core/models/config.models';
 
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Paper Roll Format</label>
-          <nz-select [(ngModel)]="paperType" class="w-48">
+          <label for="invoice-config-paper-roll-format-1" class="block text-xs font-semibold text-slate-700 mb-1">Paper Roll Format</label>
+          <nz-select id="invoice-config-paper-roll-format-1" nzId="invoice-config-paper-roll-format-1" [(ngModel)]="paperType" class="w-48" aria-label="Paper Roll Format">
             <nz-option nzValue="80mm" nzLabel="80mm Thermal Roll (Standard)"></nz-option>
             <nz-option nzValue="57mm" nzLabel="57mm Thermal Roll (Mini)"></nz-option>
           </nz-select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="invoice-config-top-header-text-shop-name-info-2" class="block text-xs font-semibold text-slate-700 mb-1">
             Top Header Text (Shop Name & Info) <span class="text-rose-500">*</span>
           </label>
-          <textarea
+          <textarea id="invoice-config-top-header-text-shop-name-info-2"
             nz-input
             rows="4"
             [(ngModel)]="topText"
-            class="rounded-md text-xs font-mono"
-          ></textarea>
+            class="rounded-md text-xs font-mono" aria-label="Top Header Text (Shop Name & Info)"></textarea>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 py-2 border-y border-slate-100">
@@ -67,7 +66,7 @@ import { CfgInvoiceConfig } from '../../core/models/config.models';
 
         @if (getToggleValue('shopLogo')) {
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="invoice-config-field-3" class="block text-xs font-semibold text-slate-700 mb-1">
               Upload Monochrome Shop Logo
             </label>
             <div
@@ -88,12 +87,11 @@ import { CfgInvoiceConfig } from '../../core/models/config.models';
           <label class="block text-xs font-semibold text-slate-700 mb-1">
             Bottom Footer Disclaimer Text
           </label>
-          <textarea
+          <textarea id="invoice-config-field-3"
             nz-input
             rows="3"
             [(ngModel)]="bottomText"
-            class="rounded-md text-xs font-mono"
-          ></textarea>
+            class="rounded-md text-xs font-mono" aria-label="Field"></textarea>
         </div>
 
         <div class="flex justify-end pt-4 border-t border-slate-100">

@@ -126,7 +126,7 @@ interface CashItem {
                         nz-tooltip
                         nzTooltipTitle="Receive / Reconcile Payment"
                         class="btn-tbl-action btn-tbl-success"
-                      >
+                       aria-label="Receive / Reconcile Payment">
                         <span nz-icon nzType="check"></span>
                       </button>
                     </div>
@@ -206,12 +206,11 @@ interface CashItem {
           <!-- Top Bar: Date -->
           <div class="flex justify-end items-center gap-2 pb-2 border-b border-slate-100">
             <span class="text-xs font-semibold text-slate-600">Date :</span>
-            <nz-date-picker
+            <nz-date-picker id="cash-handover-field-1" nzId="cash-handover-field-1"
               [(ngModel)]="closerDate"
               (ngModelChange)="loadDayEndReconciliation()"
               nzFormat="dd-MM-yyyy"
-              class="w-40 rounded-md text-xs py-1"
-            ></nz-date-picker>
+              class="w-40 rounded-md text-xs py-1" aria-label="Field"></nz-date-picker>
           </div>
 
           <!-- Day-End 4-Point Audit Reconciliation Badge -->
@@ -258,14 +257,13 @@ interface CashItem {
                   <div class="grid grid-cols-12 gap-2 items-center text-xs">
                     <span class="col-span-3 font-mono font-medium text-slate-700">{{ d.note }}</span>
                     <div class="col-span-4 flex items-center gap-1">
-                      <input
+                      <input id="cash-handover-0-2"
                         type="number"
                         nz-input
                         min="0"
                         [(ngModel)]="d.qty"
                         class="text-center rounded font-mono text-xs py-1"
-                        placeholder="0"
-                      />
+                        placeholder="0" aria-label="0" />
                       <span class="text-slate-400 font-mono text-xs">=</span>
                     </div>
                     <span class="col-span-5 text-right font-mono font-bold text-slate-800">
@@ -281,14 +279,13 @@ interface CashItem {
                   <span class="col-span-6 font-medium text-slate-700">Opening Balance</span>
                   <span class="col-span-1 text-slate-400 text-center font-mono">=</span>
                   <div class="col-span-5">
-                    <input
+                    <input id="cash-handover-0-3"
                       type="number"
                       nz-input
                       min="0"
                       [(ngModel)]="openingBalance"
                       class="text-right rounded font-mono text-xs py-1"
-                      placeholder="0"
-                    />
+                      placeholder="0" aria-label="0" />
                   </div>
                 </div>
 
@@ -296,14 +293,13 @@ interface CashItem {
                   <span class="col-span-6 font-medium text-slate-700">Deposit to cash vault</span>
                   <span class="col-span-1 text-slate-400 text-center font-mono">=</span>
                   <div class="col-span-5">
-                    <input
+                    <input id="cash-handover-0-4"
                       type="number"
                       nz-input
                       min="0"
                       [(ngModel)]="depositToVault"
                       class="text-right rounded font-mono text-xs py-1"
-                      placeholder="0"
-                    />
+                      placeholder="0" aria-label="0" />
                   </div>
                 </div>
 
@@ -332,14 +328,13 @@ interface CashItem {
                     </span>
                     <span class="col-span-1 text-slate-400 text-center font-mono">=</span>
                     <div class="col-span-5">
-                      <input
+                      <input id="cash-handover-0-00-5"
                         type="number"
                         nz-input
                         min="0"
                         [(ngModel)]="b.amount"
                         class="text-right rounded font-mono text-xs py-1"
-                        placeholder="0.00"
-                      />
+                        placeholder="0.00" aria-label="0.00" />
                     </div>
                   </div>
                 }

@@ -54,34 +54,31 @@ interface ReconcileRecord {
       >
         <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="reconciliation-list-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="reconciliation-list-from-date-1" nzId="reconciliation-list-from-date-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="reconciliation-list-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="reconciliation-list-to-date-2" nzId="reconciliation-list-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Source Account</label>
-            <nz-select
+            <label for="reconciliation-list-source-account-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Source Account</label>
+            <nz-select id="reconciliation-list-source-account-3" nzId="reconciliation-list-source-account-3"
               [(ngModel)]="filterFromAccountNo"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Sources"
               class="w-44 shrink-0"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Source Account">
               <nz-option [nzValue]="null" nzLabel="All Sources"></nz-option>
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
@@ -89,14 +86,13 @@ interface ReconcileRecord {
             </nz-select>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Destination Account</label>
-            <nz-select
+            <label for="reconciliation-list-destination-account-4" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Destination Account</label>
+            <nz-select id="reconciliation-list-destination-account-4" nzId="reconciliation-list-destination-account-4"
               [(ngModel)]="filterToAccountNo"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Destinations"
               class="w-44 shrink-0"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Destination Account">
               <nz-option [nzValue]="null" nzLabel="All Destinations"></nz-option>
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
@@ -161,7 +157,7 @@ interface ReconcileRecord {
                         nz-tooltip
                         nzTooltipTitle="View Voucher Details"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Voucher Details">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -170,7 +166,7 @@ interface ReconcileRecord {
                         nz-tooltip
                         nzTooltipTitle="Print Transfer Voucher"
                         class="btn-tbl-action btn-tbl-neutral"
-                      >
+                       aria-label="Print Transfer Voucher">
                         <span nz-icon nzType="printer"></span>
                       </button>
                       <button
@@ -179,7 +175,7 @@ interface ReconcileRecord {
                         nz-tooltip
                         nzTooltipTitle="Delete Transfer Voucher"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Transfer Voucher">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -220,10 +216,10 @@ interface ReconcileRecord {
       <ng-container *nzModalContent>
         <div class="space-y-4 py-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-list-payment-from-source-account-5" class="block text-xs font-semibold text-slate-700 mb-1">
               Payment From (Source Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="form.payment_from_account_no" class="w-full" nzPlaceHolder="Select Source Account">
+            <nz-select id="reconciliation-list-payment-from-source-account-5" nzId="reconciliation-list-payment-from-source-account-5" [(ngModel)]="form.payment_from_account_no" class="w-full" nzPlaceHolder="Select Source Account" aria-label="Payment From (Source Account)">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
               }
@@ -231,10 +227,10 @@ interface ReconcileRecord {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-list-payment-to-destination-account-6" class="block text-xs font-semibold text-slate-700 mb-1">
               Payment To (Destination Account) <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="form.payment_to_account_no" class="w-full" nzPlaceHolder="Select Destination Account">
+            <nz-select id="reconciliation-list-payment-to-destination-account-6" nzId="reconciliation-list-payment-to-destination-account-6" [(ngModel)]="form.payment_to_account_no" class="w-full" nzPlaceHolder="Select Destination Account" aria-label="Payment To (Destination Account)">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (৳ ' + (acc.current_balance || 0).toLocaleString() + ')'"></nz-option>
               }
@@ -242,27 +238,25 @@ interface ReconcileRecord {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="reconciliation-list-amount-7" class="block text-xs font-semibold text-slate-700 mb-1">
               Amount (৳) <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="reconciliation-list-amount-7"
               type="number"
               nz-input
               placeholder="0.00"
               [(ngModel)]="form.amount"
-              class="rounded-md font-mono"
-            />
+              class="rounded-md font-mono" aria-label="Amount (৳)" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Note / Reference</label>
-            <textarea
+            <label for="reconciliation-list-note-reference-8" class="block text-xs font-semibold text-slate-700 mb-1">Note / Reference</label>
+            <textarea id="reconciliation-list-note-reference-8"
               nz-input
               rows="2"
               placeholder="Bank deposit slip number or transfer remarks..."
               [(ngModel)]="form.note"
-              class="rounded-md"
-            ></textarea>
+              class="rounded-md" aria-label="Note / Reference"></textarea>
           </div>
         </div>
       </ng-container>

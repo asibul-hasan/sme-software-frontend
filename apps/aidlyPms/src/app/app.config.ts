@@ -80,6 +80,14 @@ import {
   UnlockOutline,
 } from '@ant-design/icons-angular/icons';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NZ_CONFIG, NzConfig } from 'ng-zorro-antd/core/config';
+import { ModalA11yService } from './core/services/modal-a11y.service';
+
+const nzConfig: NzConfig = {
+  modal: {
+    nzMaskClosable: false,
+  },
+};
 
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -164,8 +172,11 @@ const icons = [
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
+    { provide: NZ_CONFIG, useValue: nzConfig },
     provideAppInitializer(() => {
       const discovery = inject(BackendDiscoveryService);
+      const modalA11y = inject(ModalA11yService);
+      modalA11y.initialize();
       return discovery.initialize();
     }),
     provideRouter(appRoutes, withComponentInputBinding()),

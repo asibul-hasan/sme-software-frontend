@@ -82,12 +82,11 @@ interface SettingToggle {
             <p class="text-xs text-slate-400 mb-0">Default markup on opening stock medicine items</p>
           </div>
           <div class="flex items-center gap-2">
-            <input
+            <input id="sale-config-field-1"
               type="number"
               nz-input
               [(ngModel)]="openingStockMarkup"
-              class="w-20 text-center rounded-md font-mono"
-            />
+              class="w-20 text-center rounded-md font-mono" aria-label="Field" />
             <span class="text-xs text-slate-500 font-semibold">%</span>
           </div>
         </div>
@@ -98,12 +97,11 @@ interface SettingToggle {
             <p class="text-xs text-slate-400 mb-0">Salesman authorization ceiling on discounts</p>
           </div>
           <div class="flex items-center gap-2">
-            <input
+            <input id="sale-config-field-2"
               type="number"
               nz-input
               [(ngModel)]="maxDiscount"
-              class="w-20 text-center rounded-md font-mono"
-            />
+              class="w-20 text-center rounded-md font-mono" aria-label="Field" />
             <span class="text-xs text-slate-500 font-semibold">%</span>
           </div>
         </div>

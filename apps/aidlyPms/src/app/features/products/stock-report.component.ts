@@ -53,7 +53,7 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
         <div filters class="flex items-end gap-2 shrink-0 flex-nowrap py-1">
           <!-- Status Preset Segmented Filter -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Stock Status</label>
+            <label for="stock-report-all-manufacturers-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Stock Status</label>
             <div class="inline-flex rounded-md shadow-xs bg-slate-100 p-0.5" role="group">
               <button
                 type="button"
@@ -95,14 +95,13 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
           <!-- Company / Manufacturer Filter -->
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Manufacturer</label>
-            <nz-select
+            <nz-select id="stock-report-all-manufacturers-2" nzId="stock-report-all-manufacturers-2"
               [(ngModel)]="selectedCompanyNo"
               (ngModelChange)="onFilterChange()"
               class="w-48 shrink-0 rounded-md text-xs"
               nzShowSearch
               nzAllowClear
-              nzPlaceHolder="All Manufacturers"
-            >
+              nzPlaceHolder="All Manufacturers" aria-label="All Manufacturers">
               <nz-option [nzValue]="0" nzLabel="All Manufacturers"></nz-option>
               @for (c of companies(); track c.company_no) {
                 <nz-option [nzValue]="c.company_no" [nzLabel]="c.name"></nz-option>
@@ -112,16 +111,15 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 
           <!-- Search Input -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search</label>
+            <label for="stock-report-search-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search</label>
             <nz-input-group [nzPrefix]="searchIcon" class="w-48 shrink-0 rounded-md">
-              <input
+              <input id="stock-report-search-1"
                 type="text"
                 nz-input
                 placeholder="Product, generic, barcode..."
                 [(ngModel)]="searchQuery"
                 (keyup.enter)="onFilterChange()"
-                class="text-xs"
-              />
+                class="text-xs" aria-label="Search" />
             </nz-input-group>
             <ng-template #searchIcon>
               <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -155,7 +153,7 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
             class="rounded-md h-8 px-3 text-xs font-semibold bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100 inline-flex items-center gap-1.5"
             nz-tooltip
             nzTooltipTitle="Create requisition for low stock items"
-          >
+           aria-label="Create requisition for low stock items">
             <span nz-icon nzType="shopping-cart"></span> Requisition
           </a>
 
@@ -184,7 +182,7 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
             (click)="loadReport()"
             nz-tooltip
             nzTooltipTitle="Refresh Data"
-          >
+           aria-label="Refresh Data">
             <span nz-icon nzType="reload" [nzSpin]="isLoading()"></span>
           </button>
         </div>
@@ -441,7 +439,7 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
                             nz-tooltip
                             nzTooltipTitle="Reorder Shortfall in Requisition"
                             class="inline-flex items-center justify-center w-6 h-6 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
-                          >
+                           aria-label="Reorder Shortfall in Requisition">
                             <span nz-icon nzType="plus" class="text-xs"></span>
                           </a>
                         } @else {
@@ -471,12 +469,11 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 
               <!-- Pagination Controls -->
               <div class="flex items-center gap-3">
-                <nz-select
+                <nz-select id="stock-report-page-size-search-3" nzId="stock-report-page-size-search-3"
                   [(ngModel)]="pageSize"
                   (ngModelChange)="onPageSizeChange($event)"
                   class="w-24 text-xs"
-                  nzSize="small"
-                >
+                  nzSize="small" aria-label="Page Size Search">
                   <nz-option [nzValue]="50" nzLabel="50 / page"></nz-option>
                   <nz-option [nzValue]="100" nzLabel="100 / page"></nz-option>
                   <nz-option [nzValue]="200" nzLabel="200 / page"></nz-option>

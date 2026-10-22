@@ -46,11 +46,11 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <form (ngSubmit)="submitForm()" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="expense-add-category-1" class="block text-xs font-semibold text-slate-700 mb-1">
               Category <span class="text-rose-500">*</span>
             </label>
             <div class="flex gap-1.5">
-              <nz-select [(ngModel)]="category" name="category" class="flex-1">
+              <nz-select id="expense-add-category-1" nzId="expense-add-category-1" [(ngModel)]="category" name="category" class="flex-1" aria-label="Category">
                 @for (c of categoriesList(); track c.expense_category_no) {
                   <nz-option [nzValue]="c.name" [nzLabel]="c.name"></nz-option>
                 }
@@ -61,33 +61,32 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
                 nz-tooltip
                 nzTooltipTitle="Quick Add Expense Category"
                 class="btn-quick-add"
-              >
+               aria-label="Quick Add Expense Category">
                 <span nz-icon nzType="plus"></span>
               </button>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="expense-add-amount-2" class="block text-xs font-semibold text-slate-700 mb-1">
               Amount (৳) <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="expense-add-amount-2"
               type="number"
               nz-input
               placeholder="0.00"
               [(ngModel)]="amount"
               name="amount"
               class="rounded-md font-mono"
-              required
-            />
+              required aria-label="Amount (৳)" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="expense-add-payment-account-3" class="block text-xs font-semibold text-slate-700 mb-1">
               Payment Account <span class="text-rose-500">*</span>
             </label>
             <div class="flex gap-1.5">
-              <nz-select [(ngModel)]="account" name="account" class="flex-1">
+              <nz-select id="expense-add-payment-account-3" nzId="expense-add-payment-account-3" [(ngModel)]="account" name="account" class="flex-1" aria-label="Payment Account">
                 @for (acc of accountsList(); track acc.account_no) {
                   <nz-option [nzValue]="acc.account_name" [nzLabel]="acc.account_name"></nz-option>
                 }
@@ -98,24 +97,23 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
                 nz-tooltip
                 nzTooltipTitle="Quick Add Payment Account"
                 class="btn-quick-add"
-              >
+               aria-label="Quick Add Payment Account">
                 <span nz-icon nzType="plus"></span>
               </button>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="expense-add-note-description-4" class="block text-xs font-semibold text-slate-700 mb-1">
               Note / Description
             </label>
-            <textarea
+            <textarea id="expense-add-note-description-4"
               nz-input
               rows="3"
               placeholder="Description or narration..."
               [(ngModel)]="note"
               name="note"
-              class="rounded-md"
-            ></textarea>
+              class="rounded-md" aria-label="Note / Description"></textarea>
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
@@ -142,14 +140,13 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Category Name *</label>
-          <input
+          <label for="expense-add-category-name-5" class="block text-xs font-semibold text-slate-700 mb-1">Category Name *</label>
+          <input id="expense-add-category-name-5"
             type="text"
             nz-input
             placeholder="e.g. Courier & Delivery"
             [(ngModel)]="newCategoryName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Category Name" />
         </div>
       </ng-container>
     </nz-modal>
@@ -166,14 +163,13 @@ import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/acc
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Account Title / Bank Name *</label>
-          <input
+          <label for="expense-add-account-title-bank-name-6" class="block text-xs font-semibold text-slate-700 mb-1">Account Title / Bank Name *</label>
+          <input id="expense-add-account-title-bank-name-6"
             type="text"
             nz-input
             placeholder="e.g. Dutch-Bangla Bank, Nagad Merchant"
             [(ngModel)]="newAccountName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Account Title / Bank Name" />
         </div>
       </ng-container>
     </nz-modal>

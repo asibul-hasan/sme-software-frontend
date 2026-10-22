@@ -64,13 +64,12 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
           <nz-input-group [nzPrefix]="searchIcon" class="w-72 shrink-0 rounded-md">
-            <input
+            <input id="module-screen-view-search-7"
               type="text"
               nz-input
               [placeholder]="'Search ' + (screen?.title || 'records') + '...'"
               [(ngModel)]="searchQuery"
-              (ngModelChange)="onSearch($event)"
-            />
+              (ngModelChange)="onSearch($event)" aria-label="Search" />
           </nz-input-group>
           <ng-template #searchIcon>
             <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -147,7 +146,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                           nz-tooltip
                           nzTooltipTitle="Edit / Modify Record"
                           class="btn-tbl-action btn-tbl-edit"
-                        >
+                         aria-label="Edit / Modify Record">
                           <span nz-icon nzType="edit"></span>
                         </button>
                         <button
@@ -156,7 +155,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                           nz-tooltip
                           nzTooltipTitle="Delete Record"
                           class="btn-tbl-action btn-tbl-delete"
-                        >
+                         aria-label="Delete Record">
                           <span nz-icon nzType="delete"></span>
                         </button>
                       </div>
@@ -210,39 +209,37 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Record Title / Name -->
             <div class="md:col-span-2">
-              <span class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="module-screen-view-record-name-title-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 Record Name / Title <span class="text-rose-500">*</span>
-              </span>
-              <input
+              </label>
+              <input id="module-screen-view-record-name-title-1"
                 type="text"
                 nz-input
                 [placeholder]="'e.g. ' + (screen?.title || 'Record') + ' Description'"
                 [(ngModel)]="formModel.name"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Record Name / Title" />
             </div>
 
             <!-- Reference / Code -->
             <div>
-              <span class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="module-screen-view-reference-code-2" class="block text-xs font-semibold text-slate-700 mb-1">
                 Reference / Code <span class="text-rose-500">*</span>
-              </span>
-              <input
+              </label>
+              <input id="module-screen-view-reference-code-2"
                 type="text"
                 nz-input
                 placeholder="e.g. REF-1001"
                 [(ngModel)]="formModel.reference_no"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Reference / Code" />
             </div>
 
             <!-- Category / Classification -->
             <div>
-              <span class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="module-screen-view-category-classification-3" class="block text-xs font-semibold text-slate-700 mb-1">
                 Category / Classification
-              </span>
+              </label>
               <div class="flex gap-1.5">
-                <nz-select class="flex-1" [(ngModel)]="formModel.category">
+                <nz-select id="module-screen-view-category-classification-3" nzId="module-screen-view-category-classification-3" class="flex-1" [(ngModel)]="formModel.category" aria-label="Category / Classification">
                   @for (c of categoryOptions; track c) {
                     <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
                   }
@@ -253,7 +250,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                   nz-tooltip
                   nzTooltipTitle="Quick Add Category"
                   class="btn-quick-add"
-                >
+                 aria-label="Quick Add Category">
                   <span nz-icon nzType="plus"></span>
                 </button>
               </div>
@@ -262,28 +259,26 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
             <!-- Amount / Value (shown for financial/accounting/due screens) -->
             @if (hasAmountColumn) {
               <div class="md:col-span-2">
-                <span class="block text-xs font-semibold text-slate-700 mb-1">
+                <label for="module-screen-view-amount-valuation-4" class="block text-xs font-semibold text-slate-700 mb-1">
                   Amount / Valuation (৳)
-                </span>
-                <nz-input-number
+                </label>
+                <nz-input-number id="module-screen-view-amount-valuation-4" nzId="module-screen-view-amount-valuation-4"
                   class="w-full"
                   [nzMin]="0"
                   [nzStep]="10"
-                  [(ngModel)]="formModel.amount"
-                ></nz-input-number>
+                  [(ngModel)]="formModel.amount" aria-label="Amount / Valuation (৳)"></nz-input-number>
               </div>
             }
 
             <!-- Notes / Remarks -->
             <div class="md:col-span-2">
-              <span class="block text-xs font-semibold text-slate-700 mb-1">Remarks / Notes</span>
-              <textarea
+              <label for="module-screen-view-remarks-notes-5" class="block text-xs font-semibold text-slate-700 mb-1">Remarks / Notes</label>
+              <textarea id="module-screen-view-remarks-notes-5"
                 nz-input
                 rows="3"
                 placeholder="Optional notes or administrative details..."
                 [(ngModel)]="formModel.notes"
-                class="rounded-md"
-              ></textarea>
+                class="rounded-md" aria-label="Remarks / Notes"></textarea>
             </div>
           </div>
 
@@ -309,16 +304,15 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="module-screen-view-category-name-6" class="block text-xs font-semibold text-slate-700 mb-1">
             Category Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="module-screen-view-category-name-6"
             type="text"
             nz-input
             placeholder="e.g. Special Inventory, Priority"
             [(ngModel)]="newCategoryName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Category Name" />
         </div>
       </ng-container>
     </nz-modal>

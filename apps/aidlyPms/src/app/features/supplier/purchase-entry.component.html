@@ -28,12 +28,11 @@
 
         <!-- Calculation Mode Dropdown Pill directly in Header -->
         <div class="flex items-center">
-          <nz-select
+          <nz-select id="purchase-entry-field-23" nzId="purchase-entry-field-23"
             [(ngModel)]="calcMode"
             class="w-40"
             nzTooltipTitle="Calculation Formula Mode"
-            nz-tooltip
-          >
+            nz-tooltip aria-label="Field">
             @for (opt of calcModeOptions; track opt.value) {
               <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
             }
@@ -88,10 +87,10 @@
       <!-- 1. Purchase ID (Starting Position, Readonly) -->
       <div class="md:col-span-3">
         <div class="flex justify-between items-center mb-1">
-          <label class="text-[11px] font-semibold text-slate-700 m-0">Purchase ID</label>
+          <label for="purchase-entry-purchase-id-1" class="text-[11px] font-semibold text-slate-700 m-0">Purchase ID</label>
           <span class="text-[10px] text-slate-400 font-mono">(Auto)</span>
         </div>
-        <input
+        <input id="purchase-entry-purchase-id-1"
           type="text"
           nz-input
           [value]="generatedPurchaseId || 'Auto on save'"
@@ -99,24 +98,22 @@
           class="rounded-md font-mono text-xs bg-slate-100 text-slate-500 font-semibold cursor-not-allowed border-slate-200"
           [class.text-indigo-700]="generatedPurchaseId"
           [class.bg-indigo-50]="generatedPurchaseId"
-          [class.border-indigo-300]="generatedPurchaseId"
-        />
+          [class.border-indigo-300]="generatedPurchaseId" aria-label="Purchase ID" />
       </div>
 
       <!-- 2. Purchase Date (Intake Date) -->
       <div class="md:col-span-3">
-        <label class="text-[11px] font-semibold text-slate-700 block mb-1">Intake Date</label>
-        <nz-date-picker
+        <label for="purchase-entry-intake-date-2" class="text-[11px] font-semibold text-slate-700 block mb-1">Intake Date</label>
+        <nz-date-picker id="purchase-entry-intake-date-2" nzId="purchase-entry-intake-date-2"
           [(ngModel)]="purchaseDate"
           nzFormat="dd-MM-yyyy"
-          class="w-full rounded-md text-xs"
-        ></nz-date-picker>
+          class="w-full rounded-md text-xs" aria-label="Intake Date"></nz-date-picker>
       </div>
 
       <!-- 3. Purchase Type -->
       <div class="md:col-span-3">
-        <label class="text-[11px] font-semibold text-slate-700 block mb-1">Purchase Type</label>
-        <nz-select [(ngModel)]="inventoryType" class="w-full">
+        <label for="purchase-entry-purchase-type-3" class="text-[11px] font-semibold text-slate-700 block mb-1">Purchase Type</label>
+        <nz-select id="purchase-entry-purchase-type-3" nzId="purchase-entry-purchase-type-3" [(ngModel)]="inventoryType" class="w-full" aria-label="Purchase Type">
           @for (t of inventoryTypeOptions; track t.value) {
             <nz-option [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
           }
@@ -125,14 +122,13 @@
 
       <!-- 4. Vendor Challan # -->
       <div class="md:col-span-3">
-        <label class="text-[11px] font-semibold text-slate-700 block mb-1">Vendor Challan #</label>
-        <input
+        <label for="purchase-entry-vendor-challan-4" class="text-[11px] font-semibold text-slate-700 block mb-1">Vendor Challan #</label>
+        <input id="purchase-entry-vendor-challan-4"
           type="text"
           nz-input
           placeholder="e.g. CH-2026-99"
           [(ngModel)]="invoiceNumber"
-          class="rounded-md font-mono text-xs"
-        />
+          class="rounded-md font-mono text-xs" aria-label="Vendor Challan #" />
       </div>
     </div>
 
@@ -141,16 +137,15 @@
       <!-- Supplier / Vendor -->
       <div class="md:col-span-6">
         <div class="flex items-center gap-1 mb-1">
-          <label class="text-[11px] font-semibold text-slate-700 m-0">Supplier / Vendor</label>
+          <label for="purchase-entry-supplier-vendor-5" class="text-[11px] font-semibold text-slate-700 m-0">Supplier / Vendor</label>
           <span class="text-rose-500 text-xs font-bold">*</span>
         </div>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="purchase-entry-supplier-vendor-5" nzId="purchase-entry-supplier-vendor-5"
             nzShowSearch
             nzPlaceHolder="Select supplier..."
             [(ngModel)]="selectedSupplierId"
-            class="flex-1"
-          >
+            class="flex-1" aria-label="Supplier / Vendor">
             @for (sup of suppliers(); track sup.id) {
               <nz-option [nzValue]="sup.id" [nzLabel]="sup.name + (sup.phone ? ' (' + sup.phone + ')' : '')"></nz-option>
             }
@@ -161,7 +156,7 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Supplier"
             class="btn-indigo px-2.5 rounded-md flex items-center justify-center shrink-0 cursor-pointer h-[28px]"
-          >
+           aria-label="Quick Add Supplier">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
@@ -170,7 +165,7 @@
       <!-- Load Approved Requisition -->
       <div class="md:col-span-6">
         <div class="flex justify-between items-center mb-1">
-          <label class="text-[11px] font-semibold text-slate-700 flex items-center gap-1 m-0">
+          <label for="purchase-entry-load-approved-requisition-if-i-6" class="text-[11px] font-semibold text-slate-700 flex items-center gap-1 m-0">
             <span>Load Approved Requisition</span>
             @if (isLoadingRequisition) {
               <span nz-icon nzType="loading" class="text-indigo-600 text-xs ml-1"></span>
@@ -178,14 +173,13 @@
           </label>
           <span class="text-[10px] text-slate-400 font-normal">(optional)</span>
         </div>
-        <nz-select
+        <nz-select id="purchase-entry-load-approved-requisition-if-i-6" nzId="purchase-entry-load-approved-requisition-if-i-6"
           nzShowSearch
           nzAllowClear
           nzPlaceHolder="Select approved requisition..."
           [ngModel]="selectedRequisitionNo"
           (ngModelChange)="onRequisitionSelected($event)"
-          class="w-full"
-        >
+          class="w-full" aria-label="Load Approved Requisition @if (isLoadingRequisition) { }">
           @for (req of approvedRequisitions(); track req.requisition_no) {
             <nz-option
               [nzValue]="req.requisition_no"
@@ -209,19 +203,18 @@
           <!-- Add Medicine -->
           <div class="md:col-span-4">
             <div class="flex items-center gap-1 mb-1">
-              <label class="text-xs font-semibold text-slate-700 m-0">Add Medicine</label>
+              <label for="purchase-entry-add-medicine-7" class="text-xs font-semibold text-slate-700 m-0">Add Medicine</label>
               <span class="text-rose-500 text-xs font-bold">*</span>
             </div>
             <div class="flex gap-1.5">
-              <nz-select
+              <nz-select id="purchase-entry-add-medicine-7" nzId="purchase-entry-add-medicine-7"
                 nzShowSearch
                 nzPlaceHolder="Search medicine name or generic.."
                 [(ngModel)]="currentLine.product"
                 (ngModelChange)="onProductSelected($event)"
                 (nzOnSearch)="onProductSearch($event)"
                 (keyup.enter)="onProductEnterKey()"
-                class="flex-1"
-              >
+                class="flex-1" aria-label="Add Medicine">
                 @for (p of availableProducts(); track p.product_no) {
                   <nz-option [nzValue]="p.name" [nzLabel]="p.name + (p.generic ? ' (' + p.generic + ')' : '')"></nz-option>
                 }
@@ -232,7 +225,7 @@
                 nz-tooltip
                 nzTooltipTitle="Quick Add Product (F2)"
                 class="btn-indigo px-2.5 rounded-md flex items-center justify-center shrink-0 cursor-pointer h-[28px]"
-              >
+               aria-label="Quick Add Product (F2)">
                 <span nz-icon nzType="plus"></span>
               </button>
             </div>
@@ -240,65 +233,61 @@
 
           <!-- Box Qty -->
           <div class="md:col-span-1">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">
+            <label for="purchase-entry-box-8" class="text-xs font-semibold text-slate-700 block mb-1">
               <span class="text-rose-500 font-bold">*</span> Box
             </label>
-            <input
+            <input id="purchase-entry-box-8"
               type="number"
               nz-input
               placeholder="1"
               [(ngModel)]="currentLine.box"
               (ngModelChange)="onBoxOrQtyChange()"
               class="rounded-md font-mono text-center text-xs"
-              (keyup.enter)="addLine()"
-            />
+              (keyup.enter)="addLine()" aria-label="Box" />
           </div>
 
           <!-- Pcs/Box -->
           <div class="md:col-span-1">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Pcs/Box</label>
-            <input
+            <label for="purchase-entry-pcs-box-9" class="text-xs font-semibold text-slate-700 block mb-1">Pcs/Box</label>
+            <input id="purchase-entry-pcs-box-9"
               type="number"
               nz-input
               placeholder="10"
               [(ngModel)]="currentLine.qtyBox"
               (ngModelChange)="onBoxOrQtyChange()"
-              class="rounded-md font-mono text-center text-xs"
-            />
+              class="rounded-md font-mono text-center text-xs" aria-label="Pcs/Box" />
           </div>
 
           <!-- BTP+VAT (৳) -->
           <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">BTP+VAT (৳)</label>
-            <input
+            <label for="purchase-entry-btp-vat-10" class="text-xs font-semibold text-slate-700 block mb-1">BTP+VAT (৳)</label>
+            <input id="purchase-entry-btp-vat-10"
               type="number"
               nz-input
               placeholder="0"
               [(ngModel)]="currentLine.btpVat"
               class="rounded-md font-mono text-right text-xs"
-              (keyup.enter)="addLine()"
-            />
+              (keyup.enter)="addLine()" aria-label="BTP+VAT (৳)" />
           </div>
 
           <!-- Vendor Batch # -->
           <div class="md:col-span-2">
-            <label class="text-xs font-semibold text-slate-700 block mb-1">Vendor Batch #</label>
+            <label for="purchase-entry-vendor-batch-11" class="text-xs font-semibold text-slate-700 block mb-1">Vendor Batch #</label>
             <div class="flex gap-1">
-              <input
+              <input id="purchase-entry-vendor-batch-11"
                 type="text"
                 nz-input
                 placeholder="e.g. B240901"
                 [(ngModel)]="currentLine.barcode"
                 class="rounded-md font-mono text-xs flex-1"
-                (keyup.enter)="addLine()"
-              />
+                (keyup.enter)="addLine()" aria-label="Vendor Batch #" />
               <button
                 type="button"
                 (click)="generateBatchForCurrentLine()"
                 nz-tooltip
                 nzTooltipTitle="Auto-generate date lot for untracked goods"
                 class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300 font-mono cursor-pointer shrink-0"
-              >
+               aria-label="Auto-generate date lot for untracked goods">
                 Auto
               </button>
             </div>
@@ -358,14 +347,13 @@
                   </td>
                   <td class="p-1.5 text-center">
                     <div class="flex items-center gap-1 justify-center">
-                      <input
+                      <input id="purchase-entry-batch-24"
                         type="text"
                         nz-input
                         nzSize="small"
                         [(ngModel)]="l.barcode"
                         placeholder="Batch #"
-                        class="text-xs font-mono text-center rounded flex-1"
-                      />
+                        class="text-xs font-mono text-center rounded flex-1" aria-label="Batch #" />
                       @if (!l.barcode) {
                         <button
                           type="button"
@@ -373,52 +361,48 @@
                           nz-tooltip
                           nzTooltipTitle="Auto-generate internal batch for untracked goods"
                           class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300 cursor-pointer font-mono shrink-0"
-                        >
+                         aria-label="Auto-generate internal batch for untracked goods">
                           Auto
                         </button>
                       }
                     </div>
                   </td>
                   <td class="p-1.5 text-center">
-                    <nz-date-picker
+                    <nz-date-picker id="purchase-entry-field-25" nzId="purchase-entry-field-25"
                       nzSize="small"
                       [(ngModel)]="l.expiryDate"
                       nzFormat="dd-MM-yyyy"
-                      class="text-xs rounded text-center w-28"
-                    ></nz-date-picker>
+                      class="text-xs rounded text-center w-28" aria-label="Field"></nz-date-picker>
                   </td>
                   <td class="p-1.5 text-center">
-                    <input
+                    <input id="purchase-entry-field-26"
                       type="number"
                       nz-input
                       nzSize="small"
                       [(ngModel)]="l.box"
                       (ngModelChange)="updateLine(l)"
-                      class="text-xs font-mono text-center rounded font-semibold text-indigo-700"
-                    />
+                      class="text-xs font-mono text-center rounded font-semibold text-indigo-700" aria-label="Field" />
                   </td>
                   <td class="p-1.5 text-center">
-                    <input
+                    <input id="purchase-entry-field-27"
                       type="number"
                       nz-input
                       nzSize="small"
                       [(ngModel)]="l.qtyBox"
                       (ngModelChange)="updateLine(l)"
-                      class="text-xs font-mono text-center rounded text-slate-500"
-                    />
+                      class="text-xs font-mono text-center rounded text-slate-500" aria-label="Field" />
                   </td>
                   <td class="p-2 text-center font-mono text-xs font-bold text-slate-700">
                     {{ l.totalQtyPcs }} pcs
                   </td>
                   <td class="p-1.5 text-right">
-                    <input
+                    <input id="purchase-entry-field-28"
                       type="number"
                       nz-input
                       nzSize="small"
                       [(ngModel)]="l.btpVat"
                       (ngModelChange)="updateLine(l)"
-                      class="text-xs font-mono text-right rounded"
-                    />
+                      class="text-xs font-mono text-right rounded" aria-label="Field" />
                   </td>
                   <td class="p-2 text-right font-mono text-xs font-bold text-slate-900">
                     ৳ {{ l.total | number: '1.2-2' }}
@@ -430,7 +414,7 @@
                       nz-tooltip
                       nzTooltipTitle="Remove Item"
                       class="btn-tbl-action btn-tbl-delete inline-flex"
-                    >
+                     aria-label="Remove Item">
                       <span nz-icon nzType="delete"></span>
                     </button>
                   </td>
@@ -499,7 +483,7 @@
 
           <!-- Discount Input Row with ৳ / % pill buttons at beginning -->
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700 block">Discount</label>
+            <label for="purchase-entry-discount-12" class="text-xs font-semibold text-slate-700 block">Discount</label>
             <div class="flex">
               <div class="flex rounded-l-md border border-r-0 border-slate-300 overflow-hidden bg-slate-100 shrink-0">
                 <button
@@ -523,21 +507,20 @@
                   %
                 </button>
               </div>
-              <input
+              <input id="purchase-entry-discount-12"
                 type="number"
                 nz-input
                 placeholder="0"
                 [ngModel]="discountValue()"
                 (ngModelChange)="discountValue.set(+$event || 0)"
-                class="rounded-r-md rounded-l-none font-mono text-right text-xs flex-1"
-              />
+                class="rounded-r-md rounded-l-none font-mono text-right text-xs flex-1" aria-label="Discount" />
             </div>
           </div>
 
           <!-- Paid Now (৳) Row -->
           <div class="space-y-1">
             <div class="flex justify-between items-center">
-              <label class="text-xs font-semibold text-slate-700 m-0">Paid Now (৳)</label>
+              <label for="purchase-entry-paid-now-13" class="text-xs font-semibold text-slate-700 m-0">Paid Now (৳)</label>
               <button
                 type="button"
                 (click)="paidAmount.set(finalPrice())"
@@ -546,18 +529,17 @@
                 Pay Full
               </button>
             </div>
-            <input
+            <input id="purchase-entry-paid-now-13"
               type="number"
               nz-input
               [ngModel]="paidAmount()"
               (ngModelChange)="paidAmount.set(+$event || 0)"
-              class="rounded-md font-mono text-sm text-right font-bold text-slate-900 bg-sky-50/40 border-sky-200"
-            />
+              class="rounded-md font-mono text-sm text-right font-bold text-slate-900 bg-sky-50/40 border-sky-200" aria-label="Paid Now (৳)" />
           </div>
 
           <!-- Status Box -->
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700 block">Status</label>
+            <span class="text-xs font-semibold text-slate-700 block">Status</span>
             <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-lg flex justify-between items-center text-xs">
               <span class="font-semibold text-slate-600">
                 {{ lines().length === 0 ? 'No items' : (balanceDue() > 0 ? 'Due Pending' : 'Fully Paid') }}
@@ -608,25 +590,23 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Product Brand Name *</label>
-        <input
+        <label for="purchase-entry-e-g-napa-extra-500mg-29" class="block text-xs font-semibold text-slate-700 mb-1">Product Brand Name *</label>
+        <input id="purchase-entry-e-g-napa-extra-500mg-29"
           type="text"
           nz-input
           placeholder="e.g. Napa Extra 500mg"
           [(ngModel)]="quickProductName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="e.g. Napa Extra 500mg" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</label>
+        <label for="purchase-entry-generic-formulation-14" class="block text-xs font-semibold text-slate-700 mb-1">Generic Formulation</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="purchase-entry-generic-formulation-14" nzId="purchase-entry-generic-formulation-14"
             nzShowSearch
             nzAllowClear
             nzPlaceHolder="Select generic..."
             [(ngModel)]="quickProductGeneric"
-            class="flex-1"
-          >
+            class="flex-1" aria-label="Generic Formulation">
             @for (g of genericsList; track g) {
               <nz-option [nzValue]="g" [nzLabel]="g"></nz-option>
             }
@@ -637,21 +617,20 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Generic"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Generic">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Manufacturer Company</label>
+        <label for="purchase-entry-manufacturer-company-15" class="block text-xs font-semibold text-slate-700 mb-1">Manufacturer Company</label>
         <div class="flex gap-1.5">
-          <nz-select
+          <nz-select id="purchase-entry-manufacturer-company-15" nzId="purchase-entry-manufacturer-company-15"
             nzShowSearch
             nzAllowClear
             nzPlaceHolder="Select company..."
             [(ngModel)]="quickProductCompany"
-            class="flex-1"
-          >
+            class="flex-1" aria-label="Manufacturer Company">
             @for (c of companiesList; track c) {
               <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
             }
@@ -662,31 +641,29 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Manufacturer"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Manufacturer">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Default Box QTY</label>
-          <input
+          <label for="purchase-entry-default-box-qty-16" class="block text-xs font-semibold text-slate-700 mb-1">Default Box QTY</label>
+          <input id="purchase-entry-default-box-qty-16"
             type="number"
             nz-input
             placeholder="10"
             [(ngModel)]="quickProductQtyBox"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Default Box QTY" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Default BTP + VAT (৳)</label>
-          <input
+          <label for="purchase-entry-default-btp-vat-17" class="block text-xs font-semibold text-slate-700 mb-1">Default BTP + VAT (৳)</label>
+          <input id="purchase-entry-default-btp-vat-17"
             type="number"
             nz-input
             placeholder="0.00"
             [(ngModel)]="quickProductBtp"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Default BTP + VAT (৳)" />
         </div>
       </div>
     </div>
@@ -705,14 +682,13 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">Generic Name *</label>
-      <input
+      <label for="purchase-entry-generic-name-18" class="block text-xs font-semibold text-slate-700 mb-1">Generic Name *</label>
+      <input id="purchase-entry-generic-name-18"
         type="text"
         nz-input
         placeholder="e.g. Esomeprazole Magnesium"
         [(ngModel)]="newQuickGeneric"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Generic Name" />
     </div>
   </ng-container>
 </nz-modal>
@@ -729,14 +705,13 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">Company Name *</label>
-      <input
+      <label for="purchase-entry-company-name-19" class="block text-xs font-semibold text-slate-700 mb-1">Company Name *</label>
+      <input id="purchase-entry-company-name-19"
         type="text"
         nz-input
         placeholder="e.g. Renata Limited"
         [(ngModel)]="newQuickCompany"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Company Name" />
     </div>
   </ng-container>
 </nz-modal>
@@ -754,34 +729,31 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Supplier Company Name *</label>
-        <input
+        <label for="purchase-entry-supplier-company-name-20" class="block text-xs font-semibold text-slate-700 mb-1">Supplier Company Name *</label>
+        <input id="purchase-entry-supplier-company-name-20"
           type="text"
           nz-input
           placeholder="e.g. Square Pharmaceuticals Ltd."
           [(ngModel)]="quickSupplierName"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Supplier Company Name" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Contact Phone</label>
-        <input
+        <label for="purchase-entry-contact-phone-21" class="block text-xs font-semibold text-slate-700 mb-1">Contact Phone</label>
+        <input id="purchase-entry-contact-phone-21"
           type="text"
           nz-input
           placeholder="e.g. +8801700000000"
           [(ngModel)]="quickSupplierPhone"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Contact Phone" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Address / Depot</label>
-        <input
+        <label for="purchase-entry-address-depot-22" class="block text-xs font-semibold text-slate-700 mb-1">Address / Depot</label>
+        <input id="purchase-entry-address-depot-22"
           type="text"
           nz-input
           placeholder="e.g. Tejgaon I/A, Dhaka"
           [(ngModel)]="quickSupplierAddress"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Address / Depot" />
       </div>
     </div>
   </ng-container>

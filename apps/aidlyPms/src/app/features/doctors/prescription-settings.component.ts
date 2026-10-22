@@ -40,7 +40,7 @@ import { DoctorService } from '../../core/services/doctor.service';
 
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="prescription-settings-field-1" class="block text-xs font-semibold text-slate-700 mb-1">
             Upload Pharmacy Logo
           </label>
           <div
@@ -60,12 +60,11 @@ import { DoctorService } from '../../core/services/doctor.service';
           <label class="block text-xs font-semibold text-slate-700 mb-1">
             Prescription Bottom Text & Disclaimer
           </label>
-          <textarea
+          <textarea id="prescription-settings-field-1"
             nz-input
             rows="4"
             [(ngModel)]="bottomText"
-            class="rounded-md text-xs font-mono"
-          ></textarea>
+            class="rounded-md text-xs font-mono" aria-label="Field"></textarea>
           <p class="text-xs text-slate-400 mt-1">
             Printed at footer of electronic prescription slips (working hours, hotline, refill policy).
           </p>

@@ -61,7 +61,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
         <div filters class="flex items-end gap-2 shrink-0 flex-wrap py-1">
           <!-- Quick Filter Presets -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Filter Preset</label>
+            <label for="cashbook-report-filter-preset-today-s-sale-thi-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Filter Preset</label>
             <div class="inline-flex rounded-md shadow-xs bg-slate-100 p-0.5" role="group">
               <button
                 type="button"
@@ -92,25 +92,23 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
           <!-- Date Range Pickers -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="cashbook-report-filter-preset-today-s-sale-thi-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="cashbook-report-filter-preset-today-s-sale-thi-1" nzId="cashbook-report-filter-preset-today-s-sale-thi-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onDateChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="Filter Preset Today's Sale This Week This Month From Date"></nz-date-picker>
           </div>
 
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="cashbook-report-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="cashbook-report-to-date-2" nzId="cashbook-report-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onDateChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
 
           <!-- Reset Button -->
@@ -271,12 +269,11 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
           <div class="flex items-center gap-2">
             @if (activeTab === 'cashbook') {
               <!-- Account Filter -->
-              <nz-select
+              <nz-select id="cashbook-report-all-cash-bank-accounts-3" nzId="cashbook-report-all-cash-bank-accounts-3"
                 class="w-48 text-xs"
                 [(ngModel)]="selectedAccountNo"
                 (ngModelChange)="loadCashbook()"
-                nzPlaceHolder="All Cash & Bank Accounts"
-              >
+                nzPlaceHolder="All Cash & Bank Accounts" aria-label="All Cash & Bank Accounts">
                 <nz-option [nzValue]="0" nzLabel="All Accounts"></nz-option>
                 @for (acc of accounts(); track acc.account_no) {
                   <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name"></nz-option>
@@ -285,13 +282,12 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
               <!-- Text Search -->
               <nz-input-group [nzPrefix]="searchIcon" class="w-60 rounded-md">
-                <input
+                <input id="cashbook-report-doc-particulars-type-4"
                   type="text"
                   nz-input
                   placeholder="Doc #, particulars, type..."
                   [(ngModel)]="searchQuery"
-                  class="text-xs"
-                />
+                  class="text-xs" aria-label="Doc #, particulars, type..." />
               </nz-input-group>
               <ng-template #searchIcon>
                 <span nz-icon nzType="search" class="text-slate-400"></span>

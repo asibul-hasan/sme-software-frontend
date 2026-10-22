@@ -7,13 +7,12 @@
   >
     <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
       <nz-input-group [nzPrefix]="searchIcon" class="w-72 shrink-0 rounded-md">
-        <input
+        <input id="rep-list-search-by-name-phone-or-role-11"
           type="text"
           nz-input
           placeholder="Search by name, phone or role..."
           [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearchChange()"
-        />
+          (ngModelChange)="onSearchChange()" aria-label="Search by name, phone or role..." />
       </nz-input-group>
       <ng-template #searchIcon>
         <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -80,7 +79,7 @@
                     nz-tooltip
                     nzTooltipTitle="Edit Representative"
                     class="btn-tbl-action btn-tbl-edit"
-                  >
+                   aria-label="Edit Representative">
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
@@ -89,7 +88,7 @@
                     nz-tooltip
                     nzTooltipTitle="Change Password"
                     class="btn-tbl-action btn-tbl-warning"
-                  >
+                   aria-label="Change Password">
                     <span nz-icon nzType="key"></span>
                   </button>
                   <button
@@ -98,7 +97,7 @@
                     nz-tooltip
                     nzTooltipTitle="Delete Representative"
                     class="btn-tbl-action btn-tbl-delete"
-                  >
+                   aria-label="Delete Representative">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>
@@ -138,52 +137,49 @@
     <div class="space-y-3 py-1 text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="rep-list-first-name-1" class="block text-xs font-semibold text-slate-700 mb-1">
             First Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="rep-list-first-name-1"
             type="text"
             nz-input
             placeholder="First name"
             [(ngModel)]="form.firstName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="First Name" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="rep-list-last-name-2" class="block text-xs font-semibold text-slate-700 mb-1">
             Last Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="rep-list-last-name-2"
             type="text"
             nz-input
             placeholder="Last name"
             [(ngModel)]="form.lastName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Last Name" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="rep-list-phone-number-3" class="block text-xs font-semibold text-slate-700 mb-1">
             Phone Number <span class="text-rose-500">*</span>
           </label>
           <div class="flex gap-1.5">
             <span class="h-8 px-2 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
               +880
             </span>
-            <input
+            <input id="rep-list-phone-number-3"
               type="text"
               nz-input
               placeholder="1XXXXXXXXX"
               [(ngModel)]="form.phoneSuffix"
-              class="rounded-md flex-1 text-xs"
-            />
+              class="rounded-md flex-1 text-xs" aria-label="Phone Number" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-          <nz-select [(ngModel)]="form.gender" class="w-full">
+          <label for="rep-list-gender-4" class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
+          <nz-select id="rep-list-gender-4" nzId="rep-list-gender-4" [(ngModel)]="form.gender" class="w-full" aria-label="Gender">
             <nz-option nzValue="Male" nzLabel="Male"></nz-option>
             <nz-option nzValue="Female" nzLabel="Female"></nz-option>
             <nz-option nzValue="Other" nzLabel="Other"></nz-option>
@@ -191,22 +187,21 @@
         </div>
 
         <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
-          <input
+          <label for="rep-list-email-5" class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+          <input id="rep-list-email-5"
             type="email"
             nz-input
             placeholder="staff@pharmacy.com"
             [(ngModel)]="form.email"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Email" />
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="rep-list-role-access-permission-6" class="block text-xs font-semibold text-slate-700 mb-1">
           Role / Access Permission <span class="text-rose-500">*</span>
         </label>
-        <nz-select [(ngModel)]="form.roleNo" class="w-full" nzPlaceHolder="Select Role">
+        <nz-select id="rep-list-role-access-permission-6" nzId="rep-list-role-access-permission-6" [(ngModel)]="form.roleNo" class="w-full" nzPlaceHolder="Select Role" aria-label="Role / Access Permission">
           @for (r of availableRoles(); track r.role_no) {
             <nz-option [nzValue]="r.role_no" [nzLabel]="r.alias"></nz-option>
           }
@@ -215,29 +210,27 @@
 
       @if (modalMode === 'create') {
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="rep-list-password-7" class="block text-xs font-semibold text-slate-700 mb-1">
             Password <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="rep-list-password-7"
             type="password"
             nz-input
             placeholder="••••••"
             [(ngModel)]="form.password"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Password" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="rep-list-confirm-password-8" class="block text-xs font-semibold text-slate-700 mb-1">
             Confirm Password <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="rep-list-confirm-password-8"
             type="password"
             nz-input
             placeholder="••••••"
             [(ngModel)]="form.confirmPassword"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Confirm Password" />
         </div>
       }
     </div>
@@ -257,24 +250,22 @@
   <ng-container *nzModalContent>
     <div class="space-y-3 py-1">
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
-        <input
+        <label for="rep-list-new-password-9" class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
+        <input id="rep-list-new-password-9"
           type="password"
           nz-input
           placeholder="Minimum 6 characters"
           [(ngModel)]="newPassword"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="New Password" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
-        <input
+        <label for="rep-list-confirm-new-password-10" class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
+        <input id="rep-list-confirm-new-password-10"
           type="password"
           nz-input
           placeholder="Confirm new password"
           [(ngModel)]="confirmNewPassword"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Confirm New Password" />
       </div>
     </div>
   </ng-container>

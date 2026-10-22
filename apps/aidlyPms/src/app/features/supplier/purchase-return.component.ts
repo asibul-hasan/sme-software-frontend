@@ -92,14 +92,13 @@ interface ReturnCartLine {
           <!-- Selection Toolbar -->
           <div class="p-3 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
             <div class="w-1/3">
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Supplier *</label>
-              <nz-select
+              <label for="purchase-return-select-supplier-1" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Supplier *</label>
+              <nz-select id="purchase-return-select-supplier-1" nzId="purchase-return-select-supplier-1"
                 [(ngModel)]="selectedSupplierNo"
                 (ngModelChange)="onSupplierChange($event)"
                 nzPlaceHolder="Search supplier..."
                 class="w-full"
-                nzShowSearch
-              >
+                nzShowSearch aria-label="Select Supplier">
                 <nz-option
                   *ngFor="let s of suppliers()"
                   [nzValue]="s.supplier_no"
@@ -109,16 +108,15 @@ interface ReturnCartLine {
             </div>
 
             <div class="flex-1">
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Add Product by Name or Barcode</label>
-              <nz-select
+              <label for="purchase-return-add-product-by-name-or-barcode-2" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Add Product by Name or Barcode</label>
+              <nz-select id="purchase-return-add-product-by-name-or-barcode-2" nzId="purchase-return-add-product-by-name-or-barcode-2"
                 [(ngModel)]="selectedProductNo"
                 (ngModelChange)="onProductSelect($event)"
                 nzPlaceHolder="Type medicine name or scan barcode..."
                 class="w-full"
                 nzShowSearch
                 [nzServerSearch]="true"
-                (nzOnSearch)="searchProducts($event)"
-              >
+                (nzOnSearch)="searchProducts($event)" aria-label="Add Product by Name or Barcode">
                 <nz-option
                   *ngFor="let p of productSearchResults()"
                   [nzValue]="p.product_no"
@@ -155,10 +153,11 @@ interface ReturnCartLine {
                   </td>
                   <td class="p-2 text-right font-mono text-slate-600">{{ line.availableStock }}</td>
                   <td class="p-2 text-center">
-                    <input
+                    <input id="purchase-return-field-6"
                       type="number"
                       min="1"
                       [max]="line.availableStock > 0 ? line.availableStock : 9999"
+                      aria-label="Return Quantity"
                       [(ngModel)]="line.returnQty"
                       (ngModelChange)="updateLineTotal(line)"
                       class="w-20 px-2 py-1 text-center font-bold border border-slate-300 rounded text-slate-800 focus:outline-indigo-500"
@@ -184,7 +183,7 @@ interface ReturnCartLine {
                       (click)="removeLine(idx)"
                       class="text-rose-500 hover:text-rose-700 p-1"
                       title="Remove line"
-                    >
+                     aria-label="Remove line">
                       <i nz-icon nzType="delete" nzTheme="outline"></i>
                     </button>
                   </td>
@@ -224,43 +223,40 @@ interface ReturnCartLine {
             <!-- Settlement Options -->
             <div class="bg-indigo-50/50 border border-indigo-100 rounded-md p-3 space-y-3 text-xs">
               <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label for="purchase-return-supplier-due-adjustment-3" class="block text-[11px] font-semibold text-slate-600 mb-1">
                   Supplier Due Adjustment (৳)
                 </label>
-                <input
+                <input id="purchase-return-supplier-due-adjustment-3"
                   type="number"
                   min="0"
                   [(ngModel)]="dueAdjustmentAmount"
                   placeholder="0.00"
-                  class="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 font-mono"
-                />
+                  class="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 font-mono" aria-label="Supplier Due Adjustment (৳)" />
                 <span *ngIf="selectedSupplier()" class="text-[10px] text-slate-500 mt-0.5 block">
                   Supplier current due balance: ৳{{ selectedSupplier()?.current_due_balance || 0 }}
                 </span>
               </div>
 
               <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label for="purchase-return-cash-refund-received-4" class="block text-[11px] font-semibold text-slate-600 mb-1">
                   Cash / Refund Received (৳)
                 </label>
-                <input
+                <input id="purchase-return-cash-refund-received-4"
                   type="number"
                   min="0"
                   [(ngModel)]="refundReceivedAmount"
                   placeholder="0.00"
-                  class="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 font-mono"
-                />
+                  class="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 font-mono" aria-label="Cash / Refund Received (৳)" />
               </div>
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Return Note / Remarks</label>
-              <textarea
+              <label for="purchase-return-return-note-remarks-5" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Return Note / Remarks</label>
+              <textarea id="purchase-return-return-note-remarks-5"
                 [(ngModel)]="note"
                 rows="2"
                 placeholder="Reason or credit note reference..."
-                class="w-full text-xs p-2 border border-slate-300 rounded focus:outline-indigo-500"
-              ></textarea>
+                class="w-full text-xs p-2 border border-slate-300 rounded focus:outline-indigo-500" aria-label="Return Note / Remarks"></textarea>
             </div>
           </div>
 
@@ -286,13 +282,12 @@ interface ReturnCartLine {
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div class="w-72">
             <nz-input-group [nzPrefix]="prefixIcon">
-              <input
+              <input id="purchase-return-search-return-or-supplier-7"
                 type="text"
                 nz-input
                 placeholder="Search return # or supplier..."
                 [(ngModel)]="historySearch"
-                (ngModelChange)="loadHistory()"
-              />
+                (ngModelChange)="loadHistory()" aria-label="Search return # or supplier..." />
             </nz-input-group>
             <ng-template #prefixIcon><i nz-icon nzType="search"></i></ng-template>
           </div>

@@ -24,13 +24,12 @@ import { LabelOption } from '../../constants/label-values.constant';
         <!-- Search Input -->
         <div class="w-full sm:w-72">
           <nz-input-group [nzPrefix]="prefixTemplate">
-            <input
+            <input id="filter-bar-search-change-1"
               type="text"
               nz-input
               [placeholder]="searchPlaceholder"
               [(ngModel)]="searchQuery"
-              (ngModelChange)="onSearchChange($event)"
-            />
+              (ngModelChange)="onSearchChange($event)" aria-label="Search Change" />
           </nz-input-group>
           <ng-template #prefixTemplate>
             <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -40,13 +39,12 @@ import { LabelOption } from '../../constants/label-values.constant';
         <!-- Optional Status / Dropdown Select -->
         @if (options && options.length > 0) {
           <div class="w-48">
-            <nz-select
+            <nz-select id="filter-bar-select-status-2" nzId="filter-bar-select-status-2"
               class="w-full"
               nzPlaceHolder="Select Status"
               [(ngModel)]="selectedOption"
               (ngModelChange)="onOptionChange($event)"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Select Status">
               @for (opt of options; track opt.value) {
                 <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
               }

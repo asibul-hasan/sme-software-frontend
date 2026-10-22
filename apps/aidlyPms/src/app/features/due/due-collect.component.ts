@@ -65,36 +65,33 @@ interface PaidRecord {
       >
         <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="due-collect-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="due-collect-from-date-1" nzId="due-collect-from-date-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="due-collect-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="due-collect-to-date-2" nzId="due-collect-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Customer / Bill #</label>
+            <label for="due-collect-search-customer-bill-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Customer / Bill #</label>
             <nz-input-group [nzPrefix]="searchIcon" class="w-60 shrink-0 rounded-md">
-              <input
+              <input id="due-collect-search-customer-bill-3"
                 type="text"
                 nz-input
                 placeholder="Name, phone, invoice..."
                 [(ngModel)]="searchQuery"
                 (ngModelChange)="onSearchChange()"
-                class="text-xs"
-              />
+                class="text-xs" aria-label="Search Customer / Bill #" />
             </nz-input-group>
             <ng-template #searchIcon>
               <span nz-icon nzType="search" class="text-slate-400"></span>
@@ -165,7 +162,7 @@ interface PaidRecord {
                           nz-tooltip
                           nzTooltipTitle="Receive Due Collection"
                           class="btn-tbl-action btn-tbl-success"
-                        >
+                         aria-label="Receive Due Collection">
                           <span nz-icon nzType="dollar"></span>
                         </button>
                         <button
@@ -174,7 +171,7 @@ interface PaidRecord {
                           nz-tooltip
                           nzTooltipTitle="Send Payment Reminder SMS"
                           class="btn-tbl-action btn-tbl-warning"
-                        >
+                         aria-label="Send Payment Reminder SMS">
                           <span nz-icon nzType="mail"></span>
                         </button>
                       </div>
@@ -236,7 +233,7 @@ interface PaidRecord {
                           nz-tooltip
                           nzTooltipTitle="Print Money Receipt"
                           class="btn-tbl-action btn-tbl-neutral"
-                        >
+                         aria-label="Print Money Receipt">
                           <span nz-icon nzType="printer"></span>
                         </button>
                       </div>
@@ -291,20 +288,19 @@ interface PaidRecord {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="due-collect-amount-received-4" class="block text-xs font-semibold text-slate-700 mb-1">
               Amount Received (৳) <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="due-collect-amount-received-4"
               type="number"
               nz-input
               [(ngModel)]="receiveAmount"
-              class="rounded-md font-mono"
-            />
+              class="rounded-md font-mono" aria-label="Amount Received (৳)" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Deposit To Account <span class="text-rose-500">*</span></label>
-            <nz-select [(ngModel)]="selectedAccountId" class="w-full" nzPlaceHolder="Select Account">
+            <label for="due-collect-deposit-to-account-5" class="block text-xs font-semibold text-slate-700 mb-1">Deposit To Account <span class="text-rose-500">*</span></label>
+            <nz-select id="due-collect-deposit-to-account-5" nzId="due-collect-deposit-to-account-5" [(ngModel)]="selectedAccountId" class="w-full" nzPlaceHolder="Select Account" aria-label="Deposit To Account">
               @for (acc of accounts(); track acc.account_no) {
                 <nz-option [nzValue]="acc.account_no" [nzLabel]="acc.account_name + ' (Bal: ৳' + acc.current_balance.toLocaleString() + ')'"></nz-option>
               }
@@ -312,8 +308,8 @@ interface PaidRecord {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
-            <nz-select [(ngModel)]="receiveMethod" class="w-full">
+            <label for="due-collect-payment-method-6" class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+            <nz-select id="due-collect-payment-method-6" nzId="due-collect-payment-method-6" [(ngModel)]="receiveMethod" class="w-full" aria-label="Payment Method">
               <nz-option nzValue="Cash" nzLabel="Cash Counter"></nz-option>
               <nz-option nzValue="Bank" nzLabel="Bank Deposit"></nz-option>
               <nz-option nzValue="bKash" nzLabel="bKash"></nz-option>
@@ -322,14 +318,13 @@ interface PaidRecord {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Reference / Note</label>
-            <input
+            <label for="due-collect-reference-note-7" class="block text-xs font-semibold text-slate-700 mb-1">Reference / Note</label>
+            <input id="due-collect-reference-note-7"
               type="text"
               nz-input
               placeholder="e.g. Bank slip, TRx ID, receipt remarks"
               [(ngModel)]="receiveNote"
-              class="rounded-md"
-            />
+              class="rounded-md" aria-label="Reference / Note" />
           </div>
         </div>
       </ng-container>
@@ -347,23 +342,21 @@ interface PaidRecord {
       <ng-container *nzModalContent>
         <div class="space-y-3 py-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Recipient Number</label>
-            <input
+            <label for="due-collect-recipient-number-8" class="block text-xs font-semibold text-slate-700 mb-1">Recipient Number</label>
+            <input id="due-collect-recipient-number-8"
               type="text"
               nz-input
               [value]="activeDue?.phone"
               readonly
-              class="rounded-md bg-slate-50 font-mono text-xs"
-            />
+              class="rounded-md bg-slate-50 font-mono text-xs" aria-label="Recipient Number" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">SMS Content Template</label>
-            <textarea
+            <label for="due-collect-sms-content-template-9" class="block text-xs font-semibold text-slate-700 mb-1">SMS Content Template</label>
+            <textarea id="due-collect-sms-content-template-9"
               nz-input
               rows="4"
               [(ngModel)]="smsContent"
-              class="rounded-md text-xs font-sans"
-            ></textarea>
+              class="rounded-md text-xs font-sans" aria-label="SMS Content Template"></textarea>
           </div>
         </div>
       </ng-container>

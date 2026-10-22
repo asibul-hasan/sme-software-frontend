@@ -7,41 +7,38 @@
   >
     <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Name</label>
+        <label for="customer-list-customer-name-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Name</label>
         <nz-input-group [nzPrefix]="searchIcon" class="w-48 shrink-0 rounded-md">
-          <input
+          <input id="customer-list-customer-name-1"
             type="text"
             nz-input
             placeholder="Name or keyword..."
             [(ngModel)]="searchName"
             (ngModelChange)="onSearchChange()"
-            class="text-xs"
-          />
+            class="text-xs" aria-label="Customer Name" />
         </nz-input-group>
         <ng-template #searchIcon>
           <span nz-icon nzType="search" class="text-slate-400"></span>
         </ng-template>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Phone Number</label>
-        <input
+        <label for="customer-list-phone-number-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Phone Number</label>
+        <input id="customer-list-phone-number-2"
           type="text"
           nz-input
           placeholder="Phone (+880...)"
           [(ngModel)]="searchPhone"
           (ngModelChange)="onSearchChange()"
-          class="w-36 shrink-0 rounded-md text-xs"
-        />
+          class="w-36 shrink-0 rounded-md text-xs" aria-label="Phone Number" />
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Type</label>
-        <nz-select
+        <label for="customer-list-customer-type-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Type</label>
+        <nz-select id="customer-list-customer-type-3" nzId="customer-list-customer-type-3"
           [(ngModel)]="filterType"
           (ngModelChange)="onFilterChange()"
           class="w-36 shrink-0"
           nzPlaceHolder="All Types"
-          nzAllowClear
-        >
+          nzAllowClear aria-label="Customer Type">
           <nz-option nzValue="" nzLabel="All Types"></nz-option>
           @for (t of customerTypes; track t) {
             <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
@@ -124,7 +121,7 @@
                       nz-tooltip
                       nzTooltipTitle="Collect Due"
                       class="btn-tbl-action btn-tbl-success"
-                    >
+                     aria-label="Collect Due">
                       <span nz-icon nzType="dollar"></span>
                     </button>
                   }
@@ -134,7 +131,7 @@
                     nz-tooltip
                     nzTooltipTitle="View Ledger"
                     class="btn-tbl-action btn-tbl-view"
-                  >
+                   aria-label="View Ledger">
                     <span nz-icon nzType="eye"></span>
                   </button>
                   <button
@@ -143,7 +140,7 @@
                     nz-tooltip
                     nzTooltipTitle="Edit Customer"
                     class="btn-tbl-action btn-tbl-edit"
-                  >
+                   aria-label="Edit Customer">
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
@@ -152,7 +149,7 @@
                     nz-tooltip
                     nzTooltipTitle="Delete Customer"
                     class="btn-tbl-action btn-tbl-delete"
-                  >
+                   aria-label="Delete Customer">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>
@@ -198,55 +195,52 @@
       <!-- Row 1: 3 Columns -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label for="customer-list-customer-name-4" class="block font-semibold text-slate-700 mb-1">
             Customer Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="customer-list-customer-name-4"
             type="text"
             nz-input
             placeholder="Full name"
             [(ngModel)]="form.name"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Customer Name" />
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label for="customer-list-phone-number-5" class="block font-semibold text-slate-700 mb-1">
             Phone Number <span class="text-rose-500">*</span>
           </label>
           <div class="flex gap-1.5">
             <span class="h-7 px-2.5 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
               +880
             </span>
-            <input
+            <input id="customer-list-phone-number-5"
               type="text"
               nz-input
               placeholder="1XXXXXXXXX"
               [(ngModel)]="form.phoneSuffix"
-              class="rounded-md flex-1"
-            />
+              class="rounded-md flex-1" aria-label="Phone Number" />
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Email</label>
-          <input
+          <label for="customer-list-email-6" class="block font-semibold text-slate-700 mb-1">Email</label>
+          <input id="customer-list-email-6"
             type="email"
             nz-input
             placeholder="email@example.com"
             [(ngModel)]="form.email"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Email" />
         </div>
       </div>
 
       <!-- Row 2: 3 Columns -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label for="customer-list-gender-7" class="block font-semibold text-slate-700 mb-1">
             Gender <span class="text-rose-500">*</span>
           </label>
-          <nz-select [(ngModel)]="form.gender" class="w-full">
+          <nz-select id="customer-list-gender-7" nzId="customer-list-gender-7" [(ngModel)]="form.gender" class="w-full" aria-label="Gender">
             <nz-option nzValue="Male" nzLabel="Male"></nz-option>
             <nz-option nzValue="Female" nzLabel="Female"></nz-option>
             <nz-option nzValue="Other" nzLabel="Other"></nz-option>
@@ -254,11 +248,11 @@
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label for="customer-list-customer-type-8" class="block font-semibold text-slate-700 mb-1">
             Customer Type <span class="text-rose-500">*</span>
           </label>
           <div class="flex gap-1.5">
-            <nz-select [(ngModel)]="form.type" class="flex-1">
+            <nz-select id="customer-list-customer-type-8" nzId="customer-list-customer-type-8" [(ngModel)]="form.type" class="flex-1" aria-label="Customer Type">
               @for (t of customerTypes; track t) {
                 <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
               }
@@ -269,23 +263,22 @@
               nz-tooltip
               nzTooltipTitle="Quick Add Customer Type"
               class="btn-quick-add"
-            >
+             aria-label="Quick Add Customer Type">
               <span nz-icon nzType="plus"></span>
             </button>
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label for="customer-list-discount-default-line-discount-9" class="block font-semibold text-slate-700 mb-1">
             Discount % (Default line discount)
           </label>
-          <input
+          <input id="customer-list-discount-default-line-discount-9"
             type="number"
             nz-input
             placeholder="0"
             [(ngModel)]="form.discountPercent"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Discount % (Default line discount)" />
         </div>
       </div>
 
@@ -303,22 +296,20 @@
           @if (form.dueEnabled) {
             <div class="flex items-center gap-3">
               <div class="flex items-center gap-1.5">
-                <label class="text-xs font-medium text-slate-600 shrink-0">Due (৳):</label>
-                <input
+                <label for="customer-list-due-10" class="text-xs font-medium text-slate-600 shrink-0">Due (৳):</label>
+                <input id="customer-list-due-10"
                   type="number"
                   nz-input
                   placeholder="0.00"
                   [(ngModel)]="form.balance"
-                  class="rounded-md w-28"
-                />
+                  class="rounded-md w-28" aria-label="Due (৳)" />
               </div>
               <div class="flex items-center gap-1.5">
-                <label class="text-xs font-medium text-slate-600 shrink-0">Due Date:</label>
-                <nz-date-picker
+                <label for="customer-list-due-date-11" class="text-xs font-medium text-slate-600 shrink-0">Due Date:</label>
+                <nz-date-picker id="customer-list-due-date-11" nzId="customer-list-due-date-11"
                   [(ngModel)]="form.dueDate"
                   nzFormat="dd-MM-yyyy"
-                  class="rounded-md w-36"
-                ></nz-date-picker>
+                  class="rounded-md w-36" aria-label="Due Date"></nz-date-picker>
               </div>
             </div>
           }
@@ -328,25 +319,23 @@
       <!-- Address & Note: 2-Column Row -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Address</label>
-          <input
+          <label for="customer-list-address-12" class="block font-semibold text-slate-700 mb-1">Address</label>
+          <input id="customer-list-address-12"
             type="text"
             nz-input
             placeholder="Street address, area, city..."
             [(ngModel)]="form.address"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Address" />
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Note</label>
-          <input
+          <label for="customer-list-note-13" class="block font-semibold text-slate-700 mb-1">Note</label>
+          <input id="customer-list-note-13"
             type="text"
             nz-input
             placeholder="Additional notes about customer..."
             [(ngModel)]="form.note"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Note" />
         </div>
       </div>
 
@@ -380,19 +369,18 @@
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Collection Amount (৳) *</label>
-        <input
+        <label for="customer-list-collection-amount-14" class="block text-xs font-semibold text-slate-700 mb-1">Collection Amount (৳) *</label>
+        <input id="customer-list-collection-amount-14"
           type="number"
           nz-input
           placeholder="Enter amount collected"
           [(ngModel)]="collectAmount"
-          class="rounded-md font-mono"
-        />
+          class="rounded-md font-mono" aria-label="Collection Amount (৳)" />
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
-        <nz-select [(ngModel)]="collectMethod" class="w-full">
+        <label for="customer-list-payment-method-15" class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+        <nz-select id="customer-list-payment-method-15" nzId="customer-list-payment-method-15" [(ngModel)]="collectMethod" class="w-full" aria-label="Payment Method">
           <nz-option nzValue="Cash" nzLabel="Cash Counter"></nz-option>
           <nz-option nzValue="Bank" nzLabel="Bank Deposit"></nz-option>
           <nz-option nzValue="bKash" nzLabel="bKash"></nz-option>
@@ -415,16 +403,15 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">
+      <label for="customer-list-customer-type-name-16" class="block text-xs font-semibold text-slate-700 mb-1">
         Customer Type Name <span class="text-rose-500">*</span>
       </label>
-      <input
+      <input id="customer-list-customer-type-name-16"
         type="text"
         nz-input
         placeholder="e.g. Clinic, Corporate, NGO"
         [(ngModel)]="newCustomerTypeName"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Customer Type Name" />
     </div>
   </ng-container>
 </nz-modal>

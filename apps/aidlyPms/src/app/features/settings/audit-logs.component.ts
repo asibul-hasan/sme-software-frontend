@@ -55,23 +55,21 @@ import { ReportService, AuditLogItem } from '../../core/services/report.service'
         <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div class="flex items-center gap-3 flex-wrap">
             <div class="w-64">
-              <input
+              <input id="audit-logs-search-table-action-or-user-1"
                 type="text"
                 nz-input
                 placeholder="Search table, action, or user..."
                 [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()"
-              />
+                (ngModelChange)="onSearchChange()" aria-label="Search table, action, or user..." />
             </div>
 
             <div class="w-48">
-              <nz-select
+              <nz-select id="audit-logs-filter-by-table-2" nzId="audit-logs-filter-by-table-2"
                 [(ngModel)]="selectedTable"
                 (ngModelChange)="loadLogs()"
                 nzPlaceHolder="Filter by Table"
                 class="w-full"
-                nzAllowClear
-              >
+                nzAllowClear aria-label="Filter by Table">
                 <nz-option nzValue="prod_products" nzLabel="Products (prod_products)"></nz-option>
                 <nz-option nzValue="cust_customers" nzLabel="Customers (cust_customers)"></nz-option>
                 <nz-option nzValue="supp_suppliers" nzLabel="Suppliers (supp_suppliers)"></nz-option>
@@ -85,13 +83,12 @@ import { ReportService, AuditLogItem } from '../../core/services/report.service'
             </div>
 
             <div class="w-36">
-              <nz-select
+              <nz-select id="audit-logs-action-3" nzId="audit-logs-action-3"
                 [(ngModel)]="selectedAction"
                 (ngModelChange)="loadLogs()"
                 nzPlaceHolder="Action"
                 class="w-full"
-                nzAllowClear
-              >
+                nzAllowClear aria-label="Action">
                 <nz-option nzValue="CREATE" nzLabel="CREATE"></nz-option>
                 <nz-option nzValue="UPDATE" nzLabel="UPDATE"></nz-option>
                 <nz-option nzValue="DELETE" nzLabel="DELETE"></nz-option>

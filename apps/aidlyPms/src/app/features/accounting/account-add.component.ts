@@ -41,45 +41,43 @@ import { AccountingService } from '../../core/services/accounting.service';
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <form (ngSubmit)="submitForm()" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="account-add-account-name-holder-1" class="block text-xs font-semibold text-slate-700 mb-1">
               Account Name / Holder <span class="text-rose-500">*</span>
             </label>
-            <input
+            <input id="account-add-account-name-holder-1"
               type="text"
               nz-input
               placeholder="e.g. Counter Cash, Islami Bank Main"
               [(ngModel)]="name"
               name="name"
               class="rounded-md"
-              required
-            />
+              required aria-label="Account Name / Holder" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="account-add-phone-account-number-2" class="block text-xs font-semibold text-slate-700 mb-1">
               Phone / Account Number <span class="text-rose-500">*</span>
             </label>
             <div class="flex gap-2">
               <span class="h-9 px-3 flex items-center bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-600 shrink-0">
                 +880
               </span>
-              <input
+              <input id="account-add-phone-account-number-2"
                 type="text"
                 nz-input
                 placeholder="1XXXXXXXXX"
                 [(ngModel)]="phone"
                 name="phone"
                 class="rounded-md flex-1"
-                required
-              />
+                required aria-label="Phone / Account Number" />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="account-add-account-type-3" class="block text-xs font-semibold text-slate-700 mb-1">
               Account Type <span class="text-rose-500">*</span>
             </label>
-            <nz-select [(ngModel)]="accountType" name="accountType" class="w-full">
+            <nz-select id="account-add-account-type-3" nzId="account-add-account-type-3" [(ngModel)]="accountType" name="accountType" class="w-full" aria-label="Account Type">
               <nz-option nzValue="Cash In Hand" nzLabel="Cash In Hand"></nz-option>
               <nz-option nzValue="Bank Account" nzLabel="Bank Account"></nz-option>
               <nz-option nzValue="bKash Personal" nzLabel="bKash Personal"></nz-option>
@@ -91,17 +89,16 @@ import { AccountingService } from '../../core/services/accounting.service';
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label for="account-add-initial-balance-4" class="block text-xs font-semibold text-slate-700 mb-1">
               Initial Balance (৳)
             </label>
-            <input
+            <input id="account-add-initial-balance-4"
               type="number"
               nz-input
               placeholder="0.00"
               [(ngModel)]="initialBalance"
               name="initialBalance"
-              class="rounded-md font-mono"
-            />
+              class="rounded-md font-mono" aria-label="Initial Balance (৳)" />
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">

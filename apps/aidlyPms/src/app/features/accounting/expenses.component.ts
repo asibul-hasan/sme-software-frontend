@@ -60,34 +60,31 @@ interface ExpenseRow {
       >
         <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="expenses-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="expenses-from-date-1" nzId="expenses-from-date-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="expenses-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="expenses-to-date-2" nzId="expenses-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onFilterChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Expense Category</label>
-            <nz-select
+            <label for="expenses-expense-category-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Expense Category</label>
+            <nz-select id="expenses-expense-category-3" nzId="expenses-expense-category-3"
               [(ngModel)]="filterCategory"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Categories"
               class="w-44 shrink-0"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Expense Category">
               <nz-option nzValue="" nzLabel="All Categories"></nz-option>
               @for (cat of categoriesList(); track cat.expense_category_no) {
                 <nz-option [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
@@ -95,14 +92,13 @@ interface ExpenseRow {
             </nz-select>
           </div>
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Payment Method</label>
-            <nz-select
+            <label for="expenses-payment-method-4" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Payment Method</label>
+            <nz-select id="expenses-payment-method-4" nzId="expenses-payment-method-4"
               [(ngModel)]="filterPayment"
               (ngModelChange)="onFilterChange()"
               nzPlaceHolder="All Payment Types"
               class="w-40 shrink-0"
-              nzAllowClear
-            >
+              nzAllowClear aria-label="Payment Method">
               <nz-option nzValue="" nzLabel="All Payment Types"></nz-option>
               <nz-option nzValue="Cash" nzLabel="Cash"></nz-option>
               <nz-option nzValue="Bank" nzLabel="Bank"></nz-option>
@@ -175,7 +171,7 @@ interface ExpenseRow {
                         nz-tooltip
                         nzTooltipTitle="View Expense Voucher"
                         class="btn-tbl-action btn-tbl-view"
-                      >
+                       aria-label="View Expense Voucher">
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
@@ -184,7 +180,7 @@ interface ExpenseRow {
                         nz-tooltip
                         nzTooltipTitle="Delete Expense"
                         class="btn-tbl-action btn-tbl-delete"
-                      >
+                       aria-label="Delete Expense">
                         <span nz-icon nzType="delete"></span>
                       </button>
                     </div>
@@ -227,11 +223,11 @@ interface ExpenseRow {
         <div class="space-y-3 py-1 text-xs">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="expenses-category-5" class="block text-xs font-semibold text-slate-700 mb-1">
                 Category <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-1.5">
-                <nz-select [(ngModel)]="form.category" class="flex-1">
+                <nz-select id="expenses-category-5" nzId="expenses-category-5" [(ngModel)]="form.category" class="flex-1" aria-label="Category">
                   @for (cat of categoriesList(); track cat.expense_category_no) {
                     <nz-option [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
                   }
@@ -242,31 +238,30 @@ interface ExpenseRow {
                   nz-tooltip
                   nzTooltipTitle="Quick Add Category"
                   class="btn-quick-add"
-                >
+                 aria-label="Quick Add Category">
                   <span nz-icon nzType="plus"></span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="expenses-amount-6" class="block text-xs font-semibold text-slate-700 mb-1">
                 Amount (৳) <span class="text-rose-500">*</span>
               </label>
-              <input
+              <input id="expenses-amount-6"
                 type="number"
                 nz-input
                 placeholder="0.00"
                 [(ngModel)]="form.amount"
-                class="rounded-md font-mono"
-              />
+                class="rounded-md font-mono" aria-label="Amount (৳)" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="expenses-payment-account-7" class="block text-xs font-semibold text-slate-700 mb-1">
                 Payment Account <span class="text-rose-500">*</span>
               </label>
               <div class="flex gap-1.5">
-                <nz-select [(ngModel)]="form.account" class="flex-1">
+                <nz-select id="expenses-payment-account-7" nzId="expenses-payment-account-7" [(ngModel)]="form.account" class="flex-1" aria-label="Payment Account">
                   @for (acc of accountsList(); track acc.account_no) {
                     <nz-option [nzValue]="acc.account_name" [nzLabel]="acc.account_name"></nz-option>
                   }
@@ -277,21 +272,20 @@ interface ExpenseRow {
                   nz-tooltip
                   nzTooltipTitle="Quick Add Account"
                   class="btn-quick-add"
-                >
+                 aria-label="Quick Add Account">
                   <span nz-icon nzType="plus"></span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Note / Narration</label>
-              <input
+              <label for="expenses-note-narration-8" class="block text-xs font-semibold text-slate-700 mb-1">Note / Narration</label>
+              <input id="expenses-note-narration-8"
                 type="text"
                 nz-input
                 placeholder="Description or narration..."
                 [(ngModel)]="form.note"
-                class="rounded-md"
-              />
+                class="rounded-md" aria-label="Note / Narration" />
             </div>
           </div>
         </div>
@@ -310,16 +304,15 @@ interface ExpenseRow {
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="expenses-category-name-9" class="block text-xs font-semibold text-slate-700 mb-1">
             Category Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="expenses-category-name-9"
             type="text"
             nz-input
             placeholder="e.g. Office Supplies, Maintenance"
             [(ngModel)]="newCategoryName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Category Name" />
         </div>
       </ng-container>
     </nz-modal>
@@ -336,16 +329,15 @@ interface ExpenseRow {
     >
       <ng-container *nzModalContent>
         <div class="py-1">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="expenses-account-name-bank-10" class="block text-xs font-semibold text-slate-700 mb-1">
             Account Name / Bank <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="expenses-account-name-bank-10"
             type="text"
             nz-input
             placeholder="e.g. Dutch-Bangla Bank Ltd."
             [(ngModel)]="newAccountName"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Account Name / Bank" />
         </div>
       </ng-container>
     </nz-modal>

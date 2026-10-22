@@ -7,45 +7,41 @@
   >
     <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-        <nz-date-picker
+        <label for="sale-record-from-date-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+        <nz-date-picker id="sale-record-from-date-1" nzId="sale-record-from-date-1"
           [(ngModel)]="fromDate"
           (ngModelChange)="onFilterChange()"
           nzFormat="dd-MM-yyyy"
           nzPlaceHolder="From Date"
-          class="w-32 shrink-0 rounded-md text-xs"
-        ></nz-date-picker>
+          class="w-32 shrink-0 rounded-md text-xs" aria-label="From Date"></nz-date-picker>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-        <nz-date-picker
+        <label for="sale-record-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+        <nz-date-picker id="sale-record-to-date-2" nzId="sale-record-to-date-2"
           [(ngModel)]="toDate"
           (ngModelChange)="onFilterChange()"
           nzFormat="dd-MM-yyyy"
           nzPlaceHolder="To Date"
-          class="w-32 shrink-0 rounded-md text-xs"
-        ></nz-date-picker>
+          class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Invoice #</label>
-        <input
+        <label for="sale-record-invoice-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Invoice #</label>
+        <input id="sale-record-invoice-3"
           type="text"
           nz-input
           placeholder="Search invoice..."
           [(ngModel)]="searchInvoice"
           (ngModelChange)="onSearchChange()"
-          class="w-36 shrink-0 rounded-md text-xs"
-        />
+          class="w-36 shrink-0 rounded-md text-xs" aria-label="Invoice #" />
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer</label>
-        <nz-select
+        <label for="sale-record-customer-4" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer</label>
+        <nz-select id="sale-record-customer-4" nzId="sale-record-customer-4"
           [(ngModel)]="filterCustomer"
           (ngModelChange)="onFilterChange()"
           nzPlaceHolder="All Customers"
           class="w-40 shrink-0"
-          nzAllowClear
-        >
+          nzAllowClear aria-label="Customer">
           <nz-option nzValue="" nzLabel="All Customers"></nz-option>
           @for (c of customers(); track c.customer_no) {
             <nz-option [nzValue]="c.name" [nzLabel]="c.name"></nz-option>
@@ -53,15 +49,14 @@
         </nz-select>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Salesman</label>
-        <input
+        <label for="sale-record-salesman-5" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Salesman</label>
+        <input id="sale-record-salesman-5"
           type="text"
           nz-input
           placeholder="Salesman..."
           [(ngModel)]="searchSalesman"
           (ngModelChange)="onSearchChange()"
-          class="w-32 shrink-0 rounded-md text-xs"
-        />
+          class="w-32 shrink-0 rounded-md text-xs" aria-label="Salesman" />
       </div>
       <div class="flex items-center pb-0.5">
         <button nz-button class="btn-reset rounded-md h-8 px-2.5 text-xs shrink-0 inline-flex items-center gap-1" (click)="resetFilters()">
@@ -184,7 +179,7 @@
                     nz-tooltip
                     nzTooltipTitle="Process Sale Return / Exchange"
                     class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
-                  >
+                   aria-label="Process Sale Return / Exchange">
                     <span nz-icon nzType="rollback"></span>
                     <span>Return</span>
                   </button>
@@ -194,7 +189,7 @@
                     nz-tooltip
                     nzTooltipTitle="View Details"
                     class="btn-tbl-action btn-tbl-view"
-                  >
+                   aria-label="View Details">
                     <span nz-icon nzType="eye"></span>
                   </button>
                   <button
@@ -203,7 +198,7 @@
                     nz-tooltip
                     nzTooltipTitle="Print Receipt"
                     class="btn-tbl-action btn-tbl-neutral"
-                  >
+                   aria-label="Print Receipt">
                     <span nz-icon nzType="printer"></span>
                   </button>
                 </div>

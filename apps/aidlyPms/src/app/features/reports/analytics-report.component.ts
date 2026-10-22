@@ -54,7 +54,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
         <div filters class="flex items-end gap-2 shrink-0 flex-wrap py-1">
           <!-- Quick Filter Presets -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Filter Preset</label>
+            <label for="analytics-report-filter-preset-today-s-sale-thi-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Filter Preset</label>
             <div class="inline-flex rounded-md shadow-xs bg-slate-100 p-0.5" role="group">
               <button
                 type="button"
@@ -85,31 +85,29 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
           <!-- Date Range Pickers -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
-            <nz-date-picker
+            <label for="analytics-report-filter-preset-today-s-sale-thi-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
+            <nz-date-picker id="analytics-report-filter-preset-today-s-sale-thi-1" nzId="analytics-report-filter-preset-today-s-sale-thi-1"
               [(ngModel)]="fromDate"
               (ngModelChange)="onDateChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="From Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="Filter Preset Today's Sale This Week This Month From Date"></nz-date-picker>
           </div>
 
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
-            <nz-date-picker
+            <label for="analytics-report-to-date-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">To Date</label>
+            <nz-date-picker id="analytics-report-to-date-2" nzId="analytics-report-to-date-2"
               [(ngModel)]="toDate"
               (ngModelChange)="onDateChange()"
               nzFormat="dd-MM-yyyy"
               nzPlaceHolder="To Date"
-              class="w-32 shrink-0 rounded-md text-xs"
-            ></nz-date-picker>
+              class="w-32 shrink-0 rounded-md text-xs" aria-label="To Date"></nz-date-picker>
           </div>
 
           <!-- Sort Selector -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Rank By</label>
-            <nz-select class="w-36 text-xs" [(ngModel)]="sortBy" (ngModelChange)="loadAnalytics()">
+            <label for="analytics-report-rank-by-3" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Rank By</label>
+            <nz-select id="analytics-report-rank-by-3" nzId="analytics-report-rank-by-3" class="w-36 text-xs" [(ngModel)]="sortBy" (ngModelChange)="loadAnalytics()" aria-label="Rank By">
               <nz-option nzValue="qty" nzLabel="Units Sold"></nz-option>
               <nz-option nzValue="revenue" nzLabel="Sales Revenue"></nz-option>
               <nz-option nzValue="profit" nzLabel="Gross Profit"></nz-option>
@@ -119,8 +117,8 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
           <!-- Items Limit -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Show Top</label>
-            <nz-select class="w-24 text-xs" [(ngModel)]="limit" (ngModelChange)="loadAnalytics()">
+            <label for="analytics-report-show-top-4" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Show Top</label>
+            <nz-select id="analytics-report-show-top-4" nzId="analytics-report-show-top-4" class="w-24 text-xs" [(ngModel)]="limit" (ngModelChange)="loadAnalytics()" aria-label="Show Top">
               <nz-option [nzValue]="10" nzLabel="Top 10"></nz-option>
               <nz-option [nzValue]="25" nzLabel="Top 25"></nz-option>
               <nz-option [nzValue]="50" nzLabel="Top 50"></nz-option>
@@ -130,15 +128,14 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
 
           <!-- Search Filter -->
           <div class="flex flex-col">
-            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Item</label>
+            <label for="analytics-report-search-item-5" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Item</label>
             <nz-input-group [nzPrefix]="searchIcon" class="w-48 rounded-md">
-              <input
+              <input id="analytics-report-search-item-5"
                 type="text"
                 nz-input
                 placeholder="Product or generic..."
                 [(ngModel)]="searchQuery"
-                class="text-xs"
-              />
+                class="text-xs" aria-label="Search Item" />
             </nz-input-group>
             <ng-template #searchIcon>
               <span nz-icon nzType="search" class="text-slate-400"></span>

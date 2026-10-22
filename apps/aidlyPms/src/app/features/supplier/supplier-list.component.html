@@ -7,31 +7,29 @@
   >
     <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Supplier Name</label>
+        <label for="supplier-list-supplier-name-1" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Supplier Name</label>
         <nz-input-group [nzPrefix]="searchIcon" class="w-48 shrink-0 rounded-md">
-          <input
+          <input id="supplier-list-supplier-name-1"
             type="text"
             nz-input
             placeholder="Name or company..."
             [(ngModel)]="searchName"
             (ngModelChange)="onSearchChange()"
-            class="text-xs"
-          />
+            class="text-xs" aria-label="Supplier Name" />
         </nz-input-group>
         <ng-template #searchIcon>
           <span nz-icon nzType="search" class="text-slate-400"></span>
         </ng-template>
       </div>
       <div class="flex flex-col">
-        <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Phone Number</label>
-        <input
+        <label for="supplier-list-phone-number-2" class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Phone Number</label>
+        <input id="supplier-list-phone-number-2"
           type="text"
           nz-input
           placeholder="Phone (+880...)"
           [(ngModel)]="searchPhone"
           (ngModelChange)="onSearchChange()"
-          class="w-36 shrink-0 rounded-md text-xs"
-        />
+          class="w-36 shrink-0 rounded-md text-xs" aria-label="Phone Number" />
       </div>
       <div class="flex items-center h-8 shrink-0 pb-0.5">
         <label nz-checkbox [(ngModel)]="dueOnly" (ngModelChange)="onFilterChange()" class="text-xs text-slate-700">
@@ -95,7 +93,7 @@
                     nz-tooltip
                     nzTooltipTitle="View Vendor Ledger"
                     class="btn-tbl-action btn-tbl-view"
-                  >
+                   aria-label="View Vendor Ledger">
                     <span nz-icon nzType="eye"></span>
                   </button>
                   @if (s.balance > 0) {
@@ -105,7 +103,7 @@
                       nz-tooltip
                       nzTooltipTitle="Pay Supplier"
                       class="btn-tbl-action btn-tbl-success"
-                    >
+                     aria-label="Pay Supplier">
                       <span nz-icon nzType="dollar"></span>
                     </button>
                   }
@@ -115,7 +113,7 @@
                     nz-tooltip
                     nzTooltipTitle="Edit Supplier"
                     class="btn-tbl-action btn-tbl-edit"
-                  >
+                   aria-label="Edit Supplier">
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
@@ -124,7 +122,7 @@
                     nz-tooltip
                     nzTooltipTitle="Delete Supplier"
                     class="btn-tbl-action btn-tbl-delete"
-                  >
+                   aria-label="Delete Supplier">
                     <span nz-icon nzType="delete"></span>
                   </button>
                 </div>
@@ -167,56 +165,52 @@
     <div class="space-y-3 py-1 text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="supplier-list-supplier-name-3" class="block text-xs font-semibold text-slate-700 mb-1">
             Supplier Name <span class="text-rose-500">*</span>
           </label>
-          <input
+          <input id="supplier-list-supplier-name-3"
             type="text"
             nz-input
             placeholder="Enter supplier / vendor name"
             [(ngModel)]="form.name"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Supplier Name" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="supplier-list-phone-number-4" class="block text-xs font-semibold text-slate-700 mb-1">
             Phone Number <span class="text-rose-500">*</span>
           </label>
           <div class="flex gap-1.5">
             <span class="h-7 px-2.5 flex items-center bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-600 shrink-0">
               +880
             </span>
-            <input
+            <input id="supplier-list-phone-number-4"
               type="text"
               nz-input
               placeholder="1XXXXXXXXX"
               [(ngModel)]="form.phoneSuffix"
-              class="rounded-md flex-1"
-            />
+              class="rounded-md flex-1" aria-label="Phone Number" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Address / Hub</label>
-          <input
+          <label for="supplier-list-address-hub-5" class="block text-xs font-semibold text-slate-700 mb-1">Address / Hub</label>
+          <input id="supplier-list-address-hub-5"
             type="text"
             nz-input
             placeholder="e.g. Dhaka, Cumilla, Chattagram"
             [(ngModel)]="form.address"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Address / Hub" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Note</label>
-          <input
+          <label for="supplier-list-note-6" class="block text-xs font-semibold text-slate-700 mb-1">Note</label>
+          <input id="supplier-list-note-6"
             type="text"
             nz-input
             placeholder="Additional notes about this supplier..."
             [(ngModel)]="form.note"
-            class="rounded-md"
-          />
+            class="rounded-md" aria-label="Note" />
         </div>
       </div>
 
@@ -230,16 +224,15 @@
 
       @if (form.dueEnabled) {
         <div class="flex items-center gap-2">
-          <label class="text-xs font-semibold text-slate-700 shrink-0">
+          <label for="supplier-list-opening-due-amount-7" class="text-xs font-semibold text-slate-700 shrink-0">
             Opening Due Amount (৳) <span class="text-rose-500">*</span>:
           </label>
-          <input
+          <input id="supplier-list-opening-due-amount-7"
             type="number"
             nz-input
             placeholder="0.00"
             [(ngModel)]="form.balance"
-            class="rounded-md w-36 font-mono"
-          />
+            class="rounded-md w-36 font-mono" aria-label="Opening Due Amount (৳)" />
         </div>
       }
     </div>
@@ -265,22 +258,21 @@
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">
+        <label for="supplier-list-payment-amount-8" class="block text-xs font-semibold text-slate-700 mb-1">
           Payment Amount (৳) <span class="text-rose-500">*</span>
         </label>
-        <input
+        <input id="supplier-list-payment-amount-8"
           type="number"
           nz-input
           placeholder="Enter amount to pay"
           [(ngModel)]="payAmount"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Payment Amount (৳)" />
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+        <label for="supplier-list-payment-method-9" class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
         <div class="flex gap-1.5">
-          <nz-select [(ngModel)]="payMethod" class="flex-1">
+          <nz-select id="supplier-list-payment-method-9" nzId="supplier-list-payment-method-9" [(ngModel)]="payMethod" class="flex-1" aria-label="Payment Method">
             @for (m of payMethods; track m) {
               <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
             }
@@ -291,21 +283,20 @@
             nz-tooltip
             nzTooltipTitle="Quick Add Payment Method"
             class="btn-quick-add"
-          >
+           aria-label="Quick Add Payment Method">
             <span nz-icon nzType="plus"></span>
           </button>
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Reference / Note</label>
-        <input
+        <label for="supplier-list-reference-note-10" class="block text-xs font-semibold text-slate-700 mb-1">Reference / Note</label>
+        <input id="supplier-list-reference-note-10"
           type="text"
           nz-input
           placeholder="Cheque / TRx / Challan ref"
           [(ngModel)]="payNote"
-          class="rounded-md"
-        />
+          class="rounded-md" aria-label="Reference / Note" />
       </div>
     </div>
   </ng-container>
@@ -323,16 +314,15 @@
 >
   <ng-container *nzModalContent>
     <div class="py-1">
-      <label class="block text-xs font-semibold text-slate-700 mb-1">
+      <label for="supplier-list-method-name-11" class="block text-xs font-semibold text-slate-700 mb-1">
         Method Name <span class="text-rose-500">*</span>
       </label>
-      <input
+      <input id="supplier-list-method-name-11"
         type="text"
         nz-input
         placeholder="e.g. BRAC Bank, Dutch Bangla"
         [(ngModel)]="newPayMethodName"
-        class="rounded-md"
-      />
+        class="rounded-md" aria-label="Method Name" />
     </div>
   </ng-container>
 </nz-modal>

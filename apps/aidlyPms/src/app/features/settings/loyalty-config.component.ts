@@ -53,60 +53,56 @@ import { CfgLoyaltyConfig } from '../../core/models/config.models';
         @if (isEnabled) {
           <div class="space-y-4 pt-2">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="loyalty-config-earning-rule-spend-threshold-1" class="block text-xs font-semibold text-slate-700 mb-1">
                 Earning Rule (Spend threshold)
               </label>
               <div class="flex items-center gap-2">
-                <input
+                <input id="loyalty-config-earning-rule-spend-threshold-1"
                   type="number"
                   nz-input
                   [(ngModel)]="spendForPoint"
-                  class="w-28 rounded-md font-mono"
-                />
+                  class="w-28 rounded-md font-mono" aria-label="Earning Rule (Spend threshold)" />
                 <span class="text-sm text-slate-600">৳ spend = 1 loyalty point</span>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="loyalty-config-redemption-rule-point-conversi-2" class="block text-xs font-semibold text-slate-700 mb-1">
                 Redemption Rule (Point conversion value)
               </label>
               <div class="flex items-center gap-2">
-                <input
+                <input id="loyalty-config-redemption-rule-point-conversi-2"
                   type="number"
                   nz-input
                   [(ngModel)]="pointsPerTaka"
-                  class="w-28 rounded-md font-mono"
-                />
+                  class="w-28 rounded-md font-mono" aria-label="Redemption Rule (Point conversion value)" />
                 <span class="text-sm text-slate-600">points = ৳ 1.00 cash deduction</span>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="loyalty-config-minimum-points-required-to-red-3" class="block text-xs font-semibold text-slate-700 mb-1">
                 Minimum Points Required to Redeem
               </label>
-              <input
+              <input id="loyalty-config-minimum-points-required-to-red-3"
                 type="number"
                 nz-input
                 [(ngModel)]="minRedeemPoints"
-                class="w-32 rounded-md font-mono"
-              />
+                class="w-32 rounded-md font-mono" aria-label="Minimum Points Required to Redeem" />
               <p class="text-xs text-slate-400 mt-1">
                 Patients cannot redeem until reaching this account points threshold.
               </p>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label for="loyalty-config-max-redeem-points-per-transact-4" class="block text-xs font-semibold text-slate-700 mb-1">
                 Max Redeem Points per Transaction
               </label>
-              <input
+              <input id="loyalty-config-max-redeem-points-per-transact-4"
                 type="number"
                 nz-input
                 [(ngModel)]="maxRedeemPoints"
-                class="w-32 rounded-md font-mono"
-              />
+                class="w-32 rounded-md font-mono" aria-label="Max Redeem Points per Transaction" />
               <p class="text-xs text-slate-400 mt-1">
                 Safety cap to protect revenue on single high-value purchases.
               </p>

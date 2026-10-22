@@ -32,17 +32,16 @@ import { SettingsService } from '../../core/services/settings.service';
 
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label for="product-config-expiry-warning-lead-time-days-1" class="block text-xs font-semibold text-slate-700 mb-1">
             Expiry Warning Lead Time (Days) <span class="text-rose-500">*</span>
           </label>
           <div class="flex items-center gap-2">
-            <input
+            <input id="product-config-expiry-warning-lead-time-days-1"
               type="number"
               nz-input
               [(ngModel)]="expiryDays"
               class="w-32 rounded-md font-mono"
-              min="1"
-            />
+              min="1" aria-label="Expiry Warning Lead Time (Days)" />
             <span class="text-xs text-slate-500 font-semibold">days before expiration</span>
           </div>
           <p class="text-xs text-slate-400 mt-1">

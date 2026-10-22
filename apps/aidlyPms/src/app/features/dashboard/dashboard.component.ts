@@ -80,7 +80,7 @@ interface TopProduct {
           </div>
 
           <!-- Branch Selector -->
-          <nz-select [(ngModel)]="selectedBranch" (ngModelChange)="onBranchChange($event)" class="w-40">
+          <nz-select id="dashboard-branch-search-1" nzId="dashboard-branch-search-1" [(ngModel)]="selectedBranch" (ngModelChange)="onBranchChange($event)" class="w-40" aria-label="Branch Search">
             <nz-option nzValue="all" nzLabel="All Branches"></nz-option>
             @for (br of branchOptions(); track br.value) {
               <nz-option [nzValue]="br.value" [nzLabel]="br.label"></nz-option>
