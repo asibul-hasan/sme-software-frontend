@@ -86,15 +86,61 @@
       <table class="w-full text-sm text-left border-collapse">
         <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
           <tr>
-            <th class="p-3">Details</th>
-            <th class="p-3">Bill Info</th>
-            <th class="p-3">Sale Info</th>
-            <th class="p-3">Payment</th>
-            <th class="p-3 text-center w-36">Action</th>
+            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('inv')">
+              <div class="inline-flex items-center gap-1">
+                <span>Invoice / Date</span>
+                @if (sortColumn() === 'inv' || sortColumn() === 'sale_invoice_no') {
+                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
+                } @else {
+                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
+                }
+              </div>
+            </th>
+            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('customer')">
+              <div class="inline-flex items-center gap-1">
+                <span>Customer & Staff</span>
+                @if (sortColumn() === 'customer') {
+                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
+                } @else {
+                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
+                }
+              </div>
+            </th>
+            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors text-right" (click)="onSort('total')">
+              <div class="inline-flex items-center justify-end gap-1 w-full">
+                <span>Bill Info / Net</span>
+                @if (sortColumn() === 'total') {
+                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
+                } @else {
+                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
+                }
+              </div>
+            </th>
+            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('items')">
+              <div class="inline-flex items-center gap-1">
+                <span>Items & Mode</span>
+                @if (sortColumn() === 'items') {
+                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
+                } @else {
+                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
+                }
+              </div>
+            </th>
+            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors text-right" (click)="onSort('paid')">
+              <div class="inline-flex items-center justify-end gap-1 w-full">
+                <span>Paid / Due</span>
+                @if (sortColumn() === 'paid' || sortColumn() === 'due') {
+                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
+                } @else {
+                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
+                }
+              </div>
+            </th>
+            <th class="p-3 text-center w-48">Quick Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-slate-800">
-          @for (s of filteredSales(); track s.inv) {
+          @for (s of paginatedSales(); track s.inv) {
             <tr class="hover:bg-slate-50/70 transition-colors">
               <td class="p-3">
                 <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ s.inv }}</p>
@@ -127,8 +173,18 @@
                 }
               </td>
 
-              <td class="p-3 text-center">
-                <div class="inline-flex items-center gap-1.5">
+              <td class="p-3 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5 justify-center">
+                  <button
+                    type="button"
+                    (click)="initiateReturn(s)"
+                    nz-tooltip
+                    nzTooltipTitle="Process Sale Return / Exchange"
+                    class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
+                  >
+                    <span nz-icon nzType="rollback"></span>
+                    <span>Return</span>
+                  </button>
                   <button
                     type="button"
                     (click)="viewInvoiceDetails(s)"
@@ -147,21 +203,12 @@
                   >
                     <span nz-icon nzType="printer"></span>
                   </button>
-                  <button
-                    type="button"
-                    (click)="initiateReturn(s)"
-                    nz-tooltip
-                    nzTooltipTitle="Sale Return"
-                    class="btn-tbl-action btn-tbl-warning"
-                  >
-                    <span nz-icon nzType="rollback"></span>
-                  </button>
                 </div>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+              <td colspan="6" class="p-8 text-center text-slate-400 text-xs">
                 No sale records found matching your filters.
               </td>
             </tr>
@@ -170,10 +217,10 @@
       </table>
     </div>
 
-    <!-- Sticky Bottom Footer -->
-    <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
+    <!-- Sticky Bottom Footer with Pagination Controls -->
+    <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
       <div class="flex items-center gap-3">
-        <span>Invoices: <strong class="text-slate-900 font-semibold font-mono">{{ filteredSales().length }}</strong></span>
+        <span>Invoices: <strong class="text-slate-900 font-semibold font-mono">{{ sortedSales().length }}</strong></span>
         <span class="text-slate-300">|</span>
         <span class="font-semibold text-slate-700">Total Sales: <strong class="theme-total-text font-mono text-sm">৳ {{ totalSalesAmount() | number: '1.2-2' }}</strong></span>
         <span class="text-slate-300">|</span>
@@ -181,7 +228,22 @@
         <span class="text-slate-300">|</span>
         <span>Total Due: <strong class="text-rose-700 font-mono font-semibold">৳ {{ totalDueAmount() | number: '1.2-2' }}</strong></span>
       </div>
-      <span class="text-slate-400 font-mono text-[11px]">Daily Sales Register</span>
+
+      <div class="flex items-center gap-3">
+        <span class="text-slate-500 text-xs hidden sm:inline">
+          Showing {{ sortedSales().length > 0 ? (pageIndex() - 1) * pageSize() + 1 : 0 }} - {{ minVal(pageIndex() * pageSize(), sortedSales().length) }} of {{ sortedSales().length }}
+        </span>
+        <nz-pagination
+          [nzPageIndex]="pageIndex()"
+          [nzPageSize]="pageSize()"
+          [nzTotal]="sortedSales().length"
+          [nzPageSizeOptions]="pageSizeOptions"
+          nzShowSizeChanger
+          nzSize="small"
+          (nzPageIndexChange)="onPageIndexChange($event)"
+          (nzPageSizeChange)="onPageSizeChange($event)"
+        ></nz-pagination>
+      </div>
     </div>
   </div>
 </div>

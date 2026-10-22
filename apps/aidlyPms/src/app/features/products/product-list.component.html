@@ -159,9 +159,29 @@
   </div>
 </ng-template>
 
-<!-- Actions Column Template for Edit & Delete -->
+<!-- Actions Column Template for Quick Actions, Edit & Delete -->
 <ng-template #actionTpl let-item>
-  <div class="flex items-center justify-center gap-1.5">
+  <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+    <button
+      type="button"
+      (click)="adjustStock(item)"
+      nz-tooltip
+      nzTooltipTitle="Quick Stock Adjustment"
+      class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
+    >
+      <span nz-icon nzType="sliders"></span>
+      <span>Adjust</span>
+    </button>
+    <button
+      type="button"
+      (click)="openEditMedicineModal(item)"
+      nz-tooltip
+      nzTooltipTitle="Edit Formulation & Pricing"
+      class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800 transition-colors shadow-2xs active:scale-95"
+    >
+      <span nz-icon nzType="edit"></span>
+      <span>Edit</span>
+    </button>
     <button
       type="button"
       (click)="viewDetails(item)"
@@ -170,24 +190,6 @@
       class="btn-tbl-action btn-tbl-view"
     >
       <span nz-icon nzType="eye"></span>
-    </button>
-    <button
-      type="button"
-      (click)="adjustStock(item)"
-      nz-tooltip
-      nzTooltipTitle="Stock Adjustment"
-      class="btn-tbl-action btn-tbl-warning"
-    >
-      <span nz-icon nzType="sliders"></span>
-    </button>
-    <button
-      type="button"
-      (click)="openEditMedicineModal(item)"
-      nz-tooltip
-      nzTooltipTitle="Edit Formulation"
-      class="btn-tbl-action btn-tbl-edit"
-    >
-      <span nz-icon nzType="edit"></span>
     </button>
     <button
       type="button"

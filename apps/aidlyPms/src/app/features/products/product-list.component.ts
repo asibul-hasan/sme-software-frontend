@@ -173,21 +173,25 @@ export class ProductListComponent implements OnInit, OnDestroy {
         title: 'Generic Formulation',
         key: 'generic_name',
         width: '180px',
+        sortable: true,
       },
       {
         title: 'Manufacturer',
         key: 'company_name',
         width: '180px',
+        sortable: true,
       },
       {
         title: 'Form',
         key: 'medicine_type_label',
         width: '95px',
+        sortable: true,
       },
       {
         title: 'Unit',
         key: 'unit_type_label',
         width: '85px',
+        sortable: true,
       },
       ...(this.authService.canViewCostPrice()
         ? [
@@ -196,6 +200,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
               key: 'avg_purchase_price_per_piece',
               align: 'right' as const,
               width: '120px',
+              sortable: true,
               template: this.avgPurchaseTpl,
             },
             {
@@ -203,6 +208,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
               key: 'purchase_price_per_piece',
               align: 'right' as const,
               width: '110px',
+              sortable: true,
               template: this.purchaseTpl,
             },
           ]
@@ -213,6 +219,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
         align: 'right',
         width: '120px',
         right: true,
+        sortable: true,
         template: this.salePriceTpl,
       },
       {
@@ -221,6 +228,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
         align: 'center',
         width: '90px',
         right: true,
+        sortable: true,
         template: this.rakTpl,
       },
       {
@@ -235,7 +243,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       {
         title: 'Actions',
         template: this.actionTpl,
-        width: '150px',
+        width: '210px',
         align: 'center',
         right: true,
       },

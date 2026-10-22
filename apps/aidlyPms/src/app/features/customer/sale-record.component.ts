@@ -14,6 +14,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
@@ -54,6 +55,7 @@ interface SaleRecordRow {
     NzSpinModule,
     NzTooltipModule,
     NzDatePickerModule,
+    NzPaginationModule,
     PageHeaderComponent,
   ],
   templateUrl: './sale-record.component.html',
@@ -98,6 +100,64 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   totalPaidAmount = computed(() => this.filteredSales().reduce((sum, s) => sum + (s.paid || 0), 0));
   totalDueAmount = computed(() => this.filteredSales().reduce((sum, s) => sum + (s.due || 0), 0));
 
+  // Sorting State
+  sortColumn = signal<keyof SaleRecordRow | ''>('sale_invoice_no');
+  sortDirection = signal<'asc' | 'desc'>('desc');
+
+  onSort(col: keyof SaleRecordRow): void {
+    if (this.sortColumn() === col) {
+      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortColumn.set(col);
+      this.sortDirection.set(col === 'customer' || col === 'salesman' ? 'asc' : 'desc');
+    }
+    this.pageIndex.set(1);
+  }
+
+  sortedSales = computed(() => {
+    const list = [...this.filteredSales()];
+    const col = this.sortColumn();
+    const dir = this.sortDirection();
+    if (!col) return list;
+    return list.sort((a, b) => {
+      const va = a[col];
+      const vb = b[col];
+      if (va == null && vb == null) return 0;
+      if (va == null) return dir === 'asc' ? -1 : 1;
+      if (vb == null) return dir === 'asc' ? 1 : -1;
+      let cmp = 0;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        cmp = va - vb;
+      } else {
+        cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+      }
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  // Pagination State
+  pageIndex = signal<number>(1);
+  pageSize = signal<number>(15);
+  pageSizeOptions = [10, 15, 25, 50, 100];
+
+  paginatedSales = computed(() => {
+    const start = (this.pageIndex() - 1) * this.pageSize();
+    return this.sortedSales().slice(start, start + this.pageSize());
+  });
+
+  onPageIndexChange(page: number): void {
+    this.pageIndex.set(page);
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.pageIndex.set(1);
+  }
+
+  minVal(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   isDetailsOpen = false;
   selectedSale: SaleRecordRow | null = null;
 
@@ -127,10 +187,12 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   onFilterChange(): void {
+    this.pageIndex.set(1);
     this.loadRecords();
   }
 
   onSearchChange(): void {
+    this.pageIndex.set(1);
     this.searchSubject.next();
   }
 
@@ -138,7 +200,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     const params: Record<string, unknown> = {
       pageIndex: 1,
-      pageSize: 50,
+      pageSize: 200,
     };
     if (this.searchInvoice.trim()) params['search'] = this.searchInvoice.trim();
     if (this.fromDate) params['startDate'] = formatDateToDdMmYyyy(this.fromDate);
@@ -184,6 +246,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
     this.searchInvoice = '';
     this.filterCustomer = '';
     this.searchSalesman = '';
+    this.pageIndex.set(1);
     this.loadRecords();
   }
 

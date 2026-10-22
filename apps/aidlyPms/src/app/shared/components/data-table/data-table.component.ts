@@ -10,6 +10,7 @@ export interface TableColumn<T = unknown> {
   width?: string;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
+  sortFn?: ((a: T, b: T) => number) | null;
   left?: string | boolean;
   right?: string | boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +55,7 @@ export interface TableColumn<T = unknown> {
                   [nzWidth]="col.width || null"
                   [nzAlign]="col.align || 'left'"
                   [nzShowSort]="!!col.sortable"
+                  [nzSortFn]="getSortFn(col)"
                   [nzColumnKey]="col.key || ''"
                   [nzLeft]="col.left ?? false"
                   [nzRight]="col.right ?? false"
@@ -100,14 +102,21 @@ export interface TableColumn<T = unknown> {
             <ng-content select="[tableFooter]"></ng-content>
           </div>
           @if (showPagination) {
-            <nz-pagination
+            <div class="flex items-center gap-3">
+              <span class="text-slate-500 text-xs hidden sm:inline">
+                Showing {{ total > 0 ? (pageIndex - 1) * pageSize + 1 : 0 }} - {{ minVal(pageIndex * pageSize, total) }} of {{ total }}
+              </span>
+              <nz-pagination
               [(nzPageIndex)]="pageIndex"
               [(nzPageSize)]="pageSize"
               [nzTotal]="total"
-              [nzShowSizeChanger]="false"
+              [nzShowSizeChanger]="showSizeChanger"
+              [nzPageSizeOptions]="pageSizeOptions"
+              (nzPageSizeChange)="onPageSizeChange($event)"
               nzSize="small"
               (nzPageIndexChange)="onPageChange($event)"
             ></nz-pagination>
+            </div>
           }
         </div>
       }
@@ -123,6 +132,8 @@ export class DataTableComponent<T = unknown> {
   @Input() pageSize = 10;
   @Input() frontPagination = true;
   @Input() showPagination = true;
+  @Input() showSizeChanger = true;
+  @Input() pageSizeOptions = [10, 20, 50, 100];
   @Input() showFooter = true;
   @Input() scrollX = '1100px';
 
@@ -142,6 +153,28 @@ export class DataTableComponent<T = unknown> {
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.pageSizeChange.emit(size);
+  }
+
+  minVal(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  getSortFn(col: TableColumn<T>): ((a: T, b: T) => number) | null {
+    if (!col.sortable) return null;
+    if (col.sortFn !== undefined) return col.sortFn;
+    if (!col.key) return null;
+    const key = col.key;
+    return (a: T, b: T) => {
+      const va = (a as Record<string, unknown>)[key];
+      const vb = (b as Record<string, unknown>)[key];
+      if (va == null && vb == null) return 0;
+      if (va == null) return -1;
+      if (vb == null) return 1;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return va - vb;
+      }
+      return String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+    };
   }
 
   getCellValue(item: T, key?: string): unknown {
