@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -44,6 +45,7 @@ export class ExpiredItemsComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
+  private readonly router = inject(Router);
 
   daysThreshold = 90;
   selectedCompany = '';
@@ -137,28 +139,68 @@ export class ExpiredItemsComponent implements OnInit {
   }
 
   initiateSupplierReturn(item: ExpiredItem): void {
-    this.modal
-      .confirmAction(`Initiate Return for ${item.name}?`, `Create supplier debit note for ${item.qty} units from ${item.company}?`, 'Confirm Return')
-      .subscribe(confirmed => {
-        if (confirmed) {
-          this.items.update(list => list.filter(i => i.id !== item.id));
-          this.msg.success(`Return invoice created for ${item.name}.`);
-        }
-      });
+    this.router.navigate(['/supplier/purchase-return'], {
+      queryParams: {
+        product: item.name,
+        batch: item.id,
+      },
+    });
   }
 
   writeOffItem(item: ExpiredItem): void {
     this.modal
-      .confirmDelete(item.name, `This will write off ${item.qty} units as damaged / expired inventory loss.`)
+      .confirmDelete(item.name, `This will adjust stock to 0 and record expired inventory loss for ${item.qty} units.`)
       .subscribe(confirmed => {
         if (confirmed) {
-          this.items.update(list => list.filter(i => i.id !== item.id));
-          this.msg.success(`${item.name} written off from active inventory.`);
+          this.productService.adjustProductStock(item.id, {
+            target_stock_pcs: 0,
+            reason: 'Physical Stock Audit',
+            remarks: `Write-off expired batch (${item.qty} pcs)`,
+          }).subscribe({
+            next: (res) => {
+              if (res.success) {
+                this.msg.success(`${item.name} written off from active inventory.`);
+                this.loadData();
+              } else {
+                this.msg.error(res.message || 'Failed to write off item');
+              }
+            },
+            error: (err) => {
+              this.msg.error(err?.error?.message || 'Failed to write off item');
+            }
+          });
         }
       });
   }
 
   exportReport(): void {
-    this.msg.success('Expiry audit report exported.');
+    const list = this.filteredItems();
+    if (!list.length) {
+      this.msg.warning('No expired or near-expiry items to export.');
+      return;
+    }
+    const headers = ['#', 'Product Name', 'Form', 'Manufacturer', 'Expiry Date', 'Days Left', 'Stock Qty (Pcs)', 'Unit Cost (৳)', 'Valuation (৳)'];
+    const rows = list.map((item, i) => [
+      i + 1,
+      `"${(item.name || '').replace(/"/g, '""')}"`,
+      `"${item.form || ''}"`,
+      `"${(item.company || '').replace(/"/g, '""')}"`,
+      item.expiry,
+      item.daysLeft,
+      item.qty,
+      item.unitPrice.toFixed(2),
+      (item.qty * item.unitPrice).toFixed(2),
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `expired_items_audit_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.msg.success(`Exported ${list.length} near-expiry items to CSV.`);
   }
 }

@@ -116,6 +116,9 @@ export class BranchSwitcherComponent implements OnInit {
           list.map(b => ({ ...b, active: b.id === target.id }))
         );
         this.msg.success(`Switched active pharmacy branch to "${target.name}"!`);
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']).then(() => window.location.reload());
+        }, 300);
       },
       error: (err) => {
         this.msg.error(err?.error?.message || `Failed to switch branch`);

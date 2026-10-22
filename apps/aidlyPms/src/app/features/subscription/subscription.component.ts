@@ -289,6 +289,65 @@ export class SubscriptionComponent implements OnInit {
   }
 
   printInvoice(h: BillingHistoryRow): void {
-    this.msg.success(`Printing tax invoice for ${h.ref}`);
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Tax Invoice - ${h.ref}</title>
+          <style>
+            body { font-family: sans-serif; padding: 24px; color: #1e293b; }
+            .header { border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+            .title { font-size: 20px; font-weight: bold; }
+            .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+            th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+            th { background: #f8fafc; font-weight: 600; }
+            .total { font-weight: bold; font-size: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">Aidly PMS — Subscription Tax Invoice</div>
+            <div class="meta">Invoice Reference: ${h.ref} | Date: ${h.date}</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Coverage Period</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount (BDT)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${h.product}</td>
+                <td>${h.start} to ${h.end}</td>
+                <td>${h.status}</td>
+                <td style="text-align: right; font-weight: bold;">৳ ${h.amount.toLocaleString()}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="total" style="text-align: right;">Total Paid:</td>
+                <td class="total" style="text-align: right;">৳ ${h.amount.toLocaleString()}</td>
+              </tr>
+            </tfoot>
+          </table>
+          <p style="margin-top: 32px; font-size: 11px; color: #94a3b8; text-align: center;">
+            Thank you for subscribing to Aidly PMS. This is an electronically generated receipt.
+          </p>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } else {
+      window.print();
+    }
   }
 }

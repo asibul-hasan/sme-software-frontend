@@ -238,6 +238,7 @@ export class RepListComponent implements OnInit {
   }
 
   savePassword(): void {
+    if (!this.activeRep) return;
     if (!this.newPassword || this.newPassword.length < 6) {
       this.msg.error('Password must be at least 6 characters');
       return;
@@ -246,8 +247,15 @@ export class RepListComponent implements OnInit {
       this.msg.error('Passwords do not match');
       return;
     }
-    this.msg.success(`Password updated for ${this.activeRep?.name}!`);
-    this.isPassOpen = false;
+    this.repService.updateRepresentative(this.activeRep.userNo, { password: this.newPassword }).subscribe({
+      next: (res) => {
+        this.msg.success(res.message || `Password updated for ${this.activeRep?.name}!`);
+        this.isPassOpen = false;
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to update password');
+      }
+    });
   }
 
   deleteRep(r: RepUser): void {

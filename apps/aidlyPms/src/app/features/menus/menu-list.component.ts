@@ -14,6 +14,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { MenuService } from '../../core/services/menu.service';
 import { SysMenu } from '../../core/models/menu.models';
+import { ModalService } from '../../core/services/modal.service';
 
 @Component({
   selector: 'app-menu-list',
@@ -295,6 +296,7 @@ import { SysMenu } from '../../core/models/menu.models';
 export class MenuListComponent implements OnInit {
   private readonly menuService = inject(MenuService);
   private readonly message = inject(NzMessageService);
+  private readonly modalService = inject(ModalService);
 
   readonly menus = signal<SysMenu[]>([]);
   readonly searchQuery = signal('');
@@ -466,20 +468,24 @@ export class MenuListComponent implements OnInit {
   }
 
   deleteMenu(m: SysMenu): void {
-    if (confirm(`Are you sure you want to delete the menu "${m.title}"?`)) {
-      this.menuService.deleteMenu(m.menu_no).subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.message.success('Menu deleted successfully');
-            this.loadMenus();
-          } else {
-            this.message.error(res.message || 'Failed to delete menu');
-          }
-        },
-        error: (err) => {
-          this.message.error(err?.error?.message || 'Failed to delete menu');
-        },
+    this.modalService
+      .confirmDelete(`Menu "${m.title}"`, `Are you sure you want to delete the menu "${m.title}"?`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.menuService.deleteMenu(m.menu_no).subscribe({
+            next: (res) => {
+              if (res.success) {
+                this.message.success('Menu deleted successfully');
+                this.loadMenus();
+              } else {
+                this.message.error(res.message || 'Failed to delete menu');
+              }
+            },
+            error: (err) => {
+              this.message.error(err?.error?.message || 'Failed to delete menu');
+            },
+          });
+        }
       });
-    }
   }
 }

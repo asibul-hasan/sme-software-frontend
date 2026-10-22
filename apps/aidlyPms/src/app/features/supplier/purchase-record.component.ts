@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -65,6 +65,7 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
 
   private readonly supplierService = inject(SupplierService);
   private readonly printService = inject(PrintService);
+  private readonly router = inject(Router);
   private searchSubject = new Subject<void>();
   private searchSub?: Subscription;
 
@@ -220,20 +221,19 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
   }
 
   initiateReturn(r: PurchaseRecordRow): void {
-    this.returnRecord = r;
-    this.returnReason = 'Damaged / Expired Batch';
-    this.returnNote = '';
-    this.returnQtyMap = {};
-    for (const line of r.lines) {
-      this.returnQtyMap[line.name] = line.qty;
-    }
-    this.isReturnModalVisible = true;
+    this.router.navigate(['/supplier/purchase-return'], {
+      queryParams: {
+        invoice: r.ref,
+        invoiceNo: r.id,
+      },
+    });
   }
 
   submitSupplierReturn(): void {
     if (!this.returnRecord) return;
-    this.msg.success(`Supplier return request for ${this.returnRecord.ref} submitted successfully.`);
+    const r = this.returnRecord;
     this.isReturnModalVisible = false;
+    this.initiateReturn(r);
   }
 
   exportPurchasesCsv(): void {
@@ -267,14 +267,13 @@ export class PurchaseRecordComponent implements OnInit, OnDestroy {
 
   deleteInvoice(r: PurchaseRecordRow): void {
     this.modal.confirmAction(
-      'Void Purchase Invoice?',
-      `Are you sure you want to void purchase invoice "${r.ref}" from ${r.supplier}? Reverse ledger postings will be generated.`,
-      'Void Invoice',
-      true
+      'Purchase Return Required',
+      `Posted purchase invoice "${r.ref}" has updated inventory stock and financial ledgers. To reverse or adjust this invoice, please initiate a Purchase Return. Do you want to proceed to Purchase Return?`,
+      'Initiate Return',
+      false
     ).subscribe(confirmed => {
       if (confirmed) {
-        this.records.update(list => list.filter(item => item.id !== r.id));
-        this.msg.success(`Invoice "${r.ref}" voided successfully`);
+        this.initiateReturn(r);
       }
     });
   }

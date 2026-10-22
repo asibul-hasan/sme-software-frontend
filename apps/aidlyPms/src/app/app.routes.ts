@@ -61,7 +61,6 @@ import { SmsConfigComponent } from './features/settings/sms-config.component';
 import { SubscriptionComponent } from './features/subscription/subscription.component';
 import { BranchSwitcherComponent } from './features/subscription/branch-switcher.component';
 
-import { ModuleScreenViewComponent } from './features/common/module-screen-view.component';
 import { CashbookReportComponent } from './features/reports/cashbook-report.component';
 import { AnalyticsReportComponent } from './features/reports/analytics-report.component';
 import { LoginComponent } from './features/auth/login.component';

@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal, OnInit } from '@angular/core';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { ApiService } from '../../core/services/api.service';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -217,13 +219,47 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           }
         </button>
 
-        <!-- Active Branch Indicator -->
-        <div class="header-branch-pill hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full">
+                <!-- Active Branch Indicator & Switcher Dropdown -->
+        <div
+          nz-dropdown
+          [nzDropdownMenu]="branchMenu"
+          nzPlacement="bottomRight"
+          class="header-branch-pill hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full cursor-pointer select-none hover:bg-white/10 transition-colors"
+          nz-tooltip
+          nzTooltipTitle="Click to switch active pharmacy branch"
+        >
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-xs font-medium truncate max-w-[150px]">
             {{ authService.activeBranch()?.name || 'Cumilla Branch' }}
           </span>
+          <span nz-icon nzType="down" class="text-[10px] text-slate-400"></span>
         </div>
+
+        <nz-dropdown-menu #branchMenu="nzDropdownMenu">
+          <ul nz-menu class="w-56 shadow-xl rounded-xl p-1.5 border border-slate-200 bg-white">
+            <li class="px-3 py-1.5 border-b border-slate-100 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Switch Branch
+            </li>
+            @for (b of availableBranches(); track b.branch_no) {
+              <li
+                nz-menu-item
+                (click)="switchBranch(b)"
+                [class.font-bold]="b.branch_no === authService.activeBranch()?.branch_no"
+                class="flex items-center justify-between text-xs py-2"
+              >
+                <span class="truncate">{{ b.name }}</span>
+                @if (b.branch_no === authService.activeBranch()?.branch_no) {
+                  <span class="text-emerald-600 text-xs font-semibold ml-2">✓ Active</span>
+                }
+              </li>
+            }
+            <li nz-menu-divider></li>
+            <li nz-menu-item routerLink="/change-pharmacy" class="text-xs text-indigo-600 font-medium">
+              <span nz-icon nzType="swap"></span>
+              <span>All Branches</span>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
 
         <!-- Notification Bell -->
         <button
@@ -288,7 +324,42 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
     </header>
   `,
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  readonly api = inject(ApiService);
+  readonly msg = inject(NzMessageService);
+  readonly availableBranches = signal<any[]>([]);
+
+  ngOnInit(): void {
+    this.loadBranches();
+  }
+
+  loadBranches(): void {
+    this.api.get<any[]>('sys/branches').subscribe({
+      next: res => {
+        if (res.data && Array.isArray(res.data)) {
+          this.availableBranches.set(res.data);
+        }
+      }
+    });
+  }
+
+  switchBranch(branch: any): void {
+    if (branch.branch_no === this.authService.activeBranch()?.branch_no) return;
+    this.api.post<any>('sys/switch-branch', { branch_no: branch.branch_no }).subscribe({
+      next: (res) => {
+        if (res?.data?.branch) {
+          this.authService.switchBranch(res.data.branch, res.data.token);
+        }
+        this.msg.success(`Switched active branch to "${branch.name}"`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 300);
+      },
+      error: (err) => {
+        this.msg.error(err?.error?.message || 'Failed to switch branch');
+      }
+    });
+  }
   @Input() collapsed = false;
   @Output() toggleCollapse = new EventEmitter<void>();
 

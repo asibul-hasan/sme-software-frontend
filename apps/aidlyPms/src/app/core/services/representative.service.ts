@@ -16,6 +16,7 @@ export interface SysRepresentative {
   gender?: number;
   is_active: boolean;
   role_name?: string;
+  password?: string;
   created_at?: string;
   updated_at?: string;
 }
