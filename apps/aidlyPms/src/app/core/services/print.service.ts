@@ -112,6 +112,22 @@ export interface DueReceiptPrintData {
   binNumber?: string;
 }
 
+export interface BanglaDosageLabelData {
+  pharmacyNameBangla?: string;
+  pharmacyPhone?: string;
+  date?: string;
+  patientName?: string;
+  medicineName: string;
+  strength?: string;
+  genericName?: string;
+  dosagePattern: string;
+  dosageTimeText?: string;
+  mealTiming?: string;
+  duration?: string;
+  cautionText?: string;
+  specialNote?: string;
+}
+
 export function escapeHtml(val: unknown): string {
   if (val === null || val === undefined) return '';
   return String(val)
@@ -1285,6 +1301,81 @@ export class PrintService {
       </div>
     `;
 
-    this.printHtml(statementHtml, `Supplier Statement - ${supplier.name}`);
+        this.printHtml(statementHtml, `Supplier Statement - ${supplier.name}`);
+  }
+
+  /**
+   * Generates and prints a Bangla (bn-BD) Patient Dosage Sticker / Thermal Label.
+   * Renders high-legibility Bengali typography optimized for 58mm/80mm thermal sticker rolls.
+   */
+  printBanglaDosageLabel(data: BanglaDosageLabelData, rollWidth: '58mm' | '80mm' = '80mm'): void {
+    const activeBranch = this.authService.activeBranch();
+    const branchName = escapeHtml(data.pharmacyNameBangla || activeBranch?.name || this.defaultPharmacy.name);
+    const branchPhone = escapeHtml(data.pharmacyPhone || activeBranch?.contact_phone || this.defaultPharmacy.phone);
+    const dateStr = escapeHtml(data.date || new Date().toLocaleDateString('bn-BD'));
+    const patientName = escapeHtml(data.patientName?.trim() || 'সাধারণ রোগী');
+    const medicineName = escapeHtml(data.medicineName + (data.strength ? ' ' + data.strength : ''));
+    const genericName = data.genericName ? escapeHtml(data.genericName) : '';
+    const dosagePattern = escapeHtml(data.dosagePattern || '১ + ০ + ১');
+    const dosageTimeText = data.dosageTimeText ? escapeHtml(data.dosageTimeText) : '';
+    const mealTiming = escapeHtml(data.mealTiming || 'খাবারের পর');
+    const duration = data.duration ? escapeHtml(data.duration) : '';
+    const cautionText = escapeHtml(data.cautionText || 'ঠান্ডা ও শুষ্ক স্থানে আলো থেকে দূরে রাখুন।');
+    const specialNote = data.specialNote ? escapeHtml(data.specialNote) : '';
+
+    const containerWidth = rollWidth === '58mm' ? '52mm' : '72mm';
+
+    const labelHtml = `
+      <div style="font-family: 'Hind Siliguri', 'SolaimanLipi', 'Kalpurush', 'Noto Sans Bengali', Arial, sans-serif; width: ${containerWidth}; margin: 0 auto; color: #000; padding: 4px; box-sizing: border-box; text-align: center;">
+        <div style="border: 2px solid #000; border-radius: 6px; padding: 6px 8px; background: #fff;">
+          <!-- Pharmacy Header -->
+          <div style="font-size: 13px; font-weight: 800; border-bottom: 1px solid #000; padding-bottom: 3px; letter-spacing: 0.2px;">
+            ${branchName}
+          </div>
+          <div style="font-size: 9px; margin-top: 2px; display: flex; justify-content: space-between; border-bottom: 1px dashed #666; padding-bottom: 2px;">
+            <span>তারিখ: ${dateStr}</span>
+            <span>ফোন: ${branchPhone}</span>
+          </div>
+
+          <!-- Patient & Medicine -->
+          <div style="text-align: left; margin-top: 4px; font-size: 10.5px; line-height: 1.3;">
+            <div><strong>রোগীর নাম:</strong> ${patientName}</div>
+            <div style="font-size: 12px; font-weight: 800; margin-top: 2px; color: #000;">
+              💊 ${medicineName}
+            </div>
+            ${genericName ? `<div style="font-size: 9.5px; color: #333; font-style: italic;">(${genericName})</div>` : ''}
+          </div>
+
+          <!-- Highlighted Dosage Pattern Box -->
+          <div style="margin: 6px 0; border: 1.5px solid #000; border-radius: 4px; padding: 4px 6px; background: #fafafa;">
+            <div style="font-size: 8.5px; text-transform: uppercase; font-weight: 700; color: #444; border-bottom: 1px dotted #ccc; padding-bottom: 1px;">
+              ওষুধ সেবনের মাত্রা ও নিয়ম
+            </div>
+            <div style="font-size: 22px; font-weight: 900; letter-spacing: 2px; margin: 3px 0; color: #000;">
+              ${dosagePattern}
+            </div>
+            ${dosageTimeText ? `<div style="font-size: 10px; font-weight: 700; color: #111;">${dosageTimeText}</div>` : ''}
+            <div style="font-size: 11px; font-weight: 700; margin-top: 2px;">
+              ${mealTiming} ${duration ? `<span style="margin-left: 4px; padding-left: 4px; border-left: 1px solid #000;">মেয়াদ: ${duration}</span>` : ''}
+            </div>
+          </div>
+
+          <!-- Special Note / Warning -->
+          ${specialNote ? `
+            <div style="font-size: 10px; font-weight: 800; border: 1px dashed #000; padding: 2px 4px; border-radius: 3px; margin-bottom: 4px; background: #fff;">
+              ⚠️ ${specialNote}
+            </div>
+          ` : ''}
+
+          <!-- Precautions & Disclaimer -->
+          <div style="font-size: 8px; color: #333; text-align: left; line-height: 1.25; border-top: 1px dashed #666; padding-top: 3px;">
+            <div>• ${cautionText}</div>
+            <div>• শিশুদের নাগালের বাইরে রাখুন। রেজিস্টার্ড চিকিৎসকের পরামর্শ অনুযায়ী সেব্য।</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.printHtml(labelHtml, `Dosage Label - ${data.medicineName}`, 'thermal', rollWidth);
   }
 }

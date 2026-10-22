@@ -74,6 +74,34 @@
           <label nz-checkbox [(ngModel)]="quickPrint" class="text-xs font-medium text-slate-600 m-0">Quick Print</label>
         </div>
 
+        <!-- Unit Calculator (F6) -->
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          (click)="openUnitCalculator()"
+          class="rounded-md border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+          nz-tooltip
+          nzTooltipTitle="Box ⇄ Strip ⇄ Tablet Packaging & Rx Calculator (F6)"
+          aria-label="Unit Calculator"
+        >
+          <span nz-icon nzType="calculator"></span> Calc (F6)
+        </button>
+
+        <!-- Bangla Dosage Sticker (F7) -->
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          (click)="openBanglaDosageModal()"
+          class="rounded-md border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100"
+          nz-tooltip
+          nzTooltipTitle="Print Bangla Dosage Thermal Sticker (F7)"
+          aria-label="Bangla Dosage Sticker"
+        >
+          <span nz-icon nzType="tag"></span> বাংলা স্টিকার (F7)
+        </button>
+
         <!-- Add Customer Button (F3) -->
         <button
           type="button"
@@ -214,12 +242,24 @@
                   </div>
                 </div>
 
-                <!-- Tile Bottom Row: Price + Stock Badge + Rak -->
+                <!-- Tile Bottom Row: Price + Stock Badge + Rak + Expiry Badge -->
                 <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100">
-                  <div class="font-mono font-bold text-xs text-emerald-700">
-                    ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="font-mono font-bold text-xs text-emerald-700">
+                      ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
+                    </span>
+                    @if (p.nearestExpiry) {
+                      <span
+                        class="text-[9px] px-1 py-0.2 rounded border font-mono shrink-0"
+                        [class]="getExpiryBadgeClass(p.nearestExpiry)"
+                        nz-tooltip
+                        [nzTooltipTitle]="'FEFO Expiry: ' + (p.nearestExpiry | date: 'dd/MM/yyyy')"
+                      >
+                        ⏳ {{ getExpiryLabel(p.nearestExpiry) }}
+                      </span>
+                    }
                   </div>
-                  <div class="flex items-center gap-1">
+                  <div class="flex items-center gap-1 shrink-0">
                     @if (p.rak) {
                       <span class="text-[9.5px] text-indigo-700 bg-indigo-50 font-medium px-1.5 py-0.2 rounded" title="Shelf location">
                         📍{{ p.rak }}
@@ -376,6 +416,23 @@
                           <span class="text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded font-mono ml-1">📍{{ item.rak }}</span>
                         }
                       </div>
+                      <!-- Batch Assignment Button / Badge -->
+                      <div class="mt-0.5 flex items-center gap-1">
+                        <button
+                          type="button"
+                          (click)="openBatchSelector(item)"
+                          class="inline-flex items-center gap-1 text-[9.5px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 text-slate-700 cursor-pointer transition-colors"
+                          [title]="item.batch_number ? ('Batch: ' + item.batch_number) : 'Click to inspect or assign batch'"
+                          aria-label="Select batch"
+                        >
+                          <span>📦 {{ item.batch_number || 'Auto-FEFO' }}</span>
+                          @if (item.expiry_date) {
+                            <span [class]="'px-1 rounded text-[8.5px] font-bold ' + getExpiryBadgeClass(item.expiry_date)">
+                              {{ getExpiryLabel(item.expiry_date) }}
+                            </span>
+                          }
+                        </button>
+                      </div>
                     </td>
                     <td class="p-1 text-center">
                       <div class="inline-flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-2xs h-8">
@@ -414,16 +471,39 @@
                     <td class="p-1 text-right font-mono font-bold text-xs theme-total-text">
                       ৳ {{ item.total | number: '1.2-2' }}
                     </td>
-                    <td class="p-1 text-center">
-                      <button
-                        type="button"
-                        (click)="removeItem(item)"
-                        class="w-8 h-8 min-w-[32px] min-h-[32px] rounded-lg inline-flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 active:bg-rose-100 active:scale-95 border border-transparent hover:border-rose-200 cursor-pointer transition-all"
-                        title="Remove item"
-                        aria-label="Remove item"
-                      >
-                        <span nz-icon nzType="delete" class="text-sm"></span>
-                      </button>
+                    <td class="p-1 text-center whitespace-nowrap">
+                      <div class="flex items-center justify-center gap-1">
+                        <!-- Unit Calculator Trigger -->
+                        <button
+                          type="button"
+                          (click)="openUnitCalculator(item)"
+                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 cursor-pointer transition-all"
+                          title="Box-Strip-Tablet Calculator"
+                          aria-label="Unit Calculator"
+                        >
+                          <span nz-icon nzType="calculator" class="text-xs"></span>
+                        </button>
+                        <!-- Bangla Sticker Trigger -->
+                        <button
+                          type="button"
+                          (click)="openBanglaDosageModal(item)"
+                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 cursor-pointer transition-all"
+                          title="Print Bangla Dosage Label"
+                          aria-label="Bangla Dosage Sticker"
+                        >
+                          <span nz-icon nzType="tag" class="text-xs"></span>
+                        </button>
+                        <!-- Remove Item -->
+                        <button
+                          type="button"
+                          (click)="removeItem(item)"
+                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 active:bg-rose-100 active:scale-95 border border-transparent hover:border-rose-200 cursor-pointer transition-all"
+                          title="Remove item"
+                          aria-label="Remove item"
+                        >
+                          <span nz-icon nzType="delete" class="text-xs"></span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -1091,11 +1171,561 @@
   </ng-container>
   <ng-template #receiptFooter>
     <button nz-button nzType="default" (click)="isReceiptModalVisible = false">Close</button>
+    <button nz-button nzType="default" (click)="openBanglaDosageModal()" class="text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100">
+      <span nz-icon nzType="tag"></span> বাংলা স্টিকার
+    </button>
     <button nz-button nzType="default" (click)="triggerBrowserPrint('thermal')">
       <span nz-icon nzType="snippets"></span> 80mm Slip
     </button>
     <button nz-button nzType="primary" (click)="triggerBrowserPrint('a4')">
       <span nz-icon nzType="printer"></span> Print A4 Invoice / PDF
     </button>
+  </ng-template>
+</nz-modal>
+
+
+<!-- ========================================== -->
+<!-- 1. BATCH SELECTOR & FEFO INSPECTION MODAL   -->
+<!-- ========================================== -->
+<nz-modal
+  [nzVisible]="isBatchModalVisible()"
+  [nzTitle]="'Select Batch for ' + (batchModalItem()?.product_name || '')"
+  [nzFooter]="batchModalFooter"
+  [nzCentered]="true"
+  nzWidth="680px"
+  (nzOnCancel)="isBatchModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+        <div>
+          <div class="text-sm font-bold text-slate-800">{{ batchModalItem()?.product_name }}</div>
+          <div class="text-xs text-slate-500">{{ batchModalItem()?.generic_name }}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">Current Assignment:</div>
+          <div class="font-mono font-bold text-xs text-indigo-700">
+            {{ batchModalItem()?.batch_number ? ('Batch #' + batchModalItem()?.batch_number) : 'Auto-FEFO (Nearest Expiry)' }}
+          </div>
+        </div>
+      </div>
+
+      <nz-spin [nzSpinning]="isBatchLoading()">
+        @if (batchListForProduct().length > 0) {
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Batch No</th>
+                  <th class="p-2.5">Expiry Date</th>
+                  <th class="p-2.5">Shelf Life Left</th>
+                  <th class="p-2.5 text-right">Available Qty</th>
+                  <th class="p-2.5 text-right">Box MRP</th>
+                  <th class="p-2.5 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (b of batchListForProduct(); track b.batch_no; let i = $index) {
+                  <tr
+                    class="hover:bg-indigo-50/50 transition-colors"
+                    [class.bg-indigo-50]="batchModalItem()?.batch_no === b.batch_no"
+                  >
+                    <td class="p-2.5 font-mono font-semibold text-slate-800">
+                      {{ b.batch_number }}
+                      @if (i === 0) {
+                        <span class="ml-1.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">FEFO #1</span>
+                      }
+                    </td>
+                    <td class="p-2.5 font-mono text-slate-700">{{ b.expiry_date | date: 'dd/MM/yyyy' }}</td>
+                    <td class="p-2.5">
+                      <span class="px-2 py-0.5 rounded text-[11px] border" [class]="getExpiryBadgeClass(b.expiry_date)">
+                        {{ getExpiryLabel(b.expiry_date) }}
+                      </span>
+                    </td>
+                    <td class="p-2.5 text-right font-mono font-bold text-slate-800">{{ b.total_quantity_pcs }} pcs</td>
+                    <td class="p-2.5 text-right font-mono text-emerald-700">৳ {{ b.sale_price_per_box | number: '1.2-2' }}</td>
+                    <td class="p-2.5 text-center">
+                      @if (batchModalItem()?.batch_no === b.batch_no) {
+                        <span class="text-xs font-bold text-indigo-600">Selected</span>
+                      } @else {
+                        <button
+                          type="button"
+                          nz-button
+                          nzType="primary"
+                          nzSize="small"
+                          (click)="selectBatch(b)"
+                          class="rounded font-medium"
+                          aria-label="Pick batch"
+                        >
+                          Pick Batch
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (!isBatchLoading()) {
+          <div class="p-8 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-slate-400">
+            <span nz-icon nzType="inbox" class="text-3xl text-slate-300 mb-2"></span>
+            <p class="text-xs font-medium text-slate-600 m-0">No active batches with unexpired stock found for this medicine.</p>
+            <p class="text-[11px] text-slate-400 m-0 mt-1">Checkout will allocate stock using FIFO warehouse ledger.</p>
+          </div>
+        }
+      </nz-spin>
+    </div>
+  </ng-container>
+  <ng-template #batchModalFooter>
+    <div class="flex items-center justify-between w-full">
+      <button
+        type="button"
+        nz-button
+        nzType="dashed"
+        (click)="resetToAutoFefo(batchModalItem()!)"
+        [disabled]="!batchModalItem()?.batch_no"
+        aria-label="Reset to auto FEFO"
+      >
+        Reset to Auto-FEFO
+      </button>
+      <button type="button" nz-button nzType="default" (click)="isBatchModalVisible.set(false)">Close</button>
+    </div>
+  </ng-template>
+</nz-modal>
+
+<!-- ========================================== -->
+<!-- 2. BOX-TO-STRIP-TO-TABLET CALCULATOR MODAL -->
+<!-- ========================================== -->
+<nz-modal
+  [nzVisible]="isUnitCalcModalVisible()"
+  nzTitle="Box ⇄ Strip (পাতা) ⇄ Tablet Unit & Rx Calculator (F6)"
+  [nzFooter]="unitCalcFooter"
+  [nzCentered]="true"
+  nzWidth="600px"
+  (nzOnCancel)="isUnitCalcModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-4">
+      <!-- Target Item Header -->
+      <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-lg flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-slate-900">{{ calcTargetItem()?.product_name }}</span>
+          <span class="text-[11px] text-slate-500 block">{{ calcTargetItem()?.generic_name }}</span>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Unit Price (MRP)</div>
+          <div class="text-sm font-bold font-mono text-emerald-700">৳ {{ calcTargetItem()?.unit_price | number: '1.2-2' }} / pc</div>
+        </div>
+      </div>
+
+      <!-- Packaging Config: Pcs per Box, Strips per Box -->
+      <div class="grid grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+        <div>
+          <label for="pos-calc-pcs-box" class="block font-semibold text-slate-700 mb-1">Pcs per Box</label>
+          <input
+            id="pos-calc-pcs-box"
+            type="number"
+            nz-input
+            min="1"
+            [ngModel]="calcPcsPerBox()"
+            (ngModelChange)="calcPcsPerBox.set($event)"
+            class="rounded font-mono"
+            aria-label="Pcs per box"
+          />
+        </div>
+        <div>
+          <label for="pos-calc-strips-box" class="block font-semibold text-slate-700 mb-1">Strips per Box</label>
+          <input
+            id="pos-calc-strips-box"
+            type="number"
+            nz-input
+            min="1"
+            [ngModel]="calcStripsPerBox()"
+            (ngModelChange)="calcStripsPerBox.set($event)"
+            class="rounded font-mono"
+            aria-label="Strips per box"
+          />
+        </div>
+        <div>
+          <span class="block font-semibold text-slate-700 mb-1">Pcs per Strip (পাতা)</span>
+          <div class="h-8 flex items-center px-3 bg-white border border-slate-300 rounded font-mono font-bold text-slate-800">
+            {{ calcPcsPerStrip() }} pcs
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor Prescription Helper Section -->
+      <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
+            <span nz-icon nzType="medicine-box"></span> Doctor Prescription Helper (প্রেসক্রিপশন ক্যালকুলেটর)
+          </span>
+          <span class="text-[11px] font-mono font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded">
+            Total Needed: {{ calcRxTotalPcs() }} pcs
+          </span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5 text-xs">
+          <div>
+            <label class="block text-[11px] text-amber-800 mb-1 font-medium">Dose each time</label>
+            <nz-select [ngModel]="calcDosePerTime()" (ngModelChange)="calcDosePerTime.set($event)" class="w-full" aria-label="Dose each time">
+              <nz-option [nzValue]="0.5" nzLabel="1/2 Tablet"></nz-option>
+              <nz-option [nzValue]="1" nzLabel="1 Tablet"></nz-option>
+              <nz-option [nzValue]="2" nzLabel="2 Tablets"></nz-option>
+              <nz-option [nzValue]="3" nzLabel="3 Tablets"></nz-option>
+            </nz-select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-amber-800 mb-1 font-medium">Frequency (Times/Day)</label>
+            <nz-select [ngModel]="calcTimesPerDay()" (ngModelChange)="calcTimesPerDay.set($event)" class="w-full" aria-label="Frequency times per day">
+              <nz-option [nzValue]="1" nzLabel="1 Time (1+0+0 / 0+0+1)"></nz-option>
+              <nz-option [nzValue]="2" nzLabel="2 Times (1+0+1)"></nz-option>
+              <nz-option [nzValue]="3" nzLabel="3 Times (1+1+1)"></nz-option>
+              <nz-option [nzValue]="4" nzLabel="4 Times (1+1+1+1)"></nz-option>
+            </nz-select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-amber-800 mb-1 font-medium">Duration (Days)</label>
+            <nz-select [ngModel]="calcDurationDays()" (ngModelChange)="calcDurationDays.set($event)" class="w-full" aria-label="Duration days">
+              <nz-option [nzValue]="3" nzLabel="3 Days"></nz-option>
+              <nz-option [nzValue]="5" nzLabel="5 Days"></nz-option>
+              <nz-option [nzValue]="7" nzLabel="7 Days (1 Week)"></nz-option>
+              <nz-option [nzValue]="10" nzLabel="10 Days"></nz-option>
+              <nz-option [nzValue]="14" nzLabel="14 Days (2 Weeks)"></nz-option>
+              <nz-option [nzValue]="30" nzLabel="30 Days (1 Month)"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+        <div class="mt-2.5 flex justify-end">
+          <button
+            type="button"
+            nz-button
+            nzType="dashed"
+            nzSize="small"
+            (click)="applyRxToCalc()"
+            class="text-amber-900 border-amber-400 bg-amber-100 hover:bg-amber-200 text-xs"
+            aria-label="Apply prescription to breakdown"
+          >
+            Apply Prescription to Breakdown &darr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Packaging Quantity Pickers: Boxes, Strips, Loose Tablets -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="p-3 bg-white border border-slate-200 rounded-lg text-center shadow-2xs">
+          <div class="text-xs font-bold text-slate-700 mb-1">Full Boxes</div>
+          <div class="flex items-center justify-center gap-1.5 my-1">
+            <button
+              type="button"
+              (click)="calcBoxQty.set(Math.max(0, calcBoxQty() - 1))"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Decrease boxes"
+            >-</button>
+            <input
+              type="number"
+              min="0"
+              [ngModel]="calcBoxQty()"
+              (ngModelChange)="calcBoxQty.set($event)"
+              class="w-16 h-7 text-center font-mono font-bold text-sm border border-slate-300 rounded"
+              aria-label="Full boxes quantity"
+            />
+            <button
+              type="button"
+              (click)="calcBoxQty.set(calcBoxQty() + 1)"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Increase boxes"
+            >+</button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-mono mt-1">৳ {{ calcBoxPrice() | number: '1.2-2' }} / box</div>
+        </div>
+
+        <div class="p-3 bg-white border border-slate-200 rounded-lg text-center shadow-2xs">
+          <div class="text-xs font-bold text-slate-700 mb-1">Strips (পাতা)</div>
+          <div class="flex items-center justify-center gap-1.5 my-1">
+            <button
+              type="button"
+              (click)="calcStripQty.set(Math.max(0, calcStripQty() - 1))"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Decrease strips"
+            >-</button>
+            <input
+              type="number"
+              min="0"
+              [ngModel]="calcStripQty()"
+              (ngModelChange)="calcStripQty.set($event)"
+              class="w-16 h-7 text-center font-mono font-bold text-sm border border-slate-300 rounded"
+              aria-label="Strips quantity"
+            />
+            <button
+              type="button"
+              (click)="calcStripQty.set(calcStripQty() + 1)"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Increase strips"
+            >+</button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-mono mt-1">৳ {{ calcStripPrice() | number: '1.2-2' }} / strip</div>
+        </div>
+
+        <div class="p-3 bg-white border border-slate-200 rounded-lg text-center shadow-2xs">
+          <div class="text-xs font-bold text-slate-700 mb-1">Loose Tablets (Pcs)</div>
+          <div class="flex items-center justify-center gap-1.5 my-1">
+            <button
+              type="button"
+              (click)="calcTabletQty.set(Math.max(0, calcTabletQty() - 1))"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Decrease tablets"
+            >-</button>
+            <input
+              type="number"
+              min="0"
+              [ngModel]="calcTabletQty()"
+              (ngModelChange)="calcTabletQty.set($event)"
+              class="w-16 h-7 text-center font-mono font-bold text-sm border border-slate-300 rounded"
+              aria-label="Loose tablets quantity"
+            />
+            <button
+              type="button"
+              (click)="calcTabletQty.set(calcTabletQty() + 1)"
+              class="w-7 h-7 rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold"
+              aria-label="Increase tablets"
+            >+</button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-mono mt-1">৳ {{ (calcTargetItem()?.unit_price || 0) | number: '1.2-2' }} / pc</div>
+        </div>
+      </div>
+
+      <!-- Calculation Summary Banner -->
+      <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-emerald-900">Total Calculated Cart Quantity:</div>
+          <div class="text-base font-extrabold font-mono text-emerald-800">
+            {{ calcTotalPcs() }} Pcs
+            <span class="text-xs font-normal text-emerald-700">
+              ({{ calcBoxQty() }} boxes, {{ calcStripQty() }} strips, {{ calcTabletQty() }} loose)
+            </span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-emerald-700 font-semibold">Total Line Price:</div>
+          <div class="text-lg font-mono font-extrabold text-emerald-800">৳ {{ calcTotalPrice() | number: '1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #unitCalcFooter>
+    <button type="button" nz-button nzType="default" (click)="isUnitCalcModalVisible.set(false)">Cancel</button>
+    <button
+      type="button"
+      nz-button
+      nzType="primary"
+      (click)="applyCalcToCart()"
+      [disabled]="calcTotalPcs() <= 0"
+      class="bg-emerald-600 hover:bg-emerald-700 border-0"
+      aria-label="Apply to cart"
+    >
+      <span nz-icon nzType="check"></span> Apply to Cart ({{ calcTotalPcs() }} pcs)
+    </button>
+  </ng-template>
+</nz-modal>
+
+<!-- ========================================== -->
+<!-- 3. BANGLA DOSAGE STICKER THERMAL PRINT     -->
+<!-- ========================================== -->
+<nz-modal
+  [nzVisible]="isBanglaDosageModalVisible()"
+  nzTitle="Bangla Dosage Sticker Printing (বাংলা ওষুধের নিয়ম স্টিকার)"
+  [nzFooter]="banglaDosageFooter"
+  [nzCentered]="true"
+  nzWidth="720px"
+  (nzOnCancel)="isBanglaDosageModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+      <!-- Left Config Controls (7 cols) -->
+      <div class="md:col-span-7 space-y-3">
+        <!-- Target Medicine Selector -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">ঔষধ নির্বাচন করুন (Medicine)</label>
+          <nz-select
+            [ngModel]="activeDosageItem()?.cart_item_id"
+            (ngModelChange)="onDosageMedicineChange($event)"
+            class="w-full"
+            aria-label="Select medicine for dosage label"
+          >
+            @for (item of cart(); track item.cart_item_id) {
+              <nz-option
+                [nzValue]="item.cart_item_id"
+                [nzLabel]="item.product_name + ' (' + item.generic_name + ')'"
+              ></nz-option>
+            }
+          </nz-select>
+        </div>
+
+        <!-- Patient Name & Roll Width -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label for="pos-dosage-patient" class="block font-semibold text-slate-700 mb-1">রোগীর নাম (Patient)</label>
+            <input
+              id="pos-dosage-patient"
+              type="text"
+              nz-input
+              [ngModel]="dosagePatientName()"
+              (ngModelChange)="dosagePatientName.set($event)"
+              placeholder="e.g. মোঃ তারিকুল"
+              class="rounded"
+              aria-label="Patient Name"
+            />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">স্টিকার সাইজ (Roll Size)</label>
+            <nz-select [ngModel]="dosageLabelSize()" (ngModelChange)="dosageLabelSize.set($event)" class="w-full" aria-label="Sticker roll size">
+              <nz-option nzValue="80mm" nzLabel="80mm Thermal Sticker"></nz-option>
+              <nz-option nzValue="58mm" nzLabel="58mm Thermal Sticker"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+
+        <!-- Dosage Preset Matrix Buttons -->
+        <div>
+          <span class="block text-xs font-semibold text-slate-700 mb-1">সেবনের নিয়ম প্রি-সেট (Dosage Preset)</span>
+          <div class="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 border border-slate-200 rounded-lg">
+            @for (preset of banglaDosagePatterns; track preset.pattern) {
+              <button
+                type="button"
+                (click)="setDosagePattern(preset)"
+                class="text-left px-2 py-1 rounded text-xs border cursor-pointer transition-colors"
+                [class.bg-emerald-600]="dosagePattern() === preset.pattern"
+                [class.text-white]="dosagePattern() === preset.pattern"
+                [class.border-emerald-600]="dosagePattern() === preset.pattern"
+                [class.bg-white]="dosagePattern() !== preset.pattern"
+                [class.text-slate-700]="dosagePattern() !== preset.pattern"
+                [class.border-slate-200]="dosagePattern() !== preset.pattern"
+                [attr.aria-label]="preset.label"
+              >
+                <div class="font-bold">{{ preset.pattern }}</div>
+                <div class="text-[10px] truncate" [class.text-emerald-100]="dosagePattern() === preset.pattern" [class.text-slate-400]="dosagePattern() !== preset.pattern">
+                  {{ preset.text }}
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Meal Relation & Duration -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">খাবার সম্পর্ক (Meal Relation)</label>
+            <nz-select [ngModel]="dosageMealTiming()" (ngModelChange)="dosageMealTiming.set($event)" class="w-full" aria-label="Meal timing relation">
+              @for (m of banglaMealTimings; track m) {
+                <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+              }
+            </nz-select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">মেয়াদ (Duration)</label>
+            <nz-select [ngModel]="dosageDuration()" (ngModelChange)="dosageDuration.set($event)" class="w-full" aria-label="Duration of medication">
+              @for (d of banglaDurations; track d) {
+                <nz-option [nzValue]="d" [nzLabel]="d"></nz-option>
+              }
+            </nz-select>
+          </div>
+        </div>
+
+        <!-- Warnings & Caution -->
+        <div class="text-xs space-y-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">সতর্কবার্তা / বিশেষ নির্দেশ</label>
+            <nz-select
+              [ngModel]="dosageSpecialNote()"
+              (ngModelChange)="dosageSpecialNote.set($event)"
+              class="w-full"
+              nzPlaceHolder="বিশেষ নির্দেশ নির্বাচন করুন (প্রয়োজনে)..."
+              aria-label="Special caution or note"
+            >
+              <nz-option nzValue="" nzLabel="-- কোনো বিশেষ নির্দেশ নেই --"></nz-option>
+              @for (note of banglaSpecialNotes; track note) {
+                <nz-option [nzValue]="note" [nzLabel]="note"></nz-option>
+              }
+            </nz-select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Thermal Sticker Live Preview (5 cols) -->
+      <div class="md:col-span-5 bg-slate-100 p-3 rounded-xl flex flex-col items-center justify-center">
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">লাইভ স্টিকার প্রিভিউ (Live Preview)</div>
+        
+        <!-- Physical Thermal Sticker simulation card -->
+        <div
+          class="bg-white text-slate-900 border-2 border-dashed border-slate-400 shadow-md p-3.5 rounded-sm select-none"
+          [style.width]="dosageLabelSize() === '58mm' ? '220px' : '260px'"
+          style="font-family: 'Hind Siliguri', 'SolaimanLipi', sans-serif;"
+        >
+          <!-- Pharmacy Header -->
+          <div class="text-center pb-1.5 border-b border-black">
+            <div class="font-extrabold text-xs text-black uppercase leading-tight">{{ activeBranchName() }}</div>
+            <div class="text-[9px] text-slate-600">তারিখ: {{ todayBanglaDate() }}</div>
+          </div>
+
+          <!-- Patient & Medicine -->
+          <div class="my-1.5 pb-1 border-b border-dashed border-slate-300 text-[10px]">
+            <div><span class="text-slate-500">রোগী:</span> <span class="font-bold text-black">{{ dosagePatientName() || 'সাধারণ রোগী' }}</span></div>
+            <div class="font-extrabold text-xs text-black mt-0.5 leading-tight">{{ activeDosageItem()?.product_name }}</div>
+            @if (activeDosageItem()?.generic_name) {
+              <div class="text-[9px] text-slate-500 italic truncate">{{ activeDosageItem()?.generic_name }}</div>
+            }
+          </div>
+
+          <!-- Big Bangla Dosage Pattern -->
+          <div class="text-center py-2 bg-slate-50 rounded border border-slate-300 my-1">
+            <div class="font-mono font-black text-xl text-black tracking-widest leading-none">{{ dosagePattern() }}</div>
+            <div class="font-bold text-[11px] text-slate-800 mt-1 leading-tight">{{ dosageTimeText() }}</div>
+          </div>
+
+          <!-- Meal Timing & Duration Badges -->
+          <div class="text-[10px] space-y-1 my-1.5">
+            <div class="flex justify-between">
+              <span class="text-slate-500">নিয়ম:</span>
+              <span class="font-bold text-black">{{ dosageMealTiming() }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">মেয়াদ:</span>
+              <span class="font-bold text-black">{{ dosageDuration() }}</span>
+            </div>
+          </div>
+
+          <!-- Special Note / Course complete -->
+          @if (dosageSpecialNote()) {
+            <div class="p-1 bg-amber-100/70 border border-amber-300 rounded text-[9px] font-bold text-amber-900 text-center my-1">
+              ⚠️ {{ dosageSpecialNote() }}
+            </div>
+          }
+
+          <!-- General Caution Footer -->
+          <div class="text-center pt-1 border-t border-black text-[8px] text-slate-600 mt-1 leading-tight">
+            {{ dosageCaution() }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #banglaDosageFooter>
+    <div class="flex items-center justify-between w-full">
+      <span class="text-xs text-slate-400 font-mono">{{ dosageLabelSize() }} Thermal Sticker Mode</span>
+      <div class="flex items-center gap-2">
+        <button type="button" nz-button nzType="default" (click)="isBanglaDosageModalVisible.set(false)">Cancel</button>
+        <button
+          type="button"
+          nz-button
+          nzType="primary"
+          (click)="printBanglaSticker()"
+          [disabled]="!activeDosageItem()"
+          class="bg-emerald-600 hover:bg-emerald-700 border-0"
+          aria-label="Print thermal sticker"
+        >
+          <span nz-icon nzType="printer"></span> প্রিন্ট স্টিকার (Print Thermal)
+        </button>
+      </div>
+    </div>
   </ng-template>
 </nz-modal>

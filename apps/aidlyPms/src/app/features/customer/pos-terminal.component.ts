@@ -9,6 +9,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { ProdProductBatch } from '../../core/models/product.models';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -50,6 +53,10 @@ interface CartItem {
   is_narcotic?: boolean;
   dar_number?: string | null;
   drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
+  batch_no?: number | null;
+  batch_number?: string | null;
+  expiry_date?: string | null;
+  available_batch_qty?: number;
 }
 
 interface CatalogProduct {
@@ -71,6 +78,9 @@ interface CatalogProduct {
   is_narcotic?: boolean;
   dar_number?: string | null;
   drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
+  nearestExpiry?: string | null;
+  nearestBatch?: string | null;
+  batches?: ProdProductBatch[];
 }
 
 interface CategoryPill {
@@ -119,6 +129,8 @@ interface CustomerOption {
     NzInputNumberModule,
     NzCheckboxModule,
     NzTooltipModule,
+    NzSpinModule,
+    NzTagModule,
     PageHeaderComponent,
   ],
   styles: [`
@@ -952,7 +964,8 @@ export class PosTerminalComponent implements OnInit {
     const isModalOpen = this.isCustomerModalVisible || this.isHeldOrdersModalVisible || 
                         this.isReceiptModalVisible || this.isProductModalVisible || 
                         this.isEditItemModalVisible || this.isQuickGenericModalVisible || 
-                        this.isQuickCompanyModalVisible;
+                        this.isQuickCompanyModalVisible || this.isBatchModalVisible() ||
+                        this.isUnitCalcModalVisible() || this.isBanglaDosageModalVisible();
 
     if (isModalOpen) {
       if (event.key === 'Escape') {
@@ -975,6 +988,12 @@ export class PosTerminalComponent implements OnInit {
       event.preventDefault();
       this.setQuickExact();
       this.msg.info('Set exact pay amount (F4)');
+    } else if (event.key === 'F6') {
+      event.preventDefault();
+      this.openUnitCalculator();
+    } else if (event.key === 'F7') {
+      event.preventDefault();
+      this.openBanglaDosageModal();
     } else if (event.key === 'F8') {
       event.preventDefault();
       this.triggerFastCashPay();
@@ -1052,6 +1071,26 @@ export class PosTerminalComponent implements OnInit {
           const fresh = mapped.find(p => p.id === this.selectedProductObj?.id);
           if (fresh) this.selectedProductObj = fresh;
         }
+
+        // Fetch active batches for FEFO allocation and expiry countdown badges
+        this.productService.getBatches().subscribe({
+          next: (bRes) => {
+            if (bRes.data?.length) {
+              const activeBatches = bRes.data;
+              this.catalogProducts.update(prods => prods.map(p => {
+                const pBatches = activeBatches.filter(b => b.product_no === p.id && !b.is_expired && this.getDaysUntilExpiry(b.expiry_date) > 0);
+                pBatches.sort((a, b) => new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime());
+                return {
+                  ...p,
+                  batches: pBatches,
+                  nearestBatch: pBatches[0]?.batch_number || null,
+                  nearestExpiry: pBatches[0]?.expiry_date || null
+                };
+              }));
+            }
+          },
+          error: () => {}
+        });
       }
     });
   }
@@ -2067,6 +2106,7 @@ export class PosTerminalComponent implements OnInit {
 
         return {
           product_no: item.product_no,
+          batch_no: item.batch_no || undefined,
           sale_mode: this.businessMode(),
           sale_qty: totalPcs,
           box_qty: boxQty,
@@ -2180,5 +2220,317 @@ export class PosTerminalComponent implements OnInit {
         this.msg.error('An error occurred during sale processing');
       },
     });
+  }
+  // ==========================================
+  // 1. BATCH SELECTOR & EXPIRY COUNTDOWN
+  // ==========================================
+  isBatchModalVisible = signal(false);
+  batchModalItem = signal<CartItem | null>(null);
+  batchListForProduct = signal<ProdProductBatch[]>([]);
+  isBatchLoading = signal(false);
+
+  getDaysUntilExpiry(expiryDate: string | Date | null | undefined): number {
+    if (!expiryDate) return 9999;
+    const exp = new Date(expiryDate).getTime();
+    if (isNaN(exp)) return 9999;
+    const now = Date.now();
+    return Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+  }
+
+  getExpiryLabel(expiryDate: string | Date | null | undefined): string {
+    if (!expiryDate) return '';
+    const days = this.getDaysUntilExpiry(expiryDate);
+    if (days <= 0) return 'Expired';
+    if (days <= 30) return `${days}d`;
+    if (days <= 365) return `${Math.round(days / 30)}m`;
+    return `${(days / 365).toFixed(1)}y`;
+  }
+
+  getExpiryBadgeClass(expiryDate: string | Date | null | undefined): string {
+    const days = this.getDaysUntilExpiry(expiryDate);
+    if (days <= 0) return 'text-rose-700 bg-rose-50 border-rose-300 font-bold';
+    if (days <= 30) return 'text-rose-600 bg-rose-50 border-rose-200 font-bold';
+    if (days <= 90) return 'text-amber-800 bg-amber-50 border-amber-200 font-semibold';
+    if (days <= 365) return 'text-indigo-700 bg-indigo-50 border-indigo-200 font-medium';
+    return 'text-emerald-700 bg-emerald-50 border-emerald-200 font-medium';
+  }
+
+  openBatchSelector(item: CartItem): void {
+    this.batchModalItem.set(item);
+    this.isBatchLoading.set(true);
+    this.isBatchModalVisible.set(true);
+    this.productService.getProductBatches(item.product_no).subscribe({
+      next: (res) => {
+        this.isBatchLoading.set(false);
+        const batches = (res.data || []).filter(b => !b.is_expired && this.getDaysUntilExpiry(b.expiry_date) > 0);
+        this.batchListForProduct.set(batches);
+      },
+      error: () => {
+        this.isBatchLoading.set(false);
+        this.batchListForProduct.set([]);
+      }
+    });
+  }
+
+  selectBatch(batch: ProdProductBatch): void {
+    const item = this.batchModalItem();
+    if (!item) return;
+    this.cart.update(list => list.map(i => {
+      if (i.cart_item_id === item.cart_item_id) {
+        return {
+          ...i,
+          batch_no: batch.batch_no,
+          batch_number: batch.batch_number,
+          expiry_date: batch.expiry_date,
+          available_batch_qty: batch.total_quantity_pcs
+        };
+      }
+      return i;
+    }));
+    this.isBatchModalVisible.set(false);
+    this.msg.success(`Selected batch ${batch.batch_number} (Exp: ${this.getExpiryLabel(batch.expiry_date)}) for ${item.product_name}`);
+  }
+
+  resetToAutoFefo(item: CartItem): void {
+    this.cart.update(list => list.map(i => {
+      if (i.cart_item_id === item.cart_item_id) {
+        return {
+          ...i,
+          batch_no: null,
+          batch_number: null,
+          expiry_date: null,
+          available_batch_qty: undefined
+        };
+      }
+      return i;
+    }));
+    this.isBatchModalVisible.set(false);
+    this.msg.info(`Reset ${item.product_name} to Auto-FEFO batch allocation.`);
+  }
+
+  // ==========================================
+  // 2. BOX-TO-STRIP-TO-TABLET CALCULATOR
+  // ==========================================
+  isUnitCalcModalVisible = signal(false);
+  calcTargetItem = signal<CartItem | null>(null);
+  calcPcsPerBox = signal(100);
+  calcStripsPerBox = signal(10);
+  calcPcsPerStrip = computed(() => Math.max(1, Math.round(this.calcPcsPerBox() / Math.max(1, this.calcStripsPerBox()))));
+
+  calcBoxQty = signal(0);
+  calcStripQty = signal(0);
+  calcTabletQty = signal(0);
+
+  calcDosePerTime = signal(1);
+  calcTimesPerDay = signal(2);
+  calcDurationDays = signal(7);
+  calcRxTotalPcs = computed(() => Math.ceil(this.calcDosePerTime() * this.calcTimesPerDay() * this.calcDurationDays()));
+
+  calcTotalPcs = computed(() => {
+    const box = Number(this.calcBoxQty()) || 0;
+    const strip = Number(this.calcStripQty()) || 0;
+    const tab = Number(this.calcTabletQty()) || 0;
+    return (box * this.calcPcsPerBox()) + (strip * this.calcPcsPerStrip()) + tab;
+  });
+
+  calcTotalPrice = computed(() => {
+    const unitPrice = this.calcTargetItem()?.unit_price || 0;
+    return Math.round(this.calcTotalPcs() * unitPrice * 100) / 100;
+  });
+
+  calcBoxPrice = computed(() => {
+    const unitPrice = this.calcTargetItem()?.unit_price || 0;
+    return Math.round(this.calcPcsPerBox() * unitPrice * 100) / 100;
+  });
+
+  calcStripPrice = computed(() => {
+    const unitPrice = this.calcTargetItem()?.unit_price || 0;
+    return Math.round(this.calcPcsPerStrip() * unitPrice * 100) / 100;
+  });
+
+  openUnitCalculator(item?: CartItem): void {
+    const target = item || (this.cart().length > 0 ? this.cart()[0] : null);
+    if (!target) {
+      this.msg.warning('Please add or select a product in basket first.');
+      return;
+    }
+    this.calcTargetItem.set(target);
+    const pcsBox = target.pcs_per_box || 100;
+    this.calcPcsPerBox.set(pcsBox);
+    this.calcStripsPerBox.set(pcsBox >= 10 ? 10 : 1);
+
+    const totalQty = Math.max(1, Math.round(target.qty));
+    const pcsStrip = Math.max(1, Math.round(pcsBox / Math.max(1, this.calcStripsPerBox())));
+    const boxes = Math.floor(totalQty / pcsBox);
+    const remAfterBoxes = totalQty % pcsBox;
+    const strips = Math.floor(remAfterBoxes / pcsStrip);
+    const loose = remAfterBoxes % pcsStrip;
+
+    this.calcBoxQty.set(boxes);
+    this.calcStripQty.set(strips);
+    this.calcTabletQty.set(loose);
+
+    this.isUnitCalcModalVisible.set(true);
+  }
+
+  applyRxToCalc(): void {
+    const rxPcs = this.calcRxTotalPcs();
+    const pcsBox = this.calcPcsPerBox();
+    const pcsStrip = this.calcPcsPerStrip();
+
+    const boxes = Math.floor(rxPcs / pcsBox);
+    const rem = rxPcs % pcsBox;
+    const strips = Math.floor(rem / pcsStrip);
+    const loose = rem % pcsStrip;
+
+    this.calcBoxQty.set(boxes);
+    this.calcStripQty.set(strips);
+    this.calcTabletQty.set(loose);
+    this.msg.info(`Prescription calculated: ${rxPcs} tablets (${strips} strips + ${loose} loose)`);
+  }
+
+  applyCalcToCart(): void {
+    const target = this.calcTargetItem();
+    if (!target) return;
+    const newQty = this.calcTotalPcs();
+    if (newQty <= 0) {
+      this.msg.warning('Quantity must be greater than zero.');
+      return;
+    }
+
+    this.cart.update(items => items.map(i => {
+      if (i.cart_item_id === target.cart_item_id) {
+        const lineTotal = Math.round(Math.max(0, (i.unit_price * newQty) - i.discount) * 100) / 100;
+        return {
+          ...i,
+          qty: newQty,
+          total: lineTotal
+        };
+      }
+      return i;
+    }));
+
+    this.isUnitCalcModalVisible.set(false);
+    this.msg.success(`Applied ${newQty} pcs (${this.calcStripQty()} strips, ${this.calcTabletQty()} tablets) for ${target.product_name}`);
+  }
+
+  // ==========================================
+  // 3. BANGLA (bn-BD) DOSAGE LABEL PRINT VIEW
+  // ==========================================
+  isBanglaDosageModalVisible = signal(false);
+  activeDosageItem = signal<CartItem | null>(null);
+
+  dosagePatientName = signal('');
+  dosagePattern = signal('১ + ০ + ১');
+  dosageTimeText = signal('সকালে ১টি ও রাতে ১টি');
+  dosageMealTiming = signal('খাবারের পরে');
+  dosageDuration = signal('৭ দিন');
+  dosageCaution = signal('ঠান্ডা ও শুষ্ক স্থানে আলো থেকে দূরে রাখুন।');
+  dosageSpecialNote = signal('');
+  dosageLabelSize = signal<'58mm' | '80mm'>('80mm');
+
+  readonly banglaDosagePatterns = [
+    { pattern: '১ + ০ + ১', text: 'সকালে ১টি ও রাতে ১টি', label: '১+০+১ (সকাল ও রাত)' },
+    { pattern: '১ + ১ + ১', text: 'সকালে ১টি, দুপুরে ১টি ও রাতে ১টি', label: '১+১+১ (৩ বার)' },
+    { pattern: '০ + ০ + ১', text: 'রাতে ১টি (ঘুমানোর আগে)', label: '০+০+১ (রাতে)' },
+    { pattern: '১ + ০ + ০', text: 'সকালে ১টি (খালি পেটে)', label: '১+০+০ (সকালে)' },
+    { pattern: '০ + ১ + ০', text: 'দুপুরে ১টি', label: '০+১+০ (দুপুরে)' },
+    { pattern: '১ + ১ + ১ + ১', text: 'দিনে ৪ বার (৬ ঘণ্টা পর পর)', label: '১+১+১+১ (৪ বার)' },
+    { pattern: '১/২ + ০ + ১/২', text: 'সকালে অর্ধেক ও রাতে অর্ধেক', label: '১/২+০+১/২ (অর্ধেক)' },
+    { pattern: '১ চামচ করে ৩ বার', text: 'প্রতিবার ১ চামচ (৫ মিলি) করে', label: '১ চামচ ৩ বার (সিরাপ)' },
+    { pattern: '২ চামচ করে ৩ বার', text: 'প্রতিবার ২ চামচ (১০ মিলি) করে', label: '২ চামচ ৩ বার (সিরাপ)' },
+    { pattern: 'প্রয়োজনে', text: 'ব্যথা বা তীব্র জ্বর হলে সেব্য', label: 'প্রয়োজনে (SOS)' },
+  ];
+
+  readonly banglaMealTimings = [
+    'খাবারের পরে',
+    'খাবারের আগে',
+    'খাবারের সাথে',
+    'ভরা পেটে',
+    'খালি পেটে',
+    'ঘুমানোর আগে'
+  ];
+
+  readonly banglaDurations = [
+    '৩ দিন',
+    '৫ দিন',
+    '৭ দিন',
+    '১০ দিন',
+    '১৪ দিন',
+    '১ মাস',
+    'চলবে (নিয়মিত)'
+  ];
+
+  readonly banglaSpecialNotes = [
+    'অ্যান্টিবায়োটিকের পুরো কোর্স শেষ করুন।',
+    'চিকিৎসকের পরামর্শ ছাড়া ওষুধ বন্ধ করবেন না।',
+    'ব্যবহারের পূর্বে ভালো করে ঝাঁকিয়ে নিন।',
+    'প্রচুর পরিমাণে পানি পান করুন।',
+    'ঠান্ডা ও শুষ্ক স্থানে রাখুন।'
+  ];
+
+  openBanglaDosageModal(item?: CartItem): void {
+    const target = item || (this.cart().length > 0 ? this.cart()[0] : null);
+    if (!target) {
+      this.msg.warning('Please add a medicine to basket first.');
+      return;
+    }
+    this.activeDosageItem.set(target);
+
+    const cust = this.customers.find(c => c.id === this.selectedCustomer());
+    this.dosagePatientName.set(cust?.name && cust.id !== '1' ? cust.name : 'সাধারণ রোগী');
+
+    if (target.drug_schedule === 'ANTIBIOTIC') {
+      this.dosageSpecialNote.set('অ্যান্টিবায়োটিকের পুরো কোর্স শেষ করুন।');
+      this.dosageDuration.set('৭ দিন');
+    } else {
+      this.dosageSpecialNote.set('');
+    }
+
+    this.isBanglaDosageModalVisible.set(true);
+  }
+
+  setDosagePattern(p: { pattern: string; text: string }): void {
+    this.dosagePattern.set(p.pattern);
+    this.dosageTimeText.set(p.text);
+  }
+
+  onDosageMedicineChange(cartItemId: number): void {
+    const found = this.cart().find(i => i.cart_item_id === cartItemId);
+    if (found) {
+      this.activeDosageItem.set(found);
+      if (found.drug_schedule === 'ANTIBIOTIC') {
+        this.dosageSpecialNote.set('অ্যান্টিবায়োটিকের পুরো কোর্স শেষ করুন।');
+        this.dosageDuration.set('৭ দিন');
+      }
+    }
+  }
+
+  activeBranchName(): string {
+    return this.authService.activeBranch()?.name || 'Aidly Pharmacy';
+  }
+
+  todayBanglaDate(): string {
+    return new Date().toLocaleDateString('bn-BD');
+  }
+
+  printBanglaSticker(): void {
+    const item = this.activeDosageItem();
+    if (!item) return;
+
+    this.printService.printBanglaDosageLabel({
+      pharmacyNameBangla: this.activeBranchName(),
+      patientName: this.dosagePatientName() || 'সাধারণ রোগী',
+      medicineName: item.product_name,
+      genericName: item.generic_name,
+      dosagePattern: this.dosagePattern(),
+      dosageTimeText: this.dosageTimeText(),
+      mealTiming: this.dosageMealTiming(),
+      duration: this.dosageDuration(),
+      cautionText: this.dosageCaution(),
+      specialNote: this.dosageSpecialNote()
+    }, this.dosageLabelSize());
+
+    this.msg.success(`Printing Bangla dosage sticker for ${item.product_name}`);
   }
 }
