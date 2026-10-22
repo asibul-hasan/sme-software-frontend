@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.22.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.22.0...v1.22.1) (2026-10-22)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** simplify view switcher button labels to Screen 1 and Screen 2 ([c03b996](https://github.com/asibul-hasan/sme-software-frontend/commit/c03b99664854bc23498c0483307f0ea9c7e11cfe))
+
 ## [1.22.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.21.1...v1.22.0) (2026-10-22)
 
 
