@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.19.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.18.0...v1.19.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **pos:** add Bangla patient dosage sticker generation and thermal printing ([9859770](https://github.com/asibul-hasan/sme-software-frontend/commit/985977092dc70807aaef601df07e84a22ea4326c))
+
 ## [1.18.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.17.1...v1.18.0) (2026-10-22)
 
 
