@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.23.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.0...v1.23.1) (2026-10-22)
+
+
+### ♻️ Code Refactoring
+
+* **pos:** move view switcher into header navigation list without label ([3c05a41](https://github.com/asibul-hasan/sme-software-frontend/commit/3c05a41129fe558a8179225a8dcde3f131aa8cad))
+
 ## [1.23.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.22.1...v1.23.0) (2026-10-22)
 
 
