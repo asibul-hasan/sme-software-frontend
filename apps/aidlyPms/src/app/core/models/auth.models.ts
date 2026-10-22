@@ -9,9 +9,11 @@ export interface SysRole {
   role_no: number;
   pharmacy_no: number;
   branch_no?: number | null;
+  role_name?: string | null;
   alias: string;
   description?: string | null;
   is_system: boolean;
+  status: boolean;
   created_at: string;
   updated_at: string;
   permissions?: readonly SysPermission[];

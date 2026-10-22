@@ -30,3 +30,16 @@ export interface SaveRoleMenuPermissionsPayload {
   role_no: number;
   permissions: RoleMenuPermissionItem[];
 }
+
+export interface SysRoleMenuPermission {
+  role_menu_perm_no: number;
+  pharmacy_no: number;
+  role_no: number;
+  menu_no: number;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
