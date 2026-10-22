@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.20.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.19.0...v1.20.0) (2026-10-22)
+
+
+### 🚀 Features
+
+* **ux:** add actionable empty state CTAs, loading spinners, and error retries ([e2b0034](https://github.com/asibul-hasan/sme-software-frontend/commit/e2b00343444e092ba377506d8649ff1c8077d7f6))
+
 ## [1.19.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.18.0...v1.19.0) (2026-10-22)
 
 
