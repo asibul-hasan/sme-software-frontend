@@ -63,7 +63,7 @@ interface PaidRecord {
         formId="DUE_1301"
         [breadcrumbs]="[{ label: 'Customers', url: '/customer/list' }, { label: 'Due Collections' }]"
       >
-        <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+        <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">From Date</label>
             <nz-date-picker
@@ -104,7 +104,7 @@ interface PaidRecord {
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
-        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
           <button nz-button class="btn-export rounded-md" (click)="exportDueCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
@@ -127,10 +127,10 @@ interface PaidRecord {
         </div>
 
         <!-- Scrollable Table Area -->
-        <div class="flex-1 min-h-0 overflow-auto">
+        <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
           @if (activeTab < 3) {
             <!-- Tab 0, 1, 2: Due Tables -->
-            <table class="w-full text-sm text-left border-collapse">
+            <table class="w-full text-sm text-left border-collapse min-w-[600px]">
               <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
                 <tr>
                   <th class="p-3">Details</th>
@@ -191,7 +191,7 @@ interface PaidRecord {
             </table>
           } @else {
             <!-- Tab 3: Paid Collections Register -->
-            <table class="w-full text-sm text-left border-collapse">
+            <table class="w-full text-sm text-left border-collapse min-w-[600px]">
               <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
                 <tr>
                   <th class="p-3">Customer</th>

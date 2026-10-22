@@ -51,7 +51,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
         ]"
       >
         <!-- Filter Toolbar -->
-        <div filters class="flex items-end gap-2 shrink-0 flex-nowrap py-1">
+        <div filters class="flex items-end gap-2 shrink-0 flex-wrap py-1">
           <!-- Quick Filter Presets -->
           <div class="flex flex-col">
             <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Filter Preset</label>
@@ -156,7 +156,7 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
         </div>
 
         <!-- Header Actions -->
-        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
           <a
             nz-button
             routerLink="/dashboard/cashbook"
@@ -230,8 +230,8 @@ type DatePreset = 'today' | 'week' | 'month' | 'custom';
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
         <nz-spin [nzSpinning]="isLoading()" class="flex-1 min-h-0 flex flex-col">
           @if (filteredProducts().length > 0) {
-            <div class="flex-1 min-h-0 overflow-auto">
-              <table class="w-full text-left border-collapse text-xs print-table">
+            <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
+              <table class="w-full text-left border-collapse text-xs print-table min-w-[800px]">
                 <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th class="p-2.5 w-14 text-center">Rank</th>

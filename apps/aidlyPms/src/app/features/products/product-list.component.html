@@ -5,7 +5,7 @@
     formId="PROD_1601"
     [breadcrumbs]="[{ label: 'Products', url: '/products/list' }, { label: 'Catalog' }]"
   >
-    <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+    <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <!-- Search Input -->
       <div class="flex flex-col">
         <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Search Medicine</label>
@@ -61,7 +61,7 @@
       </button>
     </div>
 
-    <div actions class="flex items-center gap-1.5 shrink-0 flex-nowrap">
+    <div actions class="flex items-center gap-1.5 shrink-0 flex-wrap">
       <button nz-button class="btn-export rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" (click)="downloadStock()">
         <span nz-icon nzType="download"></span> Download
       </button>

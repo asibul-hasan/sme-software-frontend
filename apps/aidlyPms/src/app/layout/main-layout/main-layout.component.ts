@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
@@ -30,7 +30,7 @@ import { LoadingService } from '../../core/services/loading.service';
         ></app-header>
 
         <!-- Main Page Content Area -->
-        <main class="flex-1 overflow-y-auto p-4 md:p-6 relative">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden min-w-0 max-w-full p-3 md:p-4 lg:p-6 relative">
           <!-- Global Loading Spinner Overlay -->
           @if (loadingService.isLoading()) {
             <div class="absolute inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-xs">
@@ -44,7 +44,20 @@ import { LoadingService } from '../../core/services/loading.service';
     </div>
   `,
 })
-export class MainLayoutComponent {
-  collapsed = false;
+export class MainLayoutComponent implements OnInit {
+  collapsed = typeof window !== 'undefined' ? window.innerWidth < 1024 : false;
   readonly loadingService = inject(LoadingService);
+
+  ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      this.collapsed = window.innerWidth < 1024;
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024 && !this.collapsed) {
+      this.collapsed = true;
+    }
+  }
 }

@@ -443,3 +443,60 @@ tbody > tr:not(.ant-table-measure-row):hover > td,
 .ant-pagination-item-active a {
   color: var(--primary) !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   10. RESPONSIVE TABLE ARCHITECTURE (Tablet 768px & Touch Ergonomics)
+   Ensures wide medical and pharmacy tables do not break tablet layouts.
+   Enables smooth horizontal scrolling within table card containers.
+   ───────────────────────────────────────────────────────────────── */
+.table-responsive,
+.pms-table-scroll,
+div.overflow-auto,
+div.overflow-x-auto {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  /* Restrict cards and containers from exceeding the 768px tablet viewport */
+  .pms-card,
+  .table-card,
+  .card,
+  app-page-header,
+  .sticky-action-bar {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Force table scroll containers to scroll horizontally within the card */
+  .pms-card > div.overflow-auto,
+  .table-card > div.overflow-auto,
+  .card > div.overflow-auto,
+  div.overflow-auto:has(> table),
+  div.overflow-x-auto:has(> table) {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Wide data tables preserve readable columns and scroll cleanly inside the card */
+  .pms-card > div.overflow-auto > table:not(.mini-table):not(.dropdown-table),
+  .table-card > div.overflow-auto > table:not(.mini-table):not(.dropdown-table),
+  div.overflow-auto > table.w-full:not(.mini-table):not(.dropdown-table) {
+    min-width: 760px;
+  }
+
+  /* Form and table filter headers wrap cleanly on tablet */
+  .sticky-action-bar,
+  .header-filters,
+  .header-actions,
+  [filters],
+  [actions] {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+

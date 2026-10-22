@@ -5,7 +5,7 @@
     formId="SALE_1402"
     [breadcrumbs]="[{ label: 'Sales', url: '/customer/sale' }, { label: 'Customers' }]"
   >
-    <div filters class="flex items-end gap-2.5 shrink-0 flex-nowrap py-1">
+    <div filters class="flex items-end gap-2.5 shrink-0 flex-wrap py-1">
       <div class="flex flex-col">
         <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Customer Name</label>
         <nz-input-group [nzPrefix]="searchIcon" class="w-48 shrink-0 rounded-md">
@@ -57,7 +57,7 @@
         <span nz-icon nzType="clear"></span> Reset
       </button>
     </div>
-    <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+    <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
       <button nz-button class="btn-export rounded-md" (click)="exportCustomersCsv()">
         <span nz-icon nzType="download"></span> Export CSV
       </button>
@@ -73,8 +73,8 @@
 
   <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
     <!-- Table Scroll Area -->
-    <div class="flex-1 min-h-0 overflow-auto">
-      <table class="w-full text-sm text-left border-collapse">
+    <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
+      <table class="w-full text-sm text-left border-collapse min-w-[720px]">
         <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
           <tr>
             <th class="p-3">Details</th>

@@ -41,7 +41,7 @@ import { ModalService } from '../../core/services/modal.service';
         formId="MENU_1904"
         [breadcrumbs]="[{ label: 'System', url: '/dashboard' }, { label: 'Menus' }]"
       >
-        <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
           <nz-input-group [nzPrefix]="searchIcon" class="w-64 shrink-0 rounded-md">
             <input
               type="text"
@@ -73,7 +73,7 @@ import { ModalService } from '../../core/services/modal.service';
           </button>
         </div>
 
-        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
           <a nz-button nzType="default" routerLink="/roles/permissions" class="rounded-md">
             <span nz-icon nzType="key"></span> Role Permissions
           </a>
@@ -88,8 +88,8 @@ import { ModalService } from '../../core/services/modal.service';
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
         <!-- Table Scroll Area -->
-        <div class="flex-1 min-h-0 overflow-auto">
-          <table class="w-full text-sm text-left border-collapse">
+        <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
+          <table class="w-full text-sm text-left border-collapse min-w-[700px]">
             <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
               <tr>
                 <th class="p-3 w-16 text-center">ID</th>

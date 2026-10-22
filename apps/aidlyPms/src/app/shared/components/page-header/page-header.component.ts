@@ -11,11 +11,11 @@ export interface BreadcrumbItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="sticky-action-bar flex items-center justify-between gap-3 w-full">
-      <div class="header-filters flex items-center gap-2 shrink-0 flex-nowrap">
+    <div class="sticky-action-bar flex items-center justify-between gap-3 w-full flex-wrap lg:flex-nowrap">
+      <div class="header-filters flex items-center gap-2 flex-wrap">
         <ng-content select="[filters]"></ng-content>
       </div>
-      <div class="header-actions flex items-center gap-2">
+      <div class="header-actions flex items-center gap-2 flex-wrap">
         <ng-content select="[actions]"></ng-content>
       </div>
     </div>
@@ -25,6 +25,8 @@ export interface BreadcrumbItem {
       display: flex;
       align-items: center;
       width: 100%;
+      min-width: 0;
+      max-width: 100%;
       min-height: 44px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -46,6 +48,12 @@ export interface BreadcrumbItem {
 
     .sticky-action-bar {
       width: 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .header-filters {
+      min-width: 0;
     }
 
     .header-actions {
@@ -65,6 +73,14 @@ export interface BreadcrumbItem {
       width: 100% !important;
       flex: 1 1 100% !important;
       margin-left: 0 !important;
+    }
+
+    /* Wrap slotted filter and action rows on tablet/mobile screens to prevent overflow */
+    ::ng-deep .header-filters > [filters],
+    ::ng-deep .header-actions > [actions] {
+      flex-wrap: wrap !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
     }
   `],
 })

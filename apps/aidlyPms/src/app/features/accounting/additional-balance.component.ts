@@ -51,14 +51,14 @@ interface BalanceEntry {
         formId="ACC_1106"
         [breadcrumbs]="[{ label: 'Accounting', url: '/accounting/transaction' }, { label: 'Additional Balance' }]"
       >
-        <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div filters class="flex items-center gap-2 shrink-0 flex-wrap">
           <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="fromDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="From Date"></nz-date-picker>
           <nz-date-picker class="w-32 shrink-0 rounded-md" [(ngModel)]="toDate" (ngModelChange)="loadBalances()" nzFormat="dd-MM-yyyy" nzPlaceHolder="To Date"></nz-date-picker>
           <button nz-button class="btn-reset rounded-md h-7 px-2.5 text-xs shrink-0" (click)="resetFilters()">
             <span nz-icon nzType="clear"></span> Reset
           </button>
         </div>
-        <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
           <button nz-button class="btn-export rounded-md" (click)="exportBalancesCsv()">
             <span nz-icon nzType="download"></span> Export CSV
           </button>
@@ -70,8 +70,8 @@ interface BalanceEntry {
 
       <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
         <!-- Table Scroll Area -->
-        <div class="flex-1 min-h-0 overflow-auto">
-          <table class="w-full text-sm text-left border-collapse">
+        <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
+          <table class="w-full text-sm text-left border-collapse min-w-[600px]">
             <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
               <tr>
                 <th class="p-3">Details</th>

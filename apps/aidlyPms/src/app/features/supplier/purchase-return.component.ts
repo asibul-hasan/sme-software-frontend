@@ -129,8 +129,8 @@ interface ReturnCartLine {
           </div>
 
           <!-- Return Lines Table -->
-          <div class="flex-1 overflow-auto p-3">
-            <table class="w-full text-left text-xs border-collapse">
+          <div class="flex-1 overflow-auto p-3 w-full max-w-full">
+            <table class="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr class="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50/50">
                   <th class="p-2">#</th>
@@ -301,8 +301,8 @@ interface ReturnCartLine {
           </button>
         </div>
 
-        <div class="flex-1 overflow-auto pt-2">
-          <table class="w-full text-left text-xs border-collapse">
+        <div class="flex-1 overflow-auto pt-2 w-full max-w-full">
+          <table class="w-full text-left text-xs border-collapse min-w-[760px]">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50/50">
                 <th class="p-2">Return Number</th>
