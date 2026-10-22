@@ -44,6 +44,8 @@ export interface SubSubscriptionPayment {
   payment_status: string;
   payment_timestamp: string;
   download_invoice_url?: string | null;
+  billing_cycle?: number | null;
+  plan_no?: number | null;
 }
 
 // Backward-compatible type aliases

@@ -33,6 +33,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
+      - name: Clone backend repository for migrations parity check
+        run: |
+          git clone --depth 1 https://github.com/asibul-hasan/aidlypms-backend.git ../aidlypms-backend
+
       - name: Verify Schema & Database Parity
         run: npm run verify:pms-schema
 
