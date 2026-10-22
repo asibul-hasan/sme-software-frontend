@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.17.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.17.0...v1.17.1) (2026-10-22)
+
+
+### 🐛 Bug Fixes
+
+* **products:** ensure valid company and generic reference in product add form ([d6b2f03](https://github.com/asibul-hasan/sme-software-frontend/commit/d6b2f033d6275bb44b7e1a0fdb52c7cf67e11ca3))
+
 ## [1.17.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.16.0...v1.17.0) (2026-10-22)
 
 
