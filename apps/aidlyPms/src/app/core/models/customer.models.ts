@@ -27,8 +27,7 @@ export interface CustCustomer {
   promised_payment_date?: string | null;
   is_loyalty_member: boolean;
   loyalty_points: number;
-  is_active: boolean;
-  created_at: string;
+  is_active: boolean;  deleted_at?: string | null;  deleted_by?: number | null;  deletion_reason?: string | null;  created_at: string;
   updated_at: string;
 }
 

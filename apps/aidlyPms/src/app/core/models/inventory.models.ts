@@ -39,6 +39,8 @@ export interface InvTransfer {
   received_at?: string | null;
   created_at: string;
   items?: readonly InvTransferItem[];
+  from_branch_name?: string;
+  to_branch_name?: string;
 }
 
 export interface InvTransferItem {
@@ -47,6 +49,7 @@ export interface InvTransferItem {
   branch_no: number;
   transfer_no: number;
   product_no: number;
+  product_name?: string;
   batch_no?: number | null;
   batch_number?: string | null;
   qty_pcs: number;

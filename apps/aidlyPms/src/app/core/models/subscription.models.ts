@@ -24,8 +24,7 @@ export interface SubPharmacySubscription {
   subscription_start_date?: string | null;
   subscription_end_date?: string | null;
   next_payment_date?: string | null;
-  monthly_rate: number;
-  updated_at: string;
+  monthly_rate: number;  grace_period_days?: number | null;  updated_at: string;
 
   // Navigation
   plan?: SubSubscriptionPlan;

@@ -27,6 +27,7 @@ import { PosSaleService } from '../../core/services/pos-sale.service';
 import { PrintService } from '../../core/services/print.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { PosStorageService } from '../../core/services/pos-storage.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 
 interface CartItem {
@@ -447,6 +448,7 @@ export class PosTerminalComponent implements OnInit {
   private readonly printService = inject(PrintService);
   readonly authService = inject(AuthService);
   readonly settingsService = inject(SettingsService);
+  private readonly posStorageService = inject(PosStorageService);
 
   isReceiptModalVisible = false;
   lastPrintedInvoice: SaleInvoice | null = null;
@@ -821,6 +823,11 @@ export class PosTerminalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.posStorageService.getAllHeldOrders<HeldOrder>().then(orders => {
+      if (orders && orders.length > 0) {
+        this.heldOrders.set(orders);
+      }
+    });
     this.settingsService.getInvoiceConfig().subscribe({ error: () => {} });
     this.loadProducts();
 
@@ -1165,7 +1172,11 @@ export class PosTerminalComponent implements OnInit {
         total: this.finalPrice(),
       };
 
-      this.heldOrders.update(orders => [held, ...orders]);
+      this.heldOrders.update(orders => {
+        const updated = [held, ...orders];
+        this.posStorageService.saveAllHeldOrders(updated);
+        return updated;
+      });
       this.cart.set([]);
       this.tendered.set(0);
       this.splitPayments.set([]);
@@ -1192,13 +1203,21 @@ export class PosTerminalComponent implements OnInit {
     this.businessMode.set(order.mode);
     this.selectedCustomer.set(order.customerId);
     this.cart.set([...order.items]);
-    this.heldOrders.update(orders => orders.filter((_, i) => i !== idx));
+    this.heldOrders.update(orders => {
+      const updated = orders.filter((_, i) => i !== idx);
+      this.posStorageService.saveAllHeldOrders(updated);
+      return updated;
+    });
     this.isHeldOrdersModalVisible = false;
     this.msg.success(`Recalled order from ${order.customerName}`);
   }
 
   deleteHeldOrder(idx: number): void {
-    this.heldOrders.update(orders => orders.filter((_, i) => i !== idx));
+    this.heldOrders.update(orders => {
+      const updated = orders.filter((_, i) => i !== idx);
+      this.posStorageService.saveAllHeldOrders(updated);
+      return updated;
+    });
     this.msg.info('Held order discarded.');
   }
 

@@ -14,8 +14,7 @@ export interface SuppSupplier {
   phone: string;
   note?: string | null;
   current_due_balance: number;
-  is_active: boolean;
-  created_at: string;
+  is_active: boolean;  deleted_at?: string | null;  deleted_by?: number | null;  deletion_reason?: string | null;  created_at: string;
   updated_at: string;
 }
 
@@ -109,6 +108,7 @@ export interface PurPurchaseReturn {
   return_date: string;
   created_at: string;
   items?: readonly PurPurchaseReturnItem[];
+  supplier_name?: string;
 }
 
 export interface PurPurchaseReturnItem {
@@ -118,6 +118,7 @@ export interface PurPurchaseReturnItem {
   purchase_return_no: number;
   purchase_item_no?: number | null;
   product_no: number;
+  product_name?: string;
   batch_no?: number | null;
   batch_number?: string | null;
   return_qty_pcs: number;

@@ -11,6 +11,9 @@ export interface ProdCompany {
   branch_no?: number;
   name: string;
   is_active: boolean;
+  deleted_at?: string | null;
+  deleted_by?: number | null;
+  deletion_reason?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +24,9 @@ export interface ProdGeneric {
   branch_no?: number;
   name: string;
   is_active: boolean;
+  deleted_at?: string | null;
+  deleted_by?: number | null;
+  deletion_reason?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -55,6 +61,9 @@ export interface ProdProduct {
   dar_number?: string | null;
   drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
   is_active: boolean;
+  deleted_at?: string | null;
+  deleted_by?: number | null;
+  deletion_reason?: string | null;
   created_at: string;
   updated_at: string;
 

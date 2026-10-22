@@ -15,6 +15,10 @@ import { SupplierListComponent } from './features/supplier/supplier-list.compone
 import { SupplierAddComponent } from './features/supplier/supplier-add.component';
 import { PurchaseEntryComponent } from './features/supplier/purchase-entry.component';
 import { PurchaseRecordComponent } from './features/supplier/purchase-record.component';
+import { PurchaseReturnComponent } from './features/supplier/purchase-return.component';
+import { StockTransferComponent } from './features/products/stock-transfer.component';
+import { InventoryReportsComponent } from './features/reports/inventory-reports.component';
+import { AuditLogsComponent } from './features/settings/audit-logs.component';
 
 import { PosTerminalComponent } from './features/customer/pos-terminal.component';
 import { CustomerListComponent } from './features/customer/customer-list.component';
@@ -89,9 +93,18 @@ export const appRoutes: Route[] = [
       { path: 'products/requisition', component: RequisitionListComponent },
       { path: 'products/requisition/records', component: RequisitionRecordComponent },
       { path: 'products/expired', component: ExpiredItemsComponent },
+      { path: 'products/transfers', component: StockTransferComponent },
+      { path: 'products/transfer', redirectTo: 'products/transfers', pathMatch: 'full' },
+      { path: 'inventory/transfers', redirectTo: 'products/transfers', pathMatch: 'full' },
       { path: 'products/reports', component: StockReportComponent },
-      { path: 'inventory/reports', redirectTo: 'products/reports', pathMatch: 'full' },
+      { path: 'inventory/reports', redirectTo: 'reports/inventory', pathMatch: 'full' },
 
+      // Reports (REP_1611)
+      { path: 'reports/inventory', component: InventoryReportsComponent, canActivate: [managerGuard] },
+      { path: 'reports/abc-fsn', component: InventoryReportsComponent, canActivate: [managerGuard] },
+      { path: 'reports/margin', component: InventoryReportsComponent, canActivate: [managerGuard] },
+      { path: 'reports/expiry', component: InventoryReportsComponent, canActivate: [managerGuard] },
+      { path: 'reports/daily-returns', component: InventoryReportsComponent, canActivate: [managerGuard] },
 
       // Suppliers & Purchases (PUR_1501 - PUR_1509) - Restricted to Manager
       { path: 'purchase', redirectTo: 'supplier/purchase', pathMatch: 'full' },
@@ -101,6 +114,8 @@ export const appRoutes: Route[] = [
       { path: 'supplier/list', component: SupplierListComponent, canActivate: [managerGuard] },
       { path: 'supplier/add', component: SupplierAddComponent, canActivate: [managerGuard] },
       { path: 'supplier/records', component: PurchaseRecordComponent, canActivate: [managerGuard] },
+      { path: 'supplier/purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
+      { path: 'supplier/returns', redirectTo: 'supplier/purchase-return', pathMatch: 'full' },
 
       // Customer & Sales POS (SALE_1401 - SALE_1410)
       { path: 'customer/sale', component: PosTerminalComponent },
@@ -110,8 +125,8 @@ export const appRoutes: Route[] = [
       { path: 'customer/returns', component: SaleReturnComponent },
       { path: 'customer/return', redirectTo: 'customer/returns', pathMatch: 'full' },
       { path: 'customer/sale/return', redirectTo: 'customer/returns', pathMatch: 'full' },
-      { path: 'purchase/return', redirectTo: 'supplier/purchase', pathMatch: 'full' },
-      { path: 'purchase-return', redirectTo: 'supplier/purchase', pathMatch: 'full' },
+      { path: 'purchase/return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
+      { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
       { path: 'customer/sales', component: SaleRecordComponent },
 
       // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
@@ -163,6 +178,8 @@ export const appRoutes: Route[] = [
       { path: 'settings/product-config', component: ProductConfigComponent, canActivate: [managerGuard] },
       { path: 'settings/loyalty-config', component: LoyaltyConfigComponent, canActivate: [managerGuard] },
       { path: 'settings/bulk-sms-config', component: SmsConfigComponent, canActivate: [managerGuard] },
+      { path: 'settings/audit-logs', component: AuditLogsComponent, canActivate: [managerGuard] },
+      { path: 'audit-logs', redirectTo: 'settings/audit-logs', pathMatch: 'full' },
 
       // Subscription & Multi-Branch (SUB_2101 - PHAR_2201)
       { path: 'subscription-report', component: SubscriptionComponent, canActivate: [managerGuard] },

@@ -74,9 +74,17 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), body, { context });
   }
 
-  delete<T>(endpoint: string, options?: RequestOptions): Observable<ApiResponse<T>> {
-    const context = options?.silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
-    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint), { context });
+  delete<T>(endpoint: string, bodyOrOptions?: unknown, options?: RequestOptions): Observable<ApiResponse<T>> {
+    let body: unknown = undefined;
+    let silent = false;
+    if (bodyOrOptions && typeof bodyOrOptions === 'object' && ('silent' in (bodyOrOptions as object) || 'params' in (bodyOrOptions as object))) {
+      silent = !!(bodyOrOptions as RequestOptions).silent;
+    } else {
+      body = bodyOrOptions;
+      silent = !!options?.silent;
+    }
+    const context = silent ? new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) : undefined;
+    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint), { body, context });
   }
 
   private buildParams(params?: Record<string, unknown>): HttpParams {
