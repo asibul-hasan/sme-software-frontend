@@ -66,10 +66,17 @@ interface CatalogProduct {
   rak: string;
   barcode: string;
   strength: string;
+  medicineType?: number;
   is_prescription_required?: boolean;
   is_narcotic?: boolean;
   dar_number?: string | null;
   drug_schedule?: 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC';
+}
+
+interface CategoryPill {
+  id: string;
+  name: string;
+  icon?: string;
 }
 
 interface SplitPayment {
@@ -467,9 +474,26 @@ export class PosTerminalComponent implements OnInit {
   // Catalog Products for fast search & selection
   catalogProducts = signal<CatalogProduct[]>([]);
 
+  // Category Filtering & Catalog Traversal State
+  selectedCategory = signal<string>('all');
+  highlightedIndex = signal<number>(0);
+  currentSearchTerm = signal<string>('');
+
+  readonly categoryPills: CategoryPill[] = [
+    { id: 'all', name: 'All', icon: 'appstore' },
+    { id: 'fast', name: 'Fast Pick', icon: 'thunderbolt' },
+    { id: 'tablet', name: 'Tablets', icon: 'medicine-box' },
+    { id: 'capsule', name: 'Capsules', icon: 'experiment' },
+    { id: 'syrup', name: 'Syrups', icon: 'coffee' },
+    { id: 'injection', name: 'Injections', icon: 'aim' },
+    { id: 'ointment', name: 'Ointments', icon: 'skin' },
+    { id: 'antibiotic', name: 'Antibiotics', icon: 'safety-certificate' },
+    { id: 'pom', name: 'POM (Rx)', icon: 'file-protect' },
+    { id: 'otc', name: 'OTC', icon: 'check-circle' },
+  ];
+
   // Entry Form State
   selectedProductText = '';
-  currentSearchTerm = '';
   selectedProductObj: CatalogProduct | null = null;
   entryQty = 1;
   entryPrice = 0;
@@ -557,14 +581,16 @@ export class PosTerminalComponent implements OnInit {
   cart = signal<CartItem[]>([]);
 
   constructor() {
-    // Auto-sync tender amount and split balance unless cashier explicitly modified
+    // Auto-sync tender amount and split balance unless cashier explicitly typed manual tender
     effect(() => {
       const payable = this.payableTotal();
       const m = this.selectedMethod();
       const isManual = this.isManualTender();
 
-      if (!isManual && !this.tenderTouched && m === 'cash') {
-        this.tendered.set(payable);
+      if (!isManual) {
+        if (m === 'cash' || m === 'card' || m === 'bkash' || m === 'nagad' || m === 'rocket' || m === 'upay') {
+          this.tendered.set(payable);
+        }
       }
       if (m === 'split' && !this.spCashTouched) {
         const nonCash = (Number(this.splitCard()) || 0) +
@@ -758,35 +784,242 @@ export class PosTerminalComponent implements OnInit {
   isEditItemModalVisible = false;
   editingItem: CartItem | null = null;
 
+  isAntibiotic(p: CatalogProduct): boolean {
+    if (p.drug_schedule === 'ANTIBIOTIC') return true;
+    const gen = (p.generic || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+    return gen.includes('cillin') || gen.includes('mycin') || gen.includes('oxacin') || 
+           gen.includes('cef') || gen.includes('clav') || gen.includes('doxy') ||
+           gen.includes('azithro') || name.includes('antibiotic');
+  }
+
+  isPom(p: CatalogProduct): boolean {
+    return !!p.is_prescription_required || p.drug_schedule === 'POM' || p.drug_schedule === 'NARCOTIC';
+  }
+
+  isOtc(p: CatalogProduct): boolean {
+    return !p.is_prescription_required && p.drug_schedule === 'OTC';
+  }
+
+  readonly filteredCatalogProducts = computed(() => {
+    const list = this.catalogProducts();
+    const cat = this.selectedCategory();
+    const term = this.currentSearchTerm().toLowerCase().trim();
+
+    let categoryFiltered = list;
+    if (cat === 'fast') {
+      categoryFiltered = this.fastMovingProducts();
+    } else if (cat === 'tablet') {
+      categoryFiltered = list.filter(p => p.medicineType === 1);
+    } else if (cat === 'capsule') {
+      categoryFiltered = list.filter(p => p.medicineType === 2);
+    } else if (cat === 'syrup') {
+      categoryFiltered = list.filter(p => p.medicineType === 3 || p.medicineType === 4 || p.medicineType === 5);
+    } else if (cat === 'injection') {
+      categoryFiltered = list.filter(p => p.medicineType === 6);
+    } else if (cat === 'ointment') {
+      categoryFiltered = list.filter(p => p.medicineType === 7 || p.medicineType === 8 || p.medicineType === 9);
+    } else if (cat === 'antibiotic') {
+      categoryFiltered = list.filter(p => this.isAntibiotic(p));
+    } else if (cat === 'pom') {
+      categoryFiltered = list.filter(p => this.isPom(p));
+    } else if (cat === 'otc') {
+      categoryFiltered = list.filter(p => this.isOtc(p));
+    }
+
+    if (!term) return categoryFiltered;
+
+    return categoryFiltered.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      p.generic.toLowerCase().includes(term) ||
+      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+      (p.rak && p.rak.toLowerCase().includes(term)) ||
+      (p.strength && p.strength.toLowerCase().includes(term)) ||
+      String(p.id) === term
+    );
+  });
+
+  readonly highlightedProduct = computed(() => {
+    const items = this.filteredCatalogProducts();
+    if (items.length === 0) return null;
+    const idx = Math.max(0, Math.min(items.length - 1, this.highlightedIndex()));
+    return items[idx];
+  });
+
+  getCategoryCount(catId: string): number {
+    const list = this.catalogProducts();
+    if (catId === 'all') return list.length;
+    if (catId === 'fast') return this.fastMovingProducts().length;
+    if (catId === 'tablet') return list.filter(p => p.medicineType === 1).length;
+    if (catId === 'capsule') return list.filter(p => p.medicineType === 2).length;
+    if (catId === 'syrup') return list.filter(p => p.medicineType === 3 || p.medicineType === 4 || p.medicineType === 5).length;
+    if (catId === 'injection') return list.filter(p => p.medicineType === 6).length;
+    if (catId === 'ointment') return list.filter(p => p.medicineType === 7 || p.medicineType === 8 || p.medicineType === 9).length;
+    if (catId === 'antibiotic') return list.filter(p => this.isAntibiotic(p)).length;
+    if (catId === 'pom') return list.filter(p => this.isPom(p)).length;
+    if (catId === 'otc') return list.filter(p => this.isOtc(p)).length;
+    return 0;
+  }
+
+  setCategory(catId: string): void {
+    this.selectedCategory.set(catId);
+    this.highlightedIndex.set(0);
+  }
+
+  onSearchInput(term: string): void {
+    this.currentSearchTerm.set(term || '');
+    this.highlightedIndex.set(0);
+  }
+
+  navigateCatalogGrid(direction: 'up' | 'down' | 'left' | 'right'): void {
+    const count = this.filteredCatalogProducts().length;
+    if (count === 0) return;
+    const current = this.highlightedIndex();
+    const cols = 3;
+
+    let next = current;
+    if (direction === 'right') {
+      next = Math.min(count - 1, current + 1);
+    } else if (direction === 'left') {
+      next = Math.max(0, current - 1);
+    } else if (direction === 'down') {
+      next = Math.min(count - 1, current + cols);
+    } else if (direction === 'up') {
+      next = Math.max(0, current - cols);
+    }
+
+    this.highlightedIndex.set(next);
+    this.scrollHighlightedTileIntoView(next);
+  }
+
+  private scrollHighlightedTileIntoView(index: number): void {
+    setTimeout(() => {
+      const el = document.getElementById(`catalog-product-${index}`);
+      if (el) {
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }, 10);
+  }
+
+  addHighlightedOrSearchToCart(): void {
+    const term = this.currentSearchTerm().trim();
+    const items = this.filteredCatalogProducts();
+
+    if (term) {
+      const barcodeMatch = this.catalogProducts().find(p => p.barcode && p.barcode.toLowerCase() === term.toLowerCase());
+      if (barcodeMatch) {
+        this.quickAddProductToCart(barcodeMatch);
+        this.currentSearchTerm.set('');
+        return;
+      }
+    }
+
+    const current = this.highlightedProduct();
+    if (current) {
+      this.quickAddProductToCart(current);
+      return;
+    }
+
+    if (items.length > 0) {
+      this.quickAddProductToCart(items[0]);
+      return;
+    }
+
+    this.addEntryToCart();
+  }
+
+  triggerFastCashPay(): void {
+    this.setMethod('cash');
+    this.setExactPayment();
+    this.msg.info(`Fast Cash: Exact ৳ ${this.payableTotal().toFixed(2)} ready (F8)`);
+  }
+
+  closeAllModals(): void {
+    this.isCustomerModalVisible = false;
+    this.isProductModalVisible = false;
+    this.isQuickGenericModalVisible = false;
+    this.isQuickCompanyModalVisible = false;
+    this.isHeldOrdersModalVisible = false;
+    this.isEditItemModalVisible = false;
+    this.isReceiptModalVisible = false;
+  }
+
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    const activeEl = document.activeElement as HTMLElement;
+    const isSearchInput = activeEl?.id === 'pos-search-input';
+    const isTenderInput = activeEl?.id === 'pos-tender-input';
+    const isModalOpen = this.isCustomerModalVisible || this.isHeldOrdersModalVisible || 
+                        this.isReceiptModalVisible || this.isProductModalVisible || 
+                        this.isEditItemModalVisible || this.isQuickGenericModalVisible || 
+                        this.isQuickCompanyModalVisible;
+
+    if (isModalOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.closeAllModals();
+      }
+      return;
+    }
+
     if (event.key === 'F1') {
       event.preventDefault();
-      const inputEl = document.querySelector('nz-select input') as HTMLElement;
-      if (inputEl) inputEl.focus();
+      this.focusProductSearch();
     } else if (event.key === 'F2') {
       event.preventDefault();
       this.openQuickAddProduct();
+    } else if (event.key === 'F3') {
+      event.preventDefault();
+      this.openAddCustomerModal();
     } else if (event.key === 'F4') {
       event.preventDefault();
       this.setQuickExact();
       this.msg.info('Set exact pay amount (F4)');
+    } else if (event.key === 'F8') {
+      event.preventDefault();
+      this.triggerFastCashPay();
     } else if (event.key === 'F9') {
       event.preventDefault();
       this.handleHoldAction();
     } else if (event.key === 'F10' || (event.ctrlKey && event.key === 'Enter')) {
       event.preventDefault();
       this.confirmCheckout();
-    } else if (event.key === 'Enter') {
-      const activeEl = document.activeElement;
-      const isInputOrButton = activeEl && ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(activeEl.tagName);
-      const isModalOpen = this.isCustomerModalVisible || this.isHeldOrdersModalVisible || 
-                          this.isReceiptModalVisible || this.isProductModalVisible || 
-                          this.isEditItemModalVisible || this.isQuickGenericModalVisible || 
-                          this.isQuickCompanyModalVisible;
-      if (!isInputOrButton && !isModalOpen && (this.selectedProductText || this.selectedProductObj)) {
+    } else if (event.key === 'ArrowDown') {
+      if (isSearchInput || !activeEl || activeEl === document.body) {
         event.preventDefault();
-        this.addEntryToCart();
+        this.navigateCatalogGrid('down');
+      }
+    } else if (event.key === 'ArrowUp') {
+      if (isSearchInput || !activeEl || activeEl === document.body) {
+        event.preventDefault();
+        this.navigateCatalogGrid('up');
+      }
+    } else if (event.key === 'ArrowRight') {
+      if (!isSearchInput || (activeEl as HTMLInputElement)?.selectionStart === (activeEl as HTMLInputElement)?.value?.length) {
+        if (!isSearchInput) {
+          event.preventDefault();
+          this.navigateCatalogGrid('right');
+        }
+      }
+    } else if (event.key === 'ArrowLeft') {
+      if (!isSearchInput || (activeEl as HTMLInputElement)?.selectionStart === 0) {
+        if (!isSearchInput) {
+          event.preventDefault();
+          this.navigateCatalogGrid('left');
+        }
+      }
+    } else if (event.key === 'Enter') {
+      if (isTenderInput) {
+        event.preventDefault();
+        this.confirmCheckout();
+      } else if (isSearchInput || !['INPUT', 'TEXTAREA', 'BUTTON'].includes(activeEl?.tagName)) {
+        event.preventDefault();
+        this.addHighlightedOrSearchToCart();
+      }
+    } else if (event.key === 'Escape') {
+      if (this.currentSearchTerm()) {
+        event.preventDefault();
+        this.currentSearchTerm.set('');
       }
     }
   }
@@ -808,6 +1041,7 @@ export class PosTerminalComponent implements OnInit {
           rak: p.rak_number || '',
           barcode: p.barcode_value || '',
           strength: p.strength || '',
+          medicineType: p.medicine_type,
           dar_number: p.dar_number || null,
           drug_schedule: (p.drug_schedule as any) || 'OTC',
           is_prescription_required: p.is_prescription_required || (p.drug_schedule && p.drug_schedule !== 'OTC'),
@@ -872,12 +1106,13 @@ export class PosTerminalComponent implements OnInit {
   }
 
   onProductSearch(term: string): void {
-    this.currentSearchTerm = term || '';
+    this.currentSearchTerm.set(term || '');
   }
 
   onProductEnterKey(): void {
-    if (!this.selectedProductText && this.currentSearchTerm) {
-      const term = this.currentSearchTerm.toLowerCase().trim();
+    const sTerm = this.currentSearchTerm();
+    if (!this.selectedProductText && sTerm) {
+      const term = sTerm.toLowerCase().trim();
       const match = this.catalogProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
@@ -887,7 +1122,7 @@ export class PosTerminalComponent implements OnInit {
         this.selectedProductText = match.name;
         this.onProductPicked(match.name);
       } else {
-        this.selectedProductText = this.currentSearchTerm.trim();
+        this.selectedProductText = sTerm.trim();
         if (this.entryPrice <= 0) {
           this.entryPrice = this.isWholesale() ? 50 : 10;
         }
@@ -927,11 +1162,15 @@ export class PosTerminalComponent implements OnInit {
 
   focusProductSearch(): void {
     setTimeout(() => {
-      const inputEl = document.querySelector('nz-select input') as HTMLElement;
+      const inputEl = document.getElementById('pos-search-input') as HTMLInputElement;
       if (inputEl) {
         inputEl.focus();
+        inputEl.select();
+      } else {
+        const selInput = document.querySelector('nz-select input') as HTMLElement;
+        if (selInput) selInput.focus();
       }
-    }, 80);
+    }, 60);
   }
 
   getEntryLineTotal(): number {
@@ -958,8 +1197,9 @@ export class PosTerminalComponent implements OnInit {
 
   addEntryToCart(): void {
     // Fallback: If selectedProductText is empty but cashier typed in the search box
-    if (!this.selectedProductText.trim() && this.currentSearchTerm.trim()) {
-      const term = this.currentSearchTerm.toLowerCase().trim();
+    const sTerm = this.currentSearchTerm();
+    if (!this.selectedProductText.trim() && sTerm.trim()) {
+      const term = sTerm.toLowerCase().trim();
       const match = this.catalogProducts().find(p =>
         p.name.toLowerCase().includes(term) ||
         p.generic.toLowerCase().includes(term) ||
@@ -970,7 +1210,7 @@ export class PosTerminalComponent implements OnInit {
         this.selectedProductText = match.name;
         this.onProductPicked(match.name);
       } else {
-        this.selectedProductText = this.currentSearchTerm.trim();
+        this.selectedProductText = sTerm.trim();
         if (this.entryPrice <= 0) {
           this.entryPrice = this.isWholesale() ? 50 : 10;
         }
@@ -1069,9 +1309,10 @@ export class PosTerminalComponent implements OnInit {
     }
 
     this.isManualTender.set(false); // Reset to auto-tender for new cart state!
+    this.tenderTouched = false;
     this.selectedProductText = '';
     this.selectedProductObj = null;
-    this.currentSearchTerm = '';
+    this.currentSearchTerm.set('');
     this.entryQty = 1;
     this.entryPrice = 0;
     this.entryDiscountValue = 0;
@@ -1079,6 +1320,8 @@ export class PosTerminalComponent implements OnInit {
   }
 
   updateItemQty(item: CartItem, delta: number): void {
+    this.isManualTender.set(false);
+    this.tenderTouched = false;
     const step = this.isWholesale() ? 0.25 : 1;
     const currentQty = Number(item.qty) || 0;
     const newQty = Math.max(step, Math.round((currentQty + delta) * 100) / 100);
@@ -1089,6 +1332,8 @@ export class PosTerminalComponent implements OnInit {
   }
 
   setItemQty(item: CartItem, newQtyRaw: number | string): void {
+    this.isManualTender.set(false);
+    this.tenderTouched = false;
     const val = Math.max(0.01, Number(newQtyRaw) || 0.01);
     const newQty = Math.round(val * 100) / 100;
     if (item.stock && newQty > item.stock) {
@@ -1120,6 +1365,8 @@ export class PosTerminalComponent implements OnInit {
   }
 
   removeItem(item: CartItem): void {
+    this.isManualTender.set(false);
+    this.tenderTouched = false;
     this.cart.update(list => list.filter(i => {
       if (item.cart_item_id && i.cart_item_id) return i.cart_item_id !== item.cart_item_id;
       return i.product_no !== item.product_no;

@@ -74,6 +74,17 @@
           <label nz-checkbox [(ngModel)]="quickPrint" class="text-xs font-medium text-slate-600 m-0">Quick Print</label>
         </div>
 
+        <!-- Add Customer Button (F3) -->
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          (click)="openAddCustomerModal()"
+          class="rounded-md"
+        >
+          <span nz-icon nzType="user-add"></span> Add Customer (F3)
+        </button>
+
         <!-- Add Product Button (F2) -->
         <button
           type="button"
@@ -82,7 +93,7 @@
           (click)="openQuickAddProduct()"
           class="rounded-md"
         >
-          <span nz-icon nzType="plus"></span> Add New Product (F2)
+          <span nz-icon nzType="plus"></span> Add Product (F2)
         </button>
 
         <!-- Return Link Button -->
@@ -98,282 +109,231 @@
     </div>
   </app-page-header>
 
-  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-    <!-- LEFT PANEL: Entry Card + Cart Items Table -->
-    <div class="lg:col-span-8 flex flex-col gap-3 min-h-0">
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0">
+    <!-- LEFT PANE: Catalog & Search (58% width, lg:col-span-7 xl:col-span-7) -->
+    <div class="lg:col-span-7 xl:col-span-7 flex flex-col gap-2.5 min-h-0 bg-white rounded-xl border border-slate-200 shadow-2xs p-3">
       
-      <!-- Fast-Moving OTC Quick-Pick Bar -->
-      @if (fastMovingProducts().length > 0) {
-        <div class="bg-white rounded-xl border border-slate-200 shadow-2xs px-3.5 py-2 flex items-center gap-2 overflow-x-auto">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 shrink-0">
-            <span nz-icon nzType="thunderbolt" class="text-amber-500"></span>
-            <span>Fast Pick OTC:</span>
-          </div>
-          <div class="flex items-center gap-1.5 flex-nowrap">
-            @for (otc of fastMovingProducts(); track otc.id) {
+      <!-- Top Search & Barcode Bar -->
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="relative flex-1">
+          <span nz-icon nzType="barcode" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none"></span>
+          <input
+            id="pos-search-input"
+            type="text"
+            [ngModel]="currentSearchTerm()"
+            (ngModelChange)="onSearchInput($event)"
+            placeholder="Search medicine, generic, barcode, rak (F1)..."
+            class="w-full pl-9 pr-24 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-2 focus:outline-indigo-600 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+          />
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            @if (currentSearchTerm()) {
               <button
                 type="button"
-                (click)="quickAddProductToCart(otc)"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 transition-all cursor-pointer shrink-0 group select-none"
-                nz-tooltip
-                [nzTooltipTitle]="'Available: ' + getAvailableStock(otc) + ' pcs (Total: ' + otc.stock + ')' + ' | Rak: ' + (otc.rak || 'N/A') + ' | Click to add 1 pcs'"
+                (click)="currentSearchTerm.set(''); focusProductSearch()"
+                class="p-1 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs"
+                title="Clear search"
               >
-                <span class="font-semibold text-slate-900 group-hover:text-indigo-600">{{ otc.name }}</span>
-                @if (otc.strength) {
-                  <span class="text-[10px] text-slate-400 font-normal">({{ otc.strength }})</span>
-                }
-                <span class="font-mono text-[11px] font-bold text-emerald-700">৳{{ isWholesale() ? otc.saleWholesale : otc.saleRetail }}</span>
-                <span
-                  class="text-[10px] px-1.5 py-0.2 rounded font-bold"
-                  [class.bg-emerald-100]="getAvailableStock(otc) > otc.minStock"
-                  [class.text-emerald-800]="getAvailableStock(otc) > otc.minStock"
-                  [class.bg-amber-100]="getAvailableStock(otc) > 0 && getAvailableStock(otc) <= otc.minStock"
-                  [class.text-amber-800]="getAvailableStock(otc) > 0 && getAvailableStock(otc) <= otc.minStock"
-                  [class.bg-rose-100]="getAvailableStock(otc) <= 0"
-                  [class.text-rose-800]="getAvailableStock(otc) <= 0"
-                >
-                  {{ getAvailableStock(otc) }} pcs
-                </span>
+                ✕
               </button>
             }
+            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-slate-200 text-slate-600 rounded">F1</kbd>
+            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-indigo-100 text-indigo-700 font-bold rounded">Enter: Add</kbd>
           </div>
-        </div>
-      }
-
-      <!-- Product Entry Card -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3.5">
-        <div class="grid grid-cols-12 gap-3 items-end">
-          <!-- Product Search / Select -->
-          <div class="col-span-12 md:col-span-4">
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-700">
-                Product / Medicine <span class="text-rose-500">*</span>
-              </label>
-              <span class="text-[10px] text-slate-400 font-medium">Press F1 to search</span>
-            </div>
-            <nz-select
-              nzShowSearch
-              nzPlaceHolder="Search name, generic, barcode (F1)..."
-              [(ngModel)]="selectedProductText"
-              (ngModelChange)="onProductPicked($event)"
-              (nzOnSearch)="onProductSearch($event)"
-              (keyup.enter)="onProductEnterKey()"
-              [nzOptionHeightPx]="56"
-              [nzOptionOverflowSize]="5"
-              nzDropdownClassName="product-search-dropdown"
-              [nzDropdownStyle]="{ 'min-height': '280px', 'max-height': '320px' }"
-              class="w-full"
-            >
-              @for (p of catalogProducts(); track p.id) {
-                <nz-option
-                  [nzValue]="p.name"
-                  [nzLabel]="p.name + (p.strength ? ' ' + p.strength : '') + ' • Avail: ' + getAvailableStock(p) + ' pcs' + (p.rak ? ' [Rak: ' + p.rak + ']' : '')"
-                  nzCustomContent
-                >
-                  <div 
-                    (click)="onProductOptionSelected(p)"
-                    class="h-[48px] flex items-center justify-between border-b border-slate-100 last:border-0 w-full cursor-pointer"
-                  >
-                    <div class="flex-1 min-w-0 pr-2">
-                      <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs truncate">
-                        <span>{{ p.name }}</span>
-                        @if (p.strength) {
-                          <span class="text-[10px] text-slate-500 font-normal">({{ p.strength }})</span>
-                        }
-                        @if (p.drug_schedule && p.drug_schedule !== 'OTC') {
-                          <span class="text-[9px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-700 border border-purple-200">
-                            {{ p.drug_schedule }}
-                          </span>
-                        }
-                      </div>
-                      <div class="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
-                        <span class="truncate">{{ p.generic }}</span>
-                        @if (p.rak) {
-                          <span class="text-indigo-600 bg-indigo-50 px-1 rounded text-[10px] font-medium shrink-0">📍 Rak: {{ p.rak }}</span>
-                        }
-                      </div>
-                    </div>
-                    <div class="text-right shrink-0 flex flex-col items-end">
-                      <div class="font-mono font-bold text-xs text-slate-800">
-                        ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
-                      </div>
-                      @if (getAvailableStock(p) <= 0) {
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-800">
-                          Out of Stock
-                        </span>
-                      } @else if (getAvailableStock(p) <= p.minStock) {
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
-                          Low: {{ getAvailableStock(p) }} pcs
-                        </span>
-                      } @else {
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                          Avail: {{ getAvailableStock(p) }} pcs
-                        </span>
-                      }
-                    </div>
-                  </div>
-                </nz-option>
-              }
-            </nz-select>
-          </div>
-          
-          <!-- Quantity Input: Box Qty in Wholesale, Sale QTY in Retail -->
-          <div class="col-span-4 md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              {{ isWholesale() ? 'Box Qty' : 'Sale QTY' }} <span class="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              nz-input
-              [(ngModel)]="entryQty"
-              (keyup.enter)="addEntryToCart()"
-              class="rounded-md font-mono"
-              [step]="isWholesale() ? 0.25 : 1"
-              [min]="0.01"
-            />
-          </div>
-          
-          <!-- Sale Price Input: Box Price in Wholesale, Piece Price in Retail -->
-          <div class="col-span-4 md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              {{ isWholesale() ? 'Price/Box (৳)' : 'Sale Price (৳)' }} <span class="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              nz-input
-              [(ngModel)]="entryPrice"
-              (keyup.enter)="addEntryToCart()"
-              class="rounded-md font-mono"
-              min="0"
-              step="0.1"
-            />
-          </div>
-
-          <!-- Item-Level Discount: Flat vs % toggle -->
-          <div class="col-span-4 md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Discount</label>
-            <div class="flex">
-              <div class="flex rounded-l-md border border-r-0 border-slate-300 overflow-hidden bg-slate-100 shrink-0">
-                <button
-                  type="button"
-                  (click)="entryDiscountType = DiscountType.Flat"
-                  class="px-2 py-1 text-xs font-bold border-0 cursor-pointer transition-colors"
-                  [class.bg-indigo-600]="entryDiscountType === DiscountType.Flat"
-                  [class.text-white]="entryDiscountType === DiscountType.Flat"
-                  [class.text-slate-600]="entryDiscountType !== DiscountType.Flat"
-                >
-                  ৳
-                </button>
-                <button
-                  type="button"
-                  (click)="entryDiscountType = DiscountType.Percentage"
-                  class="px-2 py-1 text-xs font-bold border-0 cursor-pointer transition-colors"
-                  [class.bg-indigo-600]="entryDiscountType === DiscountType.Percentage"
-                  [class.text-white]="entryDiscountType === DiscountType.Percentage"
-                  [class.text-slate-600]="entryDiscountType !== DiscountType.Percentage"
-                >
-                  %
-                </button>
-              </div>
-              <input
-                type="number"
-                nz-input
-                placeholder="0"
-                [(ngModel)]="entryDiscountValue"
-                class="rounded-r-md rounded-l-none font-mono flex-1 min-w-0"
-                min="0"
-                (keyup.enter)="addEntryToCart()"
-              />
-            </div>
-          </div>
-          
-          <!-- Add Line Button -->
-          <div class="col-span-12 md:col-span-2">
-            <button
-              #addBtn
-              id="pos-add-btn"
-              type="button"
-              nz-button
-              nzType="primary"
-              (click)="addEntryToCart()"
-              class="w-full rounded-md font-semibold transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
-            >
-              Add (Enter)
-              @if (getEntryLineTotal() > 0) {
-                <span class="text-[11px] opacity-85 font-mono ml-1">(৳{{ getEntryLineTotal() | number: '1.2-2' }})</span>
-              }
-            </button>
-          </div>
-
-          <!-- Selected Product Live Stock & Location Info Banner -->
-          @if (selectedProductObj) {
-            <div
-              class="col-span-12 mt-1 p-2.5 rounded-lg border flex flex-wrap items-center justify-between gap-2 text-xs transition-all"
-              [class.bg-emerald-50/60]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
-              [class.border-emerald-200]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
-              [class.bg-amber-50/60]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
-              [class.border-amber-200]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
-              [class.bg-rose-50/60]="getAvailableStock(selectedProductObj) <= 0"
-              [class.border-rose-200]="getAvailableStock(selectedProductObj) <= 0"
-            >
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900">{{ selectedProductObj.name }}</span>
-                @if (selectedProductObj.strength) {
-                  <span class="text-slate-500 font-medium">({{ selectedProductObj.strength }})</span>
-                }
-                <span class="text-slate-500">• {{ selectedProductObj.generic }}</span>
-                @if (selectedProductObj.rak) {
-                  <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded text-[11px]">
-                    📍 Shelf / Rak: {{ selectedProductObj.rak }}
-                  </span>
-                }
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-slate-600 font-medium">Available Stock:</span>
-                  <span
-                    class="font-mono font-black text-sm"
-                    [class.text-emerald-700]="getAvailableStock(selectedProductObj) > selectedProductObj.minStock"
-                    [class.text-amber-700]="getAvailableStock(selectedProductObj) > 0 && getAvailableStock(selectedProductObj) <= selectedProductObj.minStock"
-                    [class.text-rose-700]="getAvailableStock(selectedProductObj) <= 0"
-                  >
-                    {{ getAvailableStock(selectedProductObj) }} pcs
-                  </span>
-                  <span class="text-[11px] text-slate-500">
-                    ({{ Math.floor(getAvailableStock(selectedProductObj) / (selectedProductObj.pcsPerBox || 10)) }} box + {{ getAvailableStock(selectedProductObj) % (selectedProductObj.pcsPerBox || 10) }} pcs)
-                  </span>
-                </div>
-                @if (getAvailableStock(selectedProductObj) <= 0) {
-                  <span class="bg-rose-600 text-white font-bold text-[10px] px-2 py-0.5 rounded">
-                    ⚠️ OUT OF STOCK
-                  </span>
-                } @else if (entryQty > getAvailableStock(selectedProductObj)) {
-                  <span class="bg-amber-500 text-white font-bold text-[10px] px-2 py-0.5 rounded">
-                    ⚠️ Requested qty ({{ entryQty }}) exceeds available ({{ getAvailableStock(selectedProductObj) }} pcs)
-                  </span>
-                }
-              </div>
-            </div>
-          }
         </div>
       </div>
 
-      <!-- Cart Table Card -->
-      <div class="flex-1 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
-        <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <!-- Category Filter Pills Bar -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none shrink-0">
+        @for (cat of categoryPills; track cat.id) {
+          <button
+            type="button"
+            (click)="setCategory(cat.id)"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer select-none"
+            [class.bg-indigo-600]="selectedCategory() === cat.id"
+            [class.text-white]="selectedCategory() === cat.id"
+            [class.border-indigo-600]="selectedCategory() === cat.id"
+            [class.shadow-xs]="selectedCategory() === cat.id"
+            [class.bg-slate-100]="selectedCategory() !== cat.id"
+            [class.text-slate-700]="selectedCategory() !== cat.id"
+            [class.border-slate-200]="selectedCategory() !== cat.id"
+            [class.hover:bg-slate-200]="selectedCategory() !== cat.id"
+          >
+            <span nz-icon [nzType]="cat.icon || 'tag'"></span>
+            <span>{{ cat.name }}</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-full font-bold"
+              [class.bg-indigo-500]="selectedCategory() === cat.id"
+              [class.text-white]="selectedCategory() === cat.id"
+              [class.bg-slate-200]="selectedCategory() !== cat.id"
+              [class.text-slate-600]="selectedCategory() !== cat.id"
+            >
+              {{ getCategoryCount(cat.id) }}
+            </span>
+          </button>
+        }
+      </div>
+
+      <!-- Product Catalog Grid -->
+      <div class="flex-1 overflow-y-auto min-h-0 pr-1">
+        @if (filteredCatalogProducts().length > 0) {
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-2.5">
+            @for (p of filteredCatalogProducts(); track p.id; let idx = $index) {
+              <div
+                id="catalog-product-{{ idx }}"
+                (click)="quickAddProductToCart(p)"
+                class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between h-28 relative group hover:shadow-md hover:border-indigo-400"
+                [class.ring-2]="highlightedIndex() === idx"
+                [class.ring-indigo-600]="highlightedIndex() === idx"
+                [class.bg-indigo-50/60]="highlightedIndex() === idx"
+                [class.border-indigo-400]="highlightedIndex() === idx"
+                [class.bg-white]="highlightedIndex() !== idx"
+                [class.border-slate-200]="highlightedIndex() !== idx"
+              >
+                <!-- Tile Top Row: Name + Strength + Schedule badge -->
+                <div class="min-w-0">
+                  <div class="flex items-start justify-between gap-1">
+                    <div class="font-bold text-xs text-slate-900 group-hover:text-indigo-600 truncate flex-1 leading-tight">
+                      {{ p.name }}
+                    </div>
+                    @if (p.drug_schedule && p.drug_schedule !== 'OTC') {
+                      <span [class]="p.drug_schedule === 'NARCOTIC' ? 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-200 shrink-0' : (p.drug_schedule === 'ANTIBIOTIC' ? 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-800 border border-purple-200 shrink-0' : 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200 shrink-0')">
+                        {{ p.drug_schedule }}
+                      </span>
+                    }
+                  </div>
+                  <div class="text-[11px] text-slate-500 truncate mt-0.5">
+                    {{ p.generic }}
+                    @if (p.strength) {
+                      <span class="text-slate-400">({{ p.strength }})</span>
+                    }
+                  </div>
+                  <div class="text-[10px] text-slate-400 truncate">
+                    {{ p.manufacturer }}
+                  </div>
+                </div>
+
+                <!-- Tile Bottom Row: Price + Stock Badge + Rak -->
+                <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100">
+                  <div class="font-mono font-bold text-xs text-emerald-700">
+                    ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
+                  </div>
+                  <div class="flex items-center gap-1">
+                    @if (p.rak) {
+                      <span class="text-[9.5px] text-indigo-700 bg-indigo-50 font-medium px-1.5 py-0.2 rounded" title="Shelf location">
+                        📍{{ p.rak }}
+                      </span>
+                    }
+                    <span
+                      class="text-[10px] px-1.5 py-0.2 rounded font-bold"
+                      [class.bg-emerald-100]="getAvailableStock(p) > p.minStock"
+                      [class.text-emerald-800]="getAvailableStock(p) > p.minStock"
+                      [class.bg-amber-100]="getAvailableStock(p) > 0 && getAvailableStock(p) <= p.minStock"
+                      [class.text-amber-800]="getAvailableStock(p) > 0 && getAvailableStock(p) <= p.minStock"
+                      [class.bg-rose-100]="getAvailableStock(p) <= 0"
+                      [class.text-rose-800]="getAvailableStock(p) <= 0"
+                    >
+                      {{ getAvailableStock(p) }} pcs
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="h-full flex flex-col items-center justify-center text-slate-400 p-8 space-y-2">
+            <span nz-icon nzType="search" class="text-3xl text-slate-300"></span>
+            <p class="font-medium text-sm text-slate-500 m-0">No matching medicines found</p>
+            <p class="text-xs text-slate-400 m-0">Press <kbd class="bg-slate-100 border px-1 rounded">F2</kbd> to quick-add this product to inventory</p>
+          </div>
+        }
+      </div>
+
+      <!-- Catalog Footer Hints -->
+      <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <span>Showing {{ filteredCatalogProducts().length }} items</span>
+        <div class="flex items-center gap-2">
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">↑ ↓ ← →</kbd> Browse</span>
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">Enter</kbd> Add to Cart</span>
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">F2</kbd> New Product</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Cart & Checkout Drawer (42% width, lg:col-span-5 xl:col-span-5) -->
+    <div class="lg:col-span-5 xl:col-span-5 checkout-drawer flex flex-col gap-2.5 overflow-hidden">
+      
+      <!-- Customer Section -->
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+          <span>Customer</span>
+          <span class="text-[10px] text-slate-400 font-normal">F3: Add Customer</span>
+        </div>
+        <div class="flex gap-1.5 items-center">
+          <nz-select
+            class="flex-1"
+            nzShowSearch
+            nzPlaceHolder="Select or search customer..."
+            [ngModel]="selectedCustomer()"
+            (ngModelChange)="onCustomerChange($event)"
+          >
+            @for (c of customers; track c.id) {
+              <nz-option
+                [nzValue]="c.id"
+                [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
+              ></nz-option>
+            }
+          </nz-select>
+          <button
+            type="button"
+            (click)="openAddCustomerModal()"
+            class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base flex items-center justify-center border-0 cursor-pointer shrink-0 transition-colors"
+            title="Add customer (F3)"
+            aria-label="Add customer (F3)"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- Customer Due Information Banner -->
+        @if (selectedCustomer() !== '1' && selectedCustomerObj()) {
+          <div class="dueinfo mt-1.5" [class.has]="previousDue() > 0" [class.none]="previousDue() <= 0">
+            <div class="top">
+              <span>{{ previousDue() > 0 ? 'Previous due' : 'No previous due' }}</span>
+              @if (previousDue() > 0) {
+                <b>৳ {{ previousDue() | number: '1.2-2' }}</b>
+              }
+            </div>
+            @if (previousDue() > 0) {
+              <label class="chk">
+                <input
+                  type="checkbox"
+                  [ngModel]="collectPreviousDue()"
+                  (ngModelChange)="toggleCollectPreviousDue($event)"
+                  [disabled]="selectedMethod() === 'due'"
+                />
+                <span>Collect previous due with this bill</span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Cart Items Table Card -->
+      <div class="flex-1 bg-slate-50 rounded-xl border border-slate-200 flex flex-col overflow-hidden min-h-[130px] max-h-[220px]">
+        <div class="p-2 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
           <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">
-            Cart Items ({{ cart().length }})
+            Cart ({{ cart().length }} items · {{ totalCartPcs() }} pcs)
           </span>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
             @if (heldOrders().length > 0) {
               <button
                 type="button"
                 nz-button
                 nzSize="small"
                 (click)="isHeldOrdersModalVisible = true"
-                class="rounded text-xs bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                class="rounded text-[11px] bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
               >
-                <span nz-icon nzType="inbox"></span> View Held Orders ({{ heldOrders().length }})
+                <span nz-icon nzType="inbox"></span> Held ({{ heldOrders().length }})
               </button>
             }
             <button
@@ -381,84 +341,42 @@
               nz-button
               nzType="default"
               nzSize="small"
-              class="text-xs rounded"
+              class="text-[11px] rounded"
               (click)="startNewInvoice()"
+              title="Clear cart"
             >
-              <span nz-icon nzType="clear"></span> Clear Basket
+              Clear
             </button>
           </div>
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-0">
-          @if (cart().length > 0) {
-            <table class="w-full text-left border-collapse text-xs">
-              <!-- Table Header -->
-              <thead class="bg-slate-50 text-slate-600 uppercase font-semibold tracking-wider sticky top-0 border-b border-slate-200">
-                @if (isWholesale()) {
-                  <!-- Wholesale Table Header -->
-                  <tr>
-                    <th class="p-3">Details</th>
-                    <th class="p-3 text-center">Box Qty</th>
-                    <th class="p-3 text-center">Pcs/Box</th>
-                    <th class="p-3 text-right">Price/Box (৳)</th>
-                    <th class="p-3 text-right">Discount</th>
-                    <th class="p-3 text-right">Price (৳)</th>
-                    <th class="p-3 text-center w-20">Action</th>
-                  </tr>
-                } @else {
-                  <!-- Retail Table Header -->
-                  <tr>
-                    <th class="p-3">Details</th>
-                    <th class="p-3 text-center">Sale QTY</th>
-                    <th class="p-3 text-center">Pcs/Box</th>
-                    <th class="p-3 text-right">Price/Piece (৳)</th>
-                    <th class="p-3 text-right">Discount</th>
-                    <th class="p-3 text-right">Price (৳)</th>
-                    <th class="p-3 text-center w-20">Action</th>
-                  </tr>
-                }
-              </thead>
 
-              <!-- Table Body -->
-              <tbody class="divide-y divide-slate-100 text-slate-800">
+        <div class="flex-1 overflow-y-auto min-h-0 bg-white">
+          @if (cart().length > 0) {
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-slate-50 text-slate-500 font-semibold sticky top-0 border-b border-slate-200 z-10">
+                <tr>
+                  <th class="p-1.5">Item</th>
+                  <th class="p-1.5 text-center w-24">Qty</th>
+                  <th class="p-1.5 text-right w-16">Price</th>
+                  <th class="p-1.5 text-right w-16">Total</th>
+                  <th class="p-1.5 text-center w-10">Act</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
                 @for (item of cart(); track (item.cart_item_id || item.product_no); let idx = $index) {
-                  <tr
-                    class="hover:bg-slate-50/70 transition-colors"
-                    [class.bg-rose-50/30]="isWholesale()"
-                  >
-                    <!-- Details -->
-                    <td class="p-3">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <p class="font-bold text-slate-900 m-0 text-xs">{{ item.product_name }}</p>
-                        @if (item.drug_schedule && item.drug_schedule !== 'OTC') {
-                          <span [class]="item.drug_schedule === 'NARCOTIC' ? 'text-[9px] font-bold px-1 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-200' : 'text-[9px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-800 border border-purple-200'">
-                            {{ item.drug_schedule }}
-                          </span>
-                        }
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="p-1.5">
+                      <div class="font-semibold text-slate-900 text-xs leading-tight truncate max-w-[130px]" [title]="item.product_name">
+                        {{ item.product_name }}
                       </div>
-                      <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
-                        <span>{{ item.generic_name }}</span>
-                        @if (item.manufacturer) {
-                          <span>• {{ item.manufacturer }}</span>
-                        }
+                      <div class="text-[10px] text-slate-400 truncate max-w-[130px]">
+                        {{ item.generic_name }}
                         @if (item.rak) {
-                          <span class="text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-medium text-[10px]">
-                            📍 Rak: {{ item.rak }}
-                          </span>
-                        }
-                        <span class="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded text-[10px]">
-                          Stock: {{ item.stock ?? 0 }} pcs → Left: {{ Math.max(0, (item.stock ?? 0) - (isWholesale() ? Math.round(item.qty * (item.pcs_per_box || 10)) : Math.round(item.qty))) }} pcs
-                        </span>
-                        @if ((item.stock ?? 0) < (isWholesale() ? Math.round(item.qty * (item.pcs_per_box || 10)) : Math.round(item.qty))) {
-                          <span class="bg-rose-100 text-rose-800 border border-rose-200 px-1.5 py-0.2 rounded font-bold text-[10px] animate-pulse">
-                            ⚠️ Exceeds stock (avail: {{ item.stock ?? 0 }} pcs)
-                          </span>
+                          <span class="text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded font-mono ml-1">📍{{ item.rak }}</span>
                         }
                       </div>
                     </td>
-
-                    <!-- QTY: Box Qty in Wholesale, Sale QTY in Retail (Interactive Stepper) -->
-                    <td class="p-3 text-center">
+                    <td class="p-1.5 text-center">
                       <div class="inline-flex items-center border border-slate-200 rounded-md bg-white overflow-hidden shadow-2xs">
                         <button
                           type="button"
@@ -473,7 +391,7 @@
                           (ngModelChange)="setItemQty(item, $event)"
                           [step]="isWholesale() ? 0.25 : 1"
                           min="0.01"
-                          class="w-12 text-center font-mono font-bold text-xs border-0 outline-hidden p-0 text-slate-900"
+                          class="w-9 text-center font-mono font-bold text-xs border-0 outline-hidden p-0 text-slate-900"
                         />
                         <button
                           type="button"
@@ -484,251 +402,87 @@
                         </button>
                       </div>
                     </td>
-
-                    <!-- Pcs/Box -->
-                    <td class="p-3 text-center font-mono text-slate-600">
-                      {{ item.pcs_per_box }}
+                    <td class="p-1.5 text-right font-mono text-xs text-slate-700">
+                      ৳ {{ item.unit_price | number: '1.2-2' }}
                     </td>
-
-                    <!-- Price column: stacked Cost/Sale in wholesale, unit price in retail -->
-                    <td class="p-3 text-right font-mono">
-                      @if (isWholesale()) {
-                        @if (authService.canViewCostPrice()) {
-                          <div class="text-[11px] text-slate-500">
-                            Cost: ৳ {{ item.cost_price | number: '1.2-2' }}
-                          </div>
-                        }
-                        <div class="text-xs font-semibold text-slate-800">
-                          Sale: ৳ {{ item.unit_price | number: '1.2-2' }}
-                        </div>
-                      } @else {
-                        <span class="text-slate-800 font-medium">
-                          ৳ {{ item.unit_price | number: '1.2-2' }}
-                        </span>
-                      }
+                    <td class="p-1.5 text-right font-mono font-bold text-xs theme-total-text">
+                      ৳ {{ item.total | number: '1.2-2' }}
                     </td>
-
-                    <!-- Discount column -->
-                    <td class="p-3 text-right font-mono">
-                      @if (item.discount > 0) {
-                        <span class="text-rose-600 font-medium">
-                          - ৳ {{ item.discount | number: '1.2-2' }}
-                        </span>
-                      } @else {
-                        <span class="text-slate-400">0%</span>
-                      }
-                    </td>
-
-                    <!-- Price total column: stacked Total/After Discount in wholesale -->
-                    <td class="p-3 text-right font-mono">
-                      @if (isWholesale()) {
-                        <div class="text-[11px] text-slate-500">
-                          Total: ৳ {{ (item.unit_price * item.qty) | number: '1.2-2' }}
-                        </div>
-                        <div class="text-xs font-bold theme-total-text">
-                          After: ৳ {{ item.total | number: '1.2-2' }}
-                        </div>
-                      } @else {
-                        <span class="font-bold theme-total-text text-sm">
-                          ৳ {{ item.total | number: '1.2-2' }}
-                        </span>
-                      }
-                    </td>
-
-                    <!-- Standardized 28px Actions -->
-                    <td class="p-3 text-center">
-                      <div class="inline-flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          (click)="openEditItemModal(item)"
-                          nz-tooltip
-                          nzTooltipTitle="Edit Line"
-                          class="btn-tbl-action btn-tbl-view"
-                        >
-                          <span nz-icon nzType="edit"></span>
-                        </button>
-                        <button
-                          type="button"
-                          (click)="removeItem(item)"
-                          nz-tooltip
-                          nzTooltipTitle="Remove Item"
-                          class="btn-tbl-action btn-tbl-delete"
-                        >
-                          <span nz-icon nzType="delete"></span>
-                        </button>
-                      </div>
+                    <td class="p-1.5 text-center">
+                      <button
+                        type="button"
+                        (click)="removeItem(item)"
+                        class="text-rose-500 hover:text-rose-700 p-0.5 border-0 bg-transparent cursor-pointer"
+                        title="Remove item"
+                      >
+                        <span nz-icon nzType="delete"></span>
+                      </button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
           } @else {
-            <div class="h-full flex flex-col items-center justify-center text-slate-400 p-8 space-y-2">
-              <span nz-icon nzType="shopping-cart" class="text-4xl text-slate-300"></span>
-              <p class="font-medium text-sm text-slate-500 m-0">Basket is currently empty</p>
-              <p class="text-xs text-slate-400 m-0">
-                Select a medicine from the bar above or press <kbd class="bg-slate-100 border px-1 rounded">Enter</kbd> to add
-              </p>
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 p-5 space-y-1">
+              <span nz-icon nzType="shopping-cart" class="text-2xl text-slate-300"></span>
+              <p class="font-medium text-xs text-slate-500 m-0">Basket is empty</p>
+              <p class="text-[10px] text-slate-400 m-0 text-center">Click cards on the left or press Enter to add</p>
             </div>
           }
         </div>
       </div>
-    </div>
-
-    <!-- RIGHT PANEL: Checkout Drawer (Redesigned matching User Prototype) -->
-    <div class="lg:col-span-4 checkout-drawer">
-      
-      <!-- Customer Section -->
-      <label class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-        <span>Customer</span>
-      </label>
-      <div class="flex gap-1.5 items-center">
-        <nz-select
-          class="flex-1"
-          nzShowSearch
-          nzPlaceHolder="Select or search customer..."
-          [ngModel]="selectedCustomer()"
-          (ngModelChange)="onCustomerChange($event)"
-        >
-          @for (c of customers; track c.id) {
-            <nz-option
-              [nzValue]="c.id"
-              [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
-            ></nz-option>
-          }
-        </nz-select>
-        <button
-          type="button"
-          (click)="openAddCustomerModal()"
-          class="w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg flex items-center justify-center border-0 cursor-pointer shrink-0 transition-colors"
-          title="Add customer"
-          aria-label="Add customer"
-        >
-          +
-        </button>
-      </div>
-
-      <!-- Customer Due Information Banner -->
-      @if (selectedCustomer() !== '1' && selectedCustomerObj()) {
-        <div class="dueinfo" [class.has]="previousDue() > 0" [class.none]="previousDue() <= 0">
-          <div class="top">
-            <span>{{ previousDue() > 0 ? 'Previous due' : 'No previous due' }}</span>
-            @if (previousDue() > 0) {
-              <b>৳ {{ previousDue() | number: '1.2-2' }}</b>
-            }
-          </div>
-          @if (previousDue() > 0) {
-            <label class="chk">
-              <input
-                type="checkbox"
-                [ngModel]="collectPreviousDue()"
-                (ngModelChange)="toggleCollectPreviousDue($event)"
-                [disabled]="selectedMethod() === 'due'"
-              />
-              <span>Collect previous due with this bill</span>
-            </label>
-          }
-        </div>
-      }
-
-      <div class="sep"></div>
 
       <!-- Net Payable Banner -->
-      <div class="net">
+      <div class="net my-0">
         <small>{{ collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due' ? 'TOTAL TO COLLECT' : 'NET PAYABLE' }}</small>
         <b>৳ {{ payableTotal() | number: '1.2-2' }}</b>
       </div>
 
       <!-- Mini Financial Summary -->
-      <div class="mini">
-        <span>Items</span>
-        <b>{{ cart().length }} ({{ totalCartPcs() }} pcs)</b>
-      </div>
-      <div class="mini">
-        <span>Subtotal</span>
-        <b>৳ {{ subtotal() | number: '1.2-2' }}</b>
-      </div>
-      @if (discountAmount() > 0) {
+      <div class="space-y-0.5 text-xs">
         <div class="mini">
-          <span>Discount</span>
-          <b style="color: #b91c1c">− ৳ {{ discountAmount() | number: '1.2-2' }}</b>
+          <span>Subtotal</span>
+          <b>৳ {{ subtotal() | number: '1.2-2' }}</b>
         </div>
-      }
-      @if (collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due') {
-        <div class="mini">
-          <span>Previous due</span>
-          <b>+ ৳ {{ previousDue() | number: '1.2-2' }}</b>
-        </div>
-      }
-      @if (cardCommission() && cardFee() > 0) {
-        <div class="mini">
-          <span>Card Fee ({{ cardCommissionRate() }}%)</span>
-          <b>+ ৳ {{ cardFee() | number: '1.2-2' }}</b>
-        </div>
-      }
-
-      <!-- Add Discount Inline Toggle -->
-      @if (!showDiscountBox()) {
-        <button type="button" class="linkbtn" (click)="showDiscountBox.set(true)">
-          + Add discount
-        </button>
-      } @else {
-        <div class="mt-2">
-          <div class="flex gap-1.5 items-center">
-            <div class="flex rounded-lg border border-slate-200 overflow-hidden bg-slate-100 shrink-0 h-9">
-              <button
-                type="button"
-                (click)="setGlobalDiscountType(DiscountType.Flat)"
-                class="px-2.5 h-full text-xs font-bold border-0 cursor-pointer transition-colors"
-                [class.bg-indigo-600]="globalDiscountType() === DiscountType.Flat"
-                [class.text-white]="globalDiscountType() === DiscountType.Flat"
-                [class.text-slate-700]="globalDiscountType() !== DiscountType.Flat"
-              >
-                ৳
-              </button>
-              <button
-                type="button"
-                (click)="setGlobalDiscountType(DiscountType.Percentage)"
-                class="px-2.5 h-full text-xs font-bold border-0 cursor-pointer transition-colors"
-                [class.bg-indigo-600]="globalDiscountType() === DiscountType.Percentage"
-                [class.text-white]="globalDiscountType() === DiscountType.Percentage"
-                [class.text-slate-700]="globalDiscountType() !== DiscountType.Percentage"
-              >
-                %
-              </button>
-            </div>
-            <input
-              type="number"
-              min="0"
-              [ngModel]="globalDiscountValue()"
-              (ngModelChange)="onGlobalDiscountChange($event)"
-              class="flex-1 h-9 px-2.5 border border-slate-200 rounded-lg text-right font-mono text-sm bg-white focus:outline-2 focus:outline-indigo-600"
-              placeholder="0"
-            />
-            <button
-              type="button"
-              (click)="showDiscountBox.set(false)"
-              class="h-9 px-2 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs"
-              title="Close discount box"
-            >
-              ✕
-            </button>
+        @if (discountAmount() > 0) {
+          <div class="mini">
+            <span>Discount</span>
+            <b style="color: #b91c1c">− ৳ {{ discountAmount() | number: '1.2-2' }}</b>
           </div>
-        </div>
-      }
+        }
+        @if (collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due') {
+          <div class="mini">
+            <span>Previous due</span>
+            <b>+ ৳ {{ previousDue() | number: '1.2-2' }}</b>
+          </div>
+        }
+        @if (cardCommission() && cardFee() > 0) {
+          <div class="mini">
+            <span>Card Fee ({{ cardCommissionRate() }}%)</span>
+            <b>+ ৳ {{ cardFee() | number: '1.2-2' }}</b>
+          </div>
+        }
+      </div>
 
-      <div class="sep"></div>
-
-      <!-- Payment Method Grid (4x2) -->
-      <label class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-        <span>Payment method</span>
-      </label>
-      <div class="pay">
-        <button type="button" [class.on]="selectedMethod() === 'cash'" (click)="setMethod('cash')">
-          Cash
+      <!-- Payment Method Grid -->
+      <div class="pay mb-1">
+        <button
+          type="button"
+          [class.on]="selectedMethod() === 'cash'"
+          (click)="setMethod('cash')"
+          title="Cash (F8: Fast Cash)"
+        >
+          <span class="dot" style="background:#16a34a"></span>
+          <span>Cash</span>
         </button>
-        <button type="button" [class.on]="selectedMethod() === 'card'" (click)="setMethod('card')">
-          Card
+        <button
+          type="button"
+          [class.on]="selectedMethod() === 'card'"
+          (click)="setMethod('card')"
+          title="Card POS"
+        >
+          <span class="dot" style="background:#0284c7"></span>
+          <span>Card</span>
         </button>
         <button
           type="button"
@@ -812,9 +566,15 @@
         <div>
           <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
             <span>Received from customer (৳)</span>
-            <button type="button" class="linkbtn" (click)="setExactPayment()">Exact</button>
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="linkbtn" (click)="setExactPayment()">Exact (F4)</button>
+              <button type="button" (click)="triggerFastCashPay()" class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded text-[10px] font-bold border-0 cursor-pointer">
+                ⚡ F8 Fast Cash
+              </button>
+            </div>
           </div>
           <input
+            id="pos-tender-input"
             type="number"
             min="0"
             [ngModel]="tendered()"
@@ -843,17 +603,17 @@
             type="text"
             [placeholder]="selectedMethod() === 'card' ? 'e.g. 4417' : 'e.g. 8N7A5K2Q1B'"
             [(ngModel)]="txnReference"
-            class="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono"
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono"
           />
         </div>
       }
 
-      <!-- Split Payment Box (hidden for now) -->
+      <!-- Split Payment Box -->
       @if (showSplitOption && selectedMethod() === 'split') {
-        <div>
+        <div class="space-y-1">
           <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
             <span>Split the payment (৳)</span>
-            <span class="font-normal text-slate-400">Cash covers the balance</span>
+            <span class="font-normal text-slate-400">Cash covers balance</span>
           </div>
           <div class="sprow">
             <span>Cash</span>
@@ -894,16 +654,6 @@
               (ngModelChange)="onSplitChannelInput('nagad', $event)"
             />
           </div>
-          <div class="sprow">
-            <span>Rocket/Upay</span>
-            <input
-              type="number"
-              min="0"
-              placeholder="0"
-              [ngModel]="splitOther() || ''"
-              (ngModelChange)="onSplitChannelInput('other', $event)"
-            />
-          </div>
         </div>
       }
 
@@ -916,47 +666,25 @@
         {{ resultState().text }}
       </div>
 
-      <!-- Order Note Link / Box -->
-      @if (!showNoteBox()) {
-        <button type="button" class="linkbtn mt-2.5 block text-left" (click)="showNoteBox.set(true)">
-          + Add note
-        </button>
-      } @else {
-        <div class="mt-2">
-          <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
-            <span>Order note</span>
-            <button type="button" (click)="showNoteBox.set(false)" class="text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs">
-              ✕
-            </button>
-          </div>
-          <textarea
-            placeholder="Order note / remark..."
-            [(ngModel)]="orderNote"
-            rows="2"
-            class="w-full p-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-2 focus:outline-indigo-600 resize-none"
-          ></textarea>
-        </div>
-      }
-
-      <!-- Complete Sale Action Button -->
+      <!-- Action: Complete Sale Button (F10) -->
       <button
         type="button"
         class="go"
         [disabled]="isCheckoutDisabled()"
         (click)="confirmCheckout()"
       >
-        <span>✓ Complete sale</span>
-        <kbd style="background:transparent;color:#d1fadf;border-color:#6ee7a0;border:1px solid #6ee7a0;border-radius:4px;padding:1px 5px;font-size:11px">F10</kbd>
+        <span nz-icon nzType="check-circle" class="text-lg"></span>
+        <span>Complete sale (F10)</span>
       </button>
 
       <!-- Explanatory Hint -->
       <div class="hint">{{ checkoutDisabledReason() }}</div>
 
       <!-- Print receipt option and secondary helpers -->
-      <div class="opt">
+      <div class="opt pt-1 border-t border-slate-200">
         <label>
           <input type="checkbox" [(ngModel)]="quickPrint" />
-          <span>Print receipt</span>
+          <span>Quick print</span>
         </label>
         <div class="flex items-center gap-2.5">
           <button
