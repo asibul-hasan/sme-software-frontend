@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.26.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.25.0...v1.26.0) (2026-10-23)
+
+
+### 🚀 Features
+
+* **pos:** relocate cart table to left pane and remove category pills & cards in screen 3 ([214c701](https://github.com/asibul-hasan/sme-software-frontend/commit/214c701a58f7495bfbddd1eea28997e5c266e837))
+
 ## [1.25.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.2...v1.25.0) (2026-10-23)
 
 
