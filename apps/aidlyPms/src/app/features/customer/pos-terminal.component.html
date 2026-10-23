@@ -33,7 +33,76 @@
             Return / Exchange
           </a>
           <span>|</span>
-          <span nz-icon nzType="question-circle" class="text-slate-400 cursor-pointer" nz-tooltip nzTooltipTitle="F9: Hold/Recall, F2: Add Product, Enter: Add to Cart"></span>
+          <span
+            nz-icon
+            nzType="question-circle"
+            class="text-slate-400 hover:text-indigo-600 cursor-pointer text-sm transition-colors"
+            nz-tooltip
+            [nzTooltipTitle]="shortcutTemplate"
+            nzTooltipPlacement="bottomLeft"
+          ></span>
+
+          <ng-template #shortcutTemplate>
+            <div class="p-1.5 min-w-[280px]">
+              <div class="font-bold text-white border-b border-slate-700/80 pb-1.5 mb-2 flex items-center justify-between text-xs">
+                <span class="flex items-center gap-1.5">
+                  <span nz-icon nzType="thunderbolt" class="text-amber-400"></span>
+                  <span>POS Keyboard Shortcuts</span>
+                </span>
+                <span class="text-[10px] text-slate-400 font-normal">Fast Checkout</span>
+              </div>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Focus Search</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F1</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Add Product</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F2</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Add Customer</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F3</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Exact Tender</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F4</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Pack Calc</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F6</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Bangla Sticker</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F7</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Fast Cash</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F8</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Hold / Recall</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-amber-300 shadow-2xs">F9</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Complete Sale</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-emerald-400 shadow-2xs">F10</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Add to Cart</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-sky-300 shadow-2xs">Enter</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Grid Nav</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-slate-300 shadow-2xs">↑ ↓ ← →</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="text-slate-300">Dismiss / Esc</span>
+                  <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[10px] font-mono font-bold text-rose-300 shadow-2xs">Esc</kbd>
+                </div>
+              </div>
+            </div>
+          </ng-template>
         </div>
 
         <!-- Retail / Wholesale Pill Toggle -->
