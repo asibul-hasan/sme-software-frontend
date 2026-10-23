@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.25.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.2...v1.25.0) (2026-10-23)
+
+
+### 🚀 Features
+
+* **pos:** implement screen 3 zero-click LOV combobox and barcode workflow ([0bef2d6](https://github.com/asibul-hasan/sme-software-frontend/commit/0bef2d673f753fcbe554b9f58b98a19fdbf651c8))
+
 ## [1.24.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.1...v1.24.2) (2026-10-23)
 
 
