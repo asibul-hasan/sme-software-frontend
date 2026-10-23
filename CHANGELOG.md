@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.27.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.26.0...v1.27.0) (2026-10-23)
+
+
+### 🚀 Features
+
+* **pos:** add stock column after item in cart table ([e545b6f](https://github.com/asibul-hasan/sme-software-frontend/commit/e545b6fc9e2ae9cd4e1f9215f538241ff4fbe66e))
+
 ## [1.26.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.25.0...v1.26.0) (2026-10-23)
 
 
