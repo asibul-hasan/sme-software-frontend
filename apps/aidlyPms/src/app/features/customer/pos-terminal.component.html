@@ -608,6 +608,7 @@
                 <tr class="border-b border-slate-200 text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
                   <th class="py-2.5 px-3">#</th>
                   <th class="py-2.5 px-3">Item / Generic</th>
+                  <th class="py-2.5 px-3 text-center">Stock</th>
                   <th class="py-2.5 px-3 text-center">Qty</th>
                   <th class="py-2.5 px-3 text-center">Pack</th>
                   <th class="py-2.5 px-3 text-right">Price/Piece (৳)</th>
@@ -638,6 +639,26 @@
                       <div class="mt-1">
                         <span class="inline-block bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-md">
                           Stock: {{ getOriginalProductStock(item) }} pcs → Left: {{ getItemRemainingStock(item) }} pcs
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Stock Column -->
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                      <div class="inline-flex flex-col items-center justify-center">
+                        <span
+                          class="inline-block text-[11px] font-bold font-mono px-2 py-0.5 rounded"
+                          [class.bg-emerald-100]="getItemRemainingStock(item) > 10"
+                          [class.text-emerald-800]="getItemRemainingStock(item) > 10"
+                          [class.bg-amber-100]="getItemRemainingStock(item) > 0 && getItemRemainingStock(item) <= 10"
+                          [class.text-amber-800]="getItemRemainingStock(item) > 0 && getItemRemainingStock(item) <= 10"
+                          [class.bg-rose-100]="getItemRemainingStock(item) <= 0"
+                          [class.text-rose-800]="getItemRemainingStock(item) <= 0"
+                          [title]="'Available: ' + getItemRemainingStock(item) + ' pcs (Total: ' + getOriginalProductStock(item) + ' pcs)'"
+                        >
+                          {{ getItemRemainingStock(item) }}
+                        </span>
+                        <span class="text-[9.5px] text-slate-400 block font-mono mt-0.5" [title]="'Total in inventory: ' + getOriginalProductStock(item) + ' pcs'">
+                          of {{ getOriginalProductStock(item) }}
                         </span>
                       </div>
                     </td>
@@ -1418,6 +1439,7 @@
             <thead class="bg-slate-50 text-slate-500 font-semibold sticky top-0 border-b border-slate-200 z-10">
               <tr>
                 <th class="p-1.5">Item</th>
+                <th class="p-1.5 text-center w-16">Stock</th>
                 <th class="p-1.5 text-center w-28">Qty</th>
                 <th class="p-1.5 text-right w-16">Price</th>
                 <th class="p-1.5 text-right w-16">Total</th>
@@ -1453,6 +1475,28 @@
                           </span>
                         }
                       </button>
+                    </div>
+                  </td>
+                  <!-- Stock Column -->
+                  <td class="p-1.5 text-center whitespace-nowrap">
+                    <div class="inline-flex flex-col items-center justify-center">
+                      <span
+                        class="inline-block text-[11px] font-bold font-mono px-2 py-0.5 rounded"
+                        [class.bg-emerald-100]="getItemRemainingStock(item) > 10"
+                        [class.text-emerald-800]="getItemRemainingStock(item) > 10"
+                        [class.bg-amber-100]="getItemRemainingStock(item) > 0 && getItemRemainingStock(item) <= 10"
+                        [class.text-amber-800]="getItemRemainingStock(item) > 0 && getItemRemainingStock(item) <= 10"
+                        [class.bg-rose-100]="getItemRemainingStock(item) <= 0"
+                        [class.text-rose-800]="getItemRemainingStock(item) <= 0"
+                        [title]="'Available: ' + getItemRemainingStock(item) + ' pcs (Total: ' + getOriginalProductStock(item) + ' pcs)'"
+                      >
+                        {{ getItemRemainingStock(item) }}
+                      </span>
+                      @if (isLarge) {
+                        <span class="text-[9.5px] text-slate-400 font-mono mt-0.5" [title]="'Total in inventory: ' + getOriginalProductStock(item) + ' pcs'">
+                          of {{ getOriginalProductStock(item) }}
+                        </span>
+                      }
                     </div>
                   </td>
                   <td class="p-1 text-center">
