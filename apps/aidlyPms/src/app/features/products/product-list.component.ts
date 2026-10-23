@@ -628,7 +628,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       min_stock_qty_pcs: 50,
       barcode_value: '',
       is_medicine: true,
-      stock_qty: 100,
+      stock_qty: 0,
       dar_number: '',
       drug_schedule: 'OTC' as 'OTC' | 'POM' | 'ANTIBIOTIC' | 'NARCOTIC',
     };
@@ -730,7 +730,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       is_medicine: this.formModel.is_medicine,
       country_of_origin: 'Bangladesh',
       is_active: true,
-      stock_qty: this.formModel.stock_qty || 0,
+      stock_qty: 0,
     };
 
     this.isSaving = true;
