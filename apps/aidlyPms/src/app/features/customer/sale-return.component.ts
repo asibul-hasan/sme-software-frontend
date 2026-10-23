@@ -527,25 +527,32 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
 
     this.isSubmitting.set(true);
 
+    const returnReqData: ReturnReq = {
+      sale_invoice_no: this.saleInvoiceNo,
+      lines: activeReturnLines.map(l => ({
+        sale_invoice_item_no: l.saleInvoiceItemNo,
+        qty_pcs: l.returnQty,
+        reason_code: l.reasonCode,
+        disposition: l.disposition,
+      })),
+      refund_method: 1, // Cash drawer clearing
+      idempotency_key: this.currentIdempotencyKey,
+      note: `Exchange against ${this.originalInvoice}`,
+    };
+
     const payload: ExchangeReq = {
-      return_req: {
-        sale_invoice_no: this.saleInvoiceNo,
-        lines: activeReturnLines.map(l => ({
-          sale_invoice_item_no: l.saleInvoiceItemNo,
-          qty_pcs: l.returnQty,
-          reason_code: l.reasonCode,
-          disposition: l.disposition,
-        })),
-        refund_method: 1, // Cash drawer clearing
-        idempotency_key: this.currentIdempotencyKey,
-        note: `Exchange against ${this.originalInvoice}`,
-      },
+      return: returnReqData,
+      return_req: returnReqData,
       new_items: newCart.map(i => ({
         product_no: i.productNo,
+        qty_pcs: i.qtyPcs,
         quantity: i.qtyPcs,
+        sale_qty: i.qtyPcs,
         unit_type: 1,
+        sale_mode: 1,
       })),
       settlement_payment_method: this.settlementPaymentMethod,
+      payment_method: this.settlementPaymentMethod,
     };
 
     this.posSaleService.processExchange(payload).subscribe({

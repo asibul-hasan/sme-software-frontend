@@ -191,14 +191,23 @@ export interface ReturnReq {
 
 export interface ExchangeCartLineReq {
   product_no: number;
-  quantity: number;
+  qty_pcs?: number;
+  quantity?: number;
+  sale_qty?: number;
+  sale_mode?: number;
   unit_type?: number;
 }
 
 export interface ExchangeReq {
-  return_req: ReturnReq;
+  return?: ReturnReq;
+  return_req?: ReturnReq;
   new_items: ExchangeCartLineReq[];
   settlement_payment_method?: number;
+  payment_method?: number;
+  additional_payments?: Partial<SaleInvoicePayment>[];
+  tender_payments?: Partial<SaleInvoicePayment>[];
+  idempotency_key?: string;
+  note?: string;
 }
 
 export interface ExchangeResult {
@@ -210,4 +219,8 @@ export interface ExchangeResult {
   new_invoice_total?: number;
   settlement_difference: number;
   message: string;
+  return_credit_amount?: number;
+  additional_collected?: number;
+  cash_refunded?: number;
+  net_difference?: number;
 }
