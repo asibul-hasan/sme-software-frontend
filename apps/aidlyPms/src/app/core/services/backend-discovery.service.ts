@@ -73,7 +73,9 @@ export class BackendDiscoveryService {
     }
 
     this.lastChecked.set(new Date());
-    this.startPolling();
+    // Single initial probe matching web-client architecture (apps/web-client/src/assets/config/env.js)
+    // No recurring interval polling: failover is handled reactively on actual request errors.
+    this.isPolling.set(false);
   }
 
   /**
@@ -218,12 +220,10 @@ export class BackendDiscoveryService {
   private setupWindowListeners(): void {
     if (typeof window === 'undefined') return;
 
-    window.addEventListener('focus', () => {
-      this.pollCycle();
-    });
-
     window.addEventListener('online', () => {
-      this.pollCycle();
+      if (this.mode() === 'remote') {
+        this.pollCycle();
+      }
     });
   }
 }
