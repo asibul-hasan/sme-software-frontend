@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.24.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.0...v1.24.1) (2026-10-23)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** harmonize exchange request payload models with backend ([a47c843](https://github.com/asibul-hasan/sme-software-frontend/commit/a47c8436a5a7928c9cd9baed73bdf4d6d059224e))
+
 ## [1.24.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.3...v1.24.0) (2026-10-23)
 
 
