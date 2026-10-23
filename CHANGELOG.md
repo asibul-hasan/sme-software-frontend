@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.24.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.3...v1.24.0) (2026-10-23)
+
+
+### 🚀 Features
+
+* **pos:** add comprehensive keyboard shortcuts tooltip menu on hover ([e515769](https://github.com/asibul-hasan/sme-software-frontend/commit/e515769802486a44fbe29543c71554a81234dbab))
+
 ## [1.23.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.2...v1.23.3) (2026-10-23)
 
 
