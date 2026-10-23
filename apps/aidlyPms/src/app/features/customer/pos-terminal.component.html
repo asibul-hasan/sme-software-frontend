@@ -80,11 +80,6 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <!-- Quick Print Checkbox -->
-        <div class="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
-          <label nz-checkbox [(ngModel)]="quickPrint" class="text-xs font-medium text-slate-600 m-0">Quick Print</label>
-        </div>
-
         <!-- Unit Calculator (F6) -->
         <button
           type="button"
@@ -111,17 +106,6 @@
           aria-label="Bangla Dosage Sticker"
         >
           <span nz-icon nzType="tag"></span> বাংলা স্টিকার (F7)
-        </button>
-
-        <!-- Add Customer Button (F3) -->
-        <button
-          type="button"
-          nz-button
-          nzType="default"
-          (click)="openAddCustomerModal()"
-          class="rounded-md"
-        >
-          <span nz-icon nzType="user-add"></span> Add Customer (F3)
         </button>
 
         <!-- Add Product Button (F2) -->
