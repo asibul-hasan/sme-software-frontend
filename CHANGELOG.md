@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.27.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.27.0...v1.27.1) (2026-10-23)
+
+
+### 🐛 Bug Fixes
+
+* **products:** remove hardcoded stock_qty 100 default from medicine creation form ([ee8d3c0](https://github.com/asibul-hasan/sme-software-frontend/commit/ee8d3c07eb9ba191f92fe994bcf19e9e97d50529))
+
 ## [1.27.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.26.0...v1.27.0) (2026-10-23)
 
 
