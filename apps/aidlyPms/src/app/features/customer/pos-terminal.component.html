@@ -12,13 +12,14 @@
         <div class="flex items-center gap-2 text-xs text-slate-500 mr-2">
           <nz-select
             [ngModel]="activeScreen()"
-            (ngModelChange)="activeScreen.set($event)"
+            (ngModelChange)="setActiveScreen($event)"
             nzSize="small"
             class="w-28 text-xs font-semibold"
             aria-label="Select Terminal Screen View"
           >
             <nz-option nzValue="screen1" nzLabel="Screen 1"></nz-option>
             <nz-option nzValue="screen2" nzLabel="Screen 2"></nz-option>
+            <nz-option nzValue="screen3" nzLabel="Screen 3"></nz-option>
           </nz-select>
           <span>|</span>
           <a routerLink="/customer/sales" class="theme-link">
@@ -379,503 +380,9 @@
     </div>
 
     <!-- RIGHT PANE: Cart & Checkout Drawer (42% width, lg:col-span-5 xl:col-span-5) -->
-    <div class="lg:col-span-5 xl:col-span-5 checkout-drawer flex flex-col gap-2.5 overflow-hidden">
-      
-      <!-- Customer Section -->
-      <div>
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-          <span>Customer</span>
-          <span class="text-[10px] text-slate-400 font-normal">F3: Add Customer</span>
-        </div>
-        <div class="flex gap-1.5 items-center">
-          <nz-select id="pos-terminal-select-or-search-customer-16" nzId="pos-terminal-select-or-search-customer-16"
-            class="flex-1"
-            nzShowSearch
-            nzPlaceHolder="Select or search customer..."
-            [ngModel]="selectedCustomer()"
-            (ngModelChange)="onCustomerChange($event)" aria-label="Select or search customer...">
-            @for (c of customers; track c.id) {
-              <nz-option
-                [nzValue]="c.id"
-                [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
-              ></nz-option>
-            }
-          </nz-select>
-          <button
-            type="button"
-            (click)="openAddCustomerModal()"
-            class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base flex items-center justify-center border-0 cursor-pointer shrink-0 transition-colors"
-            title="Add customer (F3)"
-            aria-label="Add customer (F3)"
-          >
-            +
-          </button>
-        </div>
-
-        <!-- Customer Due Information Banner -->
-        @if (selectedCustomer() !== '1' && selectedCustomerObj()) {
-          <div class="dueinfo mt-1.5" [class.has]="previousDue() > 0" [class.none]="previousDue() <= 0">
-            <div class="top">
-              <span>{{ previousDue() > 0 ? 'Previous due' : 'No previous due' }}</span>
-              @if (previousDue() > 0) {
-                <b>৳ {{ previousDue() | number: '1.2-2' }}</b>
-              }
-            </div>
-            @if (previousDue() > 0) {
-              <label class="chk">
-                <input
-                  type="checkbox"
-                  [ngModel]="collectPreviousDue()"
-                  (ngModelChange)="toggleCollectPreviousDue($event)"
-                  [disabled]="selectedMethod() === 'due'"
-                />
-                <span>Collect previous due with this bill</span>
-              </label>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- Cart Items Table Card -->
-      <div class="flex-1 bg-slate-50 rounded-xl border border-slate-200 flex flex-col overflow-hidden min-h-[140px] max-h-[260px]">
-        <div class="p-2 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
-          <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">
-            Cart ({{ cart().length }} items · {{ totalCartPcs() }} pcs)
-          </span>
-          <div class="flex items-center gap-1.5">
-            @if (heldOrders().length > 0) {
-              <button
-                type="button"
-                nz-button
-                nzSize="small"
-                (click)="isHeldOrdersModalVisible = true"
-                class="rounded text-[11px] bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
-              >
-                <span nz-icon nzType="inbox"></span> Held ({{ heldOrders().length }})
-              </button>
-            }
-            <button
-              type="button"
-              nz-button
-              nzType="default"
-              nzSize="small"
-              class="text-[11px] rounded"
-              (click)="startNewInvoice()"
-              title="Clear cart"
-             aria-label="Clear cart">
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <div class="flex-1 overflow-y-auto min-h-0 bg-white">
-          @if (cart().length > 0) {
-            <table class="w-full text-xs text-left border-collapse">
-              <thead class="bg-slate-50 text-slate-500 font-semibold sticky top-0 border-b border-slate-200 z-10">
-                <tr>
-                  <th class="p-1.5">Item</th>
-                  <th class="p-1.5 text-center w-28">Qty</th>
-                  <th class="p-1.5 text-right w-16">Price</th>
-                  <th class="p-1.5 text-right w-16">Total</th>
-                  <th class="p-1.5 text-center w-12">Act</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                @for (item of cart(); track (item.cart_item_id || item.product_no); let idx = $index) {
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="p-1.5">
-                      <div class="font-semibold text-slate-900 text-xs leading-tight truncate max-w-[130px]" [title]="item.product_name">
-                        {{ item.product_name }}
-                      </div>
-                      <div class="text-[10px] text-slate-400 truncate max-w-[130px]">
-                        {{ item.generic_name }}
-                        @if (item.rak) {
-                          <span class="text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded font-mono ml-1">📍{{ item.rak }}</span>
-                        }
-                      </div>
-                      <!-- Batch Assignment Button / Badge -->
-                      <div class="mt-0.5 flex items-center gap-1">
-                        <button
-                          type="button"
-                          (click)="openBatchSelector(item)"
-                          class="inline-flex items-center gap-1 text-[9.5px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 text-slate-700 cursor-pointer transition-colors"
-                          [title]="item.batch_number ? ('Batch: ' + item.batch_number) : 'Click to inspect or assign batch'"
-                          aria-label="Select batch"
-                        >
-                          <span>📦 {{ item.batch_number || 'Auto-FEFO' }}</span>
-                          @if (item.expiry_date) {
-                            <span [class]="'px-1 rounded text-[8.5px] font-bold ' + getExpiryBadgeClass(item.expiry_date)">
-                              {{ getExpiryLabel(item.expiry_date) }}
-                            </span>
-                          }
-                        </button>
-                      </div>
-                    </td>
-                    <td class="p-1 text-center">
-                      <div class="inline-flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-2xs h-8">
-                        <button
-                          type="button"
-                          (click)="updateItemQty(item, isWholesale() ? -0.25 : -1)"
-                          class="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 active:scale-95 border-0 bg-transparent cursor-pointer select-none transition-all"
-                          aria-label="Decrease quantity"
-                          title="Decrease quantity"
-                        >
-                          −
-                        </button>
-                        <input id="pos-terminal-field-17"
-                          type="number"
-                          [ngModel]="item.qty"
-                          (ngModelChange)="setItemQty(item, $event)"
-                          [step]="isWholesale() ? 0.25 : 1"
-                          min="0.01"
-                          class="w-10 h-8 text-center font-mono font-bold text-xs border-0 border-x border-slate-200 outline-hidden p-0 text-slate-900 bg-white"
-                          aria-label="Item quantity"
-                         />
-                        <button
-                          type="button"
-                          (click)="updateItemQty(item, isWholesale() ? 0.25 : 1)"
-                          class="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 active:scale-95 border-0 bg-transparent cursor-pointer select-none transition-all"
-                          aria-label="Increase quantity"
-                          title="Increase quantity"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </td>
-                    <td class="p-1 text-right font-mono text-xs text-slate-700">
-                      ৳ {{ item.unit_price | number: '1.2-2' }}
-                    </td>
-                    <td class="p-1 text-right font-mono font-bold text-xs theme-total-text">
-                      ৳ {{ item.total | number: '1.2-2' }}
-                    </td>
-                    <td class="p-1 text-center whitespace-nowrap">
-                      <div class="flex items-center justify-center gap-1">
-                        <!-- Unit Calculator Trigger -->
-                        <button
-                          type="button"
-                          (click)="openUnitCalculator(item)"
-                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 cursor-pointer transition-all"
-                          title="Box-Strip-Tablet Calculator"
-                          aria-label="Unit Calculator"
-                        >
-                          <span nz-icon nzType="calculator" class="text-xs"></span>
-                        </button>
-                        <!-- Bangla Sticker Trigger -->
-                        <button
-                          type="button"
-                          (click)="openBanglaDosageModal(item)"
-                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 cursor-pointer transition-all"
-                          title="Print Bangla Dosage Label"
-                          aria-label="Bangla Dosage Sticker"
-                        >
-                          <span nz-icon nzType="tag" class="text-xs"></span>
-                        </button>
-                        <!-- Remove Item -->
-                        <button
-                          type="button"
-                          (click)="removeItem(item)"
-                          class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 active:bg-rose-100 active:scale-95 border border-transparent hover:border-rose-200 cursor-pointer transition-all"
-                          title="Remove item"
-                          aria-label="Remove item"
-                        >
-                          <span nz-icon nzType="delete" class="text-xs"></span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          } @else {
-            <div class="h-full flex items-center justify-center p-3">
-              <app-empty-state
-                title="POS Basket is Empty"
-                description="Click medicines on the catalog, scan a barcode, or press F2 to register new medicines."
-                stateType="empty"
-                icon="shopping-cart"
-                actionText="Add Medicine (F2)"
-                actionIcon="plus"
-                (actionClick)="openQuickAddProduct()"
-                [compact]="true"
-                [transparent]="true"
-              ></app-empty-state>
-            </div>
-          }
-        </div>
-      </div>
-
-      <!-- Net Payable Banner -->
-      <div class="net my-0">
-        <small>{{ collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due' ? 'TOTAL TO COLLECT' : 'NET PAYABLE' }}</small>
-        <b>৳ {{ payableTotal() | number: '1.2-2' }}</b>
-      </div>
-
-      <!-- Mini Financial Summary -->
-      <div class="space-y-0.5 text-xs">
-        <div class="mini">
-          <span>Subtotal</span>
-          <b>৳ {{ subtotal() | number: '1.2-2' }}</b>
-        </div>
-        @if (discountAmount() > 0) {
-          <div class="mini">
-            <span>Discount</span>
-            <b style="color: #b91c1c">− ৳ {{ discountAmount() | number: '1.2-2' }}</b>
-          </div>
-        }
-        @if (collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due') {
-          <div class="mini">
-            <span>Previous due</span>
-            <b>+ ৳ {{ previousDue() | number: '1.2-2' }}</b>
-          </div>
-        }
-        @if (cardCommission() && cardFee() > 0) {
-          <div class="mini">
-            <span>Card Fee ({{ cardCommissionRate() }}%)</span>
-            <b>+ ৳ {{ cardFee() | number: '1.2-2' }}</b>
-          </div>
-        }
-      </div>
-
-      <!-- Payment Method Grid -->
-      <div class="pay mb-1">
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'cash'"
-          (click)="setMethod('cash')"
-          title="Cash (F8: Fast Cash)"
-         aria-label="Cash (F8: Fast Cash)">
-          <span class="dot" style="background:#0d9488"></span>
-          <span>Cash</span>
-        </button>
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'card'"
-          (click)="setMethod('card')"
-          title="Card POS"
-         aria-label="Card POS">
-          <span class="dot" style="background:#0284c7"></span>
-          <span>Card</span>
-        </button>
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'bkash'"
-          (click)="setMethod('bkash')"
-          title="bKash"
-          aria-label="bKash"
-        >
-          <svg viewBox="168 0 158 150" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon fill="#D02053" points="225.42,71.2 234.67,112.76 295.16,82.13"/>
-            <polygon fill="#E2126E" points="242.63,9.1 225.43,71.21 295.18,82.13"/>
-            <polygon fill="#D02053" points="168.73,0 240.86,8.62 223.81,70.36"/>
-            <polygon fill="#9D1638" points="168.15,12.15 176.19,12.15 198.73,40.96"/>
-            <polygon fill="#D02053" points="297.09,81.74 276.12,52.72 310.04,46.65"/>
-            <polygon fill="#E2126E" points="293.59,90.24 295.74,83.78 242.81,110.64"/>
-            <polygon fill="#9D1638" points="223.94,72.84 234.98,122.49 202.2,149.14"/>
-            <polygon fill="#E2126E" points="306.73,61.4 325.98,61.07 312.07,46.92"/>
-          </svg>
-        </button>
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'nagad'"
-          (click)="setMethod('nagad')"
-          title="Nagad"
-          aria-label="Nagad"
-        >
-          <svg viewBox="0 0 54 54" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#F7941D" d="M12.92 11.58C14.31 8.1 16.46 5.12 19.36 2.66C19.96 2.14 20.69 1.6 21.54 1.05C22.17 0.64 22.78 0.48 23.46 0.78C23.87 0.96 24.12 1.25 24.33 1.65C25.5 3.8 26.66 5.93 27.82 8.06C24.64 9.26 21.83 11.36 19.58 13.9C16.12 17.79 13.79 22.67 13.15 27.87C12.62 26.34 12.28 25.17 12 24C11.61 22.33 11.4 20.69 11.37 19.06C11.3 16.03 11.82 13.15 12.92 11.58Z"/>
-            <path fill="#F15A24" d="M29.36 8.76L26.95 4.24C30.54 1.79 34.74 0.69 39.07 0.79C39.82 0.81 40.47 1.25 40.7 1.96C40.93 5.97 41.05 9.07 41.18 12.15C38.44 11.88 35.66 11.88 32.94 12.25C27.88 12.94 23.18 15.04 19.65 18.66C18.14 20.22 16.88 21.96 15.87 23.88C16.71 18.46 20.51 13.95 25.04 11.04C26.41 10.16 27.85 9.4 29.36 8.76Z"/>
-            <path fill="#ED1C24" d="M31.36 40.09C28.96 41.46 26.48 42.2 23.88 42.43C20.73 42.71 17.49 42.23 14.57 40.96C11.08 39.45 8.25 37.12 6.09 33.96C4.1 31.04 2.98 27.55 2.8 24.06C2.65 20.92 3.22 17.92 4.51 15.04C6.38 12.02 8.79 9.51 11.72 7.51C11.79 9.8 10.39 14.39 10.04 19C9.86 21.44 10.04 23.89 10.59 26.35C11.8 31.8 14.98 36.82 19.96 39.46C21.64 40.36 23.42 40.89 25.3 41.07C27.36 41.27 29.38 40.95 31.36 40.09Z"/>
-            <path fill="#ED1C24" d="M42.36 13.39L42.1 8.25C43.43 8.11 44.74 8.29 45.95 8.61C48.2 9.2 50.31 10.11 52.27 11.34C53.26 12.89 53.13 13.79 52.77 14.49C51 17.22 49.26 19.92 47.54 22.58C45.45 20.59 43.06 19.15 40.35 18.29C37.25 17.29 33.95 17.07 30.7 17.45C27.14 17.86 23.61 18.94 20.3 20.45C22.44 18.08 24.98 16.32 27.91 15.11C32.43 13.23 37.45 12.85 42.32 13.43L42.36 13.39Z"/>
-            <path fill="#F15A24" d="M4.5 14.94C3.22 17.92 2.65 20.92 2.8 24.06C2.98 27.55 4.1 31.04 6.09 33.96C8.25 37.12 11.08 39.45 14.57 40.96C17.49 42.23 20.73 42.71 23.88 42.43C26.48 42.2 28.96 41.46 31.3 40.21C33.63 38.81 35.81 36.89 36.68 35.62C38.73 32.6 39.48 28.86 38.65 25.29C38.16 23.16 37.25 21.24 35.91 19.53C39.73 23.62 41.55 28.74 41.21 34.07C40.77 41.16 36.48 47.41 30.06 50.43C25.23 52.32 21.51 52.6 17.68 51.8C12.61 49.59 7.23 45.5 2.82 38.12C0.93 33.09 0.47 29.21 0.92 25.24C1.34 21.56 2.54 18.13 4.5 14.94Z"/>
-            <path fill="#F7941D" d="M17.68 51.8C25.23 52.32 28.83 50.96 30.06 50.43C36.48 47.41 40.77 41.16 41.21 34.07C41.55 28.74 39.73 23.62 36.14 19.66L35.11 18.62C38.52 18.72 41.29 19.86 43.57 21.77C47.14 24.77 49.16 29.29 49.05 33.96C49 36.02 48.54 38.04 47.67 40.01C45 44.5 42.37 47.18 39.14 49.26C35.41 51.66 31.1 52.98 26.67 53.16C23.82 53.27 20.96 52.88 18.08 51.98L17.68 51.8Z"/>
-          </svg>
-        </button>
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'rocket'"
-          (click)="setMethod('rocket')"
-          title="Rocket"
-          aria-label="Rocket"
-        >
-          <svg viewBox="0 0 100 100" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="92" height="92" x="4" y="4" rx="20" fill="#8C3494"/>
-            <path d="M50 16 C43 25 38 40 38 55 C38 62 41 68 45 71 L37 77 C36 78 37 80 39 80 L44 80 L45 74 L55 74 L56 80 L61 80 C63 80 64 78 63 77 L55 71 C59 68 62 62 62 55 C62 40 57 25 50 16 Z" fill="#FFFFFF"/>
-            <circle cx="50" cy="42" r="5.5" fill="#8C3494"/>
-            <path d="M47 75 L50 85 L53 75 Z" fill="#F7941D"/>
-          </svg>
-        </button>
-        <button
-          type="button"
-          [class.on]="selectedMethod() === 'upay'"
-          (click)="setMethod('upay')"
-          title="Upay"
-          aria-label="Upay"
-        >
-          <svg viewBox="0 0 150 140" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="25" cy="22" r="19" fill="#FBCE07"/>
-            <circle cx="125" cy="22" r="19" fill="#0D56A3"/>
-            <path fill="#0D56A3" d="M57.88 114.09C57.32 119.86 59.65 125.15 63.67 128.68C66.65 131.32 70.67 132.92 75.02 133C85.23 133.16 95.69 131.96 105.59 128.6C130.85 120.27 144.69 98.71 144.53 72.59V63.86C144.53 58.89 140.11 53.29 133.91 53.29H118.38C112.02 53.29 107.68 59.05 107.68 63.94V72.51C107.68 82.05 102.05 90.06 93.28 94.87C87.16 97.27 80.73 98.31 74.13 98.71C70.11 98.95 66.49 100.55 63.59 103.12C60.38 105.68 58.28 109.61 57.88 114.09Z"/>
-            <path fill="#FBCE07" d="M91.67 114.09C92.23 119.86 89.9 125.15 85.88 128.68C82.9 131.32 78.88 132.92 74.54 133C64.32 133.16 53.86 131.96 43.96 128.6C18.7 120.27 4.86 98.71 5.02 72.59V63.86C5.02 58.89 9.45 53.29 15.64 53.29H31.17C37.52 53.29 41.87 59.05 41.87 63.94V72.51C41.87 82.05 47.5 90.06 56.27 94.87C62.38 97.27 68.82 98.31 75.42 98.71C79.44 98.95 83.06 100.55 85.96 103.12C89.18 105.68 91.27 109.61 91.67 114.09Z"/>
-          </svg>
-        </button>
-        @if (showSplitOption) {
-          <button type="button" [class.on]="selectedMethod() === 'split'" (click)="setMethod('split')">
-            Split
-          </button>
-        }
-        <button
-          type="button"
-          [style.gridColumn]="showSplitOption ? 'auto' : 'span 2'"
-          [class.on]="selectedMethod() === 'due'"
-          (click)="setMethod('due')"
-        >
-          Due
-        </button>
-      </div>
-
-      <!-- Cash Tender Box -->
-      @if (selectedMethod() === 'cash') {
-        <div>
-          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-            <label for="pos-tender-input" class="m-0 cursor-pointer">Received from customer (৳)</label>
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="linkbtn" (click)="setExactPayment()">Exact (F4)</button>
-              <button type="button" (click)="triggerFastCashPay()" nz-tooltip nzTooltipTitle="Instantly complete cash sale & auto-print thermal receipt (F8)" class="px-2 py-0.5 bg-teal-50 text-teal-800 hover:bg-teal-100 rounded text-[11px] font-bold border border-teal-200 cursor-pointer shadow-2xs">
-                ⚡ F8 Fast Cash & Print
-              </button>
-            </div>
-          </div>
-          <input
-            id="pos-tender-input"
-            type="number"
-            min="0"
-            [ngModel]="tendered()"
-            (ngModelChange)="onTenderedChange($event)"
-            class="tender-input"
-            aria-label="Received from customer (৳)"
-          />
-          <div class="notes">
-            <button type="button" (click)="setQuickCash(100)">৳100</button>
-            <button type="button" (click)="setQuickCash(500)">৳500</button>
-            <button type="button" (click)="setQuickCash(1000)">৳1000</button>
-            @if (nextRoundTender() > 0 && nextRoundTender() !== 100 && nextRoundTender() !== 500 && nextRoundTender() !== 1000) {
-              <button type="button" (click)="setQuickCash(nextRoundTender())">৳{{ nextRoundTender() }}</button>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Card / MFS Reference Box -->
-      @if (['card', 'bkash', 'nagad', 'rocket', 'upay'].includes(selectedMethod())) {
-        <div>
-          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-            <label for="pos-terminal-field-18" class="m-0 cursor-pointer">{{ selectedMethod() === 'card' ? 'Card last 4 digits / approval code' : (methodDisplayNames[selectedMethod()] + ' transaction ID') }}</label>
-            <span class="font-normal text-slate-400">optional</span>
-          </div>
-          <input id="pos-terminal-field-18"
-            type="text"
-            [placeholder]="selectedMethod() === 'card' ? 'e.g. 4417' : 'e.g. 8N7A5K2Q1B'"
-            [(ngModel)]="txnReference"
-            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono" aria-label="Transaction Reference" />
-        </div>
-      }
-
-      <!-- Split Payment Box -->
-      @if (showSplitOption && selectedMethod() === 'split') {
-        <div class="space-y-1">
-          <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
-            <span>Split the payment (৳)</span>
-            <span class="font-normal text-slate-400">Cash covers balance</span>
-          </div>
-          <div class="sprow">
-            <label for="pos-terminal-split-cash-search-19">Cash</label>
-            <input id="pos-terminal-split-cash-search-19"
-              type="number"
-              min="0"
-              [ngModel]="splitCash()"
-              (ngModelChange)="onSplitCashChange($event)" aria-label="Split Cash Amount" />
-          </div>
-          <div class="sprow">
-            <label for="pos-terminal-0-20">Card</label>
-            <input id="pos-terminal-0-20"
-              type="number"
-              min="0"
-              placeholder="0"
-              [ngModel]="splitCard() || ''"
-              (ngModelChange)="onSplitChannelInput('card', $event)" aria-label="Split Card Amount" />
-          </div>
-          <div class="sprow">
-            <label for="pos-terminal-0-21">bKash</label>
-            <input id="pos-terminal-0-21"
-              type="number"
-              min="0"
-              placeholder="0"
-              [ngModel]="splitBkash() || ''"
-              (ngModelChange)="onSplitChannelInput('bkash', $event)" aria-label="Split bKash Amount" />
-          </div>
-          <div class="sprow">
-            <label for="pos-terminal-0-22">Nagad</label>
-            <input id="pos-terminal-0-22"
-              type="number"
-              min="0"
-              placeholder="0"
-              [ngModel]="splitNagad() || ''"
-              (ngModelChange)="onSplitChannelInput('nagad', $event)" aria-label="Split Nagad Amount" />
-          </div>
-        </div>
-      }
-
-      <!-- Real-Time Status / Result Banner -->
-      <div
-        class="result"
-        [class.ok]="resultState().type === 'ok'"
-        [class.short]="resultState().type === 'short'"
-      >
-        {{ resultState().text }}
-      </div>
-
-      <!-- Action: Complete Sale Button (F10) -->
-      <button
-        type="button"
-        class="go"
-        [disabled]="isCheckoutDisabled()"
-        (click)="confirmCheckout()"
-      >
-        <span nz-icon nzType="check-circle" class="text-lg"></span>
-        <span>Complete sale (F10)</span>
-      </button>
-
-      <!-- Explanatory Hint -->
-      <div class="hint">{{ checkoutDisabledReason() }}</div>
-
-      <!-- Print receipt option and secondary helpers -->
-      <div class="opt pt-1 border-t border-slate-200">
-        <label>
-          <input type="checkbox" [(ngModel)]="quickPrint" />
-          <span>Quick print</span>
-        </label>
-        <div class="flex items-center gap-2.5">
-          <button
-            type="button"
-            (click)="printInvoice()"
-            class="text-xs text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer font-medium p-0"
-            title="Re-print last sale invoice"
-           aria-label="Re-print last sale invoice">
-            🖨️ Re-print
-          </button>
-          <button
-            type="button"
-            (click)="startNewInvoice()"
-            class="text-xs text-rose-500 hover:text-rose-700 bg-transparent border-0 cursor-pointer font-medium p-0"
-            title="Clear basket"
-           aria-label="Clear basket">
-            Clear
-          </button>
-        </div>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="checkoutDrawerTpl"></ng-container>
   </div>
-} @else {
+} @else if (activeScreen() === 'screen2') {
   <!-- Screen 2: Modern POS Terminal View (Pixel-to-Pixel match with media_1792701474686_83f1edf7.png) -->
   <div class="min-h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-4 p-1 bg-slate-50">
     <!-- Left Column (Fast Pick OTC, Entry Bar, Cart Items) -->
@@ -1608,7 +1115,811 @@
       </div>
     </div>
   </div>
+} @else if (activeScreen() === 'screen3') {
+  <!-- Screen 3: Zero-Click LOV Combobox & Barcode POS Terminal View -->
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0">
+    <!-- LEFT PANE: Screen 3 LOV Combobox & Bottom Catalog Cards (58% width, lg:col-span-7 xl:col-span-7) -->
+    <div class="lg:col-span-7 xl:col-span-7 flex flex-col gap-2.5 min-h-0 bg-white rounded-xl border border-slate-200 shadow-2xs p-3 relative">
+      
+      <!-- Top Search & Barcode LOV Combobox Bar -->
+      <div class="relative shrink-0 z-30">
+        <div
+          class="flex items-center gap-2 border-2 rounded-xl transition-all shadow-xs bg-slate-50 focus-within:bg-white focus-within:shadow-md px-3 py-1.5"
+          [class.border-indigo-600]="screen3IsSearchOpen()"
+          [class.border-slate-300]="!screen3IsSearchOpen()"
+        >
+          <span nz-icon nzType="barcode" class="text-indigo-600 text-lg pointer-events-none shrink-0"></span>
+          <label for="screen3-search-input" class="sr-only">Search medicine, generic, barcode, rak (LOV)</label>
+          <input
+            id="screen3-search-input"
+            autofocus
+            aria-label="Search medicine, generic, barcode, rak (LOV)"
+            type="text"
+            [ngModel]="screen3SearchTerm()"
+            (ngModelChange)="onScreen3SearchInput($event)"
+            (focus)="onScreen3SearchFocus()"
+            (keydown)="onScreen3SearchKeydown($event)"
+            placeholder="Scan barcode or search medicine, generic, rack (F1)..."
+            class="w-full text-sm bg-transparent outline-none font-medium text-slate-900 placeholder:text-slate-400"
+            autocomplete="off"
+          />
+          <div class="flex items-center gap-1 shrink-0">
+            @if (screen3SearchTerm()) {
+              <button
+                type="button"
+                (click)="screen3SearchTerm.set(''); focusProductSearch()"
+                class="p-1 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer text-xs"
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            }
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              LOV
+            </span>
+            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-slate-200 text-slate-600 rounded">F1</kbd>
+            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-indigo-600 text-white font-bold rounded">Enter: Add</kbd>
+          </div>
+        </div>
+
+        <!-- LOV Dropdown Table Overlay -->
+        @if (screen3IsSearchOpen() && (screen3SearchTerm() || screen3SearchResults().length > 0)) {
+          <!-- Click-outside backdrop to dismiss LOV -->
+          <div class="fixed inset-0 z-40 bg-black/5" (click)="screen3IsSearchOpen.set(false)"></div>
+
+          <div class="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-slate-300 shadow-2xl overflow-hidden ring-1 ring-black/10">
+            <!-- Table Header -->
+            <div class="bg-slate-100/95 backdrop-blur-xs px-3 py-2 border-b border-slate-200 grid grid-cols-12 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <div class="col-span-5">Medicine / Generic</div>
+              <div class="col-span-2 text-center">Schedule / Form</div>
+              <div class="col-span-2 text-center">Rak (Shelf)</div>
+              <div class="col-span-1 text-center">Stock</div>
+              <div class="col-span-2 text-right">MRP (৳)</div>
+            </div>
+
+            <!-- Table Rows -->
+            <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-100">
+              @for (prod of screen3SearchResults(); track prod.id; let idx = $index) {
+                <div
+                  (click)="addScreen3ProductToCart(prod)"
+                  (mouseenter)="screen3HighlightedIndex.set(idx)"
+                  class="px-3 py-2 grid grid-cols-12 items-center cursor-pointer transition-colors select-none"
+                  [class.bg-indigo-50]="screen3HighlightedIndex() === idx"
+                  [class.border-l-4]="screen3HighlightedIndex() === idx"
+                  [class.border-l-indigo-600]="screen3HighlightedIndex() === idx"
+                  [class.hover:bg-slate-50]="screen3HighlightedIndex() !== idx"
+                >
+                  <!-- Col 1: Name, Generic, Barcode -->
+                  <div class="col-span-5 min-w-0 pr-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-xs text-slate-900 truncate" [class.text-indigo-700]="screen3HighlightedIndex() === idx">
+                        {{ prod.name }}
+                      </span>
+                      @if (prod.strength) {
+                        <span class="text-[11px] font-mono text-slate-500">({{ prod.strength }})</span>
+                      }
+                    </div>
+                    <div class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 mt-0.5">
+                      <span>{{ prod.generic }}</span>
+                      <span class="text-slate-300">•</span>
+                      <span class="text-[10px] text-slate-400 truncate">{{ prod.manufacturer }}</span>
+                      @if (prod.barcode) {
+                        <span class="text-slate-300">•</span>
+                        <span class="font-mono text-[10px] text-slate-500 bg-slate-100 px-1 rounded">#{{ prod.barcode }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Col 2: Schedule -->
+                  <div class="col-span-2 text-center">
+                    @if (prod.drug_schedule && prod.drug_schedule !== 'OTC') {
+                      <span [class]="prod.drug_schedule === 'NARCOTIC' ? 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200' : (prod.drug_schedule === 'ANTIBIOTIC' ? 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200' : 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200')">
+                        {{ prod.drug_schedule }}
+                      </span>
+                    } @else {
+                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        OTC
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Col 3: Rak -->
+                  <div class="col-span-2 text-center">
+                    @if (prod.rak) {
+                      <span class="text-[10px] font-mono font-medium text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded">
+                        📍 {{ prod.rak }}
+                      </span>
+                    } @else {
+                      <span class="text-slate-300 text-[10px]">—</span>
+                    }
+                  </div>
+
+                  <!-- Col 4: Stock -->
+                  <div class="col-span-1 text-center">
+                    <span
+                      class="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                      [class.bg-emerald-100]="getAvailableStock(prod) > prod.minStock"
+                      [class.text-emerald-800]="getAvailableStock(prod) > prod.minStock"
+                      [class.bg-amber-100]="getAvailableStock(prod) > 0 && getAvailableStock(prod) <= prod.minStock"
+                      [class.text-amber-800]="getAvailableStock(prod) > 0 && getAvailableStock(prod) <= prod.minStock"
+                      [class.bg-rose-100]="getAvailableStock(prod) <= 0"
+                      [class.text-rose-800]="getAvailableStock(prod) <= 0"
+                    >
+                      {{ getAvailableStock(prod) }}
+                    </span>
+                  </div>
+
+                  <!-- Col 5: Price + Quick Enter -->
+                  <div class="col-span-2 text-right">
+                    <div class="font-mono font-bold text-xs text-emerald-700">
+                      ৳ {{ (isWholesale() ? prod.saleWholesale : prod.saleRetail) | number: '1.2-2' }}
+                    </div>
+                    @if (screen3HighlightedIndex() === idx) {
+                      <div class="text-[9px] text-indigo-600 font-bold flex items-center justify-end gap-0.5 mt-0.5">
+                        <kbd class="px-1 py-0.2 bg-indigo-100 rounded text-[8.5px]">Enter ↵</kbd>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Footer of LOV -->
+            <div class="bg-slate-50 px-3 py-1.5 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+              <div class="flex items-center gap-1.5">
+                <span class="font-semibold text-slate-700">LOV Table</span>
+                <span class="text-slate-400">({{ screen3SearchResults().length }} items)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span><kbd class="px-1 py-0.5 bg-white border border-slate-200 rounded text-[10px]">↑/↓</kbd> Browse</span>
+                <span><kbd class="px-1 py-0.5 bg-indigo-600 text-white font-bold rounded text-[10px]">Enter</kbd> Add to Cart</span>
+                <span><kbd class="px-1 py-0.5 bg-white border border-slate-200 rounded text-[10px]">Esc</kbd> Close</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Category Filter Pills Bar -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none shrink-0">
+        @for (cat of categoryPills; track cat.id) {
+          <button
+            type="button"
+            (click)="setCategory(cat.id)"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer select-none"
+            [class.bg-indigo-600]="selectedCategory() === cat.id"
+            [class.text-white]="selectedCategory() === cat.id"
+            [class.border-indigo-600]="selectedCategory() === cat.id"
+            [class.shadow-xs]="selectedCategory() === cat.id"
+            [class.bg-slate-100]="selectedCategory() !== cat.id"
+            [class.text-slate-700]="selectedCategory() !== cat.id"
+            [class.border-slate-200]="selectedCategory() !== cat.id"
+            [class.hover:bg-slate-200]="selectedCategory() !== cat.id"
+          >
+            <span nz-icon [nzType]="cat.icon || 'tag'"></span>
+            <span>{{ cat.name }}</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-full font-bold"
+              [class.bg-indigo-500]="selectedCategory() === cat.id"
+              [class.text-white]="selectedCategory() === cat.id"
+              [class.bg-slate-200]="selectedCategory() !== cat.id"
+              [class.text-slate-600]="selectedCategory() !== cat.id"
+            >
+              {{ getCategoryCount(cat.id) }}
+            </span>
+          </button>
+        }
+      </div>
+
+      <!-- Medicine Catalog Cards Grid (Bottom) -->
+      <div class="flex-1 overflow-y-auto min-h-0 pr-1">
+        @if (screen3FilteredCards().length > 0) {
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-2.5">
+            @for (p of screen3FilteredCards(); track p.id; let idx = $index) {
+              <div
+                (click)="quickAddProductToCart(p)"
+                class="p-2.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer select-none flex flex-col justify-between h-28 relative group"
+              >
+                <!-- Tile Top Row: Name + Strength + Schedule badge -->
+                <div class="min-w-0">
+                  <div class="flex items-start justify-between gap-1">
+                    <div class="font-bold text-xs text-slate-900 group-hover:text-indigo-600 truncate flex-1 leading-tight">
+                      {{ p.name }}
+                    </div>
+                    @if (p.drug_schedule && p.drug_schedule !== 'OTC') {
+                      <span [class]="p.drug_schedule === 'NARCOTIC' ? 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-200 shrink-0' : (p.drug_schedule === 'ANTIBIOTIC' ? 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-purple-100 text-purple-800 border border-purple-200 shrink-0' : 'text-[8.5px] font-bold px-1 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200 shrink-0')">
+                        {{ p.drug_schedule }}
+                      </span>
+                    }
+                  </div>
+                  <div class="text-[11px] text-slate-500 truncate mt-0.5">
+                    {{ p.generic }}
+                    @if (p.strength) {
+                      <span class="text-slate-400">({{ p.strength }})</span>
+                    }
+                  </div>
+                  <div class="text-[10px] text-slate-400 truncate">
+                    {{ p.manufacturer }}
+                  </div>
+                </div>
+
+                <!-- Tile Bottom Row: Price + Stock Badge + Rak + Expiry Badge -->
+                <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="font-mono font-bold text-xs text-emerald-700">
+                      ৳ {{ (isWholesale() ? p.saleWholesale : p.saleRetail) | number: '1.2-2' }}
+                    </span>
+                    @if (p.nearestExpiry) {
+                      <span
+                        class="text-[9px] px-1 py-0.2 rounded border font-mono shrink-0"
+                        [class]="getExpiryBadgeClass(p.nearestExpiry)"
+                        nz-tooltip
+                        [nzTooltipTitle]="'FEFO Expiry: ' + (p.nearestExpiry | date: 'dd/MM/yyyy')"
+                      >
+                        ⏳ {{ getExpiryLabel(p.nearestExpiry) }}
+                      </span>
+                    }
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    @if (p.rak) {
+                      <span class="text-[9.5px] text-indigo-700 bg-indigo-50 font-medium px-1.5 py-0.2 rounded" title="Shelf location">
+                        📍{{ p.rak }}
+                      </span>
+                    }
+                    <span
+                      class="text-[10px] px-1.5 py-0.2 rounded font-bold"
+                      [class.bg-emerald-100]="getAvailableStock(p) > p.minStock"
+                      [class.text-emerald-800]="getAvailableStock(p) > p.minStock"
+                      [class.bg-amber-100]="getAvailableStock(p) > 0 && getAvailableStock(p) <= p.minStock"
+                      [class.text-amber-800]="getAvailableStock(p) > 0 && getAvailableStock(p) <= p.minStock"
+                      [class.bg-rose-100]="getAvailableStock(p) <= 0"
+                      [class.text-rose-800]="getAvailableStock(p) <= 0"
+                    >
+                      {{ getAvailableStock(p) }} pcs
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="h-full flex items-center justify-center p-4">
+            <app-empty-state
+              title="No Matching Medicines Found"
+              description="No medicines match your filter. Press F2 to quick-add a new medicine."
+              stateType="filtered"
+              icon="search"
+              actionText="Quick Add Product (F2)"
+              actionIcon="plus"
+              (actionClick)="openQuickAddProduct()"
+              [compact]="true"
+              [transparent]="true"
+            ></app-empty-state>
+          </div>
+        }
+      </div>
+
+      <!-- Screen 3 Bottom Hints -->
+      <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-slate-700">Catalog: {{ screen3FilteredCards().length }} items</span>
+          <span class="text-slate-300">|</span>
+          <span class="text-emerald-700 font-semibold">⚡ Scanner Ready (Enter to cart)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">F1</kbd> Search</span>
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">Enter</kbd> Add</span>
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">F4</kbd> Exact</span>
+          <span><kbd class="bg-slate-100 border px-1 py-0.2 rounded text-[10px]">F8</kbd> Fast Cash</span>
+          <span><kbd class="bg-indigo-600 text-white font-bold px-1.5 py-0.2 rounded text-[10px]">F10</kbd> Complete</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Cart & Checkout Drawer (42% width, lg:col-span-5 xl:col-span-5) -->
+    <ng-container *ngTemplateOutlet="checkoutDrawerTpl"></ng-container>
+  </div>
 }
+
+<!-- Reusable Right Pane Checkout Drawer Template for Screen 1 & Screen 3 -->
+<ng-template #checkoutDrawerTpl>
+  <div class="lg:col-span-5 xl:col-span-5 checkout-drawer flex flex-col gap-2.5 overflow-hidden">
+    <!-- Customer Section -->
+    <div>
+      <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+        <span>Customer</span>
+        <span class="text-[10px] text-slate-400 font-normal">F3: Add Customer</span>
+      </div>
+      <div class="flex gap-1.5 items-center">
+        <nz-select id="pos-terminal-select-or-search-customer-16" nzId="pos-terminal-select-or-search-customer-16"
+          class="flex-1"
+          nzShowSearch
+          nzPlaceHolder="Select or search customer..."
+          [ngModel]="selectedCustomer()"
+          (ngModelChange)="onCustomerChange($event)" aria-label="Select or search customer...">
+          @for (c of customers; track c.id) {
+            <nz-option
+              [nzValue]="c.id"
+              [nzLabel]="c.name + (c.phone ? ' (' + c.phone + ')' : '')"
+            ></nz-option>
+          }
+        </nz-select>
+        <button
+          type="button"
+          (click)="openAddCustomerModal()"
+          class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base flex items-center justify-center border-0 cursor-pointer shrink-0 transition-colors"
+          title="Add customer (F3)"
+          aria-label="Add customer (F3)"
+        >
+          +
+        </button>
+      </div>
+
+      <!-- Customer Due Information Banner -->
+      @if (selectedCustomer() !== '1' && selectedCustomerObj()) {
+        <div class="dueinfo mt-1.5" [class.has]="previousDue() > 0" [class.none]="previousDue() <= 0">
+          <div class="top">
+            <span>{{ previousDue() > 0 ? 'Previous due' : 'No previous due' }}</span>
+            @if (previousDue() > 0) {
+              <b>৳ {{ previousDue() | number: '1.2-2' }}</b>
+            }
+          </div>
+          @if (previousDue() > 0) {
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="collectPreviousDue()"
+                (ngModelChange)="toggleCollectPreviousDue($event)"
+                [disabled]="selectedMethod() === 'due'"
+              />
+              <span>Collect previous due with this bill</span>
+            </label>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Cart Items Table Card -->
+    <div class="flex-1 bg-slate-50 rounded-xl border border-slate-200 flex flex-col overflow-hidden min-h-[140px] max-h-[260px]">
+      <div class="p-2 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
+        <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">
+          Cart ({{ cart().length }} items · {{ totalCartPcs() }} pcs)
+        </span>
+        <div class="flex items-center gap-1.5">
+          @if (heldOrders().length > 0) {
+            <button
+              type="button"
+              nz-button
+              nzSize="small"
+              (click)="isHeldOrdersModalVisible = true"
+              class="rounded text-[11px] bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+            >
+              <span nz-icon nzType="inbox"></span> Held ({{ heldOrders().length }})
+            </button>
+          }
+          <button
+            type="button"
+            nz-button
+            nzType="default"
+            nzSize="small"
+            class="text-[11px] rounded"
+            (click)="startNewInvoice()"
+            title="Clear cart"
+           aria-label="Clear cart">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto min-h-0 bg-white">
+        @if (cart().length > 0) {
+          <table class="w-full text-xs text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-500 font-semibold sticky top-0 border-b border-slate-200 z-10">
+              <tr>
+                <th class="p-1.5">Item</th>
+                <th class="p-1.5 text-center w-28">Qty</th>
+                <th class="p-1.5 text-right w-16">Price</th>
+                <th class="p-1.5 text-right w-16">Total</th>
+                <th class="p-1.5 text-center w-12">Act</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (item of cart(); track (item.cart_item_id || item.product_no); let idx = $index) {
+                <tr class="hover:bg-slate-50/70 transition-colors">
+                  <td class="p-1.5">
+                    <div class="font-semibold text-slate-900 text-xs leading-tight truncate max-w-[130px]" [title]="item.product_name">
+                      {{ item.product_name }}
+                    </div>
+                    <div class="text-[10px] text-slate-400 truncate max-w-[130px]">
+                      {{ item.generic_name }}
+                      @if (item.rak) {
+                        <span class="text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded font-mono ml-1">📍{{ item.rak }}</span>
+                      }
+                    </div>
+                    <!-- Batch Assignment Button / Badge -->
+                    <div class="mt-0.5 flex items-center gap-1">
+                      <button
+                        type="button"
+                        (click)="openBatchSelector(item)"
+                        class="inline-flex items-center gap-1 text-[9.5px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 text-slate-700 cursor-pointer transition-colors"
+                        [title]="item.batch_number ? ('Batch: ' + item.batch_number) : 'Click to inspect or assign batch'"
+                        aria-label="Select batch"
+                      >
+                        <span>📦 {{ item.batch_number || 'Auto-FEFO' }}</span>
+                        @if (item.expiry_date) {
+                          <span [class]="'px-1 rounded text-[8.5px] font-bold ' + getExpiryBadgeClass(item.expiry_date)">
+                            {{ getExpiryLabel(item.expiry_date) }}
+                          </span>
+                        }
+                      </button>
+                    </div>
+                  </td>
+                  <td class="p-1 text-center">
+                    <div class="inline-flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-2xs h-8">
+                      <button
+                        type="button"
+                        (click)="updateItemQty(item, isWholesale() ? -0.25 : -1)"
+                        class="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 active:scale-95 border-0 bg-transparent cursor-pointer select-none transition-all"
+                        aria-label="Decrease quantity"
+                        title="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <input id="pos-terminal-field-17"
+                        type="number"
+                        [ngModel]="item.qty"
+                        (ngModelChange)="setItemQty(item, $event)"
+                        [step]="isWholesale() ? 0.25 : 1"
+                        min="0.01"
+                        class="w-10 h-8 text-center font-mono font-bold text-xs border-0 border-x border-slate-200 outline-hidden p-0 text-slate-900 bg-white"
+                        aria-label="Item quantity"
+                       />
+                      <button
+                        type="button"
+                        (click)="updateItemQty(item, isWholesale() ? 0.25 : 1)"
+                        class="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 active:scale-95 border-0 bg-transparent cursor-pointer select-none transition-all"
+                        aria-label="Increase quantity"
+                        title="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+                  <td class="p-1 text-right font-mono text-xs text-slate-700">
+                    ৳ {{ item.unit_price | number: '1.2-2' }}
+                  </td>
+                  <td class="p-1 text-right font-mono font-bold text-xs theme-total-text">
+                    ৳ {{ item.total | number: '1.2-2' }}
+                  </td>
+                  <td class="p-1 text-center whitespace-nowrap">
+                    <div class="flex items-center justify-center gap-1">
+                      <!-- Unit Calculator Trigger -->
+                      <button
+                        type="button"
+                        (click)="openUnitCalculator(item)"
+                        class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 cursor-pointer transition-all"
+                        title="Box-Strip-Tablet Calculator"
+                        aria-label="Unit Calculator"
+                      >
+                        <span nz-icon nzType="calculator" class="text-xs"></span>
+                      </button>
+                      <!-- Bangla Sticker Trigger -->
+                      <button
+                        type="button"
+                        (click)="openBanglaDosageModal(item)"
+                        class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 cursor-pointer transition-all"
+                        title="Print Bangla Dosage Label"
+                        aria-label="Bangla Dosage Sticker"
+                      >
+                        <span nz-icon nzType="tag" class="text-xs"></span>
+                      </button>
+                      <!-- Remove Item -->
+                      <button
+                        type="button"
+                        (click)="removeItem(item)"
+                        class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg inline-flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 active:bg-rose-100 active:scale-95 border border-transparent hover:border-rose-200 cursor-pointer transition-all"
+                        title="Remove item"
+                        aria-label="Remove item"
+                      >
+                        <span nz-icon nzType="delete" class="text-xs"></span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="h-full flex items-center justify-center p-3">
+            <app-empty-state
+              title="POS Basket is Empty"
+              description="Click medicines on the catalog, scan a barcode, or press F2 to register new medicines."
+              stateType="empty"
+              icon="shopping-cart"
+              actionText="Add Medicine (F2)"
+              actionIcon="plus"
+              (actionClick)="openQuickAddProduct()"
+              [compact]="true"
+              [transparent]="true"
+            ></app-empty-state>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Net Payable Banner -->
+    <div class="net my-0">
+      <small>{{ collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due' ? 'TOTAL TO COLLECT' : 'NET PAYABLE' }}</small>
+      <b>৳ {{ payableTotal() | number: '1.2-2' }}</b>
+    </div>
+
+    <!-- Mini Financial Summary -->
+    <div class="space-y-0.5 text-xs">
+      <div class="mini">
+        <span>Subtotal</span>
+        <b>৳ {{ subtotal() | number: '1.2-2' }}</b>
+      </div>
+      @if (discountAmount() > 0) {
+        <div class="mini">
+          <span>Discount</span>
+          <b style="color: #b91c1c">− ৳ {{ discountAmount() | number: '1.2-2' }}</b>
+        </div>
+      }
+      @if (collectPreviousDue() && previousDue() > 0 && selectedMethod() !== 'due') {
+        <div class="mini">
+          <span>Previous due</span>
+          <b>+ ৳ {{ previousDue() | number: '1.2-2' }}</b>
+        </div>
+      }
+      @if (cardCommission() && cardFee() > 0) {
+        <div class="mini">
+          <span>Card Fee ({{ cardCommissionRate() }}%)</span>
+          <b>+ ৳ {{ cardFee() | number: '1.2-2' }}</b>
+        </div>
+      }
+    </div>
+
+    <!-- Payment Method Grid -->
+    <div class="pay mb-1">
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'cash'"
+        (click)="setMethod('cash')"
+        title="Cash (F8: Fast Cash)"
+       aria-label="Cash (F8: Fast Cash)">
+        <span class="dot" style="background:#0d9488"></span>
+        <span>Cash</span>
+      </button>
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'card'"
+        (click)="setMethod('card')"
+        title="Card POS"
+       aria-label="Card POS">
+        <span class="dot" style="background:#0284c7"></span>
+        <span>Card</span>
+      </button>
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'bkash'"
+        (click)="setMethod('bkash')"
+        title="bKash"
+        aria-label="bKash"
+      >
+        <svg viewBox="168 0 158 150" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon fill="#D02053" points="225.42,71.2 234.67,112.76 295.16,82.13"/>
+          <polygon fill="#E2126E" points="242.63,9.1 225.43,71.21 295.18,82.13"/>
+          <polygon fill="#D02053" points="168.73,0 240.86,8.62 223.81,70.36"/>
+          <polygon fill="#9D1638" points="168.15,12.15 176.19,12.15 198.73,40.96"/>
+          <polygon fill="#D02053" points="297.09,81.74 276.12,52.72 310.04,46.65"/>
+          <polygon fill="#E2126E" points="293.59,90.24 295.74,83.78 242.81,110.64"/>
+          <polygon fill="#9D1638" points="223.94,72.84 234.98,122.49 202.2,149.14"/>
+          <polygon fill="#E2126E" points="306.73,61.4 325.98,61.07 312.07,46.92"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'nagad'"
+        (click)="setMethod('nagad')"
+        title="Nagad"
+        aria-label="Nagad"
+      >
+        <svg viewBox="0 0 54 54" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#F7941D" d="M12.92 11.58C14.31 8.1 16.46 5.12 19.36 2.66C19.96 2.14 20.69 1.6 21.54 1.05C22.17 0.64 22.78 0.48 23.46 0.78C23.87 0.96 24.12 1.25 24.33 1.65C25.5 3.8 26.66 5.93 27.82 8.06C24.64 9.26 21.83 11.36 19.58 13.9C16.12 17.79 13.79 22.67 13.15 27.87C12.62 26.34 12.28 25.17 12 24C11.61 22.33 11.4 20.69 11.37 19.06C11.3 16.03 11.82 13.15 12.92 11.58Z"/>
+          <path fill="#F15A24" d="M29.36 8.76L26.95 4.24C30.54 1.79 34.74 0.69 39.07 0.79C39.82 0.81 40.47 1.25 40.7 1.96C40.93 5.97 41.05 9.07 41.18 12.15C38.44 11.88 35.66 11.88 32.94 12.25C27.88 12.94 23.18 15.04 19.65 18.66C18.14 20.22 16.88 21.96 15.87 23.88C16.71 18.46 20.51 13.95 25.04 11.04C26.41 10.16 27.85 9.4 29.36 8.76Z"/>
+          <path fill="#ED1C24" d="M31.36 40.09C28.96 41.46 26.48 42.2 23.88 42.43C20.73 42.71 17.49 42.23 14.57 40.96C11.08 39.45 8.25 37.12 6.09 33.96C4.1 31.04 2.98 27.55 2.8 24.06C2.65 20.92 3.22 17.92 4.51 15.04C6.38 12.02 8.79 9.51 11.72 7.51C11.79 9.8 10.39 14.39 10.04 19C9.86 21.44 10.04 23.89 10.59 26.35C11.8 31.8 14.98 36.82 19.96 39.46C21.64 40.36 23.42 40.89 25.3 41.07C27.36 41.27 29.38 40.95 31.36 40.09Z"/>
+          <path fill="#ED1C24" d="M42.36 13.39L42.1 8.25C43.43 8.11 44.74 8.29 45.95 8.61C48.2 9.2 50.31 10.11 52.27 11.34C53.26 12.89 53.13 13.79 52.77 14.49C51 17.22 49.26 19.92 47.54 22.58C45.45 20.59 43.06 19.15 40.35 18.29C37.25 17.29 33.95 17.07 30.7 17.45C27.14 17.86 23.61 18.94 20.3 20.45C22.44 18.08 24.98 16.32 27.91 15.11C32.43 13.23 37.45 12.85 42.32 13.43L42.36 13.39Z"/>
+          <path fill="#F15A24" d="M4.5 14.94C3.22 17.92 2.65 20.92 2.8 24.06C2.98 27.55 4.1 31.04 6.09 33.96C8.25 37.12 11.08 39.45 14.57 40.96C17.49 42.23 20.73 42.71 23.88 42.43C26.48 42.2 28.96 41.46 31.3 40.21C33.63 38.81 35.81 36.89 36.68 35.62C38.73 32.6 39.48 28.86 38.65 25.29C38.16 23.16 37.25 21.24 35.91 19.53C39.73 23.62 41.55 28.74 41.21 34.07C40.77 41.16 36.48 47.41 30.06 50.43C25.23 52.32 21.51 52.6 17.68 51.8C12.61 49.59 7.23 45.5 2.82 38.12C0.93 33.09 0.47 29.21 0.92 25.24C1.34 21.56 2.54 18.13 4.5 14.94Z"/>
+          <path fill="#F7941D" d="M17.68 51.8C25.23 52.32 28.83 50.96 30.06 50.43C36.48 47.41 40.77 41.16 41.21 34.07C41.55 28.74 39.73 23.62 36.14 19.66L35.11 18.62C38.52 18.72 41.29 19.86 43.57 21.77C47.14 24.77 49.16 29.29 49.05 33.96C49 36.02 48.54 38.04 47.67 40.01C45 44.5 42.37 47.18 39.14 49.26C35.41 51.66 31.1 52.98 26.67 53.16C23.82 53.27 20.96 52.88 18.08 51.98L17.68 51.8Z"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'rocket'"
+        (click)="setMethod('rocket')"
+        title="Rocket"
+        aria-label="Rocket"
+      >
+        <svg viewBox="0 0 100 100" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="92" height="92" x="4" y="4" rx="20" fill="#8C3494"/>
+          <path d="M50 16 C43 25 38 40 38 55 C38 62 41 68 45 71 L37 77 C36 78 37 80 39 80 L44 80 L45 74 L55 74 L56 80 L61 80 C63 80 64 78 63 77 L55 71 C59 68 62 62 62 55 C62 40 57 25 50 16 Z" fill="#FFFFFF"/>
+          <circle cx="50" cy="42" r="5.5" fill="#8C3494"/>
+          <path d="M47 75 L50 85 L53 75 Z" fill="#F7941D"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        [class.on]="selectedMethod() === 'upay'"
+        (click)="setMethod('upay')"
+        title="Upay"
+        aria-label="Upay"
+      >
+        <svg viewBox="0 0 150 140" class="brand-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="22" r="19" fill="#FBCE07"/>
+          <circle cx="125" cy="22" r="19" fill="#0D56A3"/>
+          <path fill="#0D56A3" d="M57.88 114.09C57.32 119.86 59.65 125.15 63.67 128.68C66.65 131.32 70.67 132.92 75.02 133C85.23 133.16 95.69 131.96 105.59 128.6C130.85 120.27 144.69 98.71 144.53 72.59V63.86C144.53 58.89 140.11 53.29 133.91 53.29H118.38C112.02 53.29 107.68 59.05 107.68 63.94V72.51C107.68 82.05 102.05 90.06 93.28 94.87C87.16 97.27 80.73 98.31 74.13 98.71C70.11 98.95 66.49 100.55 63.59 103.12C60.38 105.68 58.28 109.61 57.88 114.09Z"/>
+          <path fill="#FBCE07" d="M91.67 114.09C92.23 119.86 89.9 125.15 85.88 128.68C82.9 131.32 78.88 132.92 74.54 133C64.32 133.16 53.86 131.96 43.96 128.6C18.7 120.27 4.86 98.71 5.02 72.59V63.86C5.02 58.89 9.45 53.29 15.64 53.29H31.17C37.52 53.29 41.87 59.05 41.87 63.94V72.51C41.87 82.05 47.5 90.06 56.27 94.87C62.38 97.27 68.82 98.31 75.42 98.71C79.44 98.95 83.06 100.55 85.96 103.12C89.18 105.68 91.27 109.61 91.67 114.09Z"/>
+        </svg>
+      </button>
+      @if (showSplitOption) {
+        <button type="button" [class.on]="selectedMethod() === 'split'" (click)="setMethod('split')">
+          Split
+        </button>
+      }
+      <button
+        type="button"
+        [style.gridColumn]="showSplitOption ? 'auto' : 'span 2'"
+        [class.on]="selectedMethod() === 'due'"
+        (click)="setMethod('due')"
+      >
+        Due
+      </button>
+    </div>
+
+    <!-- Cash Tender Box -->
+    @if (selectedMethod() === 'cash') {
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+          <label for="pos-tender-input" class="m-0 cursor-pointer">Received from customer (৳)</label>
+          <div class="flex items-center gap-1.5">
+            <button type="button" class="linkbtn" (click)="setExactPayment()">Exact (F4)</button>
+            <button type="button" (click)="triggerFastCashPay()" nz-tooltip nzTooltipTitle="Instantly complete cash sale & auto-print thermal receipt (F8)" class="px-2 py-0.5 bg-teal-50 text-teal-800 hover:bg-teal-100 rounded text-[11px] font-bold border border-teal-200 cursor-pointer shadow-2xs">
+              ⚡ F8 Fast Cash & Print
+            </button>
+          </div>
+        </div>
+        <input
+          id="pos-tender-input"
+          type="number"
+          min="0"
+          [ngModel]="tendered()"
+          (ngModelChange)="onTenderedChange($event)"
+          class="tender-input"
+          aria-label="Received from customer (৳)"
+        />
+        <div class="notes">
+          <button type="button" (click)="setQuickCash(100)">৳100</button>
+          <button type="button" (click)="setQuickCash(500)">৳500</button>
+          <button type="button" (click)="setQuickCash(1000)">৳1000</button>
+          @if (nextRoundTender() > 0 && nextRoundTender() !== 100 && nextRoundTender() !== 500 && nextRoundTender() !== 1000) {
+            <button type="button" (click)="setQuickCash(nextRoundTender())">৳{{ nextRoundTender() }}</button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Card / MFS Reference Box -->
+    @if (['card', 'bkash', 'nagad', 'rocket', 'upay'].includes(selectedMethod())) {
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+          <label for="pos-terminal-field-18" class="m-0 cursor-pointer">{{ selectedMethod() === 'card' ? 'Card last 4 digits / approval code' : (methodDisplayNames[selectedMethod()] + ' transaction ID') }}</label>
+          <span class="font-normal text-slate-400">optional</span>
+        </div>
+        <input id="pos-terminal-field-18"
+          type="text"
+          [placeholder]="selectedMethod() === 'card' ? 'e.g. 4417' : 'e.g. 8N7A5K2Q1B'"
+          [(ngModel)]="txnReference"
+          class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-2 focus:outline-indigo-600 font-mono" aria-label="Transaction Reference" />
+      </div>
+    }
+
+    <!-- Split Payment Box -->
+    @if (showSplitOption && selectedMethod() === 'split') {
+      <div class="space-y-1">
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500 mb-1">
+          <span>Split the payment (৳)</span>
+          <span class="font-normal text-slate-400">Cash covers balance</span>
+        </div>
+        <div class="sprow">
+          <label for="pos-terminal-split-cash-search-19">Cash</label>
+          <input id="pos-terminal-split-cash-search-19"
+            type="number"
+            min="0"
+            [ngModel]="splitCash()"
+            (ngModelChange)="onSplitCashChange($event)" aria-label="Split Cash Amount" />
+        </div>
+        <div class="sprow">
+          <label for="pos-terminal-0-20">Card</label>
+          <input id="pos-terminal-0-20"
+            type="number"
+            min="0"
+            placeholder="0"
+            [ngModel]="splitCard() || ''"
+            (ngModelChange)="onSplitChannelInput('card', $event)" aria-label="Split Card Amount" />
+        </div>
+        <div class="sprow">
+          <label for="pos-terminal-0-21">bKash</label>
+          <input id="pos-terminal-0-21"
+            type="number"
+            min="0"
+            placeholder="0"
+            [ngModel]="splitBkash() || ''"
+            (ngModelChange)="onSplitChannelInput('bkash', $event)" aria-label="Split bKash Amount" />
+        </div>
+        <div class="sprow">
+          <label for="pos-terminal-0-22">Nagad</label>
+          <input id="pos-terminal-0-22"
+            type="number"
+            min="0"
+            placeholder="0"
+            [ngModel]="splitNagad() || ''"
+            (ngModelChange)="onSplitChannelInput('nagad', $event)" aria-label="Split Nagad Amount" />
+        </div>
+      </div>
+    }
+
+    <!-- Real-Time Status / Result Banner -->
+    <div
+      class="result"
+      [class.ok]="resultState().type === 'ok'"
+      [class.short]="resultState().type === 'short'"
+    >
+      {{ resultState().text }}
+    </div>
+
+    <!-- Action: Complete Sale Button (F10) -->
+    <button
+      type="button"
+      class="go"
+      [disabled]="isCheckoutDisabled()"
+      (click)="confirmCheckout()"
+    >
+      <span nz-icon nzType="check-circle" class="text-lg"></span>
+      <span>Complete sale (F10)</span>
+    </button>
+
+    <!-- Explanatory Hint -->
+    <div class="hint">{{ checkoutDisabledReason() }}</div>
+
+    <!-- Print receipt option and secondary helpers -->
+    <div class="opt pt-1 border-t border-slate-200">
+      <label>
+        <input type="checkbox" [(ngModel)]="quickPrint" />
+        <span>Quick print</span>
+      </label>
+      <div class="flex items-center gap-2.5">
+        <button
+          type="button"
+          (click)="printInvoice()"
+          class="text-xs text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer font-medium p-0"
+          title="Re-print last sale invoice"
+         aria-label="Re-print last sale invoice">
+          🖨️ Re-print
+        </button>
+        <button
+          type="button"
+          (click)="startNewInvoice()"
+          class="text-xs text-rose-500 hover:text-rose-700 bg-transparent border-0 cursor-pointer font-medium p-0"
+          title="Clear basket"
+         aria-label="Clear basket">
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
 </div>
 
 <!-- Quick Add Customer Modal -->

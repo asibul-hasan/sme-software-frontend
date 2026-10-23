@@ -506,8 +506,13 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     { id: 'otc', name: 'OTC', icon: 'check-circle' },
   ];
 
-  // Screen 1 vs Screen 2 Switcher & Screen 2 State
-  readonly activeScreen = signal<'screen1' | 'screen2'>('screen1');
+  // Screen 1 vs Screen 2 vs Screen 3 Switcher & State
+  readonly activeScreen = signal<'screen1' | 'screen2' | 'screen3'>('screen1');
+
+  // Screen 3 LOV Combobox & Barcode Signals
+  screen3SearchTerm = signal<string>('');
+  screen3IsSearchOpen = signal<boolean>(false);
+  screen3HighlightedIndex = signal<number>(0);
 
   // Screen 2 Product Entry Signals
   screen2ProductSearch = signal<string>('');
@@ -890,6 +895,65 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     return items[idx];
   });
 
+  readonly screen3SearchResults = computed<CatalogProduct[]>(() => {
+    const term = this.screen3SearchTerm().trim().toLowerCase();
+    const allProds = this.catalogProducts();
+    if (!term) {
+      const fast = this.fastMovingProducts();
+      return fast.length > 0 ? fast.slice(0, 12) : allProds.slice(0, 12);
+    }
+    const exactBarcode = allProds.filter(p => p.barcode && p.barcode.trim().toLowerCase() === term);
+    if (exactBarcode.length > 0) {
+      return exactBarcode;
+    }
+    return allProds.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.generic && p.generic.toLowerCase().includes(term)) ||
+      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+      (p.rak && p.rak.toLowerCase().includes(term)) ||
+      (p.strength && p.strength.toLowerCase().includes(term)) ||
+      String(p.id) === term
+    ).slice(0, 15);
+  });
+
+  readonly screen3FilteredCards = computed<CatalogProduct[]>(() => {
+    const list = this.catalogProducts();
+    const cat = this.selectedCategory();
+    const term = this.screen3SearchTerm().toLowerCase().trim();
+
+    let categoryFiltered = list;
+    if (cat === 'fast') {
+      categoryFiltered = this.fastMovingProducts();
+    } else if (cat === 'tablet') {
+      categoryFiltered = list.filter(p => p.medicineType === 1);
+    } else if (cat === 'capsule') {
+      categoryFiltered = list.filter(p => p.medicineType === 2);
+    } else if (cat === 'syrup') {
+      categoryFiltered = list.filter(p => p.medicineType === 3 || p.medicineType === 4 || p.medicineType === 5);
+    } else if (cat === 'injection') {
+      categoryFiltered = list.filter(p => p.medicineType === 6);
+    } else if (cat === 'ointment') {
+      categoryFiltered = list.filter(p => p.medicineType === 7 || p.medicineType === 8 || p.medicineType === 9);
+    } else if (cat === 'antibiotic') {
+      categoryFiltered = list.filter(p => this.isAntibiotic(p));
+    } else if (cat === 'pom') {
+      categoryFiltered = list.filter(p => this.isPom(p));
+    } else if (cat === 'otc') {
+      categoryFiltered = list.filter(p => this.isOtc(p));
+    }
+
+    if (!term) return categoryFiltered;
+
+    return categoryFiltered.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      p.generic.toLowerCase().includes(term) ||
+      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+      (p.rak && p.rak.toLowerCase().includes(term)) ||
+      (p.strength && p.strength.toLowerCase().includes(term)) ||
+      String(p.id) === term
+    );
+  });
+
   getCategoryCount(catId: string): number {
     const list = this.catalogProducts();
     if (catId === 'all') return list.length;
@@ -1241,7 +1305,12 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
 
   focusProductSearch(): void {
     setTimeout(() => {
-      const targetId = this.activeScreen() === 'screen2' ? 'screen2-search-input' : 'pos-search-input';
+      let targetId = 'pos-search-input';
+      if (this.activeScreen() === 'screen2') {
+        targetId = 'screen2-search-input';
+      } else if (this.activeScreen() === 'screen3') {
+        targetId = 'screen3-search-input';
+      }
       const inputEl = document.getElementById(targetId) as HTMLInputElement;
       if (inputEl) {
         inputEl.focus();
@@ -1642,6 +1711,85 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.isManualTender.set(false);
     this.tenderTouched = false;
     this.focusProductSearch();
+  }
+
+  // ==========================================
+  // Screen 3 Helper Methods (LOV & Barcode)
+  // ==========================================
+  setActiveScreen(screen: 'screen1' | 'screen2' | 'screen3'): void {
+    this.activeScreen.set(screen);
+    this.focusProductSearch();
+  }
+
+  onScreen3SearchFocus(): void {
+    this.screen3IsSearchOpen.set(true);
+    this.screen3HighlightedIndex.set(0);
+  }
+
+  onScreen3SearchInput(val: string): void {
+    this.screen3SearchTerm.set(val);
+    this.screen3IsSearchOpen.set(true);
+    this.screen3HighlightedIndex.set(0);
+  }
+
+  onScreen3SearchKeydown(event: KeyboardEvent): void {
+    const results = this.screen3SearchResults();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!this.screen3IsSearchOpen()) {
+        this.screen3IsSearchOpen.set(true);
+        this.screen3HighlightedIndex.set(0);
+      } else if (results.length > 0) {
+        this.screen3HighlightedIndex.update(i => (i + 1) % results.length);
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (results.length > 0) {
+        this.screen3HighlightedIndex.update(i => (i - 1 + results.length) % results.length);
+      }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addScreen3ProductToCart();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.screen3IsSearchOpen.set(false);
+    }
+  }
+
+  addScreen3ProductToCart(product?: CatalogProduct): void {
+    let target = product;
+    const term = this.screen3SearchTerm().trim();
+    if (!target) {
+      if (!term) {
+        const results = this.screen3SearchResults();
+        if (results.length > 0) {
+          const idx = this.screen3HighlightedIndex();
+          target = (idx >= 0 && idx < results.length) ? results[idx] : results[0];
+        }
+      } else {
+        // Check exact barcode match first
+        const exact = this.catalogProducts().find(p => p.barcode && p.barcode.trim().toLowerCase() === term.toLowerCase());
+        if (exact) {
+          target = exact;
+        } else {
+          const results = this.screen3SearchResults();
+          if (results.length > 0) {
+            const idx = this.screen3HighlightedIndex();
+            target = (idx >= 0 && idx < results.length) ? results[idx] : results[0];
+          }
+        }
+      }
+    }
+
+    if (target) {
+      this.quickAddProductToCart(target);
+      this.screen3SearchTerm.set('');
+      this.screen3IsSearchOpen.set(false);
+      this.screen3HighlightedIndex.set(0);
+      this.focusProductSearch();
+    } else if (term) {
+      this.msg.warning(`No product found for "${term}"`);
+    }
   }
 
   updateItemQty(item: CartItem, delta: number): void {
