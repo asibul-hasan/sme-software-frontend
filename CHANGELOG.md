@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.24.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.1...v1.24.2) (2026-10-23)
+
+
+### ⚡ Performance Improvements
+
+* **discovery:** eliminate 15s health polling loop, adopt web-client single-probe strategy ([26834fe](https://github.com/asibul-hasan/sme-software-frontend/commit/26834fe64ccd01382d1a21ef08eb13e5fda311eb))
+
 ## [1.24.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.24.0...v1.24.1) (2026-10-23)
 
 
