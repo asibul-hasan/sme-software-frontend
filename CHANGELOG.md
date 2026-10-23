@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.23.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.2...v1.23.3) (2026-10-23)
+
+
+### ♻️ Code Refactoring
+
+* **pos:** hide add customer and quick print from header bar ([c1bb615](https://github.com/asibul-hasan/sme-software-frontend/commit/c1bb61539e9cec3da58cb39648452d6cdfb86389))
+
 ## [1.23.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.23.1...v1.23.2) (2026-10-23)
 
 
