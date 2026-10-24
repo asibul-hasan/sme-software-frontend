@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.28.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.27.1...v1.28.0) (2026-10-24)
+
+
+### 🚀 Features
+
+* **inventory:** add stocktake screens, unreceived sales view, and ledger integrity badges ([e5a770e](https://github.com/asibul-hasan/sme-software-frontend/commit/e5a770e0f5cf5c8c59d1cf140d4f7f3d437a41d3))
+
 ## [1.27.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.27.0...v1.27.1) (2026-10-23)
 
 
