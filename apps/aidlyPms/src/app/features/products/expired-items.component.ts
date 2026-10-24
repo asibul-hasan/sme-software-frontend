@@ -16,6 +16,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
+import { StocktakeService } from '../../core/services/stocktake.service';
+import { UnreceivedSaleItem } from '../../core/models/inventory.models';
 
 interface ExpiredItem {
   id: number;
@@ -53,6 +55,10 @@ export class ExpiredItemsComponent implements OnInit {
   private readonly modal = inject(ModalService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
+  private readonly stocktakeService = inject(StocktakeService);
+
+  activeTab = signal<'expired' | 'unreceived'>('expired');
+  unreceivedSales = signal<UnreceivedSaleItem[]>([]);
 
   daysThreshold = 90;
   selectedCompany = '';

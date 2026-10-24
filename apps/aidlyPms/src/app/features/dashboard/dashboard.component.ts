@@ -16,6 +16,8 @@ import {
 } from '../../shared/constants/label-values.constant';
 import { AuthService } from '../../core/auth/auth.service';
 import { DashboardService, DashboardSummary, FastMovingProduct } from '../../core/services/dashboard.service';
+import { StocktakeService } from '../../core/services/stocktake.service';
+import { StockIntegrityResult } from '../../core/models/inventory.models';
 
 Chart.register(...registerables);
 
@@ -92,6 +94,21 @@ interface TopProduct {
             <span>📅</span>
             <span>{{ dateRangeLabel() }}</span>
           </div>
+
+          <!-- Stock Ledger Integrity Badge -->
+          @if (integrityReport(); as rep) {
+            <a
+              routerLink="/products/integrity"
+              class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-decoration-none"
+              [ngClass]="rep.is_clean
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 animate-pulse'"
+              [title]="rep.is_clean ? 'Stock ledger in perfect sync' : rep.total_discrepancies + ' discrepancies detected'"
+            >
+              <span nz-icon [nzType]="rep.is_clean ? 'check-circle' : 'warning'"></span>
+              <span>{{ rep.is_clean ? 'Ledger Clean' : rep.total_discrepancies + ' Discrepancies' }}</span>
+            </a>
+          }
 
           <!-- Quick Actions Button -->
           <a
@@ -369,6 +386,8 @@ interface TopProduct {
 export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
+  private readonly stocktakeService = inject(StocktakeService);
+  integrityReport = signal<StockIntegrityResult | null>(null);
   readonly businessModes = BUSINESS_MODE_OPTIONS;
   selectedMode: number = BusinessMode.Retail;
   selectedBranch = 'all';
@@ -485,6 +504,17 @@ export class DashboardComponent implements OnInit {
     this.loadSummary();
     this.loadAnalytics();
     this.loadTrends();
+    this.loadIntegrity();
+  }
+
+  private loadIntegrity(): void {
+    this.stocktakeService.getIntegrityReport().subscribe({
+      next: res => {
+        if (res.success && res.data) {
+          this.integrityReport.set(res.data);
+        }
+      }
+    });
   }
 
   private loadBranches(): void {

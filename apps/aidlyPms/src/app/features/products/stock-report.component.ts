@@ -16,6 +16,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ProductService } from '../../core/services/product.service';
 import { StockReportSummary, StockReportItem, ProdCompany } from '../../core/models/product.models';
+import { StocktakeService } from '../../core/services/stocktake.service';
+import { StockIntegrityResult } from '../../core/models/inventory.models';
 
 type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 
@@ -147,6 +149,20 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 
         <!-- Header Actions -->
         <div actions class="flex items-center gap-2 shrink-0 flex-nowrap">
+          @if (integrityReport(); as rep) {
+            <a
+              routerLink="/products/integrity"
+              class="px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-decoration-none shadow-xs"
+              [ngClass]="rep.is_clean
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 animate-pulse'"
+              [nzTooltipTitle]="rep.is_clean ? 'Stock ledger in perfect sync' : rep.total_discrepancies + ' discrepancies detected'"
+              nz-tooltip
+            >
+              <span nz-icon [nzType]="rep.is_clean ? 'check-circle' : 'warning'"></span>
+              <span>{{ rep.is_clean ? 'Ledger Clean' : rep.total_discrepancies + ' Discrepancies' }}</span>
+            </a>
+          }
           <a
             routerLink="/products/requisition"
             nz-button
@@ -532,7 +548,9 @@ type StockStatusFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 })
 export class StockReportComponent implements OnInit {
   private readonly productService = inject(ProductService);
+  private readonly stocktakeService = inject(StocktakeService);
   private readonly msg = inject(NzMessageService);
+  integrityReport = signal<StockIntegrityResult | null>(null);
 
   readonly Math = Math;
 
@@ -568,6 +586,17 @@ export class StockReportComponent implements OnInit {
   ngOnInit(): void {
     this.loadCompanies();
     this.loadReport();
+    this.loadIntegrity();
+  }
+
+  loadIntegrity(): void {
+    this.stocktakeService.getIntegrityReport().subscribe({
+      next: res => {
+        if (res.success && res.data) {
+          this.integrityReport.set(res.data);
+        }
+      }
+    });
   }
 
   loadCompanies(): void {

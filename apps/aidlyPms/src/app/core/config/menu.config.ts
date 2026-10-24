@@ -179,6 +179,24 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     description: 'Current stock levels, stock valuation at cost and MRP, and stock shortage alerts.',
     is_in_sidebar: true,
   },
+  {
+    form_id: 'PROD_1612',
+    title: 'Stock-take (Cycle Count)',
+    type: 'Main Screen',
+    route: '/products/stocktakes',
+    permission_code: 'PMS-Product-Module',
+    description: 'Physical inventory audit, count entry, variance calculation and adjustment posting.',
+    is_in_sidebar: true,
+  },
+  {
+    form_id: 'PROD_1613',
+    title: 'Stock Ledger Integrity',
+    type: 'Main Screen',
+    route: '/products/integrity',
+    permission_code: 'PMS-Product-Module',
+    description: 'Audit stock ledger consistency against physical batch totals and unreceived holdings.',
+    is_in_sidebar: true,
+  },
 
   // Suppliers & Purchase Invoicing
   {
@@ -712,6 +730,22 @@ export const SYSTEM_MENU_CONFIG: readonly SystemModule[] = [
         icon: 'bar-chart',
         legacy_series: 1600,
         form_ids: ['PROD_1611'],
+      },
+      {
+        key: 'stocktakes',
+        name: 'Stock-take (Cycle Count)',
+        name_bn: 'স্টক নিরীক্ষা / গণনা',
+        icon: 'audit',
+        legacy_series: 1600,
+        form_ids: ['PROD_1612'],
+      },
+      {
+        key: 'stock-integrity',
+        name: 'Stock Ledger Integrity',
+        name_bn: 'স্টক লেজার সততা',
+        icon: 'safety-certificate',
+        legacy_series: 1600,
+        form_ids: ['PROD_1613'],
       },
     ],
 

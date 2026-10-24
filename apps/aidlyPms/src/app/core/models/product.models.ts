@@ -91,6 +91,7 @@ export interface ProdProductBatch {
   vat_percent: number;
   barcode_value?: string | null;
   is_expired: boolean;
+  is_placeholder: boolean;
   created_at: string;
   updated_at: string;
 

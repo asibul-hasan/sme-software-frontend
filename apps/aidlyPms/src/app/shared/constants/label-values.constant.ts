@@ -86,6 +86,7 @@ export const INVENTORY_TYPE_OPTIONS: readonly LabelOption[] = [
   { label: 'TRANSFER IN', value: 5 },
   { label: 'TRANSFER OUT', value: 6 },
   { label: 'ADJUSTMENT', value: 7 },
+  { label: 'SETTLEMENT', value: 8 },
 ] as const;
 
 export const InventoryType = {
@@ -96,6 +97,7 @@ export const InventoryType = {
   TransferIn: 5,
   TransferOut: 6,
   Adjustment: 7,
+  Settlement: 8,
 } as const;
 export type InventoryType = (typeof InventoryType)[keyof typeof InventoryType];
 
@@ -337,6 +339,22 @@ export const DrugSchedule = {
 } as const;
 export type DrugSchedule = (typeof DrugSchedule)[keyof typeof DrugSchedule];
 
+// 18. Stocktake Status
+export const STOCKTAKE_STATUS_OPTIONS: readonly LabelOption<string>[] = [
+  { label: 'Open', value: 'OPEN', color: 'blue' },
+  { label: 'Counting', value: 'COUNTING', color: 'amber' },
+  { label: 'Posted', value: 'POSTED', color: 'emerald' },
+  { label: 'Cancelled', value: 'CANCELLED', color: 'rose' },
+] as const;
+
+export const StocktakeStatus = {
+  Open: 'OPEN',
+  Counting: 'COUNTING',
+  Posted: 'POSTED',
+  Cancelled: 'CANCELLED',
+} as const;
+export type StocktakeStatus = (typeof StocktakeStatus)[keyof typeof StocktakeStatus];
+
 /**
  * Unified Dictionary Map for Dynamic Lookup
  */
@@ -356,6 +374,7 @@ export const LABEL_VALUES = {
   subscription_status: SUBSCRIPTION_STATUS_OPTIONS,
   billing_cycle: BILLING_CYCLE_OPTIONS,
   drug_schedule: DRUG_SCHEDULE_OPTIONS,
+  stocktake_status: STOCKTAKE_STATUS_OPTIONS,
 } as const;
 
 export type LabelValueKey = keyof typeof LABEL_VALUES;

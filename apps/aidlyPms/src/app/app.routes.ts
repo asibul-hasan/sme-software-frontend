@@ -9,6 +9,10 @@ import { RequisitionListComponent } from './features/products/requisition-list.c
 import { RequisitionRecordComponent } from './features/products/requisition-record.component';
 import { ExpiredItemsComponent } from './features/products/expired-items.component';
 import { StockReportComponent } from './features/products/stock-report.component';
+import { StocktakeListComponent } from './features/products/stocktake-list.component';
+import { StocktakeCreateComponent } from './features/products/stocktake-create.component';
+import { StocktakeCountComponent } from './features/products/stocktake-count.component';
+import { StockIntegrityComponent } from './features/products/stock-integrity.component';
 
 
 import { SupplierListComponent } from './features/supplier/supplier-list.component';
@@ -95,6 +99,10 @@ export const appRoutes: Route[] = [
       { path: 'products/transfers', component: StockTransferComponent },
       { path: 'products/transfer', redirectTo: 'products/transfers', pathMatch: 'full' },
       { path: 'inventory/transfers', redirectTo: 'products/transfers', pathMatch: 'full' },
+      { path: 'products/stocktakes', component: StocktakeListComponent },
+      { path: 'products/stocktakes/new', component: StocktakeCreateComponent },
+      { path: 'products/stocktakes/:id', component: StocktakeCountComponent },
+      { path: 'products/integrity', component: StockIntegrityComponent },
       { path: 'products/reports', component: StockReportComponent },
       { path: 'inventory/reports', redirectTo: 'reports/inventory', pathMatch: 'full' },
 
