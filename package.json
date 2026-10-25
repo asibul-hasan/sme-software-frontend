@@ -1,6 +1,6 @@
 {
   "name": "@sme-software-frontend/source",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "license": "MIT",
   "scripts": {
     "start": "nx serve web-client --port=4202",

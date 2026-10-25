@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.29.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.28.0...v1.29.0) (2026-10-25)
+
+
+### 🚀 Features
+
+* **inventory:** standardize stock movement types and sync schema migration ([26c461a](https://github.com/asibul-hasan/sme-software-frontend/commit/26c461a01fb19aebee5c44f72bc1246acf128cd9))
+
 ## [1.28.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.27.1...v1.28.0) (2026-10-24)
 
 
