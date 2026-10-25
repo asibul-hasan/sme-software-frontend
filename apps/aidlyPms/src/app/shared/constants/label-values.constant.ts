@@ -101,6 +101,36 @@ export const InventoryType = {
 } as const;
 export type InventoryType = (typeof InventoryType)[keyof typeof InventoryType];
 
+// 5b. Stock Movement Types (Universal Inventory Movement Ledger: inv_stock_movement.movement_type)
+export const STOCK_MOVEMENT_TYPE_OPTIONS: readonly LabelOption[] = [
+  { label: 'opening', value: 1 },
+  { label: 'purchase receipt', value: 2 },
+  { label: 'POS sale', value: 3 },
+  { label: 'customer return', value: 4 },
+  { label: 'void restock', value: 5 },
+  { label: 'supplier return', value: 6 },
+  { label: 'adjustment', value: 7 },
+  { label: 'stock-take', value: 8 },
+  { label: 'transfer out', value: 9 },
+  { label: 'transfer in', value: 10 },
+  { label: 'settlement', value: 11 },
+] as const;
+
+export const StockMovementType = {
+  Opening: 1,
+  PurchaseReceipt: 2,
+  PosSale: 3,
+  CustomerReturn: 4,
+  VoidRestock: 5,
+  SupplierReturn: 6,
+  Adjustment: 7,
+  StockTake: 8,
+  TransferOut: 9,
+  TransferIn: 10,
+  Settlement: 11,
+} as const;
+export type StockMovementType = (typeof StockMovementType)[keyof typeof StockMovementType];
+
 // 6. Cash Received Status
 export const CASH_RECEIVED_STATUS_OPTIONS: readonly LabelOption[] = [
   { label: 'Pending', value: 1, color: 'gold' },
@@ -375,6 +405,7 @@ export const LABEL_VALUES = {
   billing_cycle: BILLING_CYCLE_OPTIONS,
   drug_schedule: DRUG_SCHEDULE_OPTIONS,
   stocktake_status: STOCKTAKE_STATUS_OPTIONS,
+  stock_movement_type: STOCK_MOVEMENT_TYPE_OPTIONS,
 } as const;
 
 export type LabelValueKey = keyof typeof LABEL_VALUES;

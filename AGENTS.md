@@ -97,4 +97,12 @@ git -C sme-software-frontend push origin main
 ### Rule 8: Unreceived Stock Settlement & Valuation Limitation
 - When out-of-stock sales occur, the COGS and sale prices are recorded using estimated/product master costs. On subsequent GRN purchase receipt and placeholder settlement, stock quantities are trued up (placeholder returns toward 0 and real batch is reduced), but historical sale COGS and profit margins are not retroactively re-costed.
 
+---
+
+### Rule 10: Scope, Credential Safety & CI Log Policy
+- **Scope Restriction**: All modifications are strictly scoped to Aidly PMS. Do NOT change Login, seed-defaults, demo users, or credentials under any circumstances.
+- **Credential Protection**: AI agents and developers must NEVER read credential stores, Windows Credential Manager, git credential helpers, secret vaults, or tokens.
+- **CI/CD Diagnostics**: If CI build or test logs are required to diagnose a pipeline failure, do not attempt to query remote CI runner environments or credential-backed APIs; ask the user to paste the CI logs directly.
+
+
 
