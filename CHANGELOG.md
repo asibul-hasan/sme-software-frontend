@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.32.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.31.2...v1.32.0) (2026-10-25)
+
+
+### 🚀 Features
+
+* **pos:** add default pos screen branch config and enforce out-of-stock warning rules ([2e0631d](https://github.com/asibul-hasan/sme-software-frontend/commit/2e0631d1c9d82fd783ac4011f48565a7da99f99a))
+
 ## [1.31.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.31.1...v1.31.2) (2026-10-25)
 
 
