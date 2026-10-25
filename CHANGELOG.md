@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.31.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.31.1...v1.31.2) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** probe public /health endpoint and gate connectivity polling to authenticated sessions ([de3f370](https://github.com/asibul-hasan/sme-software-frontend/commit/de3f37010dd7479265c9b4b67713c5090cde3285))
+
 ## [1.31.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.31.0...v1.31.1) (2026-10-25)
 
 
