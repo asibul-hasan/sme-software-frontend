@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.29.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.29.0...v1.29.1) (2026-10-25)
+
+
+### 📝 Documentation
+
+* **rules:** document frontend-first push order in AGENTS.md ([88b6f84](https://github.com/asibul-hasan/sme-software-frontend/commit/88b6f8479129c5b31dc6fdfee3836d037d2ca616))
+
 ## [1.29.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.28.0...v1.29.0) (2026-10-25)
 
 
