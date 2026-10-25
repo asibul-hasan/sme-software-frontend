@@ -143,8 +143,11 @@ export class RepListComponent implements OnInit {
           isActive: u.is_active ?? true,
         }));
         this.reps.set(rows);
+        this.isLoading.set(false);
       },
       error: (err) => {
+        this.isLoading.set(false);
+        this.hasError.set(true);
         this.msg.error(err?.error?.message || 'Failed to load representatives');
       },
     });
