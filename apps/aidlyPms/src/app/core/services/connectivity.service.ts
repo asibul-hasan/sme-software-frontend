@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { BackendDiscoveryService } from './backend-discovery.service';
+import { AuthService } from '../auth/auth.service';
 
 export type NetworkStatus = 'online' | 'offline';
 
@@ -8,6 +9,7 @@ export type NetworkStatus = 'online' | 'offline';
 })
 export class ConnectivityService {
   private readonly discovery = inject(BackendDiscoveryService);
+  private readonly auth = inject(AuthService);
 
   readonly isOnline = signal<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
   readonly status = computed<NetworkStatus>(() => (this.isOnline() ? 'online' : 'offline'));
@@ -38,10 +40,12 @@ export class ConnectivityService {
   private startPolling(): void {
     if (typeof window === 'undefined') return;
 
-    // Probe every 3 seconds
+    // Probe periodically when authenticated (offline queue is only relevant when logged in)
     this.pollTimer = setInterval(() => {
-      this.checkConnectivity();
-    }, 3000);
+      if (this.auth.isAuthenticated()) {
+        this.checkConnectivity();
+      }
+    }, 5000);
   }
 
   async checkConnectivity(): Promise<boolean> {
@@ -58,7 +62,7 @@ export class ConnectivityService {
       }
 
       const origin = this.discovery.currentOrigin();
-      const probeUrl = `${origin}/api/v1/cfg/sale-configs`;
+      const probeUrl = `${origin}/health`;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2500);
@@ -74,11 +78,17 @@ export class ConnectivityService {
         });
         clearTimeout(timeoutId);
 
-        // Any HTTP response (200, 401, 403, etc.) proves backend is reachable
-        this.consecutiveFailures = 0;
-        this.isOnline.set(true);
+        if (response.ok) {
+          this.consecutiveFailures = 0;
+          this.isOnline.set(true);
+        } else {
+          this.consecutiveFailures++;
+          if (this.consecutiveFailures >= 2) {
+            this.isOnline.set(false);
+          }
+        }
         this.lastChecked.set(new Date());
-        return true;
+        return response.ok;
       } catch {
         clearTimeout(timeoutId);
         this.consecutiveFailures++;
