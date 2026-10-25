@@ -31,10 +31,11 @@ import { PosSaleService } from '../../core/services/pos-sale.service';
 import { PosGatewayService } from '../../core/services/pos-gateway.service';
 import { ConnectivityService } from '../../core/services/connectivity.service';
 import { SyncService } from '../../core/services/sync.service';
-import { PrintService } from '../../core/services/print.service';
+import { PrintService, SaleInvoicePrintData } from '../../core/services/print.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { PosStorageService } from '../../core/services/pos-storage.service';
+import { UsbPrinterService } from '../../core/services/usb-printer.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 
 interface CartItem {
@@ -476,6 +477,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   readonly authService = inject(AuthService);
   readonly settingsService = inject(SettingsService);
   private readonly posStorageService = inject(PosStorageService);
+  readonly usbPrinter = inject(UsbPrinterService);
 
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event: BeforeUnloadEvent): void {
@@ -486,6 +488,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   }
 
   isReceiptModalVisible = false;
+  readonly isPrinterModalVisible = signal<boolean>(false);
   lastPrintedInvoice: SaleInvoice | null = null;
   lastPrintedItems: CartItem[] = [];
 
@@ -1068,6 +1071,10 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.isHeldOrdersModalVisible = false;
     this.isEditItemModalVisible = false;
     this.isReceiptModalVisible = false;
+    this.isBatchModalVisible.set(false);
+    this.isUnitCalcModalVisible.set(false);
+    this.isBanglaDosageModalVisible.set(false);
+    this.isPrinterModalVisible.set(false);
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -1079,7 +1086,8 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
                         this.isReceiptModalVisible || this.isProductModalVisible || 
                         this.isEditItemModalVisible || this.isQuickGenericModalVisible || 
                         this.isQuickCompanyModalVisible || this.isBatchModalVisible() ||
-                        this.isUnitCalcModalVisible() || this.isBanglaDosageModalVisible();
+                        this.isUnitCalcModalVisible() || this.isBanglaDosageModalVisible() ||
+                        this.isPrinterModalVisible();
 
     if (isModalOpen) {
       if (event.key === 'Escape') {
@@ -1210,6 +1218,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.usbPrinter.tryAutoConnect().catch(() => {});
     this.posStorageService.getAllHeldOrders<HeldOrder>().then(orders => {
       if (orders && orders.length > 0) {
         this.heldOrders.set(orders);
@@ -2460,12 +2469,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.isReceiptModalVisible = true;
   }
 
-  triggerBrowserPrint(format: 'a4' | 'thermal' = 'a4'): void {
+  buildSalePrintData(): SaleInvoicePrintData | null {
     const inv = this.lastPrintedInvoice;
     const items = this.lastPrintedItems;
     if (!inv && items.length === 0) {
-      this.msg.warning('No sale data available to print.');
-      return;
+      return null;
     }
 
     const dateStr = inv?.sale_timestamp
@@ -2486,18 +2494,20 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
       ? `OFFLINE - PENDING SYNC (${inv?.offline_receipt_no || inv?.sales_number})`
       : (inv?.sales_number || `POS-${Date.now().toString().slice(-6)}`);
 
-    this.printService.printSaleInvoice({
+    return {
       inv: receiptInvLabel,
       date: datePart?.trim() || dateStr,
       time: timePart?.trim() || '',
       customer: this.selectedCustomerObj()?.name || (inv as any)?.customer_name || 'Walk-in Customer',
       customerPhone: this.selectedCustomerObj()?.phone || '',
       salesman: 'Sales Counter 01',
+      branchName: this.activeBranchName(),
       lines: items.map(item => ({
         name: item.product_name,
         qty: item.qty,
         price: item.unit_price,
         total: item.total,
+        batch: (item as any).batch_no ? String((item as any).batch_no) : undefined,
       })),
       subtotal,
       disc,
@@ -2508,7 +2518,36 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
       change,
       paymentMethod: (inv as any)?.payment_method === 2 ? 'Card' : ((inv as any)?.payment_method === 3 ? 'MFS' : 'Cash Counter'),
       payments: this.lastPrintedPayments.map(p => ({ method: p.method, amount: p.amount })),
-    }, format);
+    };
+  }
+
+  triggerBrowserPrint(format: 'a4' | 'thermal' = 'a4'): void {
+    const data = this.buildSalePrintData();
+    if (!data) {
+      this.msg.warning('No sale data available to print.');
+      return;
+    }
+    this.printService.printSaleInvoice(data, format);
+  }
+
+  async triggerUsbThermalPrint(kickDrawer: boolean = false): Promise<boolean> {
+    const data = this.buildSalePrintData();
+    if (!data) {
+      this.msg.warning('No sale data available to print.');
+      return false;
+    }
+
+    try {
+      const rollType = this.settingsService.invoiceConfig()?.paper_type === 2 ? '58mm' : '80mm';
+      await this.usbPrinter.printSaleInvoice(data, rollType, kickDrawer);
+      this.msg.success('Receipt sent to USB thermal printer');
+      return true;
+    } catch (err: any) {
+      console.warn('[PosTerminal] USB thermal print error:', err);
+      this.msg.warning(err?.message || 'Could not print to USB printer. Falling back to browser print.');
+      this.triggerBrowserPrint('thermal');
+      return false;
+    }
   }
 
   confirmCheckout(autoPrintThermal: boolean = false): void {
@@ -2647,7 +2686,14 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
           }
 
           if (autoPrintThermal || this.quickPrint) {
-            this.triggerBrowserPrint('thermal');
+            if (this.usbPrinter.isConnected()) {
+              const isCash = this.selectedPaymentType() === 1 || this.splitCash() > 0;
+              this.triggerUsbThermalPrint(isCash).catch(() => {
+                this.triggerBrowserPrint('thermal');
+              });
+            } else {
+              this.triggerBrowserPrint('thermal');
+            }
           }
 
           // Immediately deduct sold quantities in local catalog signal
@@ -3003,5 +3049,63 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     }, this.dosageLabelSize());
 
     this.msg.success(`Printing Bangla dosage sticker for ${item.product_name}`);
+  }
+
+  // ==========================================
+  // USB THERMAL PRINTER MANAGEMENT
+  // ==========================================
+  handlePrinterButtonClick(): void {
+    if (this.usbPrinter.isConnected()) {
+      this.isPrinterModalVisible.set(true);
+    } else {
+      this.connectUsbPrinter();
+    }
+  }
+
+  async connectUsbPrinter(): Promise<void> {
+    try {
+      await this.usbPrinter.connect();
+      this.msg.success('USB Thermal Printer connected successfully!');
+    } catch (err: any) {
+      if (err?.name !== 'NotFoundError' && !err?.message?.includes('cancelled')) {
+        this.msg.error(err?.message || 'Failed to connect USB thermal printer');
+      }
+    }
+  }
+
+  async disconnectUsbPrinter(clearSaved: boolean = false): Promise<void> {
+    await this.usbPrinter.disconnect(clearSaved);
+    this.msg.info(clearSaved ? 'Printer forgotten and disconnected' : 'Printer disconnected');
+    this.isPrinterModalVisible.set(false);
+  }
+
+  async testUsbPrint(): Promise<void> {
+    try {
+      const now = new Date().toLocaleString('en-GB');
+      const testSlip = 
+        `================================\n` +
+        `       AIDLY PMS TEST SLIP      \n` +
+        `================================\n` +
+        `Time: ${now}\n` +
+        `Device: ${this.usbPrinter.deviceInfo()?.name || 'USB Thermal'}\n` +
+        `Status: WebUSB Direct Online\n` +
+        `--------------------------------\n` +
+        `Thermal ESC/POS printing OK!\n` +
+        `Ready for high-speed POS sales.\n` +
+        `================================\n`;
+      await this.usbPrinter.printReceipt(testSlip);
+      this.msg.success('Test slip printed successfully!');
+    } catch (err: any) {
+      this.msg.error(err?.message || 'Test print failed');
+    }
+  }
+
+  async kickCashDrawer(): Promise<void> {
+    try {
+      await this.usbPrinter.openCashDrawer();
+      this.msg.success('Cash drawer pulse sent');
+    } catch (err: any) {
+      this.msg.error('Failed to open cash drawer');
+    }
   }
 }

@@ -150,6 +150,30 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Thermal USB Printer Status & Control -->
+        <button
+          type="button"
+          nz-button
+          nzType="default"
+          (click)="handlePrinterButtonClick()"
+          [class]="usbPrinter.isConnected() 
+            ? 'rounded-md border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 flex items-center gap-1.5' 
+            : 'rounded-md border-slate-300 text-slate-700 bg-white hover:bg-slate-50 flex items-center gap-1.5'"
+          nz-tooltip
+          [nzTooltipTitle]="usbPrinter.isConnected() 
+            ? ('USB Thermal Printer: ' + (usbPrinter.deviceInfo()?.name || 'Connected') + ' (Click to manage)') 
+            : (usbPrinter.isSupported() ? 'Click to connect USB Thermal Printer' : 'WebUSB not supported in this browser')"
+          aria-label="Thermal Printer"
+        >
+          <span nz-icon nzType="printer"></span>
+          <span>Thermal</span>
+          <span
+            class="w-2 h-2 rounded-full inline-block"
+            [class.bg-emerald-500]="usbPrinter.isConnected()"
+            [class.bg-slate-300]="!usbPrinter.isConnected()"
+          ></span>
+        </button>
+
         <!-- Unit Calculator (F6) -->
         <button
           type="button"
@@ -2249,6 +2273,16 @@
     <button nz-button nzType="default" (click)="openBanglaDosageModal()" class="text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100">
       <span nz-icon nzType="tag"></span> বাংলা স্টিকার
     </button>
+    <button 
+      nz-button 
+      nzType="default" 
+      (click)="triggerUsbThermalPrint()"
+      class="text-indigo-700 border-indigo-300 bg-indigo-50 hover:bg-indigo-100 font-semibold"
+      nz-tooltip
+      [nzTooltipTitle]="usbPrinter.isConnected() ? 'Direct USB High-Speed Thermal Print' : 'Connect USB Printer & Print'"
+    >
+      <span nz-icon nzType="thunderbolt"></span> USB Thermal
+    </button>
     <button nz-button nzType="default" (click)="triggerBrowserPrint('thermal')">
       <span nz-icon nzType="snippets"></span> 80mm Slip
     </button>
@@ -2804,3 +2838,129 @@
     </div>
   </ng-template>
 </nz-modal>
+
+<!-- ========================================== -->
+<!-- 4. USB THERMAL PRINTER MANAGEMENT MODAL     -->
+<!-- ========================================== -->
+<nz-modal
+  [nzVisible]="isPrinterModalVisible()"
+  nzTitle="USB Thermal Receipt Printer (ESC/POS)"
+  [nzFooter]="printerModalFooter"
+  [nzCentered]="true"
+  nzWidth="520px"
+  (nzOnCancel)="isPrinterModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="space-y-4">
+      <!-- Status Card -->
+      <div 
+        class="p-4 rounded-lg border flex items-center justify-between"
+        [class]="usbPrinter.isConnected() ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'"
+      >
+        <div class="flex items-center gap-3">
+          <div 
+            class="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+            [class]="usbPrinter.isConnected() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'"
+          >
+            <span nz-icon nzType="printer"></span>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-slate-800">
+              {{ usbPrinter.isConnected() ? (usbPrinter.deviceInfo()?.name || 'USB Thermal Printer') : 'No Printer Connected' }}
+            </div>
+            <div class="text-xs text-slate-500">
+              @if (usbPrinter.isConnected() && usbPrinter.deviceInfo(); as dev) {
+                <span>VID: 0x{{ dev.vendorID.toString(16).toUpperCase() }} | PID: 0x{{ dev.productID.toString(16).toUpperCase() }}</span>
+              } @else {
+                <span>{{ usbPrinter.isSupported() ? 'WebUSB Ready - Click Connect to pair' : 'WebUSB not supported in this browser' }}</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div>
+          @if (usbPrinter.isConnected()) {
+            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Connected
+            </span>
+          } @else {
+            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span> Disconnected
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      @if (usbPrinter.isConnected()) {
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            nz-button
+            nzType="default"
+            (click)="testUsbPrint()"
+            class="h-10 text-slate-700 hover:text-indigo-600 hover:border-indigo-400 flex items-center justify-center gap-2"
+          >
+            <span nz-icon nzType="snippets"></span> Test Receipt Print
+          </button>
+          <button
+            type="button"
+            nz-button
+            nzType="default"
+            (click)="kickCashDrawer()"
+            class="h-10 text-slate-700 hover:text-emerald-600 hover:border-emerald-400 flex items-center justify-center gap-2"
+          >
+            <span nz-icon nzType="unlock"></span> Kick Cash Drawer
+          </button>
+        </div>
+      }
+
+      <!-- Helper / Guidance -->
+      <div class="bg-amber-50 border border-amber-200 rounded-md p-3 text-xs text-amber-800 space-y-1">
+        <div class="font-bold flex items-center gap-1.5 text-amber-900">
+          <span nz-icon nzType="info-circle"></span> Direct Hardware ESC/POS Mode
+        </div>
+        <p class="leading-relaxed">
+          High-speed direct thermal printing sends binary ESC/POS commands directly to your 80mm or 58mm USB receipt printer without opening the operating system print dialog.
+        </p>
+        <p class="text-[11px] text-amber-700">
+          Supported browsers: Chrome, Microsoft Edge, Opera (Chromium). When prompted, select your thermal receipt printer and click <strong>Connect</strong>.
+        </p>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #printerModalFooter>
+    <div class="flex items-center justify-between w-full">
+      @if (usbPrinter.isConnected()) {
+        <button
+          type="button"
+          nz-button
+          nzType="text"
+          nzDanger
+          (click)="disconnectUsbPrinter(true)"
+          class="text-xs"
+        >
+          Forget & Disconnect
+        </button>
+      } @else {
+        <span></span>
+      }
+      <div class="flex items-center gap-2">
+        <button type="button" nz-button nzType="default" (click)="isPrinterModalVisible.set(false)">Close</button>
+        @if (!usbPrinter.isConnected()) {
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            (click)="connectUsbPrinter()"
+            [disabled]="!usbPrinter.isSupported()"
+            class="bg-indigo-600 hover:bg-indigo-700 border-0"
+          >
+            <span nz-icon nzType="api"></span> Connect USB Printer
+          </button>
+        }
+      </div>
+    </div>
+  </ng-template>
+</nz-modal>
+
