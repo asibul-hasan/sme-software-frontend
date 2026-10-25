@@ -12,6 +12,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { ProdProductBatch } from '../../core/models/product.models';
+import { CfgSaleConfig } from '../../core/models/config.models';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
@@ -525,6 +526,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
 
   // Screen 1 vs Screen 2 vs Screen 3 Switcher & State
   readonly activeScreen = signal<'screen1' | 'screen2' | 'screen3'>('screen1');
+  readonly saleConfig = signal<CfgSaleConfig | null>(null);
+
+  allowOutOfStockSale(): boolean {
+    return this.saleConfig()?.out_of_stock_sale !== false;
+  }
 
   // Screen 3 LOV Combobox & Barcode Signals
   screen3SearchTerm = signal<string>('');
@@ -1224,6 +1230,24 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
         this.heldOrders.set(orders);
       }
     });
+    const cachedScreen = localStorage.getItem('pms_default_pos_screen') as 'screen1' | 'screen2' | 'screen3' | null;
+    if (cachedScreen === 'screen1' || cachedScreen === 'screen2' || cachedScreen === 'screen3') {
+      this.activeScreen.set(cachedScreen);
+    }
+
+    this.settingsService.getSaleConfig().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.saleConfig.set(res.data);
+          const pref = res.data.default_pos_screen as 'screen1' | 'screen2' | 'screen3';
+          if (pref === 'screen1' || pref === 'screen2' || pref === 'screen3') {
+            this.activeScreen.set(pref);
+            localStorage.setItem('pms_default_pos_screen', pref);
+          }
+        }
+      },
+      error: () => {},
+    });
     this.settingsService.getInvoiceConfig().subscribe({ error: () => {} });
     this.loadProducts();
 
@@ -1423,17 +1447,31 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const lineTotal = Math.round(Math.max(0, (price * qty) - lineDiscount) * 100) / 100;
 
     if (availStock <= 0) {
+      if (!this.allowOutOfStockSale()) {
+        this.msg.error(`Cannot add "${name}": Item is out of stock (0 pcs) and 'Allow Out of Stock Sale' is disabled in branch settings.`);
+        return;
+      }
       this.msg.warning(`Notice: ${name} is out of stock in inventory.`);
     } else if (qty > availStock) {
+      if (!this.allowOutOfStockSale()) {
+        this.msg.error(`Cannot add ${qty} pcs of "${name}": Only ${availStock} available in stock and 'Allow Out of Stock Sale' is disabled.`);
+        return;
+      }
       this.msg.warning(`Notice: Requested ${qty} exceeds available stock (${availStock} pcs).`);
     }
 
     // Check if item already exists in cart with same product_no or name and same unit price
     const existingIndex = this.cart().findIndex(i => (i.product_no === targetProdNo || i.product_name === name) && i.unit_price === price);
     if (existingIndex > -1) {
+      const existing = this.cart()[existingIndex];
+      const newQty = Math.round((existing.qty + qty) * 100) / 100;
+      const totalItemStock = targetProd?.stock ?? product?.stock ?? existing.stock ?? 0;
+      if (!this.allowOutOfStockSale() && totalItemStock > 0 && newQty > totalItemStock) {
+        this.msg.error(`Cannot add ${qty} more pcs of "${name}": Total quantity (${newQty}) exceeds available stock (${totalItemStock} pcs) and 'Allow Out of Stock Sale' is disabled.`);
+        return;
+      }
       this.cart.update(items => items.map((item, idx) => {
         if (idx === existingIndex) {
-          const newQty = Math.round((item.qty + qty) * 100) / 100;
           let newDisc = 0;
           if (item.discount_type === DiscountType.Flat) {
             newDisc = item.discount + lineDiscount;
@@ -1671,14 +1709,36 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     lineDiscount = Math.round(lineDiscount * 100) / 100;
     const lineTotal = Math.round(Math.max(0, (price * qty) - lineDiscount) * 100) / 100;
 
+    if (catalogProd) {
+      if (availStock <= 0) {
+        if (!this.allowOutOfStockSale()) {
+          this.msg.error(`Cannot add "${prodName}": Item is out of stock (0 pcs) and 'Allow Out of Stock Sale' is disabled in branch settings.`);
+          return;
+        }
+        this.msg.warning(`Notice: ${prodName} is out of stock in inventory.`);
+      } else if (qty > availStock) {
+        if (!this.allowOutOfStockSale()) {
+          this.msg.error(`Cannot add ${qty} pcs of "${prodName}": Only ${availStock} available in stock and 'Allow Out of Stock Sale' is disabled.`);
+          return;
+        }
+        this.msg.warning(`Notice: Requested ${qty} exceeds available stock (${availStock} pcs).`);
+      }
+    }
+
     const existingIndex = this.cart().findIndex(i =>
       (catalogProd ? i.product_no === catalogProd.id : i.product_name === prodName) && i.unit_price === price
     );
 
     if (existingIndex > -1) {
+      const existing = this.cart()[existingIndex];
+      const newQty = Math.round((existing.qty + qty) * 100) / 100;
+      const totalItemStock = catalogProd?.stock ?? existing.stock ?? 0;
+      if (!this.allowOutOfStockSale() && totalItemStock > 0 && newQty > totalItemStock) {
+        this.msg.error(`Cannot add ${qty} more pcs of "${prodName}": Total quantity (${newQty}) exceeds available stock (${totalItemStock} pcs) and 'Allow Out of Stock Sale' is disabled.`);
+        return;
+      }
       this.cart.update(items => items.map((item, idx) => {
         if (idx === existingIndex) {
-          const newQty = Math.round((item.qty + qty) * 100) / 100;
           let newDisc = 0;
           if (item.discount_type === DiscountType.Flat) {
             newDisc = item.discount + lineDiscount;
@@ -1741,6 +1801,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   // ==========================================
   setActiveScreen(screen: 'screen1' | 'screen2' | 'screen3'): void {
     this.activeScreen.set(screen);
+    localStorage.setItem('pms_default_pos_screen', screen);
     this.focusProductSearch();
   }
 
@@ -1821,7 +1882,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const step = this.isWholesale() ? 0.25 : 1;
     const currentQty = Number(item.qty) || 0;
     const newQty = Math.max(step, Math.round((currentQty + delta) * 100) / 100);
-    if (item.stock && newQty > item.stock && delta > 0) {
+    if (delta > 0 && item.stock !== undefined && newQty > item.stock) {
+      if (!this.allowOutOfStockSale()) {
+        this.msg.error(`Cannot increase quantity for "${item.product_name}": Only ${item.stock} pcs available in stock and 'Allow Out of Stock Sale' is disabled.`);
+        return;
+      }
       this.msg.warning(`Requested ${newQty} exceeds available stock (${item.stock} pcs)`);
     }
     this.applyItemQty(item, newQty);
@@ -1832,7 +1897,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.tenderTouched = false;
     const val = Math.max(0.01, Number(newQtyRaw) || 0.01);
     const newQty = Math.round(val * 100) / 100;
-    if (item.stock && newQty > item.stock) {
+    if (item.stock !== undefined && newQty > item.stock) {
+      if (!this.allowOutOfStockSale()) {
+        this.msg.error(`Cannot set quantity to ${newQty} for "${item.product_name}": Only ${item.stock} pcs available in stock and 'Allow Out of Stock Sale' is disabled.`);
+        return;
+      }
       this.msg.warning(`Requested ${newQty} exceeds available stock (${item.stock} pcs)`);
     }
     this.applyItemQty(item, newQty);
@@ -2912,6 +2981,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const newQty = this.calcTotalPcs();
     if (newQty <= 0) {
       this.msg.warning('Quantity must be greater than zero.');
+      return;
+    }
+
+    if (!this.allowOutOfStockSale() && target.stock !== undefined && newQty > target.stock) {
+      this.msg.error(`Cannot apply ${newQty} pcs for "${target.product_name}": Only ${target.stock} pcs available in stock and 'Allow Out of Stock Sale' is disabled.`);
       return;
     }
 

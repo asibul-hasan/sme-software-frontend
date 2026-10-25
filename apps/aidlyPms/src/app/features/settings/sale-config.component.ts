@@ -91,7 +91,7 @@ interface SettingToggle {
           </div>
         </div>
 
-        <div class="flex items-center justify-between py-2">
+        <div class="flex items-center justify-between py-2 border-b border-slate-100">
           <div>
             <p class="text-sm font-semibold text-slate-800 mb-0.5">Maximum Sale Discount %</p>
             <p class="text-xs text-slate-400 mb-0">Salesman authorization ceiling on discounts</p>
@@ -102,6 +102,10 @@ interface SettingToggle {
               nz-input
               [(ngModel)]="maxDiscount"
               class="w-20 text-center rounded-md font-mono" aria-label="Field" />
+            <span class="text-xs text-slate-500 font-semibold">%</span>
+          </div>
+        </div>
+
         <div class="flex items-center justify-between py-2 border-b border-slate-100">
           <div>
             <p class="text-sm font-semibold text-slate-800 mb-0.5">Offline Sale Max Age (Hours)</p>
@@ -116,6 +120,39 @@ interface SettingToggle {
               max="720"
               class="w-20 text-center rounded-md font-mono" aria-label="Offline Max Age Hours" />
             <span class="text-xs text-slate-500 font-semibold">hrs</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between py-2">
+          <div>
+            <p class="text-sm font-semibold text-slate-800 mb-0.5">Active POS Screen View</p>
+            <p class="text-xs text-slate-400 mb-0">Default interface layout when opening POS checkout terminal</p>
+          </div>
+          <div class="flex rounded-lg border border-slate-300 overflow-hidden">
+            <button
+              type="button"
+              (click)="defaultPosScreen = 'screen1'"
+              class="px-3 py-1.5 text-xs font-medium border-0 cursor-pointer transition-colors"
+              [ngClass]="defaultPosScreen === 'screen1' ? 'theme-pill-active' : 'text-slate-600 bg-white hover:bg-slate-50'"
+            >
+              Screen 1 (Standard)
+            </button>
+            <button
+              type="button"
+              (click)="defaultPosScreen = 'screen2'"
+              class="px-3 py-1.5 text-xs font-medium border-0 cursor-pointer transition-colors"
+              [ngClass]="defaultPosScreen === 'screen2' ? 'theme-pill-active' : 'text-slate-600 bg-white hover:bg-slate-50'"
+            >
+              Screen 2 (Fast-Pick)
+            </button>
+            <button
+              type="button"
+              (click)="defaultPosScreen = 'screen3'"
+              class="px-3 py-1.5 text-xs font-medium border-0 cursor-pointer transition-colors"
+              [ngClass]="defaultPosScreen === 'screen3' ? 'theme-pill-active' : 'text-slate-600 bg-white hover:bg-slate-50'"
+            >
+              Screen 3 (LOV)
+            </button>
           </div>
         </div>
 
@@ -147,8 +184,15 @@ export class SaleConfigComponent implements OnInit {
   openingStockMarkup = 10;
   maxDiscount = 10;
   offlineMaxAgeHours = 72;
+  defaultPosScreen: 'screen1' | 'screen2' | 'screen3' = 'screen1';
 
   ngOnInit(): void {
+    // Read cached preference first
+    const cachedScreen = localStorage.getItem('pms_default_pos_screen') as 'screen1' | 'screen2' | 'screen3' | null;
+    if (cachedScreen === 'screen1' || cachedScreen === 'screen2' || cachedScreen === 'screen3') {
+      this.defaultPosScreen = cachedScreen;
+    }
+
     this.settingsService.getSaleConfig().subscribe({
       next: (res) => {
         if (res.data) {
@@ -171,6 +215,13 @@ export class SaleConfigComponent implements OnInit {
           if (c.opening_stock_percent !== undefined) this.openingStockMarkup = c.opening_stock_percent;
           if (c.max_sale_discount_percent !== undefined) this.maxDiscount = c.max_sale_discount_percent;
           if (c.offline_max_age_hours !== undefined) this.offlineMaxAgeHours = c.offline_max_age_hours;
+
+          if (c.default_pos_screen === 'screen2' || c.default_pos_screen === 'screen3') {
+            this.defaultPosScreen = c.default_pos_screen;
+          } else if (c.default_pos_screen === 'screen1') {
+            this.defaultPosScreen = 'screen1';
+          }
+          localStorage.setItem('pms_default_pos_screen', this.defaultPosScreen);
         }
       },
       error: () => {},
@@ -197,6 +248,7 @@ export class SaleConfigComponent implements OnInit {
       rak_number: this.getToggle('showRak'),
       offline_pos_enabled: this.getToggle('offlinePosEnabled'),
       offline_max_age_hours: Number(this.offlineMaxAgeHours) || 72,
+      default_pos_screen: this.defaultPosScreen,
       business_type: this.businessMode === 'Wholesale' ? 2 : 1,
       opening_stock_percent: Number(this.openingStockMarkup) || 0,
       max_sale_discount_percent: Number(this.maxDiscount) || 0,
@@ -205,6 +257,7 @@ export class SaleConfigComponent implements OnInit {
 
     this.settingsService.updateSaleConfig(payload).subscribe({
       next: (res) => {
+        localStorage.setItem('pms_default_pos_screen', this.defaultPosScreen);
         this.msg.success(res.message || 'POS sales configuration saved successfully!');
       },
       error: (err) => {

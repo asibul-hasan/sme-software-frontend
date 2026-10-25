@@ -7,6 +7,7 @@ import { NotificationService } from './notification.service';
 import { SaleInvoice } from '../models/customer.models';
 import { CreateSalePayload } from './pos-sale.service';
 import { QueuedSale } from '../models/offline.models';
+import { computeBackoffDelay, validateDiscardReason } from './offline-queue-manager';
 
 @Injectable({
   providedIn: 'root',
@@ -156,6 +157,10 @@ export class SyncService {
     return { success: successCount, failed: failedCount };
   }
 
+  computeBackoffDelay(retryCount: number): number {
+    return computeBackoffDelay(retryCount);
+  }
+
   async retrySale(idempotencyKey: string): Promise<boolean> {
     const item = await this.offlineStore.getQueueItem(idempotencyKey);
     if (!item) return false;
@@ -174,12 +179,15 @@ export class SyncService {
   }
 
   async discardSale(idempotencyKey: string, reason: string): Promise<void> {
-    await this.offlineStore.discardSale(idempotencyKey, reason);
+    const validReason = validateDiscardReason(reason);
+    await this.offlineStore.discardSale(idempotencyKey, validReason);
     await this.offlineStore.logSync({
       timestamp: new Date().toISOString(),
       level: 'warn',
-      message: `Sale with key ${idempotencyKey} was discarded. Reason: ${reason}`,
+      message: `Sale with key ${idempotencyKey} was discarded. Reason: ${validReason}`,
     });
     await this.refreshCounts();
   }
 }
+
+export { computeBackoffDelay } from './offline-queue-manager';

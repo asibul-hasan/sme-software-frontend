@@ -8,6 +8,7 @@
     "build": "nx build web-client",
     "build:pms": "nx build aidlyPms",
     "verify:pms-schema": "node apps/aidlyPms/scripts/verify-schema-parity.mjs",
+    "test:pms": "node --test --experimental-strip-types apps/aidlyPms/src/app/core/services/offline-queue.test.ts",
     "postinstall": "node scripts/patch-ng-zorro.js",
     "test": "nx test web-client",
     "lint": "nx lint web-client",

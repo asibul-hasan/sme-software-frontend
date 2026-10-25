@@ -23,6 +23,7 @@ export interface CfgSaleConfig {
   return_window_days?: number;
   offline_pos_enabled: boolean;
   offline_max_age_hours: number;
+  default_pos_screen?: string;
   updated_at: string;
 }
 

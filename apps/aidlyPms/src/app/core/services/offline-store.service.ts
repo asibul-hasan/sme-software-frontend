@@ -8,6 +8,7 @@ import {
   QueuedSale,
   SyncLogEntry,
 } from '../models/offline.models';
+import { validateDiscardReason } from './offline-queue-manager';
 
 const DB_NAME = 'AidlyPmsOfflineDb';
 const DB_VERSION = 1;
@@ -374,12 +375,12 @@ export class OfflineStoreService {
 
       req.onsuccess = () => {
         const all = (req.result as QueuedSale[]) || [];
-        const pending = all.filter(s => s.status === 'Pending' || s.status === 'Failed');
+        const pending = all.filter(s => s.status === 'Pending');
         // Sort FIFO: oldest created_at first
         pending.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         resolve(pending);
       };
-      req.onerror = () => reject(req.error);
+      req.onerror = () => reject(tx.error || req.error);
     });
   }
 
@@ -395,7 +396,7 @@ export class OfflineStoreService {
         all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         resolve(all);
       };
-      req.onerror = () => reject(req.error);
+      req.onerror = () => reject(tx.error || req.error);
     });
   }
 
@@ -418,14 +419,15 @@ export class OfflineStoreService {
         }
         resolve({ pending, failed, synced, total: all.length });
       };
-      req.onerror = () => reject(req.error);
+      req.onerror = () => reject(tx.error || req.error);
     });
   }
 
   async discardSale(idempotencyKey: string, reason: string): Promise<void> {
+    const validReason = validateDiscardReason(reason);
     return this.updateQueueItem(idempotencyKey, {
       status: 'Discarded',
-      last_error: `Discarded: ${reason}`,
+      last_error: `Discarded: ${validReason}`,
     });
   }
 
