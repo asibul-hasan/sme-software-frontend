@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.30.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.29.1...v1.30.0) (2026-10-25)
+
+
+### 🚀 Features
+
+* **pos:** implement offline POS for plain sales with sync gateway and clinical safety guards ([4d418ec](https://github.com/asibul-hasan/sme-software-frontend/commit/4d418ec654f23d24c7ef25fb1fdc824fb198303e))
+
 ## [1.29.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.29.0...v1.29.1) (2026-10-25)
 
 
