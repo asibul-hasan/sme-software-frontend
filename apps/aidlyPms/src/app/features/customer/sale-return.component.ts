@@ -17,6 +17,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { CustomerService } from '../../core/services/customer.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { ProductService } from '../../core/services/product.service';
+import { ConnectivityService } from '../../core/services/connectivity.service';
 import { Customer, SaleInvoice, ReturnReq, ExchangeReq, ExchangeResult } from '../../core/models/customer.models';
 import { ProdProduct } from '../../core/models/product.models';
 
@@ -72,6 +73,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   private readonly customerService = inject(CustomerService);
   private readonly posSaleService = inject(PosSaleService);
   private readonly productService = inject(ProductService);
+  readonly connectivity = inject(ConnectivityService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -464,6 +466,11 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   });
 
   processReturn(): void {
+    if (!this.connectivity.isOnline()) {
+      this.msg.warning('Sale return operations require an active internet connection.');
+      return;
+    }
+
     if (!this.saleInvoiceNo) {
       this.msg.warning('Please specify an original invoice to return');
       return;
@@ -508,6 +515,11 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   }
 
   processExchange(): void {
+    if (!this.connectivity.isOnline()) {
+      this.msg.warning('Sale exchange operations require an active internet connection.');
+      return;
+    }
+
     if (!this.saleInvoiceNo) {
       this.msg.warning('Please specify an original invoice to exchange against');
       return;

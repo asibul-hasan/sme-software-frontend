@@ -63,6 +63,14 @@ export interface SaleInvoice {
   is_quick_printed: boolean;
   exchange_of_return_no?: number | null;
   sale_timestamp: string;
+  is_offline: boolean;
+  client_created_at?: string | null;
+  offline_receipt_no?: string | null;
+  offline_client_total?: number | null;
+  price_variance?: number | null;
+  late_sync: boolean;
+  idempotency_key?: string | null;
+  idempotency_payload_hash?: string | null;
   created_at: string;
   updated_at: string;
 

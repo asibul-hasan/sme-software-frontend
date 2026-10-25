@@ -309,6 +309,15 @@ export const SYSTEM_SCREENS: readonly SystemScreen[] = [
     description: 'Historical register of retail/wholesale receipts with reprint.',
     is_in_sidebar: true,
   },
+  {
+    form_id: 'SALE_1411',
+    title: 'Offline Sales Review',
+    type: 'Main Screen',
+    route: '/customer/offline-review',
+    permission_code: 'PMS-Report-Module',
+    description: 'Review synced offline sales flagged with price variance or late sync.',
+    is_in_sidebar: true,
+  },
 
   // Cash Counter & Reconciliation
   {
@@ -607,7 +616,7 @@ export const SYSTEM_MENU_CONFIG: readonly SystemModule[] = [
         name_bn: 'বিক্রয়ের হিসাব',
         icon: 'file-search',
         legacy_series: 1400,
-        form_ids: ['SALE_1410', 'SALE_1409'],
+        form_ids: ['SALE_1410', 'SALE_1409', 'SALE_1411'],
       },
       {
         key: 'customers',

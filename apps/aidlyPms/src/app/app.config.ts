@@ -1,4 +1,5 @@
-import { ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection, provideAppInitializer, inject } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection, provideAppInitializer, inject, isDevMode } from '@angular/core';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { BackendDiscoveryService } from './core/services/backend-discovery.service';
@@ -185,5 +186,9 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(en_US),
     provideNzIcons(icons),
     importProvidersFrom(NzModalModule),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

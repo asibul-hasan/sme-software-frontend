@@ -29,6 +29,7 @@ import { CustomerListComponent } from './features/customer/customer-list.compone
 import { CustomerAddComponent } from './features/customer/customer-add.component';
 import { SaleRecordComponent } from './features/customer/sale-record.component';
 import { SaleReturnComponent } from './features/customer/sale-return.component';
+import { OfflineSalesReviewComponent } from './features/customer/offline-sales-review.component';
 
 import { CashHandoverComponent } from './features/cash/cash-handover.component';
 import { DueCollectComponent } from './features/due/due-collect.component';
@@ -137,6 +138,8 @@ export const appRoutes: Route[] = [
       { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
       { path: 'customer/sales', component: SaleRecordComponent },
       { path: 'customer/sale-records', redirectTo: 'customer/sales', pathMatch: 'full' },
+      { path: 'customer/offline-review', component: OfflineSalesReviewComponent },
+      { path: 'sales/offline-review', redirectTo: 'customer/offline-review', pathMatch: 'full' },
 
       // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
       { path: 'cash', redirectTo: 'cash/receive', pathMatch: 'full' },

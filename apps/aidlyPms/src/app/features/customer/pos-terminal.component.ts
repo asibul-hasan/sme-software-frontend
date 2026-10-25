@@ -28,6 +28,9 @@ import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
+import { PosGatewayService } from '../../core/services/pos-gateway.service';
+import { ConnectivityService } from '../../core/services/connectivity.service';
+import { SyncService } from '../../core/services/sync.service';
 import { PrintService } from '../../core/services/print.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
@@ -466,10 +469,21 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   private readonly productService = inject(ProductService);
   private readonly customerService = inject(CustomerService);
   private readonly posSaleService = inject(PosSaleService);
+  private readonly posGatewayService = inject(PosGatewayService);
+  readonly connectivity = inject(ConnectivityService);
+  readonly syncService = inject(SyncService);
   private readonly printService = inject(PrintService);
   readonly authService = inject(AuthService);
   readonly settingsService = inject(SettingsService);
   private readonly posStorageService = inject(PosStorageService);
+
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.syncService.pendingCount() > 0 || this.syncService.failedCount() > 0) {
+      event.preventDefault();
+      event.returnValue = 'You have unsynced offline sales. Leaving this page may delay synchronization.';
+    }
+  }
 
   isReceiptModalVisible = false;
   lastPrintedInvoice: SaleInvoice | null = null;
@@ -1144,7 +1158,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
   }
 
   loadProducts(): void {
-    this.productService.getProducts({ pageSize: 200 }).subscribe(res => {
+    this.posGatewayService.getProducts({ pageSize: 200 }).subscribe(res => {
       if (res.data?.items?.length) {
         const mapped: CatalogProduct[] = res.data.items.map(p => ({
           id: p.product_no,
@@ -1173,7 +1187,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
         }
 
         // Fetch active batches for FEFO allocation and expiry countdown badges
-        this.productService.getBatches().subscribe({
+        this.posGatewayService.getBatches().subscribe({
           next: (bRes) => {
             if (bRes.data?.length) {
               const activeBatches = bRes.data;
@@ -1204,7 +1218,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.settingsService.getInvoiceConfig().subscribe({ error: () => {} });
     this.loadProducts();
 
-    this.customerService.getCustomers({ pageSize: 100 }).subscribe(res => {
+    this.posGatewayService.getCustomers({ pageSize: 100 }).subscribe(res => {
       if (res.data?.items?.length) {
         const liveCusts = res.data.items.map(c => ({
           id: String(c.customer_no),
@@ -2467,8 +2481,13 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     const paid = total - due;
     const change = Number(inv?.change_amount) || 0;
 
+    const isOffline = inv?.is_offline;
+    const receiptInvLabel = isOffline
+      ? `OFFLINE - PENDING SYNC (${inv?.offline_receipt_no || inv?.sales_number})`
+      : (inv?.sales_number || `POS-${Date.now().toString().slice(-6)}`);
+
     this.printService.printSaleInvoice({
-      inv: inv?.sales_number || `POS-${Date.now().toString().slice(-6)}`,
+      inv: receiptInvLabel,
       date: datePart?.trim() || dateStr,
       time: timePart?.trim() || '',
       customer: this.selectedCustomerObj()?.name || (inv as any)?.customer_name || 'Walk-in Customer',
@@ -2496,6 +2515,18 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     if (this.cart().length === 0) {
       this.msg.warning('Cannot checkout an empty basket.');
       return;
+    }
+
+    if (!this.connectivity.isOnline()) {
+      const rxItems = this.cart().filter(i => i.is_narcotic || i.is_prescription_required || i.drug_schedule === 'NARCOTIC');
+      if (rxItems.length > 0) {
+        this.msg.error('Offline sale of narcotic or prescription medicines is prohibited. Needs internet connection.');
+        return;
+      }
+      if (this.syncService.pendingCount() >= 500) {
+        this.msg.error('Offline queue is full (max 500 sales). Please reconnect to the internet to sync pending sales.');
+        return;
+      }
     }
 
     const rxItems = this.cart().filter(i => i.is_narcotic || i.is_prescription_required);
@@ -2584,7 +2615,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
       ];
     }
 
-    this.posSaleService.createSale(salePayload).subscribe({
+    this.posGatewayService.createSale(salePayload).subscribe({
       next: res => {
         if (res.success && res.data) {
           const soldCart = [...this.cart()];
@@ -2609,7 +2640,11 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
             this.lastPrintedPayments = [{ method: methodLabel, amount: this.totalPaid() }];
           }
 
-          this.msg.success(`Sale ${res.data.sales_number} completed! Total: ৳ ${this.finalPrice().toFixed(2)}`);
+          if (res.data.is_offline) {
+            this.msg.success(`Offline Sale ${res.data.sales_number} completed and queued for sync! Total: ৳ ${this.finalPrice().toFixed(2)}`);
+          } else {
+            this.msg.success(`Sale ${res.data.sales_number} completed! Total: ৳ ${this.finalPrice().toFixed(2)}`);
+          }
 
           if (autoPrintThermal || this.quickPrint) {
             this.triggerBrowserPrint('thermal');
@@ -2651,8 +2686,9 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
           this.msg.error(res.message || 'Failed to complete sale');
         }
       },
-      error: () => {
-        this.msg.error('An error occurred during sale processing');
+      error: (err: any) => {
+        const errMsg = err?.error?.message || err?.message || 'An error occurred during sale processing';
+        this.msg.error(errMsg);
       },
     });
   }
@@ -2694,7 +2730,7 @@ export class PosTerminalComponent implements OnInit, AfterViewInit {
     this.batchModalItem.set(item);
     this.isBatchLoading.set(true);
     this.isBatchModalVisible.set(true);
-    this.productService.getProductBatches(item.product_no).subscribe({
+    this.posGatewayService.getProductBatches(item.product_no).subscribe({
       next: (res) => {
         this.isBatchLoading.set(false);
         const batches = (res.data || []).filter(b => !b.is_expired && this.getDaysUntilExpiry(b.expiry_date) > 0);

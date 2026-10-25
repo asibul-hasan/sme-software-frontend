@@ -8,10 +8,12 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { ApiService } from '../../core/services/api.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { SyncService } from '../../core/services/sync.service';
 import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 
 interface CashItem {
@@ -35,6 +37,7 @@ interface CashItem {
     NzIconModule,
     NzTooltipModule,
     NzDatePickerModule,
+    NzCheckboxModule,
     PageHeaderComponent,
   ],
   template: `
@@ -213,6 +216,23 @@ interface CashItem {
               class="w-40 rounded-md text-xs py-1" aria-label="Field"></nz-date-picker>
           </div>
 
+          <!-- Unsynced Offline Sales Warning Banner -->
+          @if (syncService.pendingCount() > 0 || syncService.failedCount() > 0) {
+            <div class="p-3.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs shadow-xs">
+              <div class="flex items-center gap-2 font-bold text-amber-800 text-sm">
+                <span nz-icon nzType="warning" [nzTheme]="'fill'" class="text-amber-600"></span>
+                <span>Unsynced Offline Sales Warning</span>
+              </div>
+              <p class="mt-1.5 mb-2.5 text-amber-800 leading-relaxed">
+                There are <strong>{{ syncService.pendingCount() + syncService.failedCount() }}</strong> offline sale(s) in the local queue.
+                Closing the shift now will cause these sales to be booked with <strong>late_sync = TRUE</strong> at the current server time once they are synced.
+              </p>
+              <label nz-checkbox [(ngModel)]="offlineSyncConfirmed" class="text-xs font-semibold text-slate-900">
+                I understand and confirm shift closure with unsynced offline sales
+              </label>
+            </div>
+          }
+
           <!-- Day-End 4-Point Audit Reconciliation Badge -->
           @if (dayEndRecon()) {
             <div class="p-3 rounded-lg border text-xs" [ngClass]="dayEndRecon()?.all_checks_passed ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'">
@@ -378,6 +398,8 @@ export class CashHandoverComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
   private readonly accountingService = inject(AccountingService);
+  readonly syncService = inject(SyncService);
+  offlineSyncConfirmed = false;
 
   constructor() {
     this.route.queryParams.subscribe(params => {
@@ -497,6 +519,12 @@ export class CashHandoverComponent implements OnInit {
   }
 
   saveCashCloser(): void {
+    const pending = this.syncService.pendingCount() + this.syncService.failedCount();
+    if (pending > 0 && !this.offlineSyncConfirmed) {
+      this.msg.warning('Please confirm the unsynced offline sales warning before saving shift closer.');
+      return;
+    }
+
     const totalCash = this.calculatedTotalCash();
     const grand = this.grandTotalAmount();
     

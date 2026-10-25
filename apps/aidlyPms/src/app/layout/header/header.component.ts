@@ -11,6 +11,10 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { AuthService } from '../../core/auth/auth.service';
 import { BackendDiscoveryService } from '../../core/services/backend-discovery.service';
+import { ConnectivityService } from '../../core/services/connectivity.service';
+import { SyncService } from '../../core/services/sync.service';
+import { CatalogRefreshService } from '../../core/services/catalog-refresh.service';
+import { OfflineSalesDrawerComponent } from './offline-sales-drawer.component';
 import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/config/menu.config';
 
 @Component({
@@ -24,6 +28,7 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
     NzDropDownModule,
     NzBadgeModule,
     NzTooltipModule,
+    OfflineSalesDrawerComponent,
   ],
   styles: [`
     :host {
@@ -221,7 +226,40 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           }
         </button>
 
-                <!-- Active Branch Indicator & Switcher Dropdown -->
+        <!-- Offline POS / Sync Status Chip -->
+        <button
+          type="button"
+          (click)="drawerVisible.set(true)"
+          class="header-backend-pill flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer border select-none transition-all"
+          [class.bg-emerald-500/10]="connectivity.isOnline() && syncService.failedCount() === 0 && !syncService.isSyncing()"
+          [class.border-emerald-500/30]="connectivity.isOnline() && syncService.failedCount() === 0 && !syncService.isSyncing()"
+          [class.bg-rose-500/15]="!connectivity.isOnline() || syncService.failedCount() > 0"
+          [class.border-rose-500/40]="!connectivity.isOnline() || syncService.failedCount() > 0"
+          [class.bg-indigo-500/15]="connectivity.isOnline() && syncService.isSyncing()"
+          [class.border-indigo-500/40]="connectivity.isOnline() && syncService.isSyncing()"
+          nz-tooltip
+          [nzTooltipTitle]="offlineTooltip"
+          aria-label="View offline queue and sync status"
+        >
+          @if (syncService.isSyncing()) {
+            <span nz-icon nzType="loading" class="text-indigo-400"></span>
+            <span class="text-indigo-300">Syncing ({{ syncService.pendingCount() }})</span>
+          } @else if (syncService.failedCount() > 0) {
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span class="text-rose-300">Sync Error ({{ syncService.failedCount() }})</span>
+          } @else if (!connectivity.isOnline()) {
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span class="text-rose-300 font-bold">Offline {{ syncService.pendingCount() > 0 ? '(' + syncService.pendingCount() + ')' : '' }}</span>
+          } @else if (syncService.pendingCount() > 0) {
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span class="text-amber-300">Pending ({{ syncService.pendingCount() }})</span>
+          } @else {
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-emerald-300">Online</span>
+          }
+        </button>
+
+        <!-- Active Branch Indicator & Switcher Dropdown -->
         <div
           nz-dropdown
           [nzDropdownMenu]="branchMenu"
@@ -330,6 +368,11 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
           </ul>
         </nz-dropdown-menu>
       </div>
+
+      <app-offline-sales-drawer
+        [visible]="drawerVisible()"
+        (close)="drawerVisible.set(false)"
+      ></app-offline-sales-drawer>
     </header>
   `,
 })
@@ -337,6 +380,27 @@ export class HeaderComponent implements OnInit {
   readonly api = inject(ApiService);
   readonly msg = inject(NzMessageService);
   readonly availableBranches = signal<any[]>([]);
+  readonly connectivity = inject(ConnectivityService);
+  readonly syncService = inject(SyncService);
+  readonly catalogRefresh = inject(CatalogRefreshService);
+  readonly drawerVisible = signal<boolean>(false);
+
+  get offlineTooltip(): string {
+    const online = this.connectivity.isOnline();
+    const pending = this.syncService.pendingCount();
+    const failed = this.syncService.failedCount();
+    const catText = this.catalogRefresh.lastUpdateText();
+    if (!online) {
+      return `Offline mode active. Sales will queue locally (${pending} queued). ${catText}. Click to view queue.`;
+    }
+    if (failed > 0) {
+      return `${failed} sale(s) failed sync! Click to retry or inspect. ${catText}.`;
+    }
+    if (pending > 0) {
+      return `${pending} sale(s) pending sync. ${catText}. Click to view queue.`;
+    }
+    return `System online. ${catText}. Click to manage offline sync.`;
+  }
 
   ngOnInit(): void {
     this.loadBranches();

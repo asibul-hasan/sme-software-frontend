@@ -102,7 +102,20 @@ interface SettingToggle {
               nz-input
               [(ngModel)]="maxDiscount"
               class="w-20 text-center rounded-md font-mono" aria-label="Field" />
-            <span class="text-xs text-slate-500 font-semibold">%</span>
+        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+          <div>
+            <p class="text-sm font-semibold text-slate-800 mb-0.5">Offline Sale Max Age (Hours)</p>
+            <p class="text-xs text-slate-400 mb-0">Maximum allowed age for offline sales before late sync</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="sale-config-field-offline-hours"
+              type="number"
+              nz-input
+              [(ngModel)]="offlineMaxAgeHours"
+              min="1"
+              max="720"
+              class="w-20 text-center rounded-md font-mono" aria-label="Offline Max Age Hours" />
+            <span class="text-xs text-slate-500 font-semibold">hrs</span>
           </div>
         </div>
 
@@ -127,11 +140,13 @@ export class SaleConfigComponent implements OnInit {
     { key: 'showStock', label: 'Show Stock QTY in Search', desc: 'Display available pack units in POS product search', value: true },
     { key: 'showCompany', label: 'Display Company Name', desc: 'Display manufacturer name under product brand', value: true },
     { key: 'showRak', label: 'Show Rack / Shelf Number', desc: 'Display physical store shelf number in POS results', value: false },
+    { key: 'offlinePosEnabled', label: 'Enable Offline POS Selling', desc: 'Allow cashier to continue selling plain items when internet drops', value: true },
   ];
 
   businessMode: 'Retail' | 'Wholesale' = 'Retail';
   openingStockMarkup = 10;
   maxDiscount = 10;
+  offlineMaxAgeHours = 72;
 
   ngOnInit(): void {
     this.settingsService.getSaleConfig().subscribe({
@@ -145,6 +160,7 @@ export class SaleConfigComponent implements OnInit {
           this.setToggle('showStock', c.stock_qty ?? c.stockQty ?? true);
           this.setToggle('showCompany', c.company_name ?? c.companyName ?? true);
           this.setToggle('showRak', c.rak_number ?? c.rakNumber ?? false);
+          this.setToggle('offlinePosEnabled', c.offline_pos_enabled ?? c.offlinePosEnabled ?? true);
 
           if (c.business_type === 2 || c.businessType === 2) {
             this.businessMode = 'Wholesale';
@@ -154,6 +170,7 @@ export class SaleConfigComponent implements OnInit {
 
           if (c.opening_stock_percent !== undefined) this.openingStockMarkup = c.opening_stock_percent;
           if (c.max_sale_discount_percent !== undefined) this.maxDiscount = c.max_sale_discount_percent;
+          if (c.offline_max_age_hours !== undefined) this.offlineMaxAgeHours = c.offline_max_age_hours;
         }
       },
       error: () => {},
@@ -178,6 +195,8 @@ export class SaleConfigComponent implements OnInit {
       stock_qty: this.getToggle('showStock'),
       company_name: this.getToggle('showCompany'),
       rak_number: this.getToggle('showRak'),
+      offline_pos_enabled: this.getToggle('offlinePosEnabled'),
+      offline_max_age_hours: Number(this.offlineMaxAgeHours) || 72,
       business_type: this.businessMode === 'Wholesale' ? 2 : 1,
       opening_stock_percent: Number(this.openingStockMarkup) || 0,
       max_sale_discount_percent: Number(this.maxDiscount) || 0,

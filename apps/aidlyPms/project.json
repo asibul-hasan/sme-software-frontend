@@ -34,6 +34,7 @@
             },
             "fonts": false
           },
+          "serviceWorker": "apps/aidlyPms/ngsw-config.json",
           "budgets": [
             {
               "type": "initial",

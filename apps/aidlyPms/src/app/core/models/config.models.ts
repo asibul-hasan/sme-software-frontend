@@ -21,6 +21,8 @@ export interface CfgSaleConfig {
   is_max_discount_enabled: boolean;
   business_type: number;
   return_window_days?: number;
+  offline_pos_enabled: boolean;
+  offline_max_age_hours: number;
   updated_at: string;
 }
 
