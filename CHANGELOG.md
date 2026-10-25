@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.31.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.30.0...v1.31.0) (2026-10-25)
+
+
+### 🚀 Features
+
+* **pos:** implement WebUSB thermal receipt printer and direct checkout printing ([fa7fbba](https://github.com/asibul-hasan/sme-software-frontend/commit/fa7fbba57c1887b38e2b40f44680902016dce2de))
+
 ## [1.30.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.29.1...v1.30.0) (2026-10-25)
 
 
