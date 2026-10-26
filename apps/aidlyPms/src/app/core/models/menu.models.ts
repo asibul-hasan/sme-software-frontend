@@ -1,11 +1,15 @@
 export interface SysMenu {
   menu_no: number;
+  menu_code: string;
   title: string;
+  title_bn: string;
   path?: string | null;
+  route?: string | null;
   icon?: string | null;
   parent_menu_no?: number | null;
   parent_title?: string | null;
   order_no: number;
+  menu_type: string;
   status: boolean;
   created_at?: string;
   updated_at?: string;
