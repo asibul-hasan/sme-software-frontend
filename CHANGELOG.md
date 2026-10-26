@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.33.1...v1.34.0) (2026-10-26)
+
+
+### 🚀 Features
+
+* **roles:** db-driven menus, permissions, dynamic sidebar and menu guard ([fbce951](https://github.com/asibul-hasan/sme-software-frontend/commit/fbce951e7bc585b3c81c8eab50943e0aa78ee2e3))
+
 ## [1.33.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.33.0...v1.33.1) (2026-10-26)
 
 
