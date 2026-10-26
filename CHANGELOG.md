@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.33.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.33.0...v1.33.1) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **db:** sync sys_menus seed data in db_script with schema parity ([919d365](https://github.com/asibul-hasan/sme-software-frontend/commit/919d365de64250b0466861cba3056f1d2094fe51))
+
 ## [1.33.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.32.0...v1.33.0) (2026-10-26)
 
 
