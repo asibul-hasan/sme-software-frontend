@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.33.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.32.0...v1.33.0) (2026-10-26)
+
+
+### 🚀 Features
+
+* **db:** sync sys_menus migrations 12 and 13 with schema parity ([86fff13](https://github.com/asibul-hasan/sme-software-frontend/commit/86fff13a483657e86b78a7eb680d8cee1f937c80))
+
 ## [1.32.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.31.2...v1.32.0) (2026-10-25)
 
 
