@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.4](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.3...v1.34.4) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** fix sales register column alignment and remove header sorting options ([e4f430f](https://github.com/asibul-hasan/sme-software-frontend/commit/e4f430f088ca1bace719b1d049a1df22c143e6fb))
+
 ## [1.34.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.2...v1.34.3) (2026-10-26)
 
 
