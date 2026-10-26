@@ -186,5 +186,18 @@ if (fs.existsSync(backendMigrationsDir) && fs.existsSync(frontendMigrationsDir))
   console.log('[INFO] Sibling backend repository not detected on disk. Migrations check deferred to CI pipeline.');
 }
 
-console.log('>>> VERIFICATION PASSED: 100% FIELD-TO-FIELD & MIGRATION PARITY ACHIEVED <<<');
+// Run menu & route integrity check
+const verifyMenusScript = path.resolve(__dirname, 'verify-menus.mjs');
+if (fs.existsSync(verifyMenusScript)) {
+  const { execSync } = await import('node:child_process');
+  try {
+    execSync(`node "${verifyMenusScript}"`, { stdio: 'inherit' });
+  } catch (err) {
+    console.error('>>> MENU & ROUTE INTEGRITY CHECK FAILED <<<');
+    process.exit(1);
+  }
+}
+
+console.log('>>> VERIFICATION PASSED: 100% FIELD-TO-FIELD, MIGRATION & MENU PARITY ACHIEVED <<<');
 process.exit(0);
+

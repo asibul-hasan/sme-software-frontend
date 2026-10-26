@@ -14,7 +14,6 @@ import { StocktakeCreateComponent } from './features/products/stocktake-create.c
 import { StocktakeCountComponent } from './features/products/stocktake-count.component';
 import { StockIntegrityComponent } from './features/products/stock-integrity.component';
 
-
 import { SupplierListComponent } from './features/supplier/supplier-list.component';
 import { SupplierAddComponent } from './features/supplier/supplier-add.component';
 import { PurchaseEntryComponent } from './features/supplier/purchase-entry.component';
@@ -51,7 +50,6 @@ import { RepListComponent } from './features/representatives/rep-list.component'
 import { RepAddComponent } from './features/representatives/rep-add.component';
 
 import { RoleListComponent } from './features/roles/role-list.component';
-import { RoleAddComponent } from './features/roles/role-add.component';
 import { RoleMenuPermissionComponent } from './features/roles/role-menu-permission.component';
 
 import { MenuListComponent } from './features/menus/menu-list.component';
@@ -70,7 +68,7 @@ import { CashbookReportComponent } from './features/reports/cashbook-report.comp
 import { AnalyticsReportComponent } from './features/reports/analytics-report.component';
 import { LoginComponent } from './features/auth/login.component';
 import { authGuard } from './core/guards/auth.guard';
-import { managerGuard } from './core/guards/role.guard';
+import { menuGuard } from './core/guards/menu.guard';
 
 export const appRoutes: Route[] = [
   { path: 'auth/login', component: LoginComponent },
@@ -81,121 +79,123 @@ export const appRoutes: Route[] = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
-      // Dashboard & Executive Analytics (DASH_2301 - DASH_2303) - Restricted to Manager
-      { path: 'dashboard', component: DashboardComponent, canActivate: [managerGuard] },
-      { path: 'dashboard/analytics', component: AnalyticsReportComponent, canActivate: [managerGuard] },
-      { path: 'dashboard/cashbook', component: CashbookReportComponent, canActivate: [managerGuard] },
+      // Dashboard & Executive Analytics
+      { path: 'dashboard', component: DashboardComponent, canActivate: [menuGuard], data: { menuCode: 'DASH_2301' } },
+      { path: 'dashboard/analytics', component: AnalyticsReportComponent, canActivate: [menuGuard], data: { menuCode: 'DASH_2302' } },
+      { path: 'dashboard/cashbook', component: CashbookReportComponent, canActivate: [menuGuard], data: { menuCode: 'DASH_2303' } },
 
-      // Products & Inventory (PROD_1601 - PROD_1610)
+      // Products & Inventory
       { path: 'products', redirectTo: 'products/list', pathMatch: 'full' },
-      { path: 'products/list', component: ProductListComponent },
-      { path: 'products/add', component: ProductAddComponent },
-      { path: 'products/company', component: CompanyListComponent },
-      { path: 'products/company/add', component: CompanyListComponent },
-      { path: 'products/generic', component: GenericListComponent },
-      { path: 'products/generic/add', component: GenericListComponent },
-      { path: 'products/requisition', component: RequisitionListComponent },
-      { path: 'products/requisition/records', component: RequisitionRecordComponent },
-      { path: 'products/expired', component: ExpiredItemsComponent },
-      { path: 'products/transfers', component: StockTransferComponent },
+      { path: 'products/list', component: ProductListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1601' } },
+      { path: 'products/add', component: ProductAddComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1602' } },
+      { path: 'products/company', component: CompanyListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1603' } },
+      { path: 'products/company/add', component: CompanyListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1604' } },
+      { path: 'products/generic', component: GenericListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1605' } },
+      { path: 'products/generic/add', component: GenericListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1606' } },
+      { path: 'products/requisition', component: RequisitionListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1607' } },
+      { path: 'products/requisition/add-item', redirectTo: 'products/requisition', pathMatch: 'full', data: { menuCode: 'PROD_1608' } },
+      { path: 'products/requisition/records', component: RequisitionRecordComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1609' } },
+      { path: 'products/expired', component: ExpiredItemsComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1610' } },
+      { path: 'products/transfers', component: StockTransferComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1601' } },
       { path: 'products/transfer', redirectTo: 'products/transfers', pathMatch: 'full' },
       { path: 'inventory/transfers', redirectTo: 'products/transfers', pathMatch: 'full' },
-      { path: 'products/stocktakes', component: StocktakeListComponent },
-      { path: 'products/stocktakes/new', component: StocktakeCreateComponent },
-      { path: 'products/stocktakes/:id', component: StocktakeCountComponent },
-      { path: 'products/integrity', component: StockIntegrityComponent },
-      { path: 'products/reports', component: StockReportComponent },
+      { path: 'products/stocktakes', component: StocktakeListComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1612' } },
+      { path: 'products/stocktakes/new', component: StocktakeCreateComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1612' } },
+      { path: 'products/stocktakes/:id', component: StocktakeCountComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1612' } },
+      { path: 'products/integrity', component: StockIntegrityComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1613' } },
+      { path: 'products/reports', component: StockReportComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1611' } },
       { path: 'inventory/reports', redirectTo: 'reports/inventory', pathMatch: 'full' },
 
-      // Reports (REP_1611)
-      { path: 'reports/inventory', component: InventoryReportsComponent, canActivate: [managerGuard] },
-      { path: 'reports/abc-fsn', component: InventoryReportsComponent, canActivate: [managerGuard] },
-      { path: 'reports/margin', component: InventoryReportsComponent, canActivate: [managerGuard] },
-      { path: 'reports/expiry', component: InventoryReportsComponent, canActivate: [managerGuard] },
-      { path: 'reports/daily-returns', component: InventoryReportsComponent, canActivate: [managerGuard] },
+      // Reports
+      { path: 'reports/inventory', component: InventoryReportsComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1611' } },
+      { path: 'reports/abc-fsn', component: InventoryReportsComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1611' } },
+      { path: 'reports/margin', component: InventoryReportsComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1611' } },
+      { path: 'reports/expiry', component: InventoryReportsComponent, canActivate: [menuGuard], data: { menuCode: 'PROD_1610' } },
+      { path: 'reports/daily-returns', component: InventoryReportsComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1409' } },
 
-      // Suppliers & Purchases (PUR_1501 - PUR_1509) - Restricted to Manager
+      // Suppliers & Purchases
       { path: 'purchase', redirectTo: 'supplier/purchase', pathMatch: 'full' },
       { path: 'purchases', redirectTo: 'supplier/purchase', pathMatch: 'full' },
       { path: 'supplier', redirectTo: 'supplier/purchase', pathMatch: 'full' },
-      { path: 'supplier/purchase', component: PurchaseEntryComponent, canActivate: [managerGuard] },
-      { path: 'supplier/list', component: SupplierListComponent, canActivate: [managerGuard] },
-      { path: 'supplier/add', component: SupplierAddComponent, canActivate: [managerGuard] },
-      { path: 'supplier/records', component: PurchaseRecordComponent, canActivate: [managerGuard] },
-      { path: 'supplier/purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
+      { path: 'supplier/purchase', component: PurchaseEntryComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1503' } },
+      { path: 'supplier/purchase/mode', redirectTo: 'supplier/purchase', pathMatch: 'full', data: { menuCode: 'PUR_1504' } },
+      { path: 'supplier/list', component: SupplierListComponent, canActivate: [menuGuard], data: { menuCode: 'SUPP_1501' } },
+      { path: 'supplier/add', component: SupplierAddComponent, canActivate: [menuGuard], data: { menuCode: 'SUPP_1502' } },
+      { path: 'supplier/records', component: PurchaseRecordComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },
+      { path: 'supplier/purchase-return', component: PurchaseReturnComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },
       { path: 'supplier/returns', redirectTo: 'supplier/purchase-return', pathMatch: 'full' },
 
-      // Customer & Sales POS (SALE_1401 - SALE_1410)
-      { path: 'customer/sale', component: PosTerminalComponent },
-      { path: 'customer/sale-wholesale', redirectTo: 'customer/sale', pathMatch: 'full' },
-      { path: 'customer/list', component: CustomerListComponent },
-      { path: 'customer/add', component: CustomerAddComponent },
-      { path: 'customer/returns', component: SaleReturnComponent },
+      // Customer & Sales POS
+      { path: 'customer/sale', component: PosTerminalComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1401' } },
+      { path: 'customer/sale-wholesale', component: PosTerminalComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1402' } },
+      { path: 'customer/list', component: CustomerListComponent, canActivate: [menuGuard], data: { menuCode: 'CUST_1407' } },
+      { path: 'customer/add', component: CustomerAddComponent, canActivate: [menuGuard], data: { menuCode: 'CUST_1408' } },
+      { path: 'customer/returns', component: SaleReturnComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1409' } },
       { path: 'customer/return', redirectTo: 'customer/returns', pathMatch: 'full' },
       { path: 'customer/sale-return', redirectTo: 'customer/returns', pathMatch: 'full' },
-      { path: 'customer/sale/return', redirectTo: 'customer/returns', pathMatch: 'full' },
-      { path: 'purchase/return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
-      { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [managerGuard] },
-      { path: 'customer/sales', component: SaleRecordComponent },
+      { path: 'customer/sale/return', component: SaleReturnComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1403' } },
+      { path: 'purchase/return', component: PurchaseReturnComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },
+      { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },
+      { path: 'customer/sales', component: SaleRecordComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1410' } },
       { path: 'customer/sale-records', redirectTo: 'customer/sales', pathMatch: 'full' },
-      { path: 'customer/offline-review', component: OfflineSalesReviewComponent },
+      { path: 'customer/offline-review', component: OfflineSalesReviewComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1411' } },
       { path: 'sales/offline-review', redirectTo: 'customer/offline-review', pathMatch: 'full' },
 
-      // Cash Counter & Reconciliation (CASH_1201 - CASH_1205)
+      // Cash Counter & Reconciliation
       { path: 'cash', redirectTo: 'cash/receive', pathMatch: 'full' },
-      { path: 'cash/receive', component: CashHandoverComponent },
-      { path: 'reconciliation', component: ReconciliationListComponent, canActivate: [managerGuard] },
-      { path: 'reconciliation/add', component: ReconciliationAddComponent, canActivate: [managerGuard] },
+      { path: 'cash/receive', component: CashHandoverComponent, canActivate: [menuGuard], data: { menuCode: 'CASH_1201' } },
+      { path: 'reconciliation', component: ReconciliationListComponent, canActivate: [menuGuard], data: { menuCode: 'CASH_1203' } },
+      { path: 'reconciliation/add', component: ReconciliationAddComponent, canActivate: [menuGuard], data: { menuCode: 'CASH_1204' } },
 
-      // Due & Credit Collection (DUE_1301 - DUE_1302)
-      { path: 'due-collect', component: DueCollectComponent },
-      { path: 'pms-due-paid-payments', component: DueCollectComponent },
+      // Due & Credit Collection
+      { path: 'due-collect', component: DueCollectComponent, canActivate: [menuGuard], data: { menuCode: 'DUE_1301' } },
+      { path: 'pms-due-paid-payments', component: DueCollectComponent, canActivate: [menuGuard], data: { menuCode: 'DUE_1302' } },
 
-      // Accounting & Financials (ACC_1101 - ACC_1110) - Restricted to Manager
+      // Accounting & Financials
       { path: 'accounting', redirectTo: 'accounting/transaction', pathMatch: 'full' },
-      { path: 'accounting/transaction', component: AccountsComponent, canActivate: [managerGuard] },
-      { path: 'accounting/transaction/add', component: AccountAddComponent, canActivate: [managerGuard] },
-      { path: 'accounting/expenses', component: ExpensesComponent, canActivate: [managerGuard] },
-      { path: 'accounting/expenses/add', component: ExpenseAddComponent, canActivate: [managerGuard] },
-      { path: 'accounting/income', component: IncomeComponent, canActivate: [managerGuard] },
-      { path: 'accounting/additional-balance', component: AdditionalBalanceComponent, canActivate: [managerGuard] },
+      { path: 'accounting/transaction', component: AccountsComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1101' } },
+      { path: 'accounting/transaction/add', component: AccountAddComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1102' } },
+      { path: 'accounting/expenses', component: ExpensesComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1103' } },
+      { path: 'accounting/expenses/add', component: ExpenseAddComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1104' } },
+      { path: 'accounting/income', component: IncomeComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1106' } },
+      { path: 'accounting/additional-balance', component: AdditionalBalanceComponent, canActivate: [menuGuard], data: { menuCode: 'ACC_1109' } },
       { path: 'accounting/reports', redirectTo: 'dashboard/cashbook', pathMatch: 'full' },
       { path: 'accounting/cashbook', redirectTo: 'dashboard/cashbook', pathMatch: 'full' },
       { path: 'accounting/analytics', redirectTo: 'dashboard/analytics', pathMatch: 'full' },
 
-      // Doctors Portal (DOC_1701 - DOC_1703)
-      { path: 'doctors-portal/list', component: DoctorListComponent },
-      { path: 'doctors-portal/add', component: DoctorAddComponent },
-      { path: 'doctors-portal/settings', component: PrescriptionSettingsComponent, canActivate: [managerGuard] },
+      // Doctors Portal
+      { path: 'doctors-portal/list', component: DoctorListComponent, canActivate: [menuGuard], data: { menuCode: 'DOC_1701' } },
+      { path: 'doctors-portal/add', component: DoctorAddComponent, canActivate: [menuGuard], data: { menuCode: 'DOC_1702' } },
+      { path: 'doctors-portal/settings', component: PrescriptionSettingsComponent, canActivate: [menuGuard], data: { menuCode: 'DOC_1703' } },
 
-      // Representatives & Staff (REP_1801 - REP_1802) - Restricted to Manager
-      { path: 'representative', component: RepListComponent, canActivate: [managerGuard] },
-      { path: 'representative/add', component: RepAddComponent, canActivate: [managerGuard] },
+      // Representatives & Staff
+      { path: 'representative', component: RepListComponent, canActivate: [menuGuard], data: { menuCode: 'REP_1801' } },
+      { path: 'representative/add', component: RepAddComponent, canActivate: [menuGuard], data: { menuCode: 'REP_1802' } },
 
-      // Roles & RBAC (ROLE_1901 - ROLE_1903) - Restricted to Manager
-      { path: 'roles', component: RoleListComponent, canActivate: [managerGuard] },
-      { path: 'roles/add', component: RoleAddComponent, canActivate: [managerGuard] },
-      { path: 'roles/permissions', component: RoleMenuPermissionComponent, canActivate: [managerGuard] },
-      { path: 'roles/:id/permissions', component: RoleMenuPermissionComponent, canActivate: [managerGuard] },
+      // Roles & RBAC
+      { path: 'roles', component: RoleListComponent, canActivate: [menuGuard], data: { menuCode: 'ROLE_1901' } },
+      { path: 'roles/add', redirectTo: 'roles', pathMatch: 'full', data: { menuCode: 'ROLE_1902' } },
+      { path: 'roles/permissions', component: RoleMenuPermissionComponent, canActivate: [menuGuard], data: { menuCode: 'ROLE_1903' } },
+      { path: 'roles/:id/permissions', component: RoleMenuPermissionComponent, canActivate: [menuGuard], data: { menuCode: 'ROLE_1903' } },
 
-      // System Menus Management (MENU_1904 - MENU_1905) - Restricted to Manager
-      { path: 'menus', component: MenuListComponent, canActivate: [managerGuard] },
-      { path: 'menus/add', component: MenuFormComponent, canActivate: [managerGuard] },
-      { path: 'menus/edit/:id', component: MenuFormComponent, canActivate: [managerGuard] },
+      // System Menus Management
+      { path: 'menus', component: MenuListComponent, canActivate: [menuGuard], data: { menuCode: 'MENU_1904' } },
+      { path: 'menus/add', component: MenuFormComponent, canActivate: [menuGuard], data: { menuCode: 'MENU_1905' } },
+      { path: 'menus/edit/:id', component: MenuFormComponent, canActivate: [menuGuard], data: { menuCode: 'MENU_1904' } },
       { path: 'menus/permissions', redirectTo: 'roles/permissions', pathMatch: 'full' },
 
-      // System & POS Settings (CFG_2001 - CFG_2005) - Restricted to Manager
-      { path: 'settings/sale-config', component: SaleConfigComponent, canActivate: [managerGuard] },
-      { path: 'settings/invoice-config', component: InvoiceConfigComponent, canActivate: [managerGuard] },
-      { path: 'settings/product-config', component: ProductConfigComponent, canActivate: [managerGuard] },
-      { path: 'settings/loyalty-config', component: LoyaltyConfigComponent, canActivate: [managerGuard] },
-      { path: 'settings/bulk-sms-config', component: SmsConfigComponent, canActivate: [managerGuard] },
-      { path: 'settings/audit-logs', component: AuditLogsComponent, canActivate: [managerGuard] },
+      // System & POS Settings
+      { path: 'settings/sale-config', component: SaleConfigComponent, canActivate: [menuGuard], data: { menuCode: 'CFG_2001' } },
+      { path: 'settings/invoice-config', component: InvoiceConfigComponent, canActivate: [menuGuard], data: { menuCode: 'CFG_2002' } },
+      { path: 'settings/product-config', component: ProductConfigComponent, canActivate: [menuGuard], data: { menuCode: 'CFG_2003' } },
+      { path: 'settings/loyalty-config', component: LoyaltyConfigComponent, canActivate: [menuGuard], data: { menuCode: 'CFG_2004' } },
+      { path: 'settings/bulk-sms-config', component: SmsConfigComponent, canActivate: [menuGuard], data: { menuCode: 'CFG_2005' } },
+      { path: 'settings/audit-logs', component: AuditLogsComponent, canActivate: [menuGuard], data: { menuCode: 'SETT_2006' } },
       { path: 'audit-logs', redirectTo: 'settings/audit-logs', pathMatch: 'full' },
 
-      // Subscription & Multi-Branch (SUB_2101 - PHAR_2201)
-      { path: 'subscription-report', component: SubscriptionComponent, canActivate: [managerGuard] },
-      { path: 'change-pharmacy', component: BranchSwitcherComponent },
+      // Subscription & Multi-Branch
+      { path: 'subscription-report', component: SubscriptionComponent, canActivate: [menuGuard], data: { menuCode: 'SUB_2101' } },
+      { path: 'change-pharmacy', component: BranchSwitcherComponent, canActivate: [menuGuard], data: { menuCode: 'PHAR_2201' } },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

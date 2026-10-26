@@ -470,21 +470,15 @@ export class HeaderComponent implements OnInit {
   // Form permission-based checking as requested:
   // "f this form permission has then this button will visibled"
   get canAccessSalePos(): boolean {
-    return this.hasFormPermission('SALE_1401', 'PMS-Sale-Module');
+    return this.authService.hasMenuAccess('SALE_1401', 'view');
   }
 
   get canAccessPurPos(): boolean {
-    return this.hasFormPermission('PUR_1503', 'PMS-Vendor-Module');
+    return this.authService.hasMenuAccess('PUR_1503', 'view');
   }
 
   get canAccessCashCloser(): boolean {
-    return this.hasFormPermission('CASH_1201', 'PMS-Sale-Module');
-  }
-
-  private hasFormPermission(formId: string, fallbackModulePerm: string): boolean {
-    const screen = getScreenByFormId(formId);
-    const perm = screen?.permission_code || fallbackModulePerm;
-    return this.authService.hasPermission(perm) || this.authService.hasPermission(formId);
+    return this.authService.hasMenuAccess('CASH_1201', 'view');
   }
 
   get isSalePosActive(): boolean {

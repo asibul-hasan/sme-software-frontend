@@ -15,16 +15,34 @@ import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
-import {
-  getSidebarTree,
-  getBreadcrumb,
-  getScreenByFormId,
-  HOME_FORM_ID,
-  SidebarModule,
-  SidebarSubModule,
-  SystemScreen,
-} from '../../core/config/menu.config';
 import { AuthService } from '../../core/auth/auth.service';
+
+export interface NavScreen {
+  readonly form_id: string;
+  readonly title: string;
+  readonly title_bn?: string;
+  readonly route: string;
+  readonly icon: string;
+  readonly description?: string;
+  readonly badge?: string;
+}
+
+export interface NavSubModule {
+  readonly key: string;
+  readonly name: string;
+  readonly name_bn: string;
+  readonly icon: string;
+  readonly screens: readonly NavScreen[];
+}
+
+export interface NavModule {
+  readonly module: string;
+  readonly module_bn: string;
+  readonly module_code: string;
+  readonly icon: string;
+  readonly default_route: string;
+  readonly sub_modules: readonly NavSubModule[];
+}
 
 @Component({
   selector: 'app-sidebar',
@@ -38,31 +56,57 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() toggleCollapse = new EventEmitter<void>();
 
-  private readonly allSidebarModules: readonly SidebarModule[] = getSidebarTree();
-  readonly homeScreen = getScreenByFormId(HOME_FORM_ID);
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly sidebarModules = computed<readonly SidebarModule[]>(() => {
-    const isMgr = this.authService.isManager();
-    return this.allSidebarModules
-      .filter((m) => {
-        // Cashiers / salesmen cannot access Accounts (ACC), Settings (SYS), or Purchases (PUR)
-        if (!isMgr && (m.module_code === 'ACC' || m.module_code === 'SYS' || m.module_code === 'PUR')) {
-          return false;
+  readonly sidebarModules = computed<readonly NavModule[]>(() => {
+    const rootMenu = this.authService.menu();
+    const modules: NavModule[] = [];
+
+    for (const m of rootMenu) {
+      if (m.menu_type !== 'MODULE') continue;
+
+      const subModules: NavSubModule[] = [];
+      for (const sub of m.children || []) {
+        const screens: NavScreen[] = [];
+        for (const scr of sub.children || []) {
+          const route = scr.route || scr.path;
+          if (route && this.authService.hasMenuAccess(scr.menu_code, 'view')) {
+            screens.push({
+              form_id: scr.menu_code,
+              title: scr.title,
+              title_bn: scr.title_bn,
+              route,
+              icon: scr.icon || this.getScreenIcon(scr.title),
+              description: scr.title,
+            });
+          }
         }
-        return true;
-      })
-      .map((m) => ({
-        ...m,
-        sub_modules: m.sub_modules
-          .map((sub) => ({
-            ...sub,
-            screens: sub.screens.filter((s) => this.authService.hasPermission(s.permission_code)),
-          }))
-          .filter((sub) => sub.screens.length > 0),
-      }))
-      .filter((m) => m.sub_modules.length > 0);
+        if (screens.length > 0) {
+          subModules.push({
+            key: sub.menu_code,
+            name: sub.title,
+            name_bn: sub.title_bn,
+            icon: sub.icon || 'folder',
+            screens,
+          });
+        }
+      }
+
+      if (subModules.length > 0) {
+        const modCode = m.menu_code.replace(/^MOD_/, '');
+        modules.push({
+          module: m.title,
+          module_bn: m.title_bn,
+          module_code: modCode,
+          icon: m.icon || 'appstore',
+          default_route: m.route || m.path || subModules[0]?.screens[0]?.route || '',
+          sub_modules: subModules,
+        });
+      }
+    }
+
+    return modules;
   });
 
   readonly searchTerm = signal('');
@@ -83,7 +127,7 @@ export class SidebarComponent {
     return clean === '/customer/sale';
   });
 
-  readonly selectedModule = computed<SidebarModule | null>(() => {
+  readonly selectedModule = computed<NavModule | null>(() => {
     const modules = this.sidebarModules();
     if (!modules.length) return null;
 
@@ -103,7 +147,7 @@ export class SidebarComponent {
     return !mod.sub_modules.some(sub => !!collapsed[sub.key]);
   });
 
-  readonly filteredSubmodules = computed<SidebarSubModule[]>(() => {
+  readonly filteredSubmodules = computed<NavSubModule[]>(() => {
     const mod = this.selectedModule();
     if (!mod) return [];
 
@@ -116,6 +160,7 @@ export class SidebarComponent {
       .map(sub => {
         const matchingScreens = sub.screens.filter(s =>
           s.title.toLowerCase().includes(term) ||
+          (s.title_bn && s.title_bn.toLowerCase().includes(term)) ||
           s.form_id.toLowerCase().includes(term) ||
           (s.description && s.description.toLowerCase().includes(term))
         );
@@ -142,7 +187,7 @@ export class SidebarComponent {
     this.closeFlyout();
   }
 
-  openFlyout(mod?: SidebarModule): void {
+  openFlyout(mod?: NavModule): void {
     if (!this.collapsed) return;
     if (mod) this.previewModuleId.set(mod.module_code);
     this.isFlyoutOpen.set(true);
@@ -164,7 +209,7 @@ export class SidebarComponent {
     this.closeFlyout();
   }
 
-  selectModule(mod: SidebarModule): void {
+  selectModule(mod: NavModule): void {
     this.selectedModuleId.set(mod.module_code);
     this.previewModuleId.set(mod.module_code);
     this.searchTerm.set('');
@@ -213,45 +258,50 @@ export class SidebarComponent {
     return currentUrl === cleanRoute;
   }
 
-  hasActiveChild(mod: SidebarModule): boolean {
+  hasActiveChild(mod: NavModule): boolean {
     const cleanUrl = this.router.url.split('?')[0];
-    const breadcrumb = getBreadcrumb(cleanUrl);
-    return breadcrumb?.module.module_code === mod.module_code;
+    return mod.sub_modules.some(sub =>
+      sub.screens.some(scr => scr.route.split('?')[0] === cleanUrl)
+    );
   }
 
-  isSubmoduleActive(sub: SidebarSubModule): boolean {
+  isSubmoduleActive(sub: NavSubModule): boolean {
     const cleanUrl = this.router.url.split('?')[0];
-    const breadcrumb = getBreadcrumb(cleanUrl);
-    return breadcrumb?.sub.key === sub.key;
+    return sub.screens.some(scr => scr.route.split('?')[0] === cleanUrl);
   }
 
-  isModuleSelected(mod: SidebarModule): boolean {
+  isModuleSelected(mod: NavModule): boolean {
     return this.selectedModule()?.module_code === mod.module_code;
   }
 
-  getScreenIcon(screen: SystemScreen): string {
-    const title = screen.title.toLowerCase();
-    if (title.includes('add') || title.includes('create') || title.includes('form')) return 'form';
-    if (title.includes('setting') || title.includes('config') || title.includes('rule')) return 'setting';
-    if (title.includes('record') || title.includes('history') || title.includes('audit') || title.includes('register')) return 'history';
-    if (title.includes('pos') || title.includes('sale') || title.includes('counter')) return 'shopping-cart';
-    if (title.includes('purchase') || title.includes('supplier')) return 'shop';
-    if (title.includes('cash') || title.includes('due') || title.includes('expense') || title.includes('income') || title.includes('balance') || title.includes('capital')) return 'dollar';
-    if (title.includes('doctor') || title.includes('rx') || title.includes('prescription')) return 'user';
-    if (title.includes('rep') || title.includes('staff')) return 'team';
-    if (title.includes('role') || title.includes('permission') || title.includes('access')) return 'safety-certificate';
-    if (title.includes('analytics') || title.includes('report') || title.includes('dashboard')) return 'fund';
-    if (title.includes('expired') || title.includes('warning') || title.includes('alert')) return 'warning';
-    if (title.includes('print') || title.includes('receipt') || title.includes('invoice')) return 'printer';
-    if (title.includes('sms')) return 'message';
+  getScreenIcon(title: string): string {
+    const t = (title || '').toLowerCase();
+    if (t.includes('add') || t.includes('create') || t.includes('form')) return 'form';
+    if (t.includes('setting') || t.includes('config') || t.includes('rule')) return 'setting';
+    if (t.includes('record') || t.includes('history') || t.includes('audit') || t.includes('register')) return 'history';
+    if (t.includes('pos') || t.includes('sale') || t.includes('counter')) return 'shopping-cart';
+    if (t.includes('purchase') || t.includes('supplier')) return 'shop';
+    if (t.includes('cash') || t.includes('due') || t.includes('expense') || t.includes('income') || t.includes('balance') || t.includes('capital')) return 'dollar';
+    if (t.includes('doctor') || t.includes('rx') || t.includes('prescription')) return 'user';
+    if (t.includes('rep') || t.includes('staff')) return 'team';
+    if (t.includes('role') || t.includes('permission') || t.includes('access')) return 'safety-certificate';
+    if (t.includes('analytics') || t.includes('report') || t.includes('dashboard')) return 'fund';
+    if (t.includes('expired') || t.includes('warning') || t.includes('alert')) return 'warning';
+    if (t.includes('print') || t.includes('receipt') || t.includes('invoice')) return 'printer';
+    if (t.includes('sms')) return 'message';
     return 'file-text';
   }
 
   private syncActiveModule(url: string): void {
     const clean = url.split('?')[0];
-    const breadcrumb = getBreadcrumb(clean);
-    if (breadcrumb) {
-      this.selectedModuleId.set(breadcrumb.module.module_code);
+    const mods = this.sidebarModules();
+    for (const mod of mods) {
+      for (const sub of mod.sub_modules) {
+        if (sub.screens.some(s => s.route.split('?')[0] === clean)) {
+          this.selectedModuleId.set(mod.module_code);
+          return;
+        }
+      }
     }
   }
 }

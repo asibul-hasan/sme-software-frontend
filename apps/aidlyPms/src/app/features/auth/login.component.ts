@@ -183,10 +183,10 @@ export class LoginComponent implements OnInit {
   }
 
   private redirectAfterLogin(): void {
-    if (this.authService.isManager()) {
+    if (this.authService.hasMenuAccess('DASH_2301', 'view')) {
       this.router.navigate(['/dashboard']);
     } else {
-      this.router.navigate(['/customer/sale']);
+      this.router.navigate([this.authService.firstAllowedRoute()]);
     }
   }
 }

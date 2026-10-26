@@ -4,6 +4,7 @@
  * Tables: `sys_roles`, `sys_permissions`, `sys_role_permissions`, `sys_users`.
  */
 import { SysPharmacy } from './pharmacy.models';
+import { SysMenu } from './menu.models';
 
 export interface SysRole {
   role_no: number;
@@ -53,6 +54,8 @@ export interface SysUser {
   role?: SysRole;
   pharmacy?: SysPharmacy;
   permissions?: readonly string[];
+  menu?: SysMenu[];
+  is_full_access?: boolean;
 }
 
 // Backward-compatible type aliases

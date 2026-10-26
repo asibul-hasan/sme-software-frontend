@@ -379,16 +379,36 @@ export class RoleMenuPermissionComponent implements OnInit {
           this.roles.set(res.data);
 
           const roleList = res.data;
-          // Check if queryParam has roleNo
+          const paramId = this.route.snapshot.paramMap.get('id');
+          const queryId = this.route.snapshot.queryParamMap.get('roleNo');
+          const initialId = paramId ? Number(paramId) : (queryId ? Number(queryId) : 0);
+
+          if (initialId && !isNaN(initialId)) {
+            this.selectedRoleNo.set(initialId);
+            this.loadRolePermissions(initialId);
+          } else if (roleList.length > 0 && !this.selectedRoleNo()) {
+            this.selectedRoleNo.set(roleList[0].role_no);
+            this.loadRolePermissions(roleList[0].role_no);
+          }
+
+          this.route.paramMap.subscribe((params) => {
+            const id = params.get('id');
+            if (id) {
+              const rNo = Number(id);
+              if (rNo !== this.selectedRoleNo()) {
+                this.selectedRoleNo.set(rNo);
+                this.loadRolePermissions(rNo);
+              }
+            }
+          });
+
           this.route.queryParams.subscribe((params) => {
             if (params['roleNo']) {
               const rNo = Number(params['roleNo']);
-              this.selectedRoleNo.set(rNo);
-              this.loadRolePermissions(rNo);
-            } else if (roleList.length > 0 && !this.selectedRoleNo()) {
-              // Default to first role (e.g. PMS Manager)
-              this.selectedRoleNo.set(roleList[0].role_no);
-              this.loadRolePermissions(roleList[0].role_no);
+              if (rNo !== this.selectedRoleNo()) {
+                this.selectedRoleNo.set(rNo);
+                this.loadRolePermissions(rNo);
+              }
             }
           });
         }
