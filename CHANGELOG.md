@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.1...v1.34.2) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **icons:** register missing Ant Design icons and configure inline-svg assets ([c78fd88](https://github.com/asibul-hasan/sme-software-frontend/commit/c78fd8853e0dcf52592277b24fde7aa9f9d87ebf))
+
 ## [1.34.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.0...v1.34.1) (2026-10-26)
 
 
