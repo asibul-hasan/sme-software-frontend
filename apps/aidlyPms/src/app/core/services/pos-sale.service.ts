@@ -55,6 +55,8 @@ export interface SaleReturnRecord {
   customer_no: number;
   customer_name?: string;
   return_amount: number;
+  final_refund_price?: number;
+  net_amount?: number;
   return_date: string;
   reason?: string;
   created_at: string;

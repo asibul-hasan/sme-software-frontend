@@ -37,6 +37,7 @@ interface SaleRecordRow {
   payment: string;
   paid: number;
   due: number;
+  is_returned: boolean;
   lines: Array<{ name: string; qty: number; price: number; total: number }>;
 }
 
@@ -118,39 +119,10 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   totalPaidAmount = computed(() => this.filteredSales().reduce((sum, s) => sum + (s.paid || 0), 0));
   totalDueAmount = computed(() => this.filteredSales().reduce((sum, s) => sum + (s.due || 0), 0));
 
-  // Sorting State
-  sortColumn = signal<keyof SaleRecordRow | ''>('sale_invoice_no');
-  sortDirection = signal<'asc' | 'desc'>('desc');
-
-  onSort(col: keyof SaleRecordRow): void {
-    if (this.sortColumn() === col) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortColumn.set(col);
-      this.sortDirection.set(col === 'customer' || col === 'salesman' ? 'asc' : 'desc');
-    }
-    this.pageIndex.set(1);
-  }
-
+  // Natural descending order by latest sale invoice
   sortedSales = computed(() => {
     const list = [...this.filteredSales()];
-    const col = this.sortColumn();
-    const dir = this.sortDirection();
-    if (!col) return list;
-    return list.sort((a, b) => {
-      const va = a[col];
-      const vb = b[col];
-      if (va == null && vb == null) return 0;
-      if (va == null) return dir === 'asc' ? -1 : 1;
-      if (vb == null) return dir === 'asc' ? 1 : -1;
-      let cmp = 0;
-      if (typeof va === 'number' && typeof vb === 'number') {
-        cmp = va - vb;
-      } else {
-        cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
-      }
-      return dir === 'asc' ? cmp : -cmp;
-    });
+    return list.sort((a, b) => (b.sale_invoice_no || 0) - (a.sale_invoice_no || 0));
   });
 
   // Pagination State
@@ -242,6 +214,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
           payment: inv.due_amount > 0 ? 'Due' : (inv.payment_method === 2 ? 'Card' : (inv.payment_method === 3 ? 'MFS' : 'Cash')),
           paid: (Number(inv.final_price) || 0) - (Number(inv.due_amount) || 0),
           due: Number(inv.due_amount) || 0,
+          is_returned: !!inv.is_returned,
           lines: (inv.items || []).map(item => ({
             name: item.product?.product_name || item.product_name || `Product #${item.product_no}`,
             qty: item.sale_qty,
@@ -307,7 +280,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   }
 
   initiateReturn(s: SaleRecordRow): void {
-    this.router.navigate(['/customer/returns'], {
+    this.router.navigate(['/customer/sale/return'], {
       queryParams: {
         invoiceId: s.inv,
         invoice: s.inv,

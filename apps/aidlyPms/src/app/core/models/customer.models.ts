@@ -78,6 +78,7 @@ export interface SaleInvoice {
   customer?: CustCustomer;
   customer_name?: string;
   customer_phone?: string;
+  is_returned?: boolean;
   items?: readonly SaleInvoiceItem[];
   payments?: readonly SaleInvoicePayment[];
 }
@@ -136,6 +137,7 @@ export interface SaleReturn {
   vat_amount?: number;
   round_off_amount?: number;
   final_refund_price: number;
+  return_amount?: number;
   cash_paid_refund: number;
   inventory_type: number;
   return_status?: number;
@@ -148,6 +150,8 @@ export interface SaleReturn {
 
   // Navigation
   customer?: CustCustomer;
+  customer_name?: string;
+  customer_phone?: string;
   items?: readonly SaleReturnItem[];
 }
 
@@ -175,6 +179,7 @@ export interface SaleReturnItem {
 
   // Navigation
   product?: ProdProduct;
+  product_name?: string;
 }
 
 // Backward-compatible type aliases

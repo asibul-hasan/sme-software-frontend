@@ -1,12 +1,12 @@
 <div class="space-y-4">
   <app-page-header
-    title="Customer Return & Exchange"
+    title="POS Sales Return & Refund"
     subtitle="Process server-authoritative medicine returns, inventory restocks, and multi-product exchanges"
-    formId="SALE_1409"
+    formId="SALE_1403"
     [breadcrumbs]="[
       { label: 'POS Terminal', url: '/customer/sale' },
-      { label: 'Sales Records', url: '/customer/sales' },
-      { label: 'Return & Exchange' }
+      { label: 'Return Invoices Register', url: '/customer/returns' },
+      { label: 'POS Sales Return & Refund' }
     ]"
   >
     <div actions class="flex items-center gap-2">
@@ -36,6 +36,9 @@
         </button>
       </div>
 
+      <a nz-button nzType="default" routerLink="/customer/returns" class="rounded-md">
+        <span nz-icon nzType="unordered-list"></span> Customer Return Invoices
+      </a>
       <a nz-button nzType="default" routerLink="/customer/sales" class="rounded-md">
         <span nz-icon nzType="history"></span> Sales Invoices Register
       </a>
@@ -198,8 +201,7 @@
                 <th class="p-3">Product Name & Batch</th>
                 <th class="p-3 text-center">Sold / Ret.</th>
                 <th class="p-3 text-center w-28">Return QTY</th>
-                <th class="p-3 w-40">Reason</th>
-                <th class="p-3 w-36">Disposition</th>
+                <th class="p-3 w-44">Reason</th>
                 <th class="p-3 text-right">Refund Est.</th>
                 <th class="p-3 text-center w-12"></th>
               </tr>
@@ -232,7 +234,7 @@
                     <div class="text-[10px] text-emerald-700 font-bold">Max: {{ l.returnableQty }}</div>
                   </td>
                   <td class="p-3 text-center">
-                    <input id="sale-return-line-qty-search-9"
+                    <input [id]="'sale-return-line-qty-' + idx"
                       type="number"
                       nz-input
                       [min]="1"
@@ -240,19 +242,21 @@
                       [(ngModel)]="l.returnQty"
                       (ngModelChange)="onLineQtyChange(l)"
                       [disabled]="!l.selected || l.returnableQty === 0"
-                      class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300" aria-label="Line Qty Search" />
+                      [class.border-rose-500]="l.selected && (l.returnQty > l.returnableQty || l.returnQty <= 0 || !l.returnQty)"
+                      [class.focus:border-rose-500]="l.selected && (l.returnQty > l.returnableQty || l.returnQty <= 0 || !l.returnQty)"
+                      class="w-20 text-center rounded-md font-mono text-xs py-1 border-slate-300"
+                      aria-label="Return Quantity" />
+                    @if (l.selected && l.returnQty > l.returnableQty) {
+                      <div class="text-[10px] text-rose-600 font-bold mt-0.5 whitespace-nowrap">Max {{ l.returnableQty }} pcs</div>
+                    }
+                    @if (l.selected && (l.returnQty <= 0 || !l.returnQty)) {
+                      <div class="text-[10px] text-rose-600 font-bold mt-0.5 whitespace-nowrap">Min 1 pc</div>
+                    }
                   </td>
                   <td class="p-3">
-                    <nz-select id="sale-return-field-10" nzId="sale-return-field-10" [(ngModel)]="l.reasonCode" [disabled]="!l.selected" nzSize="small" class="w-full text-xs" aria-label="Field">
+                    <nz-select [id]="'sale-return-field-reason-' + idx" [nzId]="'sale-return-field-reason-' + idx" [(ngModel)]="l.reasonCode" [disabled]="!l.selected" nzSize="small" class="w-full text-xs" aria-label="Field">
                       @for (r of reasonOptions; track r.value) {
                         <nz-option [nzValue]="r.value" [nzLabel]="r.label"></nz-option>
-                      }
-                    </nz-select>
-                  </td>
-                  <td class="p-3">
-                    <nz-select id="sale-return-field-11" nzId="sale-return-field-11" [(ngModel)]="l.disposition" [disabled]="!l.selected" nzSize="small" class="w-full text-xs" aria-label="Field">
-                      @for (d of dispositionOptions; track d.value) {
-                        <nz-option [nzValue]="d.value" [nzLabel]="d.label"></nz-option>
                       }
                     </nz-select>
                   </td>
@@ -273,7 +277,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="p-10 text-center text-slate-400 text-xs">
+                  <td colspan="7" class="p-10 text-center text-slate-400 text-xs">
                     No invoice items loaded yet. Enter a sales invoice number above to begin.
                   </td>
                 </tr>
@@ -518,6 +522,13 @@
               </nz-select>
             </div>
 
+            @if (hasValidationErrors() && lines().length > 0) {
+              <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 mb-1">
+                <span nz-icon nzType="warning" class="text-rose-600"></span>
+                <span>Please ensure all selected items have valid return quantities (&ge; 1 pc and &le; available max).</span>
+              </div>
+            }
+
             <button
               type="button"
               nz-button
@@ -526,7 +537,7 @@
               nzBlock
               (click)="processReturn()"
               [nzLoading]="isSubmitting()"
-              [disabled]="selectedLines().length === 0"
+              [disabled]="selectedLines().length === 0 || hasValidationErrors()"
               class="rounded-lg h-11 font-semibold text-sm shadow-xs"
             >
               <span nz-icon nzType="rollback"></span> ↩ Process Return & Refund
@@ -576,6 +587,13 @@
               </div>
             }
 
+            @if (hasValidationErrors() && lines().length > 0) {
+              <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 mb-1">
+                <span nz-icon nzType="warning" class="text-rose-600"></span>
+                <span>Please ensure all selected return items have valid quantities before completing exchange.</span>
+              </div>
+            }
+
             <button
               type="button"
               nz-button
@@ -583,7 +601,7 @@
               nzBlock
               (click)="processExchange()"
               [nzLoading]="isSubmitting()"
-              [disabled]="selectedLines().length === 0 || newItems().length === 0"
+              [disabled]="selectedLines().length === 0 || newItems().length === 0 || hasValidationErrors()"
               class="rounded-lg h-11 font-semibold text-sm shadow-xs bg-indigo-600 hover:bg-indigo-500 border-indigo-600"
             >
               <span nz-icon nzType="swap"></span> ⇄ Complete Exchange Transaction

@@ -379,18 +379,17 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
   }
 
   onLineQtyChange(l: ReturnLine): void {
-    if (l.returnQty > l.returnableQty) {
-      l.returnQty = l.returnableQty;
-      this.msg.warning(`Maximum returnable quantity for "${l.name}" is ${l.returnableQty} pcs.`);
-    } else if (l.returnQty < 0 || isNaN(l.returnQty)) {
-      l.returnQty = 0;
-    }
-
+    const qty = Number(l.returnQty);
     const discountRatio = this.originalGrossTotal > 0 ? (this.originalDiscountAmount / this.originalGrossTotal) : 0;
+    const calcQty = (!isNaN(qty) && qty > 0) ? Math.min(qty, l.returnableQty) : 0;
     const est = l.soldQty > 0
-      ? Math.round(((l.netAmount / l.soldQty * l.returnQty * (1 - discountRatio)) + (l.vatAmount / l.soldQty * l.returnQty)) * 100) / 100
+      ? Math.round(((l.netAmount / l.soldQty * calcQty * (1 - discountRatio)) + (l.vatAmount / l.soldQty * calcQty)) * 100) / 100
       : 0;
     l.estimatedRefundTotal = est;
+
+    if (qty > l.returnableQty) {
+      this.msg.warning(`Maximum returnable quantity for "${l.name}" is ${l.returnableQty} pcs.`);
+    }
 
     this.lines.update(items => [...items]);
   }
@@ -424,7 +423,13 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
     this.lines.update(items => items.filter((_, i) => i !== idx));
   }
 
-  selectedLines = computed(() => this.lines().filter(l => l.selected && l.returnQty > 0));
+  hasValidationErrors = computed(() => {
+    const active = this.lines().filter(l => l.selected);
+    if (active.length === 0) return true;
+    return active.some(l => !l.returnQty || l.returnQty <= 0 || l.returnQty > l.returnableQty);
+  });
+
+  selectedLines = computed(() => this.lines().filter(l => l.selected && l.returnQty > 0 && l.returnQty <= l.returnableQty));
 
   totalReturnItems = computed(() => this.selectedLines().length);
 
@@ -476,10 +481,21 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const activeLines = this.selectedLines();
+    const activeLines = this.lines().filter(l => l.selected);
     if (activeLines.length === 0) {
-      this.msg.warning('Please select at least one item with return quantity > 0');
+      this.msg.warning('Please select at least one item to return');
       return;
+    }
+
+    for (const l of activeLines) {
+      if (!l.returnQty || l.returnQty <= 0) {
+        this.msg.error(`Quantity for "${l.name}" must be at least 1 pc.`);
+        return;
+      }
+      if (l.returnQty > l.returnableQty) {
+        this.msg.error(`Return quantity (${l.returnQty}) for "${l.name}" cannot exceed available returnable quantity (${l.returnableQty} pcs).`);
+        return;
+      }
     }
 
     this.isSubmitting.set(true);
@@ -503,7 +519,7 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
         this.isSubmitting.set(false);
         const record = res.data;
         this.msg.success(
-          `Return #${record?.return_invoice_no || ''} processed successfully! Refund amount: ৳ ${Number(record?.return_amount || 0).toFixed(2)}`
+          `Return #${record?.return_invoice_no || ''} processed successfully! Refund amount: ৳ ${Number(record?.final_refund_price ?? record?.return_amount ?? record?.net_amount ?? 0).toFixed(2)}`
         );
         this.clearLoadedInvoice();
       },
@@ -525,10 +541,21 @@ export class SaleReturnComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const activeReturnLines = this.selectedLines();
+    const activeReturnLines = this.lines().filter(l => l.selected);
     if (activeReturnLines.length === 0) {
       this.msg.warning('Please select at least one item to return');
       return;
+    }
+
+    for (const l of activeReturnLines) {
+      if (!l.returnQty || l.returnQty <= 0) {
+        this.msg.error(`Quantity for "${l.name}" must be at least 1 pc.`);
+        return;
+      }
+      if (l.returnQty > l.returnableQty) {
+        this.msg.error(`Return quantity (${l.returnQty}) for "${l.name}" cannot exceed available returnable quantity (${l.returnableQty} pcs).`);
+        return;
+      }
     }
 
     const newCart = this.newItems();

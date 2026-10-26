@@ -81,57 +81,11 @@
       <table class="w-full text-sm text-left border-collapse min-w-[760px]">
         <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
           <tr>
-            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('inv')">
-              <div class="inline-flex items-center gap-1">
-                <span>Invoice / Date</span>
-                @if (sortColumn() === 'inv' || sortColumn() === 'sale_invoice_no') {
-                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
-                } @else {
-                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
-                }
-              </div>
-            </th>
-            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('customer')">
-              <div class="inline-flex items-center gap-1">
-                <span>Customer & Staff</span>
-                @if (sortColumn() === 'customer') {
-                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
-                } @else {
-                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
-                }
-              </div>
-            </th>
-            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors text-right" (click)="onSort('total')">
-              <div class="inline-flex items-center justify-end gap-1 w-full">
-                <span>Bill Info / Net</span>
-                @if (sortColumn() === 'total') {
-                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
-                } @else {
-                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
-                }
-              </div>
-            </th>
-            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors" (click)="onSort('items')">
-              <div class="inline-flex items-center gap-1">
-                <span>Items & Mode</span>
-                @if (sortColumn() === 'items') {
-                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
-                } @else {
-                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
-                }
-              </div>
-            </th>
-            <th class="p-3 cursor-pointer select-none hover:bg-slate-100 transition-colors text-right" (click)="onSort('paid')">
-              <div class="inline-flex items-center justify-end gap-1 w-full">
-                <span>Paid / Due</span>
-                @if (sortColumn() === 'paid' || sortColumn() === 'due') {
-                  <span nz-icon [nzType]="sortDirection() === 'asc' ? 'caret-up' : 'caret-down'" class="text-indigo-600"></span>
-                } @else {
-                  <span class="inline-flex flex-col text-[8px] text-slate-300 leading-[7px] ml-0.5"><span>▲</span><span>▼</span></span>
-                }
-              </div>
-            </th>
-            <th class="p-3 text-center w-48">Quick Actions</th>
+            <th class="p-3">Invoice Details</th>
+            <th class="p-3">Bill Info</th>
+            <th class="p-3">Items & Mode</th>
+            <th class="p-3">Paid / Due</th>
+            <th class="p-3 text-center w-48">Action</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-slate-800">
@@ -173,16 +127,23 @@
 
               <td class="p-3 text-center whitespace-nowrap">
                 <div class="inline-flex items-center gap-1.5 justify-center">
-                  <button
-                    type="button"
-                    (click)="initiateReturn(s)"
-                    nz-tooltip
-                    nzTooltipTitle="Process Sale Return / Exchange"
-                    class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
-                   aria-label="Process Sale Return / Exchange">
-                    <span nz-icon nzType="rollback"></span>
-                    <span>Return</span>
-                  </button>
+                  @if (!s.is_returned) {
+                    <button
+                      type="button"
+                      (click)="initiateReturn(s)"
+                      nz-tooltip
+                      nzTooltipTitle="Process Sale Return / Exchange"
+                      class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
+                     aria-label="Process Sale Return / Exchange">
+                      <span nz-icon nzType="rollback"></span>
+                      <span>Return</span>
+                    </button>
+                  } @else {
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded bg-slate-100 text-slate-500 border border-slate-200">
+                      <span nz-icon nzType="check-circle" class="text-emerald-500"></span>
+                      <span>Returned</span>
+                    </span>
+                  }
                   <button
                     type="button"
                     (click)="viewInvoiceDetails(s)"
@@ -206,7 +167,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="p-6 text-center">
+              <td colspan="5" class="p-6 text-center">
                 <app-empty-state
                   [title]="hasError() ? 'Failed to Load Invoices' : (hasActiveFilters() ? 'No Matching Sale Invoices' : 'No Sales Invoices Recorded')"
                   [description]="hasError() ? 'Unable to reach sales records from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No invoices match your current search query or customer filters.' : 'Launch the POS Counter to start ringing up customer sales.')"
@@ -329,9 +290,11 @@
   </ng-container>
   <ng-template #detailsFooter>
     <button nz-button nzType="default" (click)="isDetailsOpen = false">Close</button>
-    <button nz-button nzType="dashed" class="text-amber-700 border-amber-300 hover:bg-amber-50" (click)="initiateReturn(selectedSale!); isDetailsOpen = false">
-      <span nz-icon nzType="rollback"></span> Return Items / Exchange
-    </button>
+    @if (!selectedSale?.is_returned) {
+      <button nz-button nzType="dashed" class="text-amber-700 border-amber-300 hover:bg-amber-50" (click)="initiateReturn(selectedSale!); isDetailsOpen = false">
+        <span nz-icon nzType="rollback"></span> Return Items / Exchange
+      </button>
+    }
     <button nz-button nzType="primary" (click)="printReceipt(selectedSale!)">
       <span nz-icon nzType="printer"></span> Print Receipt
     </button>
