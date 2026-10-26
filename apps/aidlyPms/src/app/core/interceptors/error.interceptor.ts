@@ -4,6 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 import { AuthService } from '../auth/auth.service';
 import { BackendDiscoveryService } from '../services/backend-discovery.service';
+import { ConnectivityService } from '../services/connectivity.service';
 
 /**
  * Token to suppress the automatic global error notification toast.
@@ -15,6 +16,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notification = inject(NotificationService);
   const auth = inject(AuthService);
   const discovery = inject(BackendDiscoveryService);
+  const connectivity = inject(ConnectivityService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -27,6 +29,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'An unexpected server error occurred.';
 
       if (error.status === 0) {
+        connectivity.setOnline(false);
         discovery.handleConnectionFailure(req.url);
         errorTitle = 'Connection Error';
         errorMessage = 'Unable to reach backend server. Please verify your connection or ensure backend service is running.';

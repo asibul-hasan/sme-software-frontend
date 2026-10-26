@@ -196,33 +196,25 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
 
         <div class="h-4 w-px bg-white/15 mx-0.5 hidden sm:block"></div>
 
-        <!-- Backend Connection Indicator Pill (Localhost vs Hugging Face Live) -->
+        <!-- Backend Connection Indicator Pill (Developers Only) -->
         <button
           type="button"
           (click)="discovery.recheckNow()"
+          (contextmenu)="$event.preventDefault(); discovery.toggleMode()"
           class="header-backend-pill flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer select-none text-xs font-mono"
           [class.backend-local]="discovery.mode() === 'local' && discovery.status() === 'connected'"
           [class.backend-remote]="discovery.mode() === 'remote' && discovery.status() === 'connected'"
           [class.backend-checking]="discovery.status() === 'checking'"
-          nz-tooltip
-          [nzTooltipTitle]="backendTooltip"
-          aria-label="Recheck backend connection status"
         >
           @if (discovery.status() === 'checking') {
             <span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span>
             <span class="text-amber-300 font-medium">Checking...</span>
           } @else if (discovery.mode() === 'local') {
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-emerald-300 font-medium">Local:{{ discovery.activePort() || 5275 }}</span>
-            @if (discovery.latencyMs() !== null) {
-              <span class="text-emerald-400/70 text-[10px]">({{ discovery.latencyMs() }}ms)</span>
-            }
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-emerald-300 font-medium">Local</span>
           } @else {
-            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-            <span class="text-sky-300 font-medium">HF Live</span>
-            @if (discovery.latencyMs() !== null) {
-              <span class="text-sky-400/70 text-[10px]">({{ discovery.latencyMs() }}ms)</span>
-            }
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            <span class="text-sky-300 font-medium">Live</span>
           }
         </button>
 
@@ -442,17 +434,6 @@ export class HeaderComponent implements OnInit {
 
   currentScreen?: SystemScreen;
   currentUrl = '';
-
-  get backendTooltip(): string {
-    const origin = this.discovery.currentOrigin();
-    const mode = this.discovery.mode();
-    const latency = this.discovery.latencyMs();
-    const latencyStr = latency !== null ? ` (${latency}ms)` : '';
-    if (mode === 'local') {
-      return `Connected to Localhost backend at ${origin}${latencyStr}. Auto-failover to Hugging Face enabled. Click to re-check.`;
-    }
-    return `Connected to Hugging Face Cloud Live at ${origin}${latencyStr}. Polling for localhost to reconnect automatically. Click to probe local now.`;
-  }
 
   constructor() {
     this.currentUrl = this.router.url;

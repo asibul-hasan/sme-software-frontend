@@ -1,6 +1,4 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { BackendDiscoveryService } from './backend-discovery.service';
-import { AuthService } from '../auth/auth.service';
+import { Injectable, signal, computed } from '@angular/core';
 
 export type NetworkStatus = 'online' | 'offline';
 
@@ -8,106 +6,30 @@ export type NetworkStatus = 'online' | 'offline';
   providedIn: 'root',
 })
 export class ConnectivityService {
-  private readonly discovery = inject(BackendDiscoveryService);
-  private readonly auth = inject(AuthService);
-
   readonly isOnline = signal<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
   readonly status = computed<NetworkStatus>(() => (this.isOnline() ? 'online' : 'offline'));
   readonly lastChecked = signal<Date>(new Date());
 
-  private consecutiveFailures = 0;
-  private isChecking = false;
-  private pollTimer: ReturnType<typeof setInterval> | null = null;
-
   constructor() {
     this.initListeners();
-    this.startPolling();
   }
 
   private initListeners(): void {
     if (typeof window === 'undefined') return;
 
     window.addEventListener('online', () => {
-      this.checkConnectivity();
+      this.isOnline.set(true);
+      this.lastChecked.set(new Date());
     });
 
     window.addEventListener('offline', () => {
-      this.consecutiveFailures = 2;
       this.isOnline.set(false);
+      this.lastChecked.set(new Date());
     });
   }
 
-  private startPolling(): void {
-    if (typeof window === 'undefined') return;
-
-    // Probe periodically when authenticated (offline queue is only relevant when logged in)
-    this.pollTimer = setInterval(() => {
-      if (this.auth.isAuthenticated()) {
-        this.checkConnectivity();
-      }
-    }, 5000);
-  }
-
-  async checkConnectivity(): Promise<boolean> {
-    if (this.isChecking) return this.isOnline();
-    this.isChecking = true;
-
-    try {
-      // If browser itself reports offline, immediately set offline
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        this.consecutiveFailures = 2;
-        this.isOnline.set(false);
-        this.lastChecked.set(new Date());
-        return false;
-      }
-
-      const origin = this.discovery.currentOrigin();
-      const probeUrl = `${origin}/health`;
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-      try {
-        const response = await fetch(probeUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          this.consecutiveFailures = 0;
-          this.isOnline.set(true);
-        } else {
-          this.consecutiveFailures++;
-          if (this.consecutiveFailures >= 2) {
-            this.isOnline.set(false);
-          }
-        }
-        this.lastChecked.set(new Date());
-        return response.ok;
-      } catch {
-        clearTimeout(timeoutId);
-        this.consecutiveFailures++;
-        // Hysteresis: 2 consecutive failures triggers offline
-        if (this.consecutiveFailures >= 2) {
-          this.isOnline.set(false);
-        }
-        this.lastChecked.set(new Date());
-        return false;
-      }
-    } finally {
-      this.isChecking = false;
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer);
-      this.pollTimer = null;
-    }
+  setOnline(online: boolean): void {
+    this.isOnline.set(online);
+    this.lastChecked.set(new Date());
   }
 }
