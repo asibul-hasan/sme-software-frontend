@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.35.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.4...v1.35.0) (2026-10-26)
+
+
+### 🚀 Features
+
+* **customer:** register customer return invoices list and route to sale returns ([2fe0340](https://github.com/asibul-hasan/sme-software-frontend/commit/2fe034020c9aa9b8295a34650db48c6bd9c7ca2f))
+
 ## [1.34.4](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.3...v1.34.4) (2026-10-26)
 
 
