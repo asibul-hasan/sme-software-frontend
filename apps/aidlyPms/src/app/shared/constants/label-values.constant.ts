@@ -425,14 +425,56 @@ export function getOptionLabel(
 }
 
 /**
- * Helper to retrieve value for a given label string
+ * 23. Special Permissions (the 7 non-menu action authorization codes)
  */
-export function getOptionValue<T extends string | number = number>(
-  optionsOrKey: readonly LabelOption<any>[] | LabelValueKey,
-  label: string | null | undefined
-): T | undefined {
-  if (!label) return undefined;
-  const list = typeof optionsOrKey === 'string' ? LABEL_VALUES[optionsOrKey] : optionsOrKey;
-  const match = (list as readonly LabelOption<any>[]).find(item => item.label.toLowerCase() === label.trim().toLowerCase());
-  return match?.value as T | undefined;
+export interface SpecialPermissionOption {
+  readonly label: string;
+  readonly label_bn: string;
+  readonly value: string;
+  readonly hint: string;
 }
+
+export const SPECIAL_PERMISSION_OPTIONS: readonly SpecialPermissionOption[] = [
+  {
+    label: 'Sales Return',
+    label_bn: 'বিক্রয় ফেরত',
+    value: 'sale.return',
+    hint: 'Allow processing customer sale returns and issuing return refunds'
+  },
+  {
+    label: 'Void Sale',
+    label_bn: 'ইনভয়েস বাতিল (ভয়েড)',
+    value: 'void',
+    hint: 'Allow voiding committed invoices, sales, and transaction records'
+  },
+  {
+    label: 'Stock Adjustment',
+    label_bn: 'স্টক সমন্বয়',
+    value: 'stock.adjust',
+    hint: 'Allow manual inventory adjustments, stocktake commitments, and shrinkage write-offs'
+  },
+  {
+    label: 'Price Edit',
+    label_bn: 'মূল্য পরিবর্তন',
+    value: 'price.edit',
+    hint: 'Allow updating product purchase costs and retail selling prices'
+  },
+  {
+    label: 'Cashbook / Shift Close',
+    label_bn: 'ক্যাশ ও শিফট ক্লোজ',
+    value: 'cash.close',
+    hint: 'Allow closing cashier shifts and committing daily cash handover vouchers'
+  },
+  {
+    label: 'Manage Users',
+    label_bn: 'ব্যবহারকারী ব্যবস্থাপনা',
+    value: 'user.manage',
+    hint: 'Allow creating, editing, and managing staff and representative accounts'
+  },
+  {
+    label: 'Manage Roles & Permissions',
+    label_bn: 'ভূমিকা ও অনুমতি ব্যবস্থাপনা',
+    value: 'role.manage',
+    hint: 'Allow creating roles, modifying special permissions, and assigning menu access'
+  }
+] as const;

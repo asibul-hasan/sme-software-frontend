@@ -1,3 +1,10 @@
+export interface MenuActionPermissions {
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+
 export interface SysMenu {
   menu_no: number;
   menu_code: string;
@@ -13,17 +20,22 @@ export interface SysMenu {
   status: boolean;
   created_at?: string;
   updated_at?: string;
+  permissions?: MenuActionPermissions;
   children?: SysMenu[];
 }
 
 export interface RoleMenuPermissionItem {
   menu_no: number;
+  menu_code?: string;
   title: string;
+  title_bn?: string;
   path?: string | null;
+  route?: string | null;
   icon?: string | null;
   parent_menu_no?: number | null;
   parent_title?: string | null;
   order_no: number;
+  menu_type?: string;
   can_view: boolean;
   can_create: boolean;
   can_edit: boolean;
