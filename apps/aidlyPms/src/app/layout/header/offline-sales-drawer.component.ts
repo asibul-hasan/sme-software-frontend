@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -296,8 +297,22 @@ import { QueuedSale } from '../../core/models/offline.models';
     </nz-modal>
   `,
 })
-export class OfflineSalesDrawerComponent implements OnInit {
-  @Input() visible = false;
+export class OfflineSalesDrawerComponent implements OnInit, OnDestroy {
+  private _visible = false;
+  @Input()
+  set visible(val: boolean) {
+    this._visible = val;
+    if (val) {
+      this.loadQueue();
+      this.startLivePolling();
+    } else {
+      this.stopLivePolling();
+    }
+  }
+  get visible(): boolean {
+    return this._visible;
+  }
+
   @Output() close = new EventEmitter<void>();
 
   readonly connectivity = inject(ConnectivityService);
@@ -310,8 +325,51 @@ export class OfflineSalesDrawerComponent implements OnInit {
   detailsVisible = false;
   selectedItem: QueuedSale | null = null;
 
+  private pollTimer: any = null;
+  private queueSub?: Subscription;
+
+  constructor() {
+    // When coming back online while the drawer is open, immediately refresh queue
+    effect(() => {
+      const online = this.connectivity.isOnline();
+      if (online && this._visible) {
+        untracked(() => {
+          this.loadQueue();
+        });
+      }
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     await this.loadQueue();
+
+    // Reactively refresh table when any sale is queued, synced, or discarded
+    this.queueSub = this.offlineStore.queueChanged$.subscribe(() => {
+      if (this._visible) {
+        this.loadQueue();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopLivePolling();
+    this.queueSub?.unsubscribe();
+  }
+
+  private startLivePolling(): void {
+    this.stopLivePolling();
+    this.pollTimer = setInterval(() => {
+      if (this._visible) {
+        this.loadQueue();
+      }
+    }, 2000);
+  }
+
+  private stopLivePolling(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
   }
 
   async loadQueue(): Promise<void> {

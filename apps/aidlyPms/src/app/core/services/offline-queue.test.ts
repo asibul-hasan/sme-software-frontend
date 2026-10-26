@@ -5,6 +5,7 @@ import {
   validateDiscardReason,
   sortQueueFifo,
   filterPendingQueue,
+  resetOrphanedSyncing,
   OfflineQueueProcessor,
 } from './offline-queue-manager.ts';
 import type { QueuedSale } from './offline-queue-manager.ts';
@@ -220,3 +221,25 @@ test('6. Discard requires reason: Empty or whitespace reason throws, valid reaso
   // Discarded item is not in pending queue
   assert.strictEqual(processor.getPendingQueue().length, 0);
 });
+
+test('7. Orphaned Syncing items recovery: resetOrphanedSyncing reverts stuck items to Pending', () => {
+  const sale1 = createDummySale('1', '2026-10-26T10:00:00Z', 'Syncing');
+  const sale2 = createDummySale('2', '2026-10-26T11:00:00Z', 'Syncing');
+  const sale3 = createDummySale('3', '2026-10-26T12:00:00Z', 'Synced');
+
+  // Direct helper test
+  const recovered = resetOrphanedSyncing([sale1, sale2, sale3]);
+  assert.strictEqual(recovered[0].status, 'Pending');
+  assert.strictEqual(recovered[1].status, 'Pending');
+  assert.strictEqual(recovered[2].status, 'Synced');
+
+  // Processor initializes and recovers stuck items so they are eligible for auto-sync
+  const processor = new OfflineQueueProcessor([sale1, sale2, sale3]);
+  const pending = processor.getPendingQueue();
+  assert.strictEqual(pending.length, 2);
+  assert.strictEqual(pending[0].idempotency_key, 'key-1');
+  assert.strictEqual(pending[1].idempotency_key, 'key-2');
+  assert.strictEqual(pending[0].status, 'Pending');
+  assert.strictEqual(pending[1].status, 'Pending');
+});
+

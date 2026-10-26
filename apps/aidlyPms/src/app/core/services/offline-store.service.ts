@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CfgSaleConfig } from '../models/config.models';
 import {
   PosCatalogSnapshotDto,
@@ -27,6 +28,11 @@ export const STORES = {
 })
 export class OfflineStoreService {
   private dbPromise: Promise<IDBDatabase> | null = null;
+  readonly queueChanged$ = new Subject<void>();
+
+  notifyQueueChanged(): void {
+    this.queueChanged$.next();
+  }
 
   constructor() {
     if (typeof navigator !== 'undefined' && navigator.storage?.persist) {
@@ -331,7 +337,10 @@ export class OfflineStoreService {
       const tx = db.transaction(STORES.SALE_QUEUE, 'readwrite');
       const store = tx.objectStore(STORES.SALE_QUEUE);
       store.put(sale);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => {
+        this.notifyQueueChanged();
+        resolve();
+      };
       tx.onerror = () => reject(tx.error);
     });
   }
@@ -361,8 +370,39 @@ export class OfflineStoreService {
           store.put(merged);
         }
       };
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => {
+        this.notifyQueueChanged();
+        resolve();
+      };
       tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async resetOrphanedSyncingItems(): Promise<number> {
+    const db = await this.getDb();
+    return new Promise<number>((resolve, reject) => {
+      const tx = db.transaction(STORES.SALE_QUEUE, 'readwrite');
+      const store = tx.objectStore(STORES.SALE_QUEUE);
+      const req = store.getAll();
+
+      req.onsuccess = () => {
+        const all = (req.result as QueuedSale[]) || [];
+        let count = 0;
+        for (const item of all) {
+          if (item.status === 'Syncing') {
+            item.status = 'Pending';
+            store.put(item);
+            count++;
+          }
+        }
+        tx.oncomplete = () => {
+          if (count > 0) {
+            this.notifyQueueChanged();
+          }
+          resolve(count);
+        };
+      };
+      req.onerror = () => reject(tx.error || req.error);
     });
   }
 
@@ -375,7 +415,7 @@ export class OfflineStoreService {
 
       req.onsuccess = () => {
         const all = (req.result as QueuedSale[]) || [];
-        const pending = all.filter(s => s.status === 'Pending');
+        const pending = all.filter(s => s.status === 'Pending' || s.status === 'Syncing');
         // Sort FIFO: oldest created_at first
         pending.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         resolve(pending);

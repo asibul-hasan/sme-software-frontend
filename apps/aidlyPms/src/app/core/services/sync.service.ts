@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, effect } from '@angular/core';
+import { Injectable, inject, signal, effect, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
 import { OfflineStoreService } from './offline-store.service';
@@ -26,15 +26,34 @@ export class SyncService {
   readonly syncProgress = signal<{ current: number; total: number } | null>(null);
 
   constructor() {
-    this.refreshCounts();
+    this.initRecovery();
 
-    // Auto-sync when coming back online
+    // Auto-update badge counts when queue state mutates
+    this.offlineStore.queueChanged$.subscribe(() => {
+      this.refreshCounts().catch(() => {});
+    });
+
+    // Auto-sync when coming back online without reactive loop on isSyncing/pendingCount
     effect(() => {
       const online = this.connectivity.isOnline();
-      if (online && !this.isSyncing() && this.pendingCount() > 0) {
-        this.syncPendingSales().catch(() => {});
+      if (online) {
+        untracked(() => {
+          if (!this.isSyncing() && this.pendingCount() > 0) {
+            this.syncPendingSales().catch(() => {});
+          }
+        });
       }
     });
+  }
+
+  private async initRecovery(): Promise<void> {
+    try {
+      await this.offlineStore.resetOrphanedSyncingItems();
+      await this.refreshCounts();
+      if (this.connectivity.isOnline() && this.pendingCount() > 0 && !this.isSyncing()) {
+        this.syncPendingSales().catch(() => {});
+      }
+    } catch {}
   }
 
   async refreshCounts(): Promise<void> {
@@ -151,7 +170,9 @@ export class SyncService {
     } finally {
       this.isSyncing.set(false);
       this.syncProgress.set(null);
+      await this.offlineStore.resetOrphanedSyncingItems();
       await this.refreshCounts();
+      this.offlineStore.notifyQueueChanged();
     }
 
     return { success: successCount, failed: failedCount };

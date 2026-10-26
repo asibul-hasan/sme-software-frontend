@@ -68,11 +68,22 @@ export function sortQueueFifo<T extends { created_at: string }>(items: T[]): T[]
 }
 
 /**
+ * Resets any items stuck in 'Syncing' status back to 'Pending'.
+ * Used during application startup or queue initialization to recover from
+ * interrupted sync operations (e.g. page reload or network drop).
+ */
+export function resetOrphanedSyncing<T extends { status: QueueItemStatus }>(items: T[]): T[] {
+  return items.map(item =>
+    item.status === 'Syncing' ? { ...item, status: 'Pending' as QueueItemStatus } : item
+  );
+}
+
+/**
  * Filters queue items to return only Pending items for automatic sync.
  * Failed and Discarded items are excluded from auto-sync.
  */
 export function filterPendingQueue<T extends { status: QueueItemStatus }>(items: T[]): T[] {
-  return items.filter(s => s.status === 'Pending');
+  return items.filter(s => s.status === 'Pending' || s.status === 'Syncing');
 }
 
 export interface SyncResult {
@@ -94,7 +105,7 @@ export class OfflineQueueProcessor {
   private items: QueuedSale[];
 
   constructor(items: QueuedSale[] = []) {
-    this.items = [...items];
+    this.items = resetOrphanedSyncing(items);
   }
 
   getItems(): QueuedSale[] {
@@ -110,7 +121,9 @@ export class OfflineQueueProcessor {
   }
 
   getPendingQueue(): QueuedSale[] {
-    const pending = filterPendingQueue(this.items);
+    const recovered = resetOrphanedSyncing(this.items);
+    this.items = recovered;
+    const pending = filterPendingQueue(recovered);
     return sortQueueFifo(pending);
   }
 
