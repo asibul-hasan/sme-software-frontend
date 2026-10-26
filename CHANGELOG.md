@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.3](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.2...v1.34.3) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **header:** remove auto health polling and simplify developer backend button ([2adc097](https://github.com/asibul-hasan/sme-software-frontend/commit/2adc09742e9258a59ac72499659a23988aa2d7f3))
+
 ## [1.34.2](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.1...v1.34.2) (2026-10-26)
 
 
