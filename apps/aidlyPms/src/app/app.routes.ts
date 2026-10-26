@@ -28,6 +28,7 @@ import { CustomerListComponent } from './features/customer/customer-list.compone
 import { CustomerAddComponent } from './features/customer/customer-add.component';
 import { SaleRecordComponent } from './features/customer/sale-record.component';
 import { SaleReturnComponent } from './features/customer/sale-return.component';
+import { SaleReturnListComponent } from './features/customer/sale-return-list.component';
 import { OfflineSalesReviewComponent } from './features/customer/offline-sales-review.component';
 
 import { CashHandoverComponent } from './features/cash/cash-handover.component';
@@ -130,9 +131,9 @@ export const appRoutes: Route[] = [
       { path: 'customer/sale-wholesale', component: PosTerminalComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1402' } },
       { path: 'customer/list', component: CustomerListComponent, canActivate: [menuGuard], data: { menuCode: 'CUST_1407' } },
       { path: 'customer/add', component: CustomerAddComponent, canActivate: [menuGuard], data: { menuCode: 'CUST_1408' } },
-      { path: 'customer/returns', component: SaleReturnComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1409' } },
+      { path: 'customer/returns', component: SaleReturnListComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1409' } },
       { path: 'customer/return', redirectTo: 'customer/returns', pathMatch: 'full' },
-      { path: 'customer/sale-return', redirectTo: 'customer/returns', pathMatch: 'full' },
+      { path: 'customer/sale-return', redirectTo: 'customer/sale/return', pathMatch: 'full' },
       { path: 'customer/sale/return', component: SaleReturnComponent, canActivate: [menuGuard], data: { menuCode: 'SALE_1403' } },
       { path: 'purchase/return', component: PurchaseReturnComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },
       { path: 'purchase-return', component: PurchaseReturnComponent, canActivate: [menuGuard], data: { menuCode: 'PUR_1509' } },

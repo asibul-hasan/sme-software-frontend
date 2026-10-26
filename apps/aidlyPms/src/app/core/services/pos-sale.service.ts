@@ -6,6 +6,7 @@ import {
   SaleInvoice, 
   SaleInvoiceItem, 
   SaleInvoicePayment,
+  SaleReturn,
   ReturnLineReq,
   ReturnReq,
   ExchangeReq,
@@ -48,19 +49,7 @@ export interface CreateSaleReturnPayload {
   items?: SaleReturnItem[];
 }
 
-export interface SaleReturnRecord {
-  return_no: number;
-  return_invoice_no: string;
-  original_invoice_no: string;
-  customer_no: number;
-  customer_name?: string;
-  return_amount: number;
-  final_refund_price?: number;
-  net_amount?: number;
-  return_date: string;
-  reason?: string;
-  created_at: string;
-}
+export type SaleReturnRecord = SaleReturn;
 
 @Injectable({
   providedIn: 'root',
@@ -80,16 +69,20 @@ export class PosSaleService {
     return this.api.get<SaleInvoice>(`pos/sales/${invoiceNo}`);
   }
 
-  createSaleReturn(payload: CreateSaleReturnPayload | ReturnReq): Observable<ApiResponse<SaleReturnRecord>> {
-    return this.api.post<SaleReturnRecord>('pos/sales/returns', payload);
+  createSaleReturn(payload: CreateSaleReturnPayload | ReturnReq): Observable<ApiResponse<SaleReturn>> {
+    return this.api.post<SaleReturn>('pos/sales/returns', payload);
   }
 
   processExchange(payload: ExchangeReq): Observable<ApiResponse<ExchangeResult>> {
     return this.api.post<ExchangeResult>('pos/exchange', payload);
   }
 
-  getSaleReturns(params?: Record<string, unknown> | RequestOptions): Observable<ApiResponse<PagedResult<SaleReturnRecord>>> {
-    return this.api.getPaged<SaleReturnRecord>('pos/sales/returns', params);
+  getSaleReturns(params?: Record<string, unknown> | RequestOptions): Observable<ApiResponse<PagedResult<SaleReturn>>> {
+    return this.api.getPaged<SaleReturn>('pos/sales/returns', params);
+  }
+
+  getSaleReturnById(id: number): Observable<ApiResponse<SaleReturn>> {
+    return this.api.get<SaleReturn>(`pos/sales/returns/${id}`);
   }
 
   voidSale(
