@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.0...v1.34.1) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **pos:** resolve offline queue stuck syncing state and reactive drawer refresh ([86ba073](https://github.com/asibul-hasan/sme-software-frontend/commit/86ba0735efee2c408f83c99ce1a54f80f40ea6f5))
+
 ## [1.34.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.33.1...v1.34.0) (2026-10-26)
 
 
