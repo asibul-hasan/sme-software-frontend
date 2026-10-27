@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.35.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.35.0...v1.35.1) (2026-10-27)
+
+
+### 🐛 Bug Fixes
+
+* **sale:** offline sales review shows all synced offline invoices ([9c3149e](https://github.com/asibul-hasan/sme-software-frontend/commit/9c3149eb76521cfb5843fe90ff76b5462413801b))
+
 ## [1.35.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.34.4...v1.35.0) (2026-10-26)
 
 
