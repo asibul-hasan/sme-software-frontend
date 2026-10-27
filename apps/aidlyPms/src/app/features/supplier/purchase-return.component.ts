@@ -18,6 +18,7 @@ import { SupplierService } from '../../core/services/supplier.service';
 import { ProductService } from '../../core/services/product.service';
 import { SuppSupplier, PurPurchaseReturn, PurPurchaseReturnItem } from '../../core/models/supplier.models';
 import { ProdProduct, ProdProductBatch } from '../../core/models/product.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface ReturnCartLine {
   productNo: number;
@@ -49,6 +50,7 @@ interface ReturnCartLine {
     NzSpinModule,
     NzModalModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -262,6 +264,7 @@ interface ReturnCartLine {
 
           <div class="pt-4 border-t border-slate-200">
             <button
+              *appMenuAction="'PUR_1508:create'"
               nz-button
               nzType="primary"
               nzBlock

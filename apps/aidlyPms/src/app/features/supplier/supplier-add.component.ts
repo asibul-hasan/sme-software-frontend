@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { SupplierService } from '../../core/services/supplier.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-supplier-add',
@@ -22,6 +23,7 @@ import { SupplierService } from '../../core/services/supplier.service';
     NzCheckboxModule,
     NzIconModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   templateUrl: './supplier-add.component.html',
 })

@@ -71,7 +71,7 @@
       <button nz-button class="btn-export rounded-md" (click)="exportPurchasesCsv()">
         <span nz-icon nzType="download"></span> Export CSV
       </button>
-      <a nz-button nzType="primary" class="btn-save rounded-md font-semibold" routerLink="/supplier/purchase">
+      <a *appMenuAction="'PUR_1509:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" routerLink="/supplier/purchase">
         <span nz-icon nzType="plus"></span> New Purchase Entry
       </a>
     </div>
@@ -143,6 +143,7 @@
                     <span nz-icon nzType="rollback"></span>
                   </button>
                   <button
+                    *appMenuAction="'PUR_1509:delete'"
                     type="button"
                     (click)="deleteInvoice(r)"
                     nz-tooltip

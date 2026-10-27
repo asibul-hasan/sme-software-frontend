@@ -88,7 +88,7 @@
       <a nz-button nzType="default" class="rounded-md" routerLink="/customer/sales">
         <span nz-icon nzType="history"></span> Sales Invoices Register
       </a>
-      <a nz-button nzType="primary" class="btn-save rounded-md font-semibold" routerLink="/customer/sale/return">
+      <a *appMenuAction="'SALE_1409:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" routerLink="/customer/sale/return">
         <span nz-icon nzType="rollback"></span> + Process Return / Exchange
       </a>
     </div>

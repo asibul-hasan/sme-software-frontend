@@ -15,6 +15,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface AccountRow {
   account_no: number;
@@ -45,6 +46,7 @@ interface AccountRow {
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -72,7 +74,7 @@ interface AccountRow {
           <a nz-button class="btn-secondary-action rounded-md" routerLink="/accounting/transaction/add">
             <span nz-icon nzType="plus"></span> Account Form
           </a>
-          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+          <button *appMenuAction="'ACC_1101:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Create Account (F2)
           </button>
         </div>
@@ -128,6 +130,7 @@ interface AccountRow {
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
+                        *appMenuAction="'ACC_1101:edit'"
                         type="button"
                         (click)="openEditModal(a)"
                         nz-tooltip
@@ -146,6 +149,7 @@ interface AccountRow {
                         </span>
                       } @else {
                         <button
+                          *appMenuAction="'ACC_1101:delete'"
                           type="button"
                           (click)="deleteAccount(a)"
                           nz-tooltip

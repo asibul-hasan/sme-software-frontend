@@ -1,607 +1,85 @@
 /**
- * Unified System Menu Configuration
- * Structured around 5 core business modules:
- * - SAL: Sales & Customers (বিক্রয় ও কাস্টমার)
- * - PUR: Purchase & Suppliers (ক্রয় ও সাপ্লায়ার)
- * - INV: Medicines & Stock (ঔষধ ও স্টক)
- * - ACC: Accounts & Cash (হিসাব ও ক্যাশ)
- * - SYS: Settings & Admin (সেটিংস ও অ্যাডমিন)
- *
- * Dashboard (DASH_2301) lives as a standalone Home link.
+ * Menu Route Registry
+ * Maps system menu codes (sys_menus.menu_code) to Angular route paths.
+ * All screen titles, icons, orders, and permissions are DB-driven and retrieved
+ * dynamically from the login menu tree (AuthService / AuthStore).
  */
-
-export interface SystemScreen {
-  readonly form_id: string;
-  readonly title: string;
-  readonly type:
-    | 'Main Screen'
-    | 'Modal Dialog'
-    | 'Action Modal'
-    | 'Drawer View'
-    | 'Sub-Screen'
-    | 'Global Modal'
-    | 'Header Modal'
-    | 'Control Drawer';
-  readonly route: string;
-  readonly permission_code: string;
-  readonly description: string;
-  readonly is_in_sidebar?: boolean;
-  readonly badge?: string;
-}
-
-// One clickable group inside a module (e.g. "Customers" under Sales)
-export interface SystemSubModule {
-  readonly key: string;            // stable id, used for expand/collapse state
-  readonly name: string;           // English label
-  readonly name_bn: string;        // Bengali label for BD shop owners
-  readonly icon: string;           // sidebar icon
-  readonly legacy_series?: number; // old series number, kept for traceability
-  readonly form_ids: readonly string[]; // references into SYSTEM_SCREENS, no duplicated data
-}
-
-// Top-level module, now only 5 of them
-export interface SystemModule {
-  readonly module: string;
-  readonly module_bn: string;
-  readonly module_code: 'SAL' | 'PUR' | 'INV' | 'ACC' | 'SYS'; // closed union catches typos
-  readonly icon: string;
-  readonly default_route: string;  // where clicking the module lands
-  readonly sub_modules: readonly SystemSubModule[];
-}
-
-export const SYSTEM_SCREENS: readonly SystemScreen[] = [
+export const MENU_ROUTE_REGISTRY: Record<string, string> = {
   // Dashboard & Executive Analytics
-  {
-    form_id: 'DASH_2301',
-    title: 'Executive Financial Dashboard',
-    type: 'Main Screen',
-    route: '/dashboard',
-    permission_code: 'PMS-Report-Module',
-    description: 'High-level KPI metrics, real-time revenue, gross profit, and stock alerts.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'DASH_2302',
-    title: 'Sales Performance & Fast Movers',
-    type: 'Sub-Screen',
-    route: '/dashboard/analytics',
-    permission_code: 'PMS-Report-Module',
-    description: 'Top fast-moving products, slow-movers, profit margins, and peak hours.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'DASH_2303',
-    title: 'Cashbook & Buy/Sale Register',
-    type: 'Sub-Screen',
-    route: '/dashboard/cashbook',
-    permission_code: 'PMS-Report-Module',
-    description: 'Consolidated cash inflow/outflow register for daily reconciling.',
-    is_in_sidebar: true,
-  },
+  DASH_2301: '/dashboard',
+  DASH_2302: '/dashboard/analytics',
+  DASH_2303: '/dashboard/cashbook',
 
-  // Products & Inventory Stock
-  {
-    form_id: 'PROD_1601',
-    title: 'Master Medicine Catalog',
-    type: 'Main Screen',
-    route: '/products/list',
-    permission_code: 'PMS-Product-Module',
-    description: 'Comprehensive inventory list with stock level, pricing, and filters.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1602',
-    title: 'Add Medicine Master',
-    type: 'Main Screen',
-    route: '/products/add',
-    permission_code: 'PMS-Product-Module',
-    description: 'Register medicine with generic formulation, unit type, and pricing.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1603',
-    title: 'Pharmaceutical Manufacturers',
-    type: 'Main Screen',
-    route: '/products/company',
-    permission_code: 'POS-Shop-Company-Module',
-    description: 'Manage pharma manufacturing companies, status, and directory.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1604',
-    title: 'Add Pharmaceutical Company',
-    type: 'Modal Dialog',
-    route: '/products/company/add',
-    permission_code: 'POS-Shop-Company-Module',
-    description: 'Quick-create pharma manufacturer entity.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'PROD_1605',
-    title: 'Generic Drug Formulations',
-    type: 'Main Screen',
-    route: '/products/generic',
-    permission_code: 'POS-Shop-Generic-Module',
-    description: 'Generic medicine formulations directory and active status.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1606',
-    title: 'Add Generic Formulation',
-    type: 'Modal Dialog',
-    route: '/products/generic/add',
-    permission_code: 'POS-Shop-Generic-Module',
-    description: 'Register chemical generic formulation title.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'PROD_1607',
-    title: 'Inventory Requisition Planner',
-    type: 'Main Screen',
-    route: '/products/requisition',
-    permission_code: 'PMS-Requisition-Module',
-    description: 'Low-stock automated demand replenishment generator.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1608',
-    title: 'Requisition Item Selector',
-    type: 'Modal Dialog',
-    route: '/products/requisition/add-item',
-    permission_code: 'PMS-Requisition-Module',
-    description: 'Batch-select stock shortfall items into current requisition draft.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'PROD_1609',
-    title: 'Requisitions Register',
-    type: 'Main Screen',
-    route: '/products/requisition/records',
-    permission_code: 'PMS-Requisition-Module',
-    description: 'Historical register of submitted stock requisition orders.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1610',
-    title: 'Expired & Near-Expiry Alerts',
-    type: 'Main Screen',
-    route: '/products/expired',
-    permission_code: 'PMS-Product-Module',
-    description: 'Batches reaching expiry within 30, 60, or 90 days, and expired batches.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1611',
-    title: 'Stock Valuation & Inventory Report',
-    type: 'Main Screen',
-    route: '/products/reports',
-    permission_code: 'PMS-Product-Module',
-    description: 'Current stock levels, stock valuation at cost and MRP, and stock shortage alerts.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1612',
-    title: 'Stock-take (Cycle Count)',
-    type: 'Main Screen',
-    route: '/products/stocktakes',
-    permission_code: 'PMS-Product-Module',
-    description: 'Physical inventory audit, count entry, variance calculation and adjustment posting.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PROD_1613',
-    title: 'Stock Ledger Integrity',
-    type: 'Main Screen',
-    route: '/products/integrity',
-    permission_code: 'PMS-Product-Module',
-    description: 'Audit stock ledger consistency against physical batch totals and unreceived holdings.',
-    is_in_sidebar: true,
-  },
+  // Sales & POS
+  SALE_1401: '/customer/sale',
+  SALE_1402: '/customer/sale-wholesale',
+  SALE_1403: '/customer/sale/return',
+  SALE_1409: '/customer/returns',
+  SALE_1410: '/customer/sales',
+  SALE_1411: '/customer/offline-review',
+  CUST_1407: '/customer/list',
+  CUST_1408: '/customer/add',
 
-  // Suppliers & Purchase Invoicing
-  {
-    form_id: 'PUR_1503',
-    title: 'Purchase (Invoice Entry)',
-    type: 'Main Screen',
-    route: '/supplier/purchase',
-    permission_code: 'PMS-Vendor-Module',
-    description: 'Receive stock goods received note with TP, VAT, batch, and expiry.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'SUPP_1501',
-    title: 'Supplier Directory & Ledger',
-    type: 'Main Screen',
-    route: '/supplier/list',
-    permission_code: 'PMS-Vendor-Module',
-    description: 'Supplier contacts, company affiliations, phone numbers, and balances.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'SUPP_1502',
-    title: 'Add / Edit Supplier',
-    type: 'Modal Dialog',
-    route: '/supplier/add',
-    permission_code: 'PMS-Vendor-Module',
-    description: 'Create supplier master with ledger balance and contact details.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'PUR_1504',
-    title: 'Purchase Calculation Selector',
-    type: 'Control Drawer',
-    route: '/supplier/purchase/mode',
-    permission_code: 'PMS-Vendor-Module',
-    description: 'Toggle calculation mode (Default, Unit TP/VAT, Net Value, Opening Stock).',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'PUR_1509',
-    title: 'Purchase Invoices Register',
-    type: 'Main Screen',
-    route: '/supplier/records',
-    permission_code: 'PMS-Vendor-Module',
-    description: 'Historical register of supplier purchase vouchers and payment details.',
-    is_in_sidebar: true,
-  },
+  // Purchases & Suppliers
+  SUPP_1501: '/supplier/list',
+  SUPP_1502: '/supplier/add',
+  PUR_1503: '/supplier/purchase',
+  PUR_1504: '/supplier/purchase',
+  PUR_1509: '/supplier/records',
 
-  // Customer & Point of Sale (POS)
-  {
-    form_id: 'SALE_1401',
-    title: 'Point of Sale (POS Terminal)',
-    type: 'Main Screen',
-    route: '/customer/sale',
-    permission_code: 'PMS-Sale-Module',
-    description: 'High-speed retail & wholesale sales terminal with instant mode toggle, barcode, batch select, and change.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'SALE_1402',
-    title: 'Wholesale POS Counter',
-    type: 'Main Screen',
-    route: '/customer/sale-wholesale',
-    permission_code: 'PMS-Sale-Module',
-    description: 'B2B Wholesale invoicing terminal with box/strip pricing and credit.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'SALE_1403',
-    title: 'POS Sales Return & Refund',
-    type: 'Drawer View',
-    route: '/customer/sale/return',
-    permission_code: 'PMS-Sale-Module',
-    description: 'Process returns, restock inventory, and refund from cash drawer.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'CUST_1407',
-    title: 'Customer Directory & Ledger',
-    type: 'Main Screen',
-    route: '/customer/list',
-    permission_code: 'PMS-Customer-Module',
-    description: 'Customer profiles, tiers, loyalty points, and outstanding dues.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CUST_1408',
-    title: 'Add / Edit Customer Profile',
-    type: 'Modal Dialog',
-    route: '/customer/add',
-    permission_code: 'PMS-Customer-Module',
-    description: 'Create customer profile with tier, phone, and opening balance.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'SALE_1409',
-    title: 'Customer Return Invoices',
-    type: 'Main Screen',
-    route: '/customer/returns',
-    permission_code: 'PMS-Sale-Module',
-    description: 'Register of returned invoices and refund payments.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'SALE_1410',
-    title: 'Sales Invoices Register',
-    type: 'Main Screen',
-    route: '/customer/sales',
-    permission_code: 'PMS-Sale-Module',
-    description: 'Historical register of retail/wholesale receipts with reprint.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'SALE_1411',
-    title: 'Offline Sales Review',
-    type: 'Main Screen',
-    route: '/customer/offline-review',
-    permission_code: 'PMS-Report-Module',
-    description: 'Review synced offline sales flagged with price variance or late sync.',
-    is_in_sidebar: true,
-  },
+  // Medicines & Products
+  PROD_1601: '/products/list',
+  PROD_1602: '/products/add',
+  PROD_1603: '/products/company',
+  PROD_1604: '/products/company/add',
+  PROD_1605: '/products/generic',
+  PROD_1606: '/products/generic/add',
+  PROD_1607: '/products/requisition',
+  PROD_1608: '/products/requisition',
+  PROD_1609: '/products/requisition/records',
+  PROD_1610: '/products/expired',
+  PROD_1611: '/products/reports',
+  PROD_1612: '/products/stocktakes',
+  PROD_1613: '/products/integrity',
 
-  // Cash Counter & Reconciliation
-  {
-    form_id: 'CASH_1201',
-    title: 'Received Cash Register',
-    type: 'Main Screen',
-    route: '/cash/receive',
-    permission_code: 'PMS-Sale-Module',
-    description: 'Cash handover log from active salesperson counters to store manager.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CASH_1203',
-    title: 'Inter-Account Fund Transfers',
-    type: 'Main Screen',
-    route: '/reconciliation',
-    permission_code: 'PMS-Reconciliation-Module',
-    description: 'Transfer funds between cash drawer, banks, and bKash/Nagad accounts.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CASH_1204',
-    title: 'Add Fund Transfer',
-    type: 'Modal Dialog',
-    route: '/reconciliation/add',
-    permission_code: 'PMS-Reconciliation-Module',
-    description: 'Transfer cash between source and destination accounts with fees.',
-    is_in_sidebar: false,
-  },
+  // Accounts & Cash
+  CASH_1201: '/cash/receive',
+  CASH_1203: '/reconciliation',
+  CASH_1204: '/reconciliation/add',
+  DUE_1301: '/due-collect',
+  DUE_1302: '/pms-due-paid-payments',
+  ACC_1101: '/accounting/transaction',
+  ACC_1102: '/accounting/transaction/add',
+  ACC_1103: '/accounting/expenses',
+  ACC_1104: '/accounting/expenses/add',
+  ACC_1106: '/accounting/income',
+  ACC_1109: '/accounting/additional-balance',
 
-  // Due & Credit Collection
-  {
-    form_id: 'DUE_1301',
-    title: 'Due Collection Workbench',
-    type: 'Main Screen',
-    route: '/due-collect',
-    permission_code: 'PMS-Customer-Module',
-    description: 'Outstanding customer dues, payment collection, and SMS reminders.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'DUE_1302',
-    title: 'Due Paid Collections Register',
-    type: 'Sub-Screen',
-    route: '/pms-due-paid-payments',
-    permission_code: 'PMS-Customer-Module',
-    description: 'Register of historical due payment collections.',
-    is_in_sidebar: true,
-  },
+  // Doctors & Representatives
+  DOC_1701: '/doctors-portal/list',
+  DOC_1702: '/doctors-portal/add',
+  DOC_1703: '/doctors-portal/settings',
+  REP_1801: '/representative',
+  REP_1802: '/representative/add',
 
-  // Accounting & Financials
-  {
-    form_id: 'ACC_1101',
-    title: 'Chart of Accounts Register',
-    type: 'Main Screen',
-    route: '/accounting/transaction',
-    permission_code: 'PMS-Chart-Of-Accounting-Module',
-    description: 'View ledger accounts, cash drawers, banks, and MFS balances.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'ACC_1102',
-    title: 'Create Transaction Account',
-    type: 'Modal Dialog',
-    route: '/accounting/transaction/add',
-    permission_code: 'PMS-Chart-Of-Accounting-Module',
-    description: 'Add Bank, Cash-in-hand, or MFS account with initial balance.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'ACC_1103',
-    title: 'Expense Vouchers Register',
-    type: 'Main Screen',
-    route: '/accounting/expenses',
-    permission_code: 'PMS-Expense-Module',
-    description: 'View categorized expenses, date filters, and daily totals.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'ACC_1104',
-    title: 'Add Expense Voucher',
-    type: 'Modal Dialog',
-    route: '/accounting/expenses/add',
-    permission_code: 'PMS-Expense-Module',
-    description: 'Entry of operational expense, category selection, and account debit.',
-    is_in_sidebar: false,
-  },
-  {
-    form_id: 'ACC_1106',
-    title: 'Miscellaneous Income Register',
-    type: 'Main Screen',
-    route: '/accounting/income',
-    permission_code: 'PMS-Income-Module',
-    description: 'View non-sales income receipts, scraps, rebates, and incentives.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'ACC_1109',
-    title: 'Capital / Equity Balance Log',
-    type: 'Main Screen',
-    route: '/accounting/additional-balance',
-    permission_code: 'Account-Module',
-    description: 'Track owner capital injections and equity reserve accounts.',
-    is_in_sidebar: true,
-  },
+  // Roles & Security
+  ROLE_1901: '/roles',
+  ROLE_1902: '/roles',
+  ROLE_1903: '/roles/permissions',
+  MENU_1904: '/menus',
+  MENU_1905: '/menus/add',
 
-  // Doctors Portal & Prescriptions
-  {
-    form_id: 'DOC_1701',
-    title: 'Medical Practitioners Directory',
-    type: 'Main Screen',
-    route: '/doctors-portal/list',
-    permission_code: 'Pharmacy-Module',
-    description: 'Registered prescribing physicians, hospital affiliations, and contacts.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'DOC_1702',
-    title: 'Add / Edit Doctor',
-    type: 'Main Screen',
-    route: '/doctors-portal/add',
-    permission_code: 'Pharmacy-Module',
-    description: 'Doctor profile with qualifications, BMDC number, and bilingual names.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'DOC_1703',
-    title: 'Prescription Pad Settings',
-    type: 'Main Screen',
-    route: '/doctors-portal/settings',
-    permission_code: 'Pharmacy-Module',
-    description: 'Header/footer branding layout for printed prescription pads.',
-    is_in_sidebar: true,
-    badge: 'Coming Soon',
-  },
+  // Settings & System
+  CFG_2001: '/settings/sale-config',
+  CFG_2002: '/settings/invoice-config',
+  CFG_2003: '/settings/product-config',
+  CFG_2004: '/settings/loyalty-config',
+  CFG_2005: '/settings/bulk-sms-config',
+  SETT_2006: '/settings/audit-logs',
+  SUB_2101: '/subscription-report',
+  PHAR_2201: '/change-pharmacy',
+};
 
-  // Representatives & Staff Users
-  {
-    form_id: 'REP_1801',
-    title: 'Representative User List',
-    type: 'Main Screen',
-    route: '/representative',
-    permission_code: 'Role-Module',
-    description: 'Field medical representatives, company affiliations, and phones.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'REP_1802',
-    title: 'Add / Edit Representative',
-    type: 'Main Screen',
-    route: '/representative/add',
-    permission_code: 'Role-Module',
-    description: 'Create medical representative record with assigned company.',
-    is_in_sidebar: true,
-  },
-
-  // Roles & Permissions (RBAC)
-  {
-    form_id: 'ROLE_1901',
-    title: 'Role Authorization Matrix',
-    type: 'Main Screen',
-    route: '/roles',
-    permission_code: 'Role-Module',
-    description: 'System roles (Admin, Pharmacist, Salesperson, Accountant) & ACL matrix.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'ROLE_1902',
-    title: 'Add / Edit Role & ACL',
-    type: 'Main Screen',
-    route: '/roles/add',
-    permission_code: 'Role-Module',
-    description: 'Create role with granular checklist across 20 permission nodes.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'ROLE_1903',
-    title: 'Role Menu Permissions Matrix',
-    type: 'Main Screen',
-    route: '/roles/permissions',
-    permission_code: 'Role-Module',
-    description: 'Assign granular permissions (View, Create, Edit, Delete) per menu for each role.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'MENU_1904',
-    title: 'Menu Management',
-    type: 'Main Screen',
-    route: '/menus',
-    permission_code: 'Role-Module',
-    description: 'Manage system navigation routes, icons, parent hierarchy, and availability.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'MENU_1905',
-    title: 'Create System Menu',
-    type: 'Main Screen',
-    route: '/menus/add',
-    permission_code: 'Role-Module',
-    description: 'Add new system route, navigation icon, and hierarchical parent.',
-    is_in_sidebar: false,
-  },
-
-  // System & POS Configuration
-  {
-    form_id: 'CFG_2001',
-    title: 'Sale Business Rules Config',
-    type: 'Main Screen',
-    route: '/settings/sale-config',
-    permission_code: 'Pharmacy-Module',
-    description: 'Negative stock sales, customer auto-complete, and receipt options.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CFG_2002',
-    title: 'Thermal Receipt / POS Invoice',
-    type: 'Main Screen',
-    route: '/settings/invoice-config',
-    permission_code: 'Pharmacy-Module',
-    description: 'Thermal receipt layout, 80mm/58mm/A4 paper size, and custom notes.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CFG_2003',
-    title: 'Product Alert Thresholds',
-    type: 'Main Screen',
-    route: '/settings/product-config',
-    permission_code: 'Pharmacy-Module',
-    description: 'Low-stock warnings, near-expiry alert horizons (days), and tax rules.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'CFG_2004',
-    title: 'Customer Loyalty Rules',
-    type: 'Main Screen',
-    route: '/settings/loyalty-config',
-    permission_code: 'Pharmacy-Module',
-    description: 'Loyalty earn rate per BDT 100 spent and redemption discounts.',
-    is_in_sidebar: true,
-    badge: 'Coming Soon',
-  },
-  {
-    form_id: 'CFG_2005',
-    title: 'Bulk SMS Packages & Gateway',
-    type: 'Main Screen',
-    route: '/settings/bulk-sms-config',
-    permission_code: 'Pharmacy-Module',
-    description: 'SMS notification templates for sales receipts and overdue dues.',
-    is_in_sidebar: true,
-    badge: 'Coming Soon',
-  },
-
-  // SaaS Subscription & Billing
-  {
-    form_id: 'SUB_2101',
-    title: 'Subscription Status & History',
-    type: 'Main Screen',
-    route: '/subscription-report',
-    permission_code: 'Pharmacy-Module',
-    description: 'SaaS plan (Monthly/Yearly), renewal countdown, and invoice history.',
-    is_in_sidebar: true,
-  },
-  {
-    form_id: 'PHAR_2201',
-    title: 'Store / Branch Switcher',
-    type: 'Header Modal',
-    route: '/change-pharmacy',
-    permission_code: 'Pharmacy-Module',
-    description: 'Switch active pharmacy store branch across user authorizations.',
-    is_in_sidebar: true,
-  },
-] as const;
-
-// Home screen lives outside the module tree
-export const HOME_FORM_ID = 'DASH_2301';
-
-// Build lookup maps once at load time, so each lookup is O(1) instead of a triple loop
-const SCREEN_BY_ID = new Map<string, SystemScreen>(SYSTEM_SCREENS.map((s) => [s.form_id, s]));
-const SCREEN_BY_ROUTE = new Map<string, SystemScreen>(SYSTEM_SCREENS.map((s) => [s.route, s]));
-
-export function getScreenByFormId(formId: string): SystemScreen | undefined {
-  return SCREEN_BY_ID.get(formId);
-}
-
-export function getScreenByRoute(route: string): SystemScreen | undefined {
-  return SCREEN_BY_ROUTE.get(route.split("?")[0]); // strip query string before lookup
+export function getRouteByMenuCode(menuCode: string): string | undefined {
+  return MENU_ROUTE_REGISTRY[menuCode];
 }

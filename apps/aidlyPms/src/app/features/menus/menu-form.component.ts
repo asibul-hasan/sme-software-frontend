@@ -12,6 +12,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { MenuService } from '../../core/services/menu.service';
 import { SysMenu } from '../../core/models/menu.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 const POPULAR_ICONS = [
   'shopping-cart',
@@ -60,6 +61,7 @@ const POPULAR_ICONS = [
     NzSwitchModule,
     NzTagModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="max-w-4xl space-y-4">
@@ -226,6 +228,7 @@ const POPULAR_ICONS = [
               Cancel
             </button>
             <button
+              *appMenuAction="isEditMode() ? 'MENU_1905:edit' : 'MENU_1905:create'"
               nz-button
               nzType="primary"
               type="submit"

@@ -22,6 +22,7 @@ import { CustomerService } from '../../core/services/customer.service';
 import { PrintService } from '../../core/services/print.service';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
 import { Customer, SaleReturn, SaleReturnItem } from '../../core/models/customer.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 export interface SaleReturnRow {
   sale_return_no: number;
@@ -60,6 +61,7 @@ export interface SaleReturnRow {
     NzPaginationModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    MenuActionDirective,
   ],
   templateUrl: './sale-return-list.component.html',
 })

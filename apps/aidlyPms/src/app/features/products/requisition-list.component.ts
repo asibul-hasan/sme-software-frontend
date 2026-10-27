@@ -23,6 +23,7 @@ import { ProductService } from '../../core/services/product.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { ProdCompany, ProdProduct, LowStockProduct } from '../../core/models/product.models';
 import { SuppSupplier } from '../../core/models/supplier.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 export interface RequisitionItemRow {
   product_no: number;
@@ -61,6 +62,7 @@ export interface RequisitionItemRow {
     NzCheckboxModule,
     NzSpinModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   templateUrl: './requisition-list.component.html',
 })

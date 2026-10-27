@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { AccountingService } from '../../core/services/accounting.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-account-add',
@@ -22,6 +23,7 @@ import { AccountingService } from '../../core/services/accounting.service';
     NzSelectModule,
     NzIconModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="w-full space-y-4">
@@ -105,7 +107,7 @@ import { AccountingService } from '../../core/services/accounting.service';
             <button type="button" nz-button class="btn-cancel rounded-md" (click)="goBack()">
               Cancel
             </button>
-            <button type="submit" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
+            <button *appMenuAction="'ACC_1102:create'" type="submit" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
               <span nz-icon nzType="check"></span> Submit Account
             </button>
           </div>

@@ -16,6 +16,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 import {
   MEDICINE_TYPE_OPTIONS,
   UNIT_TYPE_OPTIONS,
@@ -55,6 +56,7 @@ export type ProductRow = ProdProduct & {
     NzTooltipModule,
     PageHeaderComponent,
     DataTableComponent,
+    MenuActionDirective,
   ],
   templateUrl: './product-list.component.html',
 })

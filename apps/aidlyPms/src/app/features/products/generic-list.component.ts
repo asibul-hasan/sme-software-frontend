@@ -13,6 +13,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProdGeneric } from '../../core/models/product.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-generic-list',
@@ -28,6 +29,7 @@ import { ProdGeneric } from '../../core/models/product.models';
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   templateUrl: './generic-list.component.html',
 })

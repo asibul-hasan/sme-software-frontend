@@ -12,7 +12,6 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ApiService } from '../../core/services/api.service';
 import { SaleInvoice } from '../../core/models/customer.models';
 import { PagedResult } from '../../core/models/common.models';
@@ -33,7 +32,6 @@ import { PagedResult } from '../../core/models/common.models';
     NzCheckboxModule,
     NzTooltipModule,
     PageHeaderComponent,
-    EmptyStateComponent,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">

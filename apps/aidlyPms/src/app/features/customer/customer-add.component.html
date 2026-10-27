@@ -176,7 +176,7 @@
         <button type="button" nz-button class="btn-cancel rounded-md" (click)="goBack()">
           Cancel
         </button>
-        <button type="submit" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
+        <button *appMenuAction="'CUST_1408:create'" type="submit" nz-button nzType="primary" class="btn-save rounded-md font-semibold">
           <span nz-icon nzType="check"></span> Save Customer
         </button>
       </div>

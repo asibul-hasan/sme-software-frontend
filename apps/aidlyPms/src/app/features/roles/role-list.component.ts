@@ -16,6 +16,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { ModalService } from '../../core/services/modal.service';
 import { RoleService, SysRole } from '../../core/services/role.service';
 import { SPECIAL_PERMISSION_OPTIONS, SpecialPermissionOption } from '../../shared/constants/label-values.constant';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface RoleRow {
   id: number;
@@ -44,6 +45,7 @@ interface RoleRow {
     NzTagModule,
     NzTooltipModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -84,7 +86,7 @@ interface RoleRow {
           <a nz-button nzType="default" routerLink="/roles/permissions" class="rounded-md">
             <span nz-icon nzType="key"></span> Menu Permissions
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openCreateDrawer()">
+          <button *appMenuAction="'ROLE_1901:create'" nz-button nzType="primary" class="rounded-md" (click)="openCreateDrawer()">
             <span nz-icon nzType="plus"></span> Add Role
           </button>
         </div>
@@ -145,6 +147,7 @@ interface RoleRow {
                         <span nz-icon nzType="key"></span>
                       </a>
                       <button
+                        *appMenuAction="'ROLE_1901:edit'"
                         type="button"
                         (click)="openEditDrawer(r)"
                         nz-tooltip
@@ -166,6 +169,7 @@ interface RoleRow {
                       </button>
                       @if (!r.isSystem) {
                         <button
+                          *appMenuAction="'ROLE_1901:delete'"
                           type="button"
                           (click)="deleteRole(r)"
                           nz-tooltip

@@ -68,10 +68,10 @@
       <a routerLink="/products/requisition" nz-button class="btn-history rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1">
         <span nz-icon nzType="file-done"></span> Requisitions
       </a>
-      <a routerLink="/products/add" nz-button class="btn-secondary-action rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" title="Open Full-Page Form" aria-label="Open Full-Page Form">
+      <a *appMenuAction="'PROD_1601:create'" routerLink="/products/add" nz-button class="btn-secondary-action rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1" title="Open Full-Page Form" aria-label="Open Full-Page Form">
         <span nz-icon nzType="form"></span> Full Form
       </a>
-      <button nz-button nzType="primary" class="btn-save rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1 font-semibold" (click)="openAddMedicineModal()">
+      <button *appMenuAction="'PROD_1601:create'" nz-button nzType="primary" class="btn-save rounded-md h-7 px-2.5 text-xs inline-flex items-center gap-1 font-semibold" (click)="openAddMedicineModal()">
         <span nz-icon nzType="plus"></span> Add Medicine
       </button>
     </div>
@@ -180,6 +180,7 @@
       <span>Adjust</span>
     </button>
     <button
+      *appMenuAction="'PROD_1601:edit'"
       type="button"
       (click)="openEditMedicineModal(item)"
       nz-tooltip
@@ -199,6 +200,7 @@
       <span nz-icon nzType="eye"></span>
     </button>
     <button
+      *appMenuAction="'PROD_1601:delete'"
       type="button"
       (click)="deleteProduct(item)"
       nz-tooltip

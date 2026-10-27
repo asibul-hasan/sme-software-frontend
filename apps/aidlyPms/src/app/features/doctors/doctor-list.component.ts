@@ -16,6 +16,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { DoctorService } from '../../core/services/doctor.service';
 import { DocDoctor } from '../../core/models/doctor.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface DoctorRow {
   id: string;
@@ -46,6 +47,7 @@ interface DoctorRow {
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -81,7 +83,7 @@ interface DoctorRow {
           <a nz-button class="btn-secondary-action rounded-md" routerLink="/doctors-portal/add">
             <span nz-icon nzType="user-add"></span> Doctor Form
           </a>
-          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+          <button *appMenuAction="'DOC_1701:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Doctor (F2)
           </button>
         </div>
@@ -133,6 +135,7 @@ interface DoctorRow {
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
+                        *appMenuAction="'DOC_1701:edit'"
                         type="button"
                         (click)="openEditModal(d)"
                         nz-tooltip
@@ -142,6 +145,7 @@ interface DoctorRow {
                         <span nz-icon nzType="edit"></span>
                       </button>
                       <button
+                        *appMenuAction="'DOC_1701:delete'"
                         type="button"
                         (click)="deleteDoctor(d)"
                         nz-tooltip

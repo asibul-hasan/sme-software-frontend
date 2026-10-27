@@ -23,6 +23,7 @@ import {
 } from '../../shared/constants/label-values.constant';
 import { ProductService } from '../../core/services/product.service';
 import { ProdCompany, ProdGeneric, ProdProduct } from '../../core/models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-product-add',
@@ -40,6 +41,7 @@ import { ProdCompany, ProdGeneric, ProdProduct } from '../../core/models';
     NzModalModule,
     PageHeaderComponent,
     DynamicImportModalComponent,
+    MenuActionDirective,
   ],
   templateUrl: './product-add.component.html',
 })

@@ -17,6 +17,7 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 import { ModalService } from '../../core/services/modal.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { PrintService } from '../../core/services/print.service';
@@ -57,6 +58,7 @@ interface CustomerRow {
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   templateUrl: './customer-list.component.html',
 })

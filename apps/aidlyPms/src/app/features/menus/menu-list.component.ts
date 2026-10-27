@@ -15,6 +15,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { MenuService } from '../../core/services/menu.service';
 import { SysMenu } from '../../core/models/menu.models';
 import { ModalService } from '../../core/services/modal.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-menu-list',
@@ -32,6 +33,7 @@ import { ModalService } from '../../core/services/modal.service';
     NzSelectModule,
     NzSwitchModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -78,7 +80,7 @@ import { ModalService } from '../../core/services/modal.service';
           <a nz-button nzType="default" routerLink="/menus/add" class="rounded-md">
             <span nz-icon nzType="plus"></span> Add Menu Form
           </a>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
+          <button *appMenuAction="'MENU_1904:create'" nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
             <span nz-icon nzType="plus"></span> Quick Add (F2)
           </button>
         </div>
@@ -143,6 +145,7 @@ import { ModalService } from '../../core/services/modal.service';
                   <td class="p-3 text-center">
                     <div class="inline-flex items-center gap-1.5 justify-center">
                       <button
+                        *appMenuAction="'MENU_1904:edit'"
                         type="button"
                         (click)="openEditModal(m)"
                         nz-tooltip
@@ -161,6 +164,7 @@ import { ModalService } from '../../core/services/modal.service';
                         <span nz-icon [nzType]="m.status ? 'pause-circle' : 'play-circle'"></span>
                       </button>
                       <button
+                        *appMenuAction="'MENU_1904:delete'"
                         type="button"
                         (click)="deleteMenu(m)"
                         nz-tooltip

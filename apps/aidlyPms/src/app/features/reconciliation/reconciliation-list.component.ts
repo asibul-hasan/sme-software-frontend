@@ -15,6 +15,7 @@ import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccReconciliation, AccTransactionAccount } from '../../core/models/accounting.models';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface ReconcileRecord {
   id: string;
@@ -43,6 +44,7 @@ interface ReconcileRecord {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -110,7 +112,7 @@ interface ReconcileRecord {
           <a nz-button class="btn-secondary-action rounded-md" routerLink="/reconciliation/add">
             <span nz-icon nzType="plus"></span> Transfer Form
           </a>
-          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+          <button *appMenuAction="'CASH_1204:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Reconciliation (F2)
           </button>
         </div>
@@ -170,6 +172,7 @@ interface ReconcileRecord {
                         <span nz-icon nzType="printer"></span>
                       </button>
                       <button
+                        *appMenuAction="'CASH_1204:delete'"
                         type="button"
                         (click)="deleteVoucher(r)"
                         nz-tooltip

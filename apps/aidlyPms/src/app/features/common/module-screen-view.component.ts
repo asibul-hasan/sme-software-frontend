@@ -15,7 +15,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
-import { getScreenByRoute, SystemScreen } from '../../core/config/menu.config';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
+import { AuthService } from '../../core/auth/auth.service';
+import { SysMenu } from '../../core/models/auth.models';
 import { ModalService } from '../../core/services/modal.service';
 
 export interface ScreenRecord {
@@ -50,16 +52,17 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
     PageHeaderComponent,
     EmptyStateComponent,
     StatusBadgeComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
       <app-page-header
-        [title]="screen?.title || 'Screen Module'"
-        [subtitle]="screen?.description"
-        [formId]="screen?.form_id"
+        [title]="currentMenu?.title || 'Screen Module'"
+        [subtitle]="currentMenu?.title_bn || 'স্ক্রিন মডিউল'"
+        [formId]="currentMenu?.menu_code"
         [breadcrumbs]="[
           { label: 'PMS', url: '/dashboard' },
-          { label: screen?.title || 'Module' }
+          { label: currentMenu?.title || 'Module' }
         ]"
       >
         <div filters class="flex items-center gap-2 shrink-0 flex-nowrap">
@@ -67,7 +70,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
             <input id="module-screen-view-search-7"
               type="text"
               nz-input
-              [placeholder]="'Search ' + (screen?.title || 'records') + '...'"
+              [placeholder]="'Search ' + (currentMenu?.title || 'records') + '...'"
               [(ngModel)]="searchQuery"
               (ngModelChange)="onSearch($event)" aria-label="Search" />
           </nz-input-group>
@@ -82,7 +85,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
           <button nz-button nzType="default" class="rounded-md" (click)="exportRecords()">
             <span nz-icon nzType="download"></span> Export
           </button>
-          <button nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
+          <button *appMenuAction="currentMenu?.menu_code ? currentMenu!.menu_code + ':create' : null" nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
             <span nz-icon nzType="plus"></span> New Record
           </button>
         </div>
@@ -141,6 +144,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                     <td class="p-3.5 text-center">
                       <div class="flex items-center justify-center gap-1.5">
                         <button
+                          *appMenuAction="currentMenu?.menu_code ? currentMenu!.menu_code + ':edit' : null"
                           type="button"
                           (click)="openEditModal(item)"
                           nz-tooltip
@@ -150,6 +154,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                           <span nz-icon nzType="edit"></span>
                         </button>
                         <button
+                          *appMenuAction="currentMenu?.menu_code ? currentMenu!.menu_code + ':delete' : null"
                           type="button"
                           (click)="deleteRecord(item)"
                           nz-tooltip
@@ -175,17 +180,17 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
                 <span class="font-semibold text-slate-700">Total Valuation: <strong class="theme-total-text font-mono text-sm">৳ {{ totalRecordsAmount | number: '1.2-2' }}</strong></span>
               }
             </div>
-            <span class="text-slate-400 font-mono text-[11px]">{{ screen?.form_id || 'System Entity Register' }}</span>
+            <span class="text-slate-400 font-mono text-[11px]">{{ currentMenu?.menu_code || 'System Entity Register' }}</span>
           </div>
         </div>
       } @else {
         <!-- Empty State with Working Action -->
         <div class="flex-1 min-h-0 flex flex-col justify-center bg-white rounded-xl border border-slate-200 p-8 shadow-xs">
           <app-empty-state
-            [description]="'No records found for ' + (screen?.title || 'this screen') + ' (' + (screen?.form_id || '') + ')'"
+            [description]="'No records found for ' + (currentMenu?.title || 'this screen') + ' (' + (currentMenu?.menu_code || '') + ')'"
           >
             <div actions class="mt-3">
-              <button nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
+              <button *appMenuAction="currentMenu?.menu_code ? currentMenu!.menu_code + ':create' : null" nz-button nzType="primary" class="rounded-md" (click)="openCreateModal()">
                 <span nz-icon nzType="plus"></span> Create First Entry
               </button>
             </div>
@@ -197,7 +202,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
     <!-- Unified Dual-Purpose Modal for ADD and MODIFY -->
     <nz-modal
       [(nzVisible)]="isModalVisible"
-      [nzTitle]="modalMode === 'create' ? ('New Entry: ' + (screen?.title || 'Record')) : ('Modify Entry: ' + formModel.name)"
+      [nzTitle]="modalMode === 'create' ? ('New Entry: ' + (currentMenu?.title || 'Record')) : ('Modify Entry: ' + formModel.name)"
       [nzWidth]="640"
       [nzOkText]="modalMode === 'create' ? 'Save Entry' : 'Update Changes'"
       [nzOkLoading]="isSaving"
@@ -215,7 +220,7 @@ const SCREEN_RECORDS_STORE: Record<string, ScreenRecord[]> = {};
               <input id="module-screen-view-record-name-title-1"
                 type="text"
                 nz-input
-                [placeholder]="'e.g. ' + (screen?.title || 'Record') + ' Description'"
+                [placeholder]="'e.g. ' + (currentMenu?.title || 'Record') + ' Description'"
                 [(ngModel)]="formModel.name"
                 class="rounded-md" aria-label="Record Name / Title" />
             </div>
@@ -323,7 +328,9 @@ export class ModuleScreenViewComponent implements OnInit {
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
 
-  screen?: SystemScreen;
+  private readonly authService = inject(AuthService);
+
+  currentMenu?: SysMenu | null;
   records: ScreenRecord[] = [];
   filteredRecords: ScreenRecord[] = [];
 
@@ -375,7 +382,7 @@ export class ModuleScreenViewComponent implements OnInit {
   }
 
   get hasAmountColumn(): boolean {
-    const formId = this.screen?.form_id || '';
+    const formId = this.currentMenu?.menu_code || '';
     const code = formId.split('_')[0] || '';
     return ['ACC', 'CASH', 'DUE', 'SALE', 'PUR', 'SUB'].includes(code);
   }
@@ -385,11 +392,11 @@ export class ModuleScreenViewComponent implements OnInit {
   }
 
   constructor() {
-    this.screen = getScreenByRoute(this.router.url);
+    this.currentMenu = this.authService.findMenuByRoute(this.router.url);
   }
 
   ngOnInit(): void {
-    const key = this.screen?.form_id || this.router.url;
+    const key = this.currentMenu?.menu_code || this.router.url;
     if (!SCREEN_RECORDS_STORE[key]) {
       SCREEN_RECORDS_STORE[key] = [];
     }
@@ -423,7 +430,7 @@ export class ModuleScreenViewComponent implements OnInit {
     const nextIdx = this.records.length + 1;
     this.formModel = {
       id: crypto.randomUUID(),
-      reference_no: `${this.screen?.form_id || 'REC'}-${String(nextIdx).padStart(3, '0')}`,
+      reference_no: `${this.currentMenu?.menu_code || 'REC'}-${String(nextIdx).padStart(3, '0')}`,
       name: '',
       category: 'Standard Mode',
       amount: this.hasAmountColumn ? 0 : undefined,
@@ -453,7 +460,7 @@ export class ModuleScreenViewComponent implements OnInit {
     this.isSaving = true;
     setTimeout(() => {
       this.isSaving = false;
-      const key = this.screen?.form_id || this.router.url;
+      const key = this.currentMenu?.menu_code || this.router.url;
 
       if (this.modalMode === 'create') {
         const newRecord: ScreenRecord = {
@@ -486,7 +493,7 @@ export class ModuleScreenViewComponent implements OnInit {
       .confirmDelete(record.name, `Are you sure you want to remove "${record.reference_no}"?`)
       .subscribe(confirmed => {
         if (confirmed) {
-          const key = this.screen?.form_id || this.router.url;
+          const key = this.currentMenu?.menu_code || this.router.url;
           this.records = this.records.filter(r => r.id !== record.id);
           SCREEN_RECORDS_STORE[key] = this.records;
           this.filteredRecords = [...this.records];
@@ -496,6 +503,6 @@ export class ModuleScreenViewComponent implements OnInit {
   }
 
   exportRecords(): void {
-    this.msg.info(`Exporting ${this.filteredRecords.length} records for ${this.screen?.form_id}...`);
+    this.msg.info(`Exporting ${this.filteredRecords.length} records for ${this.currentMenu?.menu_code}...`);
   }
 }

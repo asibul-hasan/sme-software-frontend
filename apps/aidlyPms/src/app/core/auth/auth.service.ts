@@ -86,7 +86,50 @@ export class AuthService {
 
   readonly isAuthenticated = computed(() => !!this.token() && !!this.currentUser());
 
-  readonly isManager = computed(() => this.isFullAccess());
+  findMenuByRoute(url: string): SysMenu | null {
+    if (!url) return null;
+    const cleanUrl = url.split('?')[0].replace(/\/+$/, '') || '/';
+
+    let bestMatch: SysMenu | null = null;
+    let longestLength = 0;
+
+    const searchTree = (nodes: SysMenu[]) => {
+      for (const node of nodes) {
+        const route = (node.route || node.path || '').replace(/\/+$/, '');
+        if (route) {
+          if (route === cleanUrl) {
+            bestMatch = node;
+            return;
+          }
+          if (cleanUrl.startsWith(route) && route.length > longestLength) {
+            bestMatch = node;
+            longestLength = route.length;
+          }
+        }
+        if (node.children?.length) {
+          searchTree(node.children);
+        }
+      }
+    };
+
+    searchTree(this.menu());
+    return bestMatch;
+  }
+
+  findMenuByCode(menuCode: string): SysMenu | null {
+    if (!menuCode) return null;
+    const searchTree = (nodes: SysMenu[]): SysMenu | null => {
+      for (const node of nodes) {
+        if (node.menu_code === menuCode) return node;
+        if (node.children?.length) {
+          const found = searchTree(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return searchTree(this.menu());
+  }
 
   constructor() {
     if (this.isAuthenticated()) {

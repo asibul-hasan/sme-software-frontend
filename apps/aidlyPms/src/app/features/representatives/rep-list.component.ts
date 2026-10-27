@@ -16,6 +16,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { RepresentativeService, SysRepresentative } from '../../core/services/representative.service';
 import { RoleService, SysRole } from '../../core/services/role.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface RepUser {
   id: string;
@@ -48,6 +49,7 @@ interface RepUser {
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   templateUrl: './rep-list.component.html',
 })

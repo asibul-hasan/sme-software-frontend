@@ -5,6 +5,7 @@
  */
 import { SysPharmacy } from './pharmacy.models';
 import { SysMenu } from './menu.models';
+export type { SysMenu } from './menu.models';
 
 export interface SysRole {
   role_no: number;

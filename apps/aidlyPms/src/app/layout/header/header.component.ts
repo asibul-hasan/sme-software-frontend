@@ -15,7 +15,7 @@ import { ConnectivityService } from '../../core/services/connectivity.service';
 import { SyncService } from '../../core/services/sync.service';
 import { CatalogRefreshService } from '../../core/services/catalog-refresh.service';
 import { OfflineSalesDrawerComponent } from './offline-sales-drawer.component';
-import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/config/menu.config';
+import { SysMenu } from '../../core/models/auth.models';
 
 @Component({
   selector: 'app-header',
@@ -140,11 +140,11 @@ import { getScreenByRoute, getScreenByFormId, SystemScreen } from '../../core/co
       <!-- Current Screen Title and Form ID -->
       <div class="flex items-center gap-2.5 flex-1 min-w-0">
         <h1 class="header-title m-0 tracking-tight truncate">
-          {{ currentScreen?.title || 'OS Pharmacy PMS' }}
+          {{ currentMenu?.title || 'OS Pharmacy PMS' }}
         </h1>
-        @if (currentScreen?.form_id) {
+        @if (currentMenu?.menu_code) {
           <span class="header-form-badge inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-medium shrink-0">
-            {{ currentScreen?.form_id }}
+            {{ currentMenu?.menu_code }}
           </span>
         }
       </div>
@@ -432,7 +432,7 @@ export class HeaderComponent implements OnInit {
   readonly discovery = inject(BackendDiscoveryService);
   private readonly router = inject(Router);
 
-  currentScreen?: SystemScreen;
+  currentMenu?: SysMenu | null;
   currentUrl = '';
 
   constructor() {
@@ -481,7 +481,7 @@ export class HeaderComponent implements OnInit {
   }
 
   private updateScreen(url: string): void {
-    this.currentScreen = getScreenByRoute(url);
+    this.currentMenu = this.authService.findMenuByRoute(url);
   }
 
   logout(): void {

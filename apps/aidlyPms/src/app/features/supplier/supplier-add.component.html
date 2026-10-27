@@ -101,7 +101,7 @@
         <button type="button" nz-button nzType="default" (click)="goBack()" class="rounded-md">
           Cancel
         </button>
-        <button type="submit" nz-button nzType="primary" class="rounded-md">
+        <button *appMenuAction="'SUPP_1502:create'" type="submit" nz-button nzType="primary" class="rounded-md">
           <span nz-icon nzType="check"></span> Save Supplier
         </button>
       </div>

@@ -23,6 +23,7 @@ import { SupplierService, CreatePurchasePayload } from '../../core/services/supp
 import { ModalService } from '../../core/services/modal.service';
 import { PrintService } from '../../core/services/print.service';
 import { formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface SavedPurchaseSummary {
   invoiceNo: string;
@@ -86,6 +87,7 @@ interface ProductOption {
     NzTooltipModule,
     NzDatePickerModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   templateUrl: './purchase-entry.component.html',
 })

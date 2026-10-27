@@ -19,6 +19,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { ModalService } from '../../core/services/modal.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface SupplierRow {
   supplier_no: number;
@@ -47,6 +48,7 @@ interface SupplierRow {
     PageHeaderComponent,
     EmptyStateComponent,
     NzSpinModule,
+    MenuActionDirective,
   ],
   templateUrl: './supplier-list.component.html',
 })

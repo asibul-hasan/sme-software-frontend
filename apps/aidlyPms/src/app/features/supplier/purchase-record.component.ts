@@ -22,6 +22,7 @@ import { SupplierService } from '../../core/services/supplier.service';
 import { PrintService } from '../../core/services/print.service';
 import { SuppSupplier } from '../../core/models/supplier.models';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface PurchaseRecordRow {
   id: string;
@@ -55,6 +56,7 @@ interface PurchaseRecordRow {
     NzDatePickerModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    MenuActionDirective,
   ],
   templateUrl: './purchase-record.component.html',
 })

@@ -23,7 +23,7 @@
     </div>
 
     <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
-      <button nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
+      <button *appMenuAction="'PROD_1603:create'" nz-button nzType="primary" class="rounded-md" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add Company
       </button>
     </div>
@@ -49,6 +49,7 @@
               <td class="p-3 text-center">
                 <div class="inline-flex items-center gap-1.5">
                   <button
+                    *appMenuAction="'PROD_1603:edit'"
                     type="button"
                     (click)="openEditModal(c)"
                     nz-tooltip
@@ -58,6 +59,7 @@
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
+                    *appMenuAction="'PROD_1603:delete'"
                     type="button"
                     (click)="deleteCompany(c)"
                     nz-tooltip

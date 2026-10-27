@@ -47,7 +47,7 @@
       <a nz-button class="btn-secondary-action rounded-md" routerLink="/supplier/add">
         <span nz-icon nzType="form"></span> Supplier Form
       </a>
-      <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+      <button *appMenuAction="'SUPP_1501:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add Supplier (F2)
       </button>
     </div>
@@ -109,6 +109,7 @@
                     </button>
                   }
                   <button
+                    *appMenuAction="'SUPP_1501:edit'"
                     type="button"
                     (click)="openEditModal(s)"
                     nz-tooltip
@@ -118,6 +119,7 @@
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
+                    *appMenuAction="'SUPP_1501:delete'"
                     type="button"
                     (click)="deleteSupplier(s)"
                     nz-tooltip

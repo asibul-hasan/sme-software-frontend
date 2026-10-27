@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { DoctorService } from '../../core/services/doctor.service';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-doctor-add',
@@ -22,6 +23,7 @@ import { DoctorService } from '../../core/services/doctor.service';
     NzSelectModule,
     NzIconModule,
     PageHeaderComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="w-full space-y-4">
@@ -209,7 +211,7 @@ import { DoctorService } from '../../core/services/doctor.service';
             <button type="button" nz-button nzType="default" (click)="goBack()" class="rounded-md">
               Cancel
             </button>
-            <button type="submit" nz-button nzType="primary" class="rounded-md">
+            <button *appMenuAction="'DOC_1702:create'" type="submit" nz-button nzType="primary" class="rounded-md">
               <span nz-icon nzType="check"></span> Submit Doctor
             </button>
           </div>

@@ -20,6 +20,7 @@ import { ModalService } from '../../core/services/modal.service';
 import { AccountingService } from '../../core/services/accounting.service';
 import { AccExpenseCategory, AccTransactionAccount } from '../../core/models/accounting.models';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 interface ExpenseRow {
   id: string;
@@ -51,6 +52,7 @@ interface ExpenseRow {
     NzDatePickerModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -123,7 +125,7 @@ interface ExpenseRow {
           <a nz-button class="btn-secondary-action rounded-md" routerLink="/accounting/expenses/add">
             <span nz-icon nzType="plus"></span> Expense Form
           </a>
-          <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+          <button *appMenuAction="'ACC_1103:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
             <span nz-icon nzType="plus"></span> Add Expense (F2)
           </button>
         </div>
@@ -177,6 +179,7 @@ interface ExpenseRow {
                         <span nz-icon nzType="eye"></span>
                       </button>
                       <button
+                        *appMenuAction="'ACC_1103:delete'"
                         type="button"
                         (click)="deleteExpense(e)"
                         nz-tooltip

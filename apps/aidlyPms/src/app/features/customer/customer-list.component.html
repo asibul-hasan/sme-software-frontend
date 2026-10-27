@@ -58,10 +58,10 @@
       <button nz-button class="btn-export rounded-md" (click)="exportCustomersCsv()">
         <span nz-icon nzType="download"></span> Export CSV
       </button>
-      <a nz-button class="btn-secondary-action rounded-md" routerLink="/customer/add">
+      <a *appMenuAction="'CUST_1407:create'" nz-button class="btn-secondary-action rounded-md" routerLink="/customer/add">
         <span nz-icon nzType="user-add"></span> Customer Form
       </a>
-      <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+      <button *appMenuAction="'CUST_1407:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add Customer (F2)
       </button>
     </div>
@@ -136,6 +136,7 @@
                     <span nz-icon nzType="eye"></span>
                   </button>
                   <button
+                    *appMenuAction="'CUST_1407:edit'"
                     type="button"
                     (click)="openEditModal(c)"
                     nz-tooltip
@@ -145,6 +146,7 @@
                     <span nz-icon nzType="edit"></span>
                   </button>
                   <button
+                    *appMenuAction="'CUST_1407:delete'"
                     type="button"
                     (click)="deleteCustomer(c)"
                     nz-tooltip

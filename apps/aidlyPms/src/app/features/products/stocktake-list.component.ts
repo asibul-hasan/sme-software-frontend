@@ -16,6 +16,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { StocktakeService } from '../../core/services/stocktake.service';
 import { InvStocktake } from '../../core/models/inventory.models';
+import { MenuActionDirective } from '../../shared/directives/menu-action.directive';
 
 @Component({
   selector: 'app-stocktake-list',
@@ -34,6 +35,7 @@ import { InvStocktake } from '../../core/models/inventory.models';
     NzModalModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    MenuActionDirective,
   ],
   template: `
     <div class="h-[calc(100vh-130px)] flex flex-col space-y-3 w-full">
@@ -57,6 +59,7 @@ import { InvStocktake } from '../../core/models/inventory.models';
             Ledger Integrity
           </a>
           <a
+            *appMenuAction="'PROD_1612:create'"
             routerLink="/products/stocktakes/new"
             nz-button
             nzType="primary"
@@ -129,6 +132,7 @@ import { InvStocktake } from '../../core/models/inventory.models';
                       <div class="flex items-center justify-center gap-1.5">
                         @if (st.status === 'Open' || st.status === 'Counting') {
                           <a
+                            *appMenuAction="'PROD_1612:edit'"
                             [routerLink]="['/products/stocktakes', st.stocktake_no]"
                             nz-button
                             nzSize="small"
@@ -138,6 +142,7 @@ import { InvStocktake } from '../../core/models/inventory.models';
                             <span nz-icon nzType="edit"></span> Count
                           </a>
                           <button
+                            *appMenuAction="'PROD_1612:delete'"
                             type="button"
                             nz-button
                             nzSize="small"

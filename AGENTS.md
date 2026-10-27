@@ -150,17 +150,9 @@ To add a new screen or form to Aidly PMS while adhering to DB-driven menus, perm
 3. Every public endpoint must be annotated with `[RequireMenu]`, `[RequirePermission]`, `[AllowAnonymous]`, or `[AuthenticatedOnly]`. The reflection test (`MenuAndRolePermissionsTests`) will fail CI if any action is unannotated.
 
 ### 3. Frontend Route Registry & Guard
-1. Register screen metadata in `SYSTEM_SCREENS` in `apps/aidlyPms/src/app/core/config/menu.config.ts`:
+1. Register route path in `MENU_ROUTE_REGISTRY` in `apps/aidlyPms/src/app/core/config/menu.config.ts`:
    ```ts
-   {
-     form_id: 'MOD_1234',
-     title: 'Screen Title',
-     type: 'Main Screen',
-     route: '/route/path',
-     permission_code: 'MOD_1234',
-     description: 'Functional description of the screen.',
-     is_in_sidebar: true,
-   }
+   MOD_1234: '/route/path',
    ```
 2. Add the route in `apps/aidlyPms/src/app/app.routes.ts`:
    ```ts

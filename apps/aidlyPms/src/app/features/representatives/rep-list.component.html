@@ -25,7 +25,7 @@
       <a nz-button class="btn-secondary-action rounded-md" routerLink="/representative/add">
         <span nz-icon nzType="user-add"></span> Staff Form
       </a>
-      <button nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
+      <button *appMenuAction="'REP_1801:create'" nz-button nzType="primary" class="btn-save rounded-md font-semibold" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add Representative (F2)
       </button>
     </div>
@@ -75,6 +75,7 @@
               <td class="p-3 text-center">
                 <div class="inline-flex items-center gap-1.5">
                   <button
+                    *appMenuAction="'REP_1801:edit'"
                     type="button"
                     (click)="openEditModal(r)"
                     nz-tooltip
@@ -89,10 +90,11 @@
                     nz-tooltip
                     nzTooltipTitle="Change Password"
                     class="btn-tbl-action btn-tbl-warning"
-                   aria-label="Change Password">
+                    aria-label="Change Password">
                     <span nz-icon nzType="key"></span>
                   </button>
                   <button
+                    *appMenuAction="'REP_1801:delete'"
                     type="button"
                     (click)="deleteRep(r)"
                     nz-tooltip
