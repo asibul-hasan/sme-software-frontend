@@ -118,7 +118,7 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
             [nzLoading]="saving()"
             [disabled]="!selectedRoleNo()"
           >
-            <span nz-icon nzType="save"></span> Save Permissions
+            <span nz-icon nzType="save"></span> Save Permissions @if (changedCount() > 0) { ({{ changedCount() }}) }
           </button>
         </div>
       </app-page-header>
@@ -323,6 +323,7 @@ import { RoleMenuPermissionItem } from '../../core/models/menu.models';
               <span>Target Role: <strong class="text-blue-700 font-semibold font-mono">{{ activeRoleName() }}</strong></span>
               <span>Total Menus: <strong class="text-slate-900 font-semibold font-mono">{{ permissionItems().length }}</strong></span>
               <span>Accessible Menus (View): <strong class="text-emerald-700 font-semibold font-mono">{{ viewCount() }}</strong></span>
+              <span>Pending Changes: <strong class="text-amber-600 font-semibold font-mono">{{ changedCount() }}</strong></span>
             </div>
             <span class="text-slate-400 font-mono text-[11px]">Pharmacy Multi-Tenant RBAC Security</span>
           </div>
@@ -336,13 +337,31 @@ export class RoleMenuPermissionComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly route = inject(ActivatedRoute);
 
+  private readonly originalPermissionsMap = new Map<number, {
+    role_menu_perm_no?: number | null;
+    can_view: boolean;
+    can_create: boolean;
+    can_edit: boolean;
+    can_delete: boolean;
+  }>();
+
   readonly roles = signal<SysRole[]>([]);
   readonly selectedRoleNo = signal<number | null>(null);
   readonly permissionItems = signal<RoleMenuPermissionItem[]>([]);
   readonly searchQuery = signal('');
+  readonly dirtyRevision = signal(0);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
+
+  private markDirty(): void {
+    this.dirtyRevision.update((v) => v + 1);
+  }
+
+  readonly changedCount = computed(() => {
+    this.dirtyRevision();
+    return this.getChangedItems().length;
+  });
 
   readonly activeRoleName = computed(() => {
     const rNo = this.selectedRoleNo();
@@ -435,6 +454,17 @@ export class RoleMenuPermissionComponent implements OnInit {
         this.loading.set(false);
         if (res.success && res.data) {
           this.permissionItems.set(res.data);
+          this.originalPermissionsMap.clear();
+          for (const item of res.data) {
+            this.originalPermissionsMap.set(item.menu_no, {
+              role_menu_perm_no: item.role_menu_perm_no ?? null,
+              can_view: !!item.can_view,
+              can_create: !!item.can_create,
+              can_edit: !!item.can_edit,
+              can_delete: !!item.can_delete,
+            });
+          }
+          this.markDirty();
         } else {
           this.message.error(res.message || 'Failed to load permissions');
         }
@@ -446,6 +476,32 @@ export class RoleMenuPermissionComponent implements OnInit {
     });
   }
 
+  getChangedItems(): RoleMenuPermissionItem[] {
+    const changed: RoleMenuPermissionItem[] = [];
+    for (const item of this.permissionItems()) {
+      const orig = this.originalPermissionsMap.get(item.menu_no);
+      const v = !!item.can_view;
+      const c = !!item.can_create;
+      const e = !!item.can_edit;
+      const d = !!item.can_delete;
+
+      if (!orig || orig.can_view !== v || orig.can_create !== c || orig.can_edit !== e || orig.can_delete !== d) {
+        changed.push({
+          role_menu_perm_no: orig?.role_menu_perm_no ?? item.role_menu_perm_no ?? null,
+          menu_no: item.menu_no,
+          menu_code: item.menu_code,
+          title: item.title,
+          order_no: item.order_no,
+          can_view: v,
+          can_create: c,
+          can_edit: e,
+          can_delete: d,
+        });
+      }
+    }
+    return changed;
+  }
+
   onViewChanged(item: RoleMenuPermissionItem): void {
     // If view is disabled, disable create, edit, delete as well
     if (!item.can_view) {
@@ -453,6 +509,7 @@ export class RoleMenuPermissionComponent implements OnInit {
       item.can_edit = false;
       item.can_delete = false;
     }
+    this.markDirty();
   }
 
   onCreateEditDeleteChanged(item: RoleMenuPermissionItem): void {
@@ -460,6 +517,7 @@ export class RoleMenuPermissionComponent implements OnInit {
     if (item.can_create || item.can_edit || item.can_delete) {
       item.can_view = true;
     }
+    this.markDirty();
   }
 
   toggleRow(item: RoleMenuPermissionItem, grant: boolean): void {
@@ -467,6 +525,7 @@ export class RoleMenuPermissionComponent implements OnInit {
     item.can_create = grant;
     item.can_edit = grant;
     item.can_delete = grant;
+    this.markDirty();
   }
 
   toggleAll(grant: boolean): void {
@@ -479,6 +538,7 @@ export class RoleMenuPermissionComponent implements OnInit {
         can_delete: grant,
       }))
     );
+    this.markDirty();
   }
 
   toggleAllView(grant: boolean): void {
@@ -488,6 +548,7 @@ export class RoleMenuPermissionComponent implements OnInit {
         can_view: grant,
       }))
     );
+    this.markDirty();
   }
 
   toggleColumn(column: 'can_view' | 'can_create' | 'can_edit' | 'can_delete'): void {
@@ -508,18 +569,44 @@ export class RoleMenuPermissionComponent implements OnInit {
         return updated;
       })
     );
+    this.markDirty();
   }
 
   savePermissions(): void {
     const rNo = this.selectedRoleNo();
     if (!rNo) return;
 
+    const changedItems = this.getChangedItems();
+    if (changedItems.length === 0) {
+      this.message.info('No changes detected to save');
+      return;
+    }
+
     this.saving.set(true);
-    this.roleService.saveRoleMenuPermissions(rNo, this.permissionItems()).subscribe({
+    this.roleService.saveRoleMenuPermissions(rNo, changedItems).subscribe({
       next: (res) => {
         this.saving.set(false);
         if (res.success) {
-          this.message.success('Menu permissions saved successfully');
+          this.message.success(`Saved ${changedItems.length} menu permission change(s) successfully`);
+          // Update baseline snapshot with the saved changes
+          for (const item of changedItems) {
+            const orig = this.originalPermissionsMap.get(item.menu_no);
+            if (orig) {
+              orig.can_view = item.can_view;
+              orig.can_create = item.can_create;
+              orig.can_edit = item.can_edit;
+              orig.can_delete = item.can_delete;
+            } else {
+              this.originalPermissionsMap.set(item.menu_no, {
+                role_menu_perm_no: item.role_menu_perm_no ?? null,
+                can_view: item.can_view,
+                can_create: item.can_create,
+                can_edit: item.can_edit,
+                can_delete: item.can_delete,
+              });
+            }
+          }
+          this.markDirty();
         } else {
           this.message.error(res.message || 'Failed to save menu permissions');
         }

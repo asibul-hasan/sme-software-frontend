@@ -25,6 +25,7 @@ export interface SysMenu {
 }
 
 export interface RoleMenuPermissionItem {
+  role_menu_perm_no?: number | null;
   menu_no: number;
   menu_code?: string;
   title: string;

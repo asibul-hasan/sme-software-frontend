@@ -310,6 +310,7 @@ export class MenuListComponent implements OnInit {
   formParentNo: number | null = null;
   formOrderNo = 1;
   formStatus = true;
+  private originalModalMenu: SysMenu | null = null;
 
   readonly rootMenus = computed(() => {
     return this.menus().filter((m) => !m.parent_menu_no);
@@ -359,6 +360,7 @@ export class MenuListComponent implements OnInit {
   openCreateModal(): void {
     this.isEditing.set(false);
     this.editingMenuNo.set(null);
+    this.originalModalMenu = null;
     this.formTitle = '';
     this.formPath = '';
     this.formIcon = '';
@@ -371,6 +373,7 @@ export class MenuListComponent implements OnInit {
   openEditModal(m: SysMenu): void {
     this.isEditing.set(true);
     this.editingMenuNo.set(m.menu_no);
+    this.originalModalMenu = { ...m };
     this.formTitle = m.title;
     this.formPath = m.path || '';
     this.formIcon = m.icon || '';
@@ -390,18 +393,42 @@ export class MenuListComponent implements OnInit {
       return;
     }
 
-    this.modalSaving.set(true);
-
-    const payload: Partial<SysMenu> = {
-      title: this.formTitle.trim(),
-      path: this.formPath.trim() || null,
-      icon: this.formIcon.trim() || null,
-      parent_menu_no: this.formParentNo,
-      order_no: Number(this.formOrderNo) || 1,
-      status: this.formStatus,
-    };
+    const trimmedTitle = this.formTitle.trim();
+    const trimmedPath = this.formPath.trim() || null;
+    const trimmedIcon = this.formIcon.trim() || null;
+    const parentNo = this.formParentNo || null;
+    const order = Number(this.formOrderNo) || 1;
+    const currentStatus = this.formStatus;
 
     if (this.isEditing() && this.editingMenuNo()) {
+      if (this.originalModalMenu) {
+        const isUnchanged =
+          this.originalModalMenu.title === trimmedTitle &&
+          (this.originalModalMenu.path || null) === trimmedPath &&
+          (this.originalModalMenu.icon || null) === trimmedIcon &&
+          (this.originalModalMenu.parent_menu_no || null) === parentNo &&
+          this.originalModalMenu.order_no === order &&
+          this.originalModalMenu.status === currentStatus;
+
+        if (isUnchanged) {
+          this.message.info('No changes detected');
+          this.closeModal();
+          return;
+        }
+      }
+
+      this.modalSaving.set(true);
+
+      const payload: Partial<SysMenu> = {
+        menu_no: this.editingMenuNo()!,
+        title: trimmedTitle,
+        path: trimmedPath,
+        icon: trimmedIcon,
+        parent_menu_no: parentNo,
+        order_no: order,
+        status: currentStatus,
+      };
+
       this.menuService.updateMenu(this.editingMenuNo()!, payload).subscribe({
         next: (res) => {
           this.modalSaving.set(false);
@@ -419,6 +446,17 @@ export class MenuListComponent implements OnInit {
         },
       });
     } else {
+      this.modalSaving.set(true);
+
+      const payload: Partial<SysMenu> = {
+        title: trimmedTitle,
+        path: trimmedPath,
+        icon: trimmedIcon,
+        parent_menu_no: parentNo,
+        order_no: order,
+        status: currentStatus,
+      };
+
       this.menuService.createMenu(payload).subscribe({
         next: (res) => {
           this.modalSaving.set(false);
@@ -442,11 +480,7 @@ export class MenuListComponent implements OnInit {
     const updatedStatus = !m.status;
     this.menuService
       .updateMenu(m.menu_no, {
-        title: m.title,
-        path: m.path,
-        icon: m.icon,
-        parent_menu_no: m.parent_menu_no,
-        order_no: m.order_no,
+        menu_no: m.menu_no,
         status: updatedStatus,
       })
       .subscribe({

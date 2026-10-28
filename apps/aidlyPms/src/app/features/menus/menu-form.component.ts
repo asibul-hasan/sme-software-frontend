@@ -266,6 +266,8 @@ export class MenuFormComponent implements OnInit {
 
   readonly popularIcons = POPULAR_ICONS;
 
+  private originalMenu: SysMenu | null = null;
+
   ngOnInit(): void {
     this.loadMenus();
 
@@ -297,6 +299,7 @@ export class MenuFormComponent implements OnInit {
       next: (res) => {
         if (res.success && res.data) {
           const m = res.data;
+          this.originalMenu = { ...m };
           this.menuTitle = m.title;
           this.menuPath = m.path || '';
           this.icon = m.icon || 'appstore';
@@ -325,18 +328,42 @@ export class MenuFormComponent implements OnInit {
       return;
     }
 
-    this.submitting.set(true);
-
-    const payload: Partial<SysMenu> = {
-      title: this.menuTitle.trim(),
-      path: this.menuPath.trim() || null,
-      icon: this.icon.trim() || null,
-      parent_menu_no: this.selectedParentNo,
-      order_no: Number(this.orderNo) || 1,
-      status: this.status,
-    };
+    const trimmedTitle = this.menuTitle.trim();
+    const trimmedPath = this.menuPath.trim() || null;
+    const trimmedIcon = this.icon.trim() || null;
+    const parentNo = this.selectedParentNo || null;
+    const order = Number(this.orderNo) || 1;
+    const currentStatus = this.status;
 
     if (this.isEditMode() && this.menuId) {
+      if (this.originalMenu) {
+        const isUnchanged =
+          this.originalMenu.title === trimmedTitle &&
+          (this.originalMenu.path || null) === trimmedPath &&
+          (this.originalMenu.icon || null) === trimmedIcon &&
+          (this.originalMenu.parent_menu_no || null) === parentNo &&
+          this.originalMenu.order_no === order &&
+          this.originalMenu.status === currentStatus;
+
+        if (isUnchanged) {
+          this.message.info('No changes detected');
+          this.goBack();
+          return;
+        }
+      }
+
+      this.submitting.set(true);
+
+      const payload: Partial<SysMenu> = {
+        menu_no: this.menuId,
+        title: trimmedTitle,
+        path: trimmedPath,
+        icon: trimmedIcon,
+        parent_menu_no: parentNo,
+        order_no: order,
+        status: currentStatus,
+      };
+
       this.menuService.updateMenu(this.menuId, payload).subscribe({
         next: (res) => {
           this.submitting.set(false);
@@ -353,6 +380,17 @@ export class MenuFormComponent implements OnInit {
         },
       });
     } else {
+      this.submitting.set(true);
+
+      const payload: Partial<SysMenu> = {
+        title: trimmedTitle,
+        path: trimmedPath,
+        icon: trimmedIcon,
+        parent_menu_no: parentNo,
+        order_no: order,
+        status: currentStatus,
+      };
+
       this.menuService.createMenu(payload).subscribe({
         next: (res) => {
           this.submitting.set(false);
