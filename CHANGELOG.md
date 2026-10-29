@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.40.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.39.0...v1.40.0) (2026-10-29)
+
+
+### 🚀 Features
+
+* **sale-record:** refactor register to data table with excel and pdf export ([c0cfd57](https://github.com/asibul-hasan/sme-software-frontend/commit/c0cfd57d8450e6a26f7495b0c7d118058fbe6112))
+
 ## [1.39.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.38.0...v1.39.0) (2026-10-29)
 
 
