@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.38.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.37.0...v1.38.0) (2026-10-29)
+
+
+### 🚀 Features
+
+* **rbac:** add Admin system role, hide developer menus, and preserve universal access ([1f5cad8](https://github.com/asibul-hasan/sme-software-frontend/commit/1f5cad81cc918d667902778d940be9becd309d12))
+
 ## [1.37.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.36.0...v1.37.0) (2026-10-28)
 
 
