@@ -107,9 +107,10 @@ export class RepListComponent implements OnInit {
     this.roleService.getRoles().subscribe({
       next: (res) => {
         if (res.data) {
-          this.availableRoles.set(res.data);
-          if (!this.form.roleNo && res.data.length > 0) {
-            this.form.roleNo = res.data[0].role_no;
+          const roles = res.data.filter(r => r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin');
+          this.availableRoles.set(roles);
+          if (!this.form.roleNo && roles.length > 0) {
+            this.form.roleNo = roles[0].role_no;
           }
         }
       },
@@ -130,7 +131,8 @@ export class RepListComponent implements OnInit {
 
     this.repService.getRepresentatives(params).subscribe({
       next: (res) => {
-        const rawItems = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+        const rawItems = (res.data?.items || (Array.isArray(res.data) ? res.data : []))
+          .filter((u: any) => (u.role_no || u.roleNo) !== 1 && (u.phone || '').toLowerCase() !== 'asibul');
         const rows: RepUser[] = rawItems.map((u: any) => ({
           id: (u.user_no || u.userNo || Math.random()).toString(),
           userNo: u.user_no || u.userNo,

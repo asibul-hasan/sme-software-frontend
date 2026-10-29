@@ -377,15 +377,17 @@ export class RoleListComponent implements OnInit {
     this.roleService.getRoles().subscribe({
       next: (res) => {
         if (res.data) {
-          const rows: RoleRow[] = res.data.map(r => ({
-            id: r.role_no,
-            alias: r.alias,
-            description: r.description || '',
-            isSystem: r.is_system,
-            status: r.status ?? true,
-            permsCount: r.permissions?.length || 0,
-            permissions: r.permissions || [],
-          }));
+          const rows: RoleRow[] = res.data
+            .filter(r => r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin')
+            .map(r => ({
+              id: r.role_no,
+              alias: r.alias,
+              description: r.description || '',
+              isSystem: r.is_system,
+              status: r.status ?? true,
+              permsCount: r.permissions?.length || 0,
+              permissions: r.permissions || [],
+            }));
           this.roles.set(rows);
         }
       },
@@ -455,6 +457,11 @@ export class RoleListComponent implements OnInit {
   saveRole(andNavigateToMenuPermissions: boolean): void {
     if (!this.roleAlias.trim()) {
       this.msg.error('Please enter a role alias');
+      return;
+    }
+
+    if (this.roleAlias.trim().toLowerCase() === 'admin') {
+      this.msg.error("The 'Admin' role name is reserved for system administrators.");
       return;
     }
 

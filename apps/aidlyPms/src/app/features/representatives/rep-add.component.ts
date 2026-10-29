@@ -58,9 +58,10 @@ export class RepAddComponent implements OnInit {
     this.roleService.getRoles().subscribe({
       next: (res) => {
         if (res.data) {
-          this.roles.set(res.data);
-          if (!this.roleNo && res.data.length > 0) {
-            this.roleNo = res.data[0].role_no;
+          const roles = res.data.filter(r => r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin');
+          this.roles.set(roles);
+          if (!this.roleNo && roles.length > 0) {
+            this.roleNo = roles[0].role_no;
           }
         }
       },
@@ -77,6 +78,10 @@ export class RepAddComponent implements OnInit {
     const val = this.newRoleName.trim();
     if (!val) {
       this.msg.error('Please enter a role name');
+      return;
+    }
+    if (val.toLowerCase() === 'admin') {
+      this.msg.error("The 'Admin' role name is reserved for system administrators.");
       return;
     }
     this.roleService.createRole({ alias: val, is_system: false }).subscribe({
