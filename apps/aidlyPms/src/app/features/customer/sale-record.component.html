@@ -65,9 +65,6 @@
       </div>
     </div>
     <div actions class="flex items-center gap-2 shrink-0 flex-wrap">
-      <button nz-button class="btn-export rounded-md" (click)="exportSalesCsv()">
-        <span nz-icon nzType="download"></span> Export CSV
-      </button>
       <a nz-button nzType="primary" class="btn-save rounded-md font-semibold" routerLink="/customer/sale">
         <span nz-icon nzType="shopping-cart"></span> Open POS Terminal
       </a>
@@ -94,9 +91,10 @@
     scrollX="1100px"
     [showSearch]="true"
     searchPlaceholder="Search in table..."
-    [showBorderedTool]="true"
     [showSizeChangerTool]="true"
     [showColumnCustomizer]="true"
+    [showDownloadTool]="true"
+    (export)="onExport($event)"
     [errorState]="hasError()"
     [isFiltered]="hasActiveFilters()"
     [emptyTitle]="hasError() ? 'Failed to Load Invoices' : (hasActiveFilters() ? 'No Matching Sale Invoices' : 'No Sales Invoices Recorded')"
@@ -119,64 +117,50 @@
   </app-data-table>
 </div>
 
-<!-- Table Column Templates -->
-<ng-template #invTpl let-s>
-  <div class="py-0.5">
-    <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ s.inv }}</p>
-    <p class="text-xs text-slate-400 mb-0">{{ s.date }}</p>
-  </div>
-</ng-template>
-
-<ng-template #customerTpl let-s>
-  <span class="font-semibold text-slate-800 text-xs">{{ s.customer }}</span>
-</ng-template>
-
-<ng-template #salesmanTpl let-s>
-  <span class="text-slate-600 text-xs">{{ s.salesman }}</span>
-</ng-template>
-
-<ng-template #billTpl let-s>
-  <div class="font-mono text-xs">
-    <p class="text-slate-500 mb-0.5">Sub: ৳ {{ s.subtotal | number: '1.2-2' }}</p>
-    <p class="text-slate-400 mb-0.5">Disc: ৳ {{ s.disc | number: '1.2-2' }}</p>
-    <p class="font-bold text-slate-900 mb-0">৳ {{ s.total | number: '1.2-2' }}</p>
-  </div>
-</ng-template>
-
-<ng-template #itemsModeTpl let-s>
-  <div class="text-xs">
-    <p class="text-slate-600 mb-1 font-medium">{{ s.items }} items</p>
-    @if (s.payment === 'Due') {
-      <span class="pms-badge-pay-due">Due</span>
-    } @else if (s.payment === 'bKash' || s.payment === 'Nagad' || s.payment === 'Rocket' || s.payment === 'MFS') {
-      <span class="pms-badge-pay-mfs">{{ s.payment }}</span>
-    } @else if (s.payment === 'Card') {
-      <span class="pms-badge-pay-card">Card</span>
-    } @else {
-      <span class="pms-badge-pay-cash">{{ s.payment || 'Cash' }}</span>
+<!-- Table Column Templates (Standard ERP Data View) -->
+<ng-template #invIdTpl let-s>
+  <div class="inline-flex items-center gap-1.5">
+    <span class="font-mono font-bold text-xs text-slate-900">{{ s.inv }}</span>
+    @if (s.is_returned) {
+      <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800 border border-amber-200 leading-none">Ret</span>
     }
   </div>
-</ng-template>
-
-<ng-template #paidDueTpl let-s>
-  <div class="font-mono text-xs">
-    <p class="theme-total-text font-semibold mb-0.5">Paid: ৳ {{ s.paid | number: '1.2-2' }}</p>
-    @if (s.due > 0) {
-      <p class="text-rose-600 font-bold mb-0">Due: ৳ {{ s.due | number: '1.2-2' }}</p>
-    }
-  </div>
-</ng-template>
-
-<ng-template #subtotalTpl let-s>
-  <span class="font-mono text-xs text-slate-700">৳ {{ s.subtotal | number: '1.2-2' }}</span>
-</ng-template>
-
-<ng-template #discTpl let-s>
-  <span class="font-mono text-xs text-slate-500">৳ {{ s.disc | number: '1.2-2' }}</span>
 </ng-template>
 
 <ng-template #dateTpl let-s>
-  <span class="text-xs text-slate-600">{{ s.date }}</span>
+  <span class="text-xs text-slate-600 font-mono whitespace-nowrap">{{ s.date }}</span>
+</ng-template>
+
+<ng-template #salesmanTpl let-s>
+  <span class="text-xs text-slate-700 font-medium">{{ s.salesman }}</span>
+</ng-template>
+
+<ng-template #saleTypeTpl let-s>
+  @if (s.sale_type === 'Wholesale') {
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap">Wholesale</span>
+  } @else {
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">Retail</span>
+  }
+</ng-template>
+
+<ng-template #totalTpl let-s>
+  <span class="font-mono font-bold text-xs text-slate-900 whitespace-nowrap">৳ {{ s.total | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #discTpl let-s>
+  <span class="font-mono text-xs text-slate-500 whitespace-nowrap">৳ {{ s.disc | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #paidTpl let-s>
+  <span class="font-mono font-medium text-xs text-emerald-700 whitespace-nowrap">৳ {{ s.paid | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #dueTpl let-s>
+  @if (s.due > 0) {
+    <span class="font-mono font-bold text-xs text-rose-600 whitespace-nowrap">৳ {{ s.due | number: '1.2-2' }}</span>
+  } @else {
+    <span class="font-mono text-xs text-slate-400 whitespace-nowrap">৳ 0.00</span>
+  }
 </ng-template>
 
 <ng-template #actionTpl let-s>
@@ -219,6 +203,33 @@
     >
       <span nz-icon nzType="printer"></span>
     </button>
+  </div>
+</ng-template>
+
+<!-- Optional Column Templates for Customizer -->
+<ng-template #customerTpl let-s>
+  <span class="font-medium text-slate-800 text-xs">{{ s.customer }}</span>
+</ng-template>
+
+<ng-template #subtotalTpl let-s>
+  <span class="font-mono text-xs text-slate-700 whitespace-nowrap">৳ {{ s.subtotal | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #itemsTpl let-s>
+  <span class="text-xs text-slate-600 font-mono whitespace-nowrap">{{ s.items }} items</span>
+</ng-template>
+
+<ng-template #paymentTpl let-s>
+  <div class="text-xs">
+    @if (s.payment === 'Due') {
+      <span class="pms-badge-pay-due">Due</span>
+    } @else if (s.payment === 'bKash' || s.payment === 'Nagad' || s.payment === 'Rocket' || s.payment === 'MFS') {
+      <span class="pms-badge-pay-mfs">{{ s.payment }}</span>
+    } @else if (s.payment === 'Card') {
+      <span class="pms-badge-pay-card">Card</span>
+    } @else {
+      <span class="pms-badge-pay-cash">{{ s.payment || 'Cash' }}</span>
+    }
   </div>
 </ng-template>
 

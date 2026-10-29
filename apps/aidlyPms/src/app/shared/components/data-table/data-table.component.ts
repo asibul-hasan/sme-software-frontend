@@ -64,6 +64,16 @@ export interface TableRowGroup<T = unknown> {
   summary?: string;
 }
 
+export interface TableExportContext<T = unknown> {
+  format: 'excel' | 'pdf';
+  columns: TableColumn<T>[];
+  data: T[];
+  isGrouped: boolean;
+  groupedRows: TableRowGroup<T>[];
+  activeGroupByLabel: string;
+  selectedGroupByKey: string;
+}
+
 interface ColumnSetting<T> {
   title: string;
   key?: string;
@@ -185,21 +195,22 @@ interface ColumnSetting<T> {
                 nz-button
                 nzSize="small"
                 nzType="default"
-                class="rounded-md px-2 text-xs text-slate-600 flex items-center gap-1 bg-white border-slate-300 hover:text-slate-800"
+                class="rounded-md w-8 h-8 p-0 flex items-center justify-center bg-white border-slate-300 text-slate-600 hover:text-slate-900 shadow-2xs transition-colors"
                 nz-dropdown
                 [nzDropdownMenu]="sizeMenu"
                 nzTrigger="click"
                 title="Table Density / Size"
+                aria-label="Table Density"
               >
-                <span nz-icon nzType="column-height"></span>
-                <span class="capitalize hidden sm:inline">{{ size }}</span>
+                <span nz-icon nzType="column-height" class="text-sm"></span>
               </button>
               <nz-dropdown-menu #sizeMenu="nzDropdownMenu">
-                <ul nz-menu nzSelectable>
+                <ul nz-menu nzSelectable class="rounded-md shadow-lg py-1 min-w-[150px]">
                   <li
                     nz-menu-item
                     (click)="setSize('small')"
                     [nzSelected]="size === 'small'"
+                    class="text-xs"
                   >
                     <span nz-icon nzType="menu"></span> Small (Compact)
                   </li>
@@ -207,6 +218,7 @@ interface ColumnSetting<T> {
                     nz-menu-item
                     (click)="setSize('middle')"
                     [nzSelected]="size === 'middle'"
+                    class="text-xs"
                   >
                     <span nz-icon nzType="menu"></span> Middle (Standard)
                   </li>
@@ -214,6 +226,7 @@ interface ColumnSetting<T> {
                     nz-menu-item
                     (click)="setSize('default')"
                     [nzSelected]="size === 'default'"
+                    class="text-xs"
                   >
                     <span nz-icon nzType="menu"></span> Default (Relaxed)
                   </li>
@@ -221,24 +234,7 @@ interface ColumnSetting<T> {
               </nz-dropdown-menu>
             }
 
-            <!-- Bordered Toggle Button -->
-            @if (showBorderedTool) {
-              <button
-                type="button"
-                nz-button
-                nzSize="small"
-                [nzType]="bordered ? 'primary' : 'default'"
-                [class.bg-blue-600]="bordered"
-                class="rounded-md px-2 text-xs flex items-center gap-1 border-slate-300"
-                (click)="toggleBordered()"
-                title="Toggle Table Grid Border"
-              >
-                <span nz-icon nzType="border"></span>
-                <span class="hidden sm:inline">Border</span>
-              </button>
-            }
-
-            <!-- Columns Customizer Button & Popover -->
+            <!-- Columns Customizer Icon Button & Popover -->
             @if (showColumnCustomizer) {
               <button
                 type="button"
@@ -252,14 +248,11 @@ interface ColumnSetting<T> {
                 nzPopoverPlacement="bottomRight"
                 [(nzPopoverVisible)]="columnsPopoverVisible"
                 (nzPopoverVisibleChange)="onPopoverVisibleChange($event)"
-                class="rounded-md px-2.5 text-xs flex items-center gap-1.5 bg-white border-slate-300 text-slate-700"
-                title="Customize Column Visibility & Order"
+                class="rounded-md w-8 h-8 p-0 flex items-center justify-center bg-white border-slate-300 text-slate-600 hover:text-slate-900 shadow-2xs transition-colors"
+                title="Customize Columns"
+                aria-label="Customize Columns"
               >
-                <span nz-icon nzType="table"></span>
-                <span>Columns</span>
-                <span class="pms-badge-rank ml-0.5 text-[10px] w-4 h-4">{{
-                  visibleColumns.length
-                }}</span>
+                <span nz-icon nzType="table" class="text-sm"></span>
               </button>
 
               <ng-template #columnsPopoverTpl>
@@ -319,6 +312,44 @@ interface ColumnSetting<T> {
                   </button>
                 </div>
               </ng-template>
+            }
+
+            <!-- Download / Export Tool -->
+            @if (showDownloadTool) {
+              <button
+                type="button"
+                nz-button
+                nzSize="small"
+                nzType="default"
+                nz-dropdown
+                [nzDropdownMenu]="downloadMenu"
+                nzTrigger="click"
+                class="rounded-md w-8 h-8 p-0 flex items-center justify-center bg-white border-slate-300 text-slate-600 hover:text-slate-900 shadow-2xs transition-colors"
+                title="Export Data (Excel / PDF)"
+                aria-label="Export Data"
+              >
+                <span nz-icon nzType="download" class="text-sm"></span>
+              </button>
+              <nz-dropdown-menu #downloadMenu="nzDropdownMenu">
+                <ul nz-menu class="rounded-md shadow-lg py-1 min-w-[155px]">
+                  <li
+                    nz-menu-item
+                    (click)="triggerExport('excel')"
+                    class="flex items-center gap-2 text-xs py-1.5 px-3"
+                  >
+                    <span nz-icon nzType="file-excel" class="text-emerald-600 text-sm"></span>
+                    <span>Export Excel (.xlsx)</span>
+                  </li>
+                  <li
+                    nz-menu-item
+                    (click)="triggerExport('pdf')"
+                    class="flex items-center gap-2 text-xs py-1.5 px-3"
+                  >
+                    <span nz-icon nzType="file-pdf" class="text-rose-600 text-sm"></span>
+                    <span>Export PDF (.pdf)</span>
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
             }
 
             <ng-content select="[toolbarRight]"></ng-content>
@@ -547,6 +578,7 @@ export class DataTableComponent<T = unknown> implements OnInit, OnChanges {
   @Input() showBorderedTool = false;
   @Input() showSizeChangerTool = false;
   @Input() showColumnCustomizer = false;
+  @Input() showDownloadTool = false;
   @Input() groupByOptions: TableGroupByOption[] = [];
   @Input() defaultGroupBy = '';
 
@@ -575,6 +607,10 @@ export class DataTableComponent<T = unknown> implements OnInit, OnChanges {
   @Output() groupByChange = new EventEmitter<string>();
   @Output() sizeChange = new EventEmitter<'default' | 'middle' | 'small'>();
   @Output() borderedChange = new EventEmitter<boolean>();
+  @Output() visibleColumnsChange = new EventEmitter<TableColumn<T>[]>();
+  @Output() export = new EventEmitter<TableExportContext<T>>();
+  @Output() exportExcel = new EventEmitter<TableExportContext<T>>();
+  @Output() exportPdf = new EventEmitter<TableExportContext<T>>();
 
   // Internal State
   searchTerm = '';
@@ -685,6 +721,22 @@ export class DataTableComponent<T = unknown> implements OnInit, OnChanges {
     this.visibleColumns = this.columnsSettings
       .filter((c) => c.visible)
       .map((c) => c.col);
+    this.visibleColumnsChange.emit(this.visibleColumns);
+  }
+
+  triggerExport(format: 'excel' | 'pdf'): void {
+    const ctx: TableExportContext<T> = {
+      format,
+      columns: [...this.visibleColumns],
+      data: [...this.processedData],
+      isGrouped: !!this.selectedGroupByKey && this.groupedRows.length > 0,
+      groupedRows: this.groupedRows.map((g) => ({ ...g, items: [...g.items] })),
+      activeGroupByLabel: this.activeGroupByLabel,
+      selectedGroupByKey: this.selectedGroupByKey,
+    };
+    this.export.emit(ctx);
+    if (format === 'excel') this.exportExcel.emit(ctx);
+    if (format === 'pdf') this.exportPdf.emit(ctx);
   }
 
   onGroupByChange(key: string): void {

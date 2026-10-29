@@ -16,7 +16,13 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { DataTableComponent, TableColumn, TableGroupByOption } from '../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  TableColumn,
+  TableGroupByOption,
+  TableExportContext,
+} from '../../shared/components/data-table/data-table.component';
+import { TableExportService } from '../../core/services/table-export.service';
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
@@ -30,6 +36,7 @@ interface SaleRecordRow {
   date: string;
   customer: string;
   salesman: string;
+  sale_type: string;
   subtotal: number;
   disc: number;
   total: number;
@@ -70,6 +77,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   private readonly customerService = inject(CustomerService);
   private readonly printService = inject(PrintService);
   private readonly router = inject(Router);
+  private readonly tableExportService = inject(TableExportService);
 
   sales = signal<SaleRecordRow[]>([]);
   customers = signal<Customer[]>([]);
@@ -154,17 +162,22 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   isReceiptModalVisible = false;
   printingSale: SaleRecordRow | null = null;
 
-  // Template References for Ng-Zorro Global Data Table
-  @ViewChild('invTpl', { static: true }) invTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('customerTpl', { static: true }) customerTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('salesmanTpl', { static: true }) salesmanTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('billTpl', { static: true }) billTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('itemsModeTpl', { static: true }) itemsModeTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('paidDueTpl', { static: true }) paidDueTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('subtotalTpl', { static: true }) subtotalTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
-  @ViewChild('discTpl', { static: true }) discTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  // Template References for Standard ERP Data Table
+  @ViewChild('invIdTpl', { static: true }) invIdTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
   @ViewChild('dateTpl', { static: true }) dateTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('salesmanTpl', { static: true }) salesmanTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('saleTypeTpl', { static: true }) saleTypeTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('totalTpl', { static: true }) totalTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('discTpl', { static: true }) discTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('paidTpl', { static: true }) paidTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('dueTpl', { static: true }) dueTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
   @ViewChild('actionTpl', { static: true }) actionTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+
+  // Optional Columns in Customizer
+  @ViewChild('customerTpl', { static: true }) customerTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('subtotalTpl', { static: true }) subtotalTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('itemsTpl', { static: true }) itemsTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('paymentTpl', { static: true }) paymentTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
 
   tableColumns: TableColumn<SaleRecordRow>[] = [];
 
@@ -177,7 +190,18 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
         const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
         const paid = items.reduce((sum, s) => sum + (s.paid || 0), 0);
         const due = items.reduce((sum, s) => sum + (s.due || 0), 0);
-        return `Sales: ৳ ${total.toFixed(2)} | Paid: ৳ ${paid.toFixed(2)} | Due: ৳ ${due.toFixed(2)}`;
+        return `Count: ${items.length} | Sales: ৳ ${total.toFixed(2)} | Paid: ৳ ${paid.toFixed(2)} | Due: ৳ ${due.toFixed(2)}`;
+      },
+    },
+    {
+      key: 'sale_type',
+      label: 'Sale Type',
+      groupValueFn: (s: SaleRecordRow) => s.sale_type || 'Retail',
+      summaryFn: (items: SaleRecordRow[]) => {
+        const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
+        const paid = items.reduce((sum, s) => sum + (s.paid || 0), 0);
+        const due = items.reduce((sum, s) => sum + (s.due || 0), 0);
+        return `Count: ${items.length} | Sales: ৳ ${total.toFixed(2)} | Paid: ৳ ${paid.toFixed(2)} | Due: ৳ ${due.toFixed(2)}`;
       },
     },
     {
@@ -186,7 +210,9 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       groupValueFn: (s: SaleRecordRow) => s.payment || 'Cash',
       summaryFn: (items: SaleRecordRow[]) => {
         const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
-        return `Sales: ৳ ${total.toFixed(2)} (${items.length} invoices)`;
+        const paid = items.reduce((sum, s) => sum + (s.paid || 0), 0);
+        const due = items.reduce((sum, s) => sum + (s.due || 0), 0);
+        return `Count: ${items.length} | Sales: ৳ ${total.toFixed(2)} | Paid: ৳ ${paid.toFixed(2)} | Due: ৳ ${due.toFixed(2)}`;
       },
     },
     {
@@ -195,7 +221,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       groupValueFn: (s: SaleRecordRow) => s.salesman || 'Admin',
       summaryFn: (items: SaleRecordRow[]) => {
         const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
-        return `Total: ৳ ${total.toFixed(2)}`;
+        return `Count: ${items.length} | Total: ৳ ${total.toFixed(2)}`;
       },
     },
     {
@@ -204,7 +230,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
       groupValueFn: (s: SaleRecordRow) => (s.date ? s.date.split(',')[0].trim() : 'N/A'),
       summaryFn: (items: SaleRecordRow[]) => {
         const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
-        return `Sales: ৳ ${total.toFixed(2)}`;
+        return `Count: ${items.length} | Sales: ৳ ${total.toFixed(2)}`;
       },
     },
   ];
@@ -212,49 +238,86 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   initColumns(): void {
     this.tableColumns = [
       {
-        title: 'Invoice Details',
+        title: 'Invoice ID',
         key: 'inv',
         sortable: true,
-        width: '180px',
-        template: this.invTpl,
+        width: '140px',
+        align: 'left',
+        template: this.invIdTpl,
       },
       {
-        title: 'Customer',
-        key: 'customer',
+        title: 'Date',
+        key: 'date',
         sortable: true,
-        width: '160px',
-        template: this.customerTpl,
+        width: '150px',
+        align: 'center',
+        template: this.dateTpl,
       },
       {
         title: 'Salesman',
         key: 'salesman',
         sortable: true,
-        width: '110px',
+        width: '120px',
+        align: 'left',
         template: this.salesmanTpl,
       },
       {
-        title: 'Bill Info',
+        title: 'Sale Type',
+        key: 'sale_type',
+        sortable: true,
+        width: '110px',
+        align: 'center',
+        template: this.saleTypeTpl,
+      },
+      {
+        title: 'Total',
         key: 'total',
         sortable: true,
         align: 'right',
-        width: '150px',
-        template: this.billTpl,
+        width: '120px',
+        template: this.totalTpl,
       },
       {
-        title: 'Items & Mode',
-        key: 'payment',
+        title: 'Discount',
+        key: 'disc',
         sortable: true,
-        align: 'center',
-        width: '130px',
-        template: this.itemsModeTpl,
+        align: 'right',
+        width: '110px',
+        template: this.discTpl,
       },
       {
-        title: 'Paid / Due',
+        title: 'Paid',
         key: 'paid',
         sortable: true,
         align: 'right',
-        width: '150px',
-        template: this.paidDueTpl,
+        width: '120px',
+        template: this.paidTpl,
+      },
+      {
+        title: 'Due',
+        key: 'due',
+        sortable: true,
+        align: 'right',
+        width: '120px',
+        template: this.dueTpl,
+      },
+      {
+        title: 'Action',
+        align: 'center',
+        width: '160px',
+        right: true,
+        canHide: false,
+        template: this.actionTpl,
+      },
+      // Optional columns available in Column Customizer
+      {
+        title: 'Customer',
+        key: 'customer',
+        sortable: true,
+        align: 'left',
+        width: '160px',
+        hidden: true,
+        template: this.customerTpl,
       },
       {
         title: 'Subtotal',
@@ -266,29 +329,22 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
         template: this.subtotalTpl,
       },
       {
-        title: 'Discount',
-        key: 'disc',
+        title: 'Items',
+        key: 'items',
         sortable: true,
-        align: 'right',
-        width: '120px',
-        hidden: true,
-        template: this.discTpl,
-      },
-      {
-        title: 'Date',
-        key: 'date',
-        sortable: true,
-        width: '140px',
-        hidden: true,
-        template: this.dateTpl,
-      },
-      {
-        title: 'Action',
         align: 'center',
-        width: '180px',
-        right: true,
-        canHide: false,
-        template: this.actionTpl,
+        width: '90px',
+        hidden: true,
+        template: this.itemsTpl,
+      },
+      {
+        title: 'Payment Method',
+        key: 'payment',
+        sortable: true,
+        align: 'center',
+        width: '130px',
+        hidden: true,
+        template: this.paymentTpl,
       },
     ];
   }
@@ -347,6 +403,7 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
           date: inv.sale_timestamp ? new Date(inv.sale_timestamp).toLocaleString('en-GB') : '',
           customer: inv.customer?.name || inv.customer_name || 'Walk-in',
           salesman: 'Admin',
+          sale_type: inv.sale_mode === 2 ? 'Wholesale' : 'Retail',
           subtotal: Number(inv.gross_total_price) || 0,
           disc: Number(inv.discount_value) || 0,
           total: Number(inv.final_price) || 0,
@@ -427,6 +484,58 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
         saleInvoiceNo: s.sale_invoice_no,
       },
     });
+  }
+
+  async onExport(ctx: TableExportContext<SaleRecordRow>): Promise<void> {
+    const visibleCols = ctx.columns.filter((c) => c.title !== 'Action');
+    if (!visibleCols.length) {
+      this.msg.warning('No visible columns to export.');
+      return;
+    }
+
+    const dateSubtitle =
+      this.fromDate && this.toDate
+        ? `Period: ${formatDateToDdMmYyyy(this.fromDate)} to ${formatDateToDdMmYyyy(this.toDate)}`
+        : `Generated: ${new Date().toLocaleString('en-GB')}`;
+
+    const exportColumns = visibleCols.map((c) => ({
+      key: c.key,
+      title: c.title,
+      align: c.align,
+      width: c.width,
+    }));
+
+    const summaryTotals = [
+      { label: 'Invoices', value: ctx.data.length },
+      { label: 'Total Sales', value: this.totalSalesAmount() },
+      { label: 'Total Paid', value: this.totalPaidAmount() },
+      { label: 'Total Due', value: this.totalDueAmount() },
+    ];
+
+    const options = {
+      fileName: `sales_invoices_register_${new Date().toISOString().slice(0, 10)}`,
+      title: 'Sales Invoices Register',
+      subtitle: dateSubtitle,
+      columns: exportColumns,
+      data: ctx.data,
+      isGrouped: ctx.isGrouped,
+      groupedRows: ctx.groupedRows,
+      activeGroupByLabel: ctx.activeGroupByLabel,
+      summaryTotals,
+    };
+
+    try {
+      if (ctx.format === 'excel') {
+        await this.tableExportService.exportToExcel(options);
+        this.msg.success(`Exported ${ctx.data.length} sales invoices to Excel`);
+      } else {
+        await this.tableExportService.exportToPdf(options);
+        this.msg.success(`Exported ${ctx.data.length} sales invoices to PDF`);
+      }
+    } catch (err) {
+      console.error('Export failed:', err);
+      this.msg.error('Failed to export sales register.');
+    }
   }
 
   exportSalesCsv(): void {
