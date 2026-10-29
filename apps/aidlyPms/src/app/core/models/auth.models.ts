@@ -47,7 +47,7 @@ export interface SysUser {
   last_name: string;
   phone: string;
   email?: string | null;
-  password_hash: string;
+  password_hash?: never;
   gender: number;
   is_active: boolean;
   created_at: string;
@@ -57,6 +57,7 @@ export interface SysUser {
   permissions?: readonly string[];
   menu?: SysMenu[];
   is_full_access?: boolean;
+  is_platform_owner?: boolean;
 }
 
 // Backward-compatible type aliases
@@ -74,5 +75,21 @@ export interface AuthSession {
 
 export interface LoginCredentials {
   phone: string;
-  password_hash: string;
+  password_hash?: never;
+}
+
+// Server-only security records. These interfaces describe schema parity; no client API exposes these tables.
+export interface ProtectedRoleCapability {
+  role_no: number;
+  access_scope: 'PLATFORM_OWNER' | 'STORE_MANAGER';
+}
+export interface ServerAuthSession {
+  session_id: string;
+  user_no: number;
+  role_no: number;
+  pharmacy_no: number;
+  branch_no: number;
+  user_updated_at: string;
+  expires_at: string;
+  revoked_at: string | null;
 }

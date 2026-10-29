@@ -5,8 +5,10 @@ import { User, PharmacyBranch } from '../models';
 import { SysMenu } from '../models/menu.models';
 import { ApiService } from '../services/api.service';
 import { ApiResponse } from '../models/common.models';
+import { BrowserSessionService } from './browser-session.service';
 
 const TOKEN_KEY = 'aidly_pms_token';
+const SESSION_KEY = 'aidly_pms_session';
 const USER_KEY = 'aidly_pms_user';
 const ACTIVE_BRANCH_KEY = 'aidly_pms_active_branch';
 const MENU_KEY = 'aidly_pms_menu';
@@ -25,9 +27,10 @@ export interface LoginResponseData {
 export class AuthService {
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly browserSession = inject(BrowserSessionService);
 
   // Initial session restoration from localStorage
-  private readonly initialToken: string | null = localStorage.getItem(TOKEN_KEY);
+  private readonly initialToken: string | null = sessionStorage.getItem(SESSION_KEY);
   private readonly initialUser: User | null = (() => {
     try {
       const stored = localStorage.getItem(USER_KEY);
@@ -132,6 +135,7 @@ export class AuthService {
   }
 
   constructor() {
+    localStorage.removeItem(TOKEN_KEY); // Remove legacy bearer storage without restoring it.
     if (this.isAuthenticated()) {
       this.refreshUserAccess().subscribe({
         error: (err) => console.warn('Initial access refresh error:', err),
@@ -157,6 +161,7 @@ export class AuthService {
 
   hasMenuAccess(menuCode: string, action: 'view' | 'create' | 'edit' | 'delete' = 'view'): boolean {
     if (!menuCode) return true;
+    if (['MENU_1904', 'MENU_1905'].includes(menuCode) && !this.currentUser()?.is_platform_owner) return false;
     if (this.isFullAccess()) return true;
 
     const findInTree = (nodes: SysMenu[]): SysMenu | null => {
@@ -246,8 +251,8 @@ export class AuthService {
     this.activeBranch.set(branch);
     localStorage.setItem(ACTIVE_BRANCH_KEY, JSON.stringify(branch));
     if (token) {
-      this.token.set(token);
-      localStorage.setItem(TOKEN_KEY, token);
+      this.token.set('session');
+      sessionStorage.setItem(SESSION_KEY, 'session');
     }
     this.refreshUserAccess().subscribe({
       error: (err) => console.warn('Access refresh on branch switch error:', err),
@@ -255,7 +260,8 @@ export class AuthService {
   }
 
   setSession(token: string, user: User, branch: PharmacyBranch): void {
-    this.token.set(token);
+    this.browserSession.resetCsrf();
+    this.token.set('session');
     this.currentUser.set(user);
     this.activeBranch.set(branch);
 
@@ -267,7 +273,7 @@ export class AuthService {
     this.permissions.set(perms);
     this.isFullAccess.set(fullAccess);
 
-    localStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(SESSION_KEY, 'session');
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     localStorage.setItem(ACTIVE_BRANCH_KEY, JSON.stringify(branch));
     localStorage.setItem(MENU_KEY, JSON.stringify(menu));
@@ -276,7 +282,15 @@ export class AuthService {
   }
 
   logout(): void {
+    const hadSession = !!this.token();
     this.token.set(null);
+    if (hadSession) {
+      this.apiService.post<boolean>('auth/logout', {}, { silent: true }).subscribe({
+        next: () => this.browserSession.resetCsrf(),
+        error: () => this.browserSession.resetCsrf(),
+      });
+    }
+    sessionStorage.removeItem(SESSION_KEY);
     this.currentUser.set(null);
     this.activeBranch.set(null);
     this.menu.set([]);

@@ -1,27 +1,15 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../auth/auth.service';
-import { catchError, throwError } from 'rxjs';
+import { switchMap } from 'rxjs';
+import { BrowserSessionService } from '../auth/browser-session.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const token = authService.token();
-
-  let headers = req.headers;
-
-  if (token) {
-    headers = headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const cloned = req.clone({ headers });
-  return next(cloned).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 403) {
-        authService.refreshUserAccess().subscribe({
-          error: (refreshErr) => console.warn('Failed to refresh user access after 403:', refreshErr),
-        });
-      }
-      return throwError(() => error);
-    })
+  const session = inject(BrowserSessionService);
+  // Never attach application credentials to third-party requests.
+  if (!session.isApiRequest(req.url)) return next(req);
+  const browserRequest = req.clone({ withCredentials: true });
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method.toUpperCase())) return next(browserRequest);
+  return session.csrfToken().pipe(
+    switchMap(csrf => next(browserRequest.clone({ setHeaders: { 'X-CSRF-TOKEN': csrf } })))
   );
 };

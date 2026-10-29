@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/auth/auth.service';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -343,6 +344,7 @@ interface RoleRow {
   `,
 })
 export class RoleListComponent implements OnInit {
+  private readonly auth = inject(AuthService);
   private readonly msg = inject(NzMessageService);
   private readonly modal = inject(ModalService);
   private readonly roleService = inject(RoleService);
@@ -378,7 +380,7 @@ export class RoleListComponent implements OnInit {
       next: (res) => {
         if (res.data) {
           const rows: RoleRow[] = res.data
-            .filter(r => r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin')
+            .filter(r => this.auth.currentUser()?.is_platform_owner || (r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin'))
             .map(r => ({
               id: r.role_no,
               alias: r.alias,

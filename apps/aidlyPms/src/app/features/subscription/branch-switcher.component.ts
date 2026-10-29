@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -20,6 +21,7 @@ interface BranchItem {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     NzButtonModule,
     NzIconModule,
@@ -40,6 +42,32 @@ interface BranchItem {
         </div>
       </app-page-header>
 
+      @if (isPlatformOwner()) {
+        <form class="rounded-xl border border-slate-200 bg-white p-4 space-y-3" (ngSubmit)="provision()">
+          <h2 class="text-base font-semibold">Client setup</h2>
+          <label class="block text-sm">Create
+            <select name="kind" [(ngModel)]="setup.kind" class="block w-full border rounded p-2">
+              <option value="company">Company with main branch</option>
+              <option value="branch">Branch in an existing company</option>
+            </select>
+          </label>
+          @if (setup.kind === 'branch') {
+            <label class="block text-sm">Company
+              <select name="pharmacy" [(ngModel)]="setup.pharmacy_no" required class="block w-full border rounded p-2">
+                <option [ngValue]="0" disabled>Select company</option>
+                @for (company of companies(); track company.pharmacy_no) {
+                  <option [ngValue]="company.pharmacy_no">{{ company.name }}</option>
+                }
+              </select>
+            </label>
+          }
+          <label class="block text-sm">Name <input name="name" [(ngModel)]="setup.name" required maxlength="200" class="block w-full border rounded p-2" /></label>
+          <label class="block text-sm">Contact phone <input name="phone" [(ngModel)]="setup.contact_phone" required maxlength="20" class="block w-full border rounded p-2" /></label>
+          <label class="block text-sm">Address <input name="address" [(ngModel)]="setup.address" required class="block w-full border rounded p-2" /></label>
+          <label class="block text-sm">District <input name="district" [(ngModel)]="setup.district" required maxlength="100" class="block w-full border rounded p-2" /></label>
+          <button nz-button nzType="primary" [disabled]="provisioning() || !setup.name.trim() || !setup.contact_phone.trim() || !setup.address.trim() || !setup.district.trim() || (setup.kind === 'branch' && !setup.pharmacy_no)">Create {{ setup.kind }}</button>
+        </form>
+      }
       <div class="space-y-3">
         @for (b of branches(); track b.id) {
           <div
@@ -88,9 +116,14 @@ export class BranchSwitcherComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly authService = inject(AuthService);
 
+  readonly isPlatformOwner = () => !!this.authService.currentUser()?.is_platform_owner;
+  readonly provisioning = signal(false);
+  readonly companies = signal<{ pharmacy_no: number; name: string }[]>([]);
+  setup = { kind: 'company', pharmacy_no: 0, name: '', contact_phone: '', address: '', district: '' };
   branches = signal<BranchItem[]>([]);
 
   ngOnInit(): void {
+    if (this.isPlatformOwner()) this.api.get<{ pharmacy_no: number; name: string }[]>('sys/pharmacies').subscribe({ next: res => this.companies.set(res.data || []) });
     const currentBranch = this.authService.activeBranch();
     this.api.get<any[]>('sys/branches').subscribe({
       next: res => {
@@ -126,7 +159,16 @@ export class BranchSwitcherComponent implements OnInit {
     });
   }
 
+  provision(): void {
+    this.provisioning.set(true);
+    this.api.post(this.setup.kind === 'company' ? 'sys/pharmacies' : 'sys/branches', this.setup).subscribe({
+      next: () => { this.provisioning.set(false); this.msg.success('Client setup created. You can now switch to its branch.'); this.ngOnInit(); },
+      error: () => this.provisioning.set(false),
+    });
+  }
+
   logout(): void {
+    this.authService.logout();
     this.msg.info('Logging out of Aidly PMS...');
     this.router.navigate(['/']);
   }

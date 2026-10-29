@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/auth/auth.service';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +32,7 @@ import { RoleService, SysRole } from '../../core/services/role.service';
   templateUrl: './rep-add.component.html',
 })
 export class RepAddComponent implements OnInit {
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly msg = inject(NzMessageService);
@@ -58,7 +60,7 @@ export class RepAddComponent implements OnInit {
     this.roleService.getRoles().subscribe({
       next: (res) => {
         if (res.data) {
-          const roles = res.data.filter(r => r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin');
+          const roles = res.data.filter(r => this.auth.currentUser()?.is_platform_owner || (r.role_no !== 1 && r.alias?.toLowerCase() !== 'admin'));
           this.roles.set(roles);
           if (!this.roleNo && roles.length > 0) {
             this.roleNo = roles[0].role_no;
@@ -120,12 +122,17 @@ export class RepAddComponent implements OnInit {
       this.msg.error('Please select a role');
       return;
     }
-    if (this.password && this.password !== this.confirmPassword) {
+    if (this.password.length < 12 || new TextEncoder().encode(this.password).length > 72) {
+      this.msg.error('Use a password of at least 12 characters and at most 72 UTF-8 bytes');
+      return;
+    }
+    if (this.password !== this.confirmPassword) {
       this.msg.error('Passwords do not match');
       return;
     }
 
-    const fullPhone = `+880 ${this.phone.trim()}`;
+    const digits = this.phone.replace(/\D/g, '');
+    const fullPhone = `+880${digits.startsWith('0') ? digits.slice(1) : digits}`;
     this.repService.createRepresentative({
       first_name: this.firstName.trim(),
       last_name: this.lastName.trim(),
@@ -134,6 +141,7 @@ export class RepAddComponent implements OnInit {
       email: this.email.trim() || undefined,
       role_no: this.roleNo,
       is_active: true,
+      password: this.password,
     }).subscribe({
       next: (res) => {
         this.msg.success(res.message || `Staff member "${this.firstName} ${this.lastName}" registered!`);
