@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.39.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.38.0...v1.39.0) (2026-10-29)
+
+
+### 🚀 Features
+
+* **sale-record:** add ng-zorro data table with grouping and column customizer ([959eaea](https://github.com/asibul-hasan/sme-software-frontend/commit/959eaea434a576469c899236ba7decc367ddda1b))
+
 ## [1.38.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.37.0...v1.38.0) (2026-10-29)
 
 
