@@ -384,8 +384,10 @@ interface ColumnSetting<T> {
                   [nzShowSort]="!!col.sortable"
                   [nzSortFn]="getSortFn(col)"
                   [nzColumnKey]="col.key || ''"
-                  [nzLeft]="col.left ?? false"
-                  [nzRight]="col.right ?? false"
+                  [nzLeft]="getFixedLeft(col)"
+                  [nzRight]="getFixedRight(col)"
+                  [class.ant-table-cell-fix-right-first]="!!col.right"
+                  [class.ant-table-cell-fix-left-last]="!!col.left"
                   class="font-semibold text-slate-600 text-xs uppercase tracking-wider whitespace-nowrap"
                 >
                   {{ col.title }}
@@ -440,8 +442,10 @@ interface ColumnSetting<T> {
                       @for (col of visibleColumns; track col.key || col.title) {
                         <td
                           [nzAlign]="col.align || 'left'"
-                          [nzLeft]="col.left ?? false"
-                          [nzRight]="col.right ?? false"
+                          [nzLeft]="getFixedLeft(col)"
+                          [nzRight]="getFixedRight(col)"
+                          [class.ant-table-cell-fix-right-first]="!!col.right"
+                          [class.ant-table-cell-fix-left-last]="!!col.left"
                           class="text-[13px] text-slate-800"
                         >
                           @if (col.template) {
@@ -475,8 +479,10 @@ interface ColumnSetting<T> {
                   @for (col of visibleColumns; track col.key || col.title) {
                     <td
                       [nzAlign]="col.align || 'left'"
-                      [nzLeft]="col.left ?? false"
-                      [nzRight]="col.right ?? false"
+                      [nzLeft]="getFixedLeft(col)"
+                      [nzRight]="getFixedRight(col)"
+                      [class.ant-table-cell-fix-right-first]="!!col.right"
+                      [class.ant-table-cell-fix-left-last]="!!col.left"
                       class="text-[13px] text-slate-800"
                     >
                       @if (col.template) {
@@ -718,10 +724,32 @@ export class DataTableComponent<T = unknown> implements OnInit, OnChanges {
   }
 
   private updateVisibleColumns(): void {
-    this.visibleColumns = this.columnsSettings
-      .filter((c) => c.visible)
-      .map((c) => c.col);
+    const unpinned: TableColumn<T>[] = [];
+    const pinnedRight: TableColumn<T>[] = [];
+    const pinnedLeft: TableColumn<T>[] = [];
+
+    for (const c of this.columnsSettings) {
+      if (!c.visible) continue;
+      if (c.col.left) {
+        pinnedLeft.push(c.col);
+      } else if (c.col.right) {
+        pinnedRight.push(c.col);
+      } else {
+        unpinned.push(c.col);
+      }
+    }
+    this.visibleColumns = [...pinnedLeft, ...unpinned, ...pinnedRight];
     this.visibleColumnsChange.emit(this.visibleColumns);
+  }
+
+  getFixedRight(col: TableColumn<T>): string | false {
+    if (col.right == null || col.right === false) return false;
+    return col.right === true ? '0px' : String(col.right);
+  }
+
+  getFixedLeft(col: TableColumn<T>): string | false {
+    if (col.left == null || col.left === false) return false;
+    return col.left === true ? '0px' : String(col.left);
   }
 
   triggerExport(format: 'excel' | 'pdf'): void {
