@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.41.1](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.41.0...v1.41.1) (2026-10-29)
+
+
+### 🐛 Bug Fixes
+
+* **aidly-pms:** secure browser sessions and platform owner setup ([01c06ad](https://github.com/asibul-hasan/sme-software-frontend/commit/01c06add600d8f42d4e49764b019ddb5e22977c1))
+
 ## [1.41.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.40.0...v1.41.0) (2026-10-29)
 
 
