@@ -42,6 +42,125 @@ app-data-table .ant-table-content {
   background-color: #ffffff !important;
 }
 
+app-data-table .ant-table-header {
+  overflow: hidden !important;
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  flex-shrink: 0 !important;
+}
+
+app-data-table .ant-table-header th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  background-color: #f8fafc !important;
+}
+
+app-data-table .ant-table-body {
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  background-color: #ffffff !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Bordered Table Grid Support
+   ───────────────────────────────────────────────────────────────── */
+.ant-table-bordered .ant-table-container,
+.ant-table-bordered table,
+.ant-table.ant-table-bordered {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.ant-table-bordered thead > tr > th,
+.ant-table-bordered .ant-table-thead > tr > th {
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+.ant-table-bordered tbody > tr:not(.ant-table-measure-row) > td,
+.ant-table-bordered .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+  border-right: 1px solid #f1f5f9 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Table Size & Density Feature
+   ───────────────────────────────────────────────────────────────── */
+.ant-table-small thead > tr > th,
+.ant-table-small .ant-table-thead > tr > th {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
+
+.ant-table-small tbody > tr:not(.ant-table-measure-row) > td,
+.ant-table-small .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+}
+
+.ant-table-default thead > tr > th,
+.ant-table-default .ant-table-thead > tr > th {
+  padding: 13px 16px !important;
+  font-size: 12px !important;
+}
+
+.ant-table-default tbody > tr:not(.ant-table-measure-row) > td,
+.ant-table-default .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+  padding: 13px 16px !important;
+  font-size: 13.5px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Columns Customizer Popover & CDK Drag-Drop Styling
+   ───────────────────────────────────────────────────────────────── */
+.pms-columns-popover .ant-popover-inner {
+  background-color: #18181b !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  border: 1px solid #27272a !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+}
+
+.pms-columns-popover .ant-popover-arrow-content {
+  background-color: #18181b !important;
+}
+
+.pms-columns-popover .ant-checkbox-inner {
+  background-color: #27272a !important;
+  border-color: #52525b !important;
+}
+
+.pms-columns-popover .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+  background-color: #1e293b;
+  border: 1px dashed #38bdf8;
+  border-radius: 6px;
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
 /* ─────────────────────────────────────────────────────────────────
    2. CORE TABLE ARCHITECTURE (Single Source for ALL Tables)
    Separate border-collapse keeps sticky cells intact without bleeding

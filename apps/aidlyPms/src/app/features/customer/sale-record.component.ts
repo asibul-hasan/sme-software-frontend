@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { DataTableComponent, TableColumn, TableGroupByOption } from '../../shared/components/data-table/data-table.component';
 import { ModalService } from '../../core/services/modal.service';
 import { PosSaleService } from '../../core/services/pos-sale.service';
 import { getDefaultMonthDates, formatDateToDdMmYyyy } from '../../shared/utils/date-range.util';
@@ -59,7 +59,7 @@ interface SaleRecordRow {
     NzDatePickerModule,
     NzPaginationModule,
     PageHeaderComponent,
-    EmptyStateComponent,
+    DataTableComponent,
   ],
   templateUrl: './sale-record.component.html',
 })
@@ -154,7 +154,147 @@ export class SaleRecordComponent implements OnInit, OnDestroy {
   isReceiptModalVisible = false;
   printingSale: SaleRecordRow | null = null;
 
+  // Template References for Ng-Zorro Global Data Table
+  @ViewChild('invTpl', { static: true }) invTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('customerTpl', { static: true }) customerTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('salesmanTpl', { static: true }) salesmanTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('billTpl', { static: true }) billTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('itemsModeTpl', { static: true }) itemsModeTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('paidDueTpl', { static: true }) paidDueTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('subtotalTpl', { static: true }) subtotalTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('discTpl', { static: true }) discTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('dateTpl', { static: true }) dateTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+  @ViewChild('actionTpl', { static: true }) actionTpl!: TemplateRef<{ $implicit: SaleRecordRow }>;
+
+  tableColumns: TableColumn<SaleRecordRow>[] = [];
+
+  readonly saleGroupByOptions: TableGroupByOption[] = [
+    {
+      key: 'customer',
+      label: 'Customer',
+      groupValueFn: (s: SaleRecordRow) => s.customer || 'Walk-in',
+      summaryFn: (items: SaleRecordRow[]) => {
+        const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
+        const paid = items.reduce((sum, s) => sum + (s.paid || 0), 0);
+        const due = items.reduce((sum, s) => sum + (s.due || 0), 0);
+        return `Sales: ৳ ${total.toFixed(2)} | Paid: ৳ ${paid.toFixed(2)} | Due: ৳ ${due.toFixed(2)}`;
+      },
+    },
+    {
+      key: 'payment',
+      label: 'Payment Method',
+      groupValueFn: (s: SaleRecordRow) => s.payment || 'Cash',
+      summaryFn: (items: SaleRecordRow[]) => {
+        const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
+        return `Sales: ৳ ${total.toFixed(2)} (${items.length} invoices)`;
+      },
+    },
+    {
+      key: 'salesman',
+      label: 'Salesman',
+      groupValueFn: (s: SaleRecordRow) => s.salesman || 'Admin',
+      summaryFn: (items: SaleRecordRow[]) => {
+        const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
+        return `Total: ৳ ${total.toFixed(2)}`;
+      },
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      groupValueFn: (s: SaleRecordRow) => (s.date ? s.date.split(',')[0].trim() : 'N/A'),
+      summaryFn: (items: SaleRecordRow[]) => {
+        const total = items.reduce((sum, s) => sum + (s.total || 0), 0);
+        return `Sales: ৳ ${total.toFixed(2)}`;
+      },
+    },
+  ];
+
+  initColumns(): void {
+    this.tableColumns = [
+      {
+        title: 'Invoice Details',
+        key: 'inv',
+        sortable: true,
+        width: '180px',
+        template: this.invTpl,
+      },
+      {
+        title: 'Customer',
+        key: 'customer',
+        sortable: true,
+        width: '160px',
+        template: this.customerTpl,
+      },
+      {
+        title: 'Salesman',
+        key: 'salesman',
+        sortable: true,
+        width: '110px',
+        template: this.salesmanTpl,
+      },
+      {
+        title: 'Bill Info',
+        key: 'total',
+        sortable: true,
+        align: 'right',
+        width: '150px',
+        template: this.billTpl,
+      },
+      {
+        title: 'Items & Mode',
+        key: 'payment',
+        sortable: true,
+        align: 'center',
+        width: '130px',
+        template: this.itemsModeTpl,
+      },
+      {
+        title: 'Paid / Due',
+        key: 'paid',
+        sortable: true,
+        align: 'right',
+        width: '150px',
+        template: this.paidDueTpl,
+      },
+      {
+        title: 'Subtotal',
+        key: 'subtotal',
+        sortable: true,
+        align: 'right',
+        width: '120px',
+        hidden: true,
+        template: this.subtotalTpl,
+      },
+      {
+        title: 'Discount',
+        key: 'disc',
+        sortable: true,
+        align: 'right',
+        width: '120px',
+        hidden: true,
+        template: this.discTpl,
+      },
+      {
+        title: 'Date',
+        key: 'date',
+        sortable: true,
+        width: '140px',
+        hidden: true,
+        template: this.dateTpl,
+      },
+      {
+        title: 'Action',
+        align: 'center',
+        width: '180px',
+        right: true,
+        canHide: false,
+        template: this.actionTpl,
+      },
+    ];
+  }
+
   ngOnInit(): void {
+    this.initColumns();
     this.searchSub = this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
       this.loadRecords();
     });

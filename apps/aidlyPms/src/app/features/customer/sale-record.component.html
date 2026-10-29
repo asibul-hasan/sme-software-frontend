@@ -75,148 +75,152 @@
 
   </app-page-header>
 
-  <div class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full">
-    <!-- Sales Table Scroll Area -->
-    <div class="flex-1 min-h-0 overflow-auto w-full max-w-full">
-      <table class="w-full text-sm text-left border-collapse min-w-[760px]">
-        <thead class="sticky top-0 z-10 bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200 shadow-xs">
-          <tr>
-            <th class="p-3">Invoice Details</th>
-            <th class="p-3">Bill Info</th>
-            <th class="p-3">Items & Mode</th>
-            <th class="p-3">Paid / Due</th>
-            <th class="p-3 text-center w-48">Action</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 text-slate-800">
-          @for (s of paginatedSales(); track s.inv) {
-            <tr class="hover:bg-slate-50/70 transition-colors">
-              <td class="p-3">
-                <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ s.inv }}</p>
-                <p class="text-xs text-slate-400 mb-0.5">{{ s.date }}</p>
-                <p class="text-xs text-slate-600 mb-0">
-                  <span class="font-semibold">{{ s.customer }}</span> · {{ s.salesman }}
-                </p>
-              </td>
-
-              <td class="p-3 font-mono text-xs">
-                <p class="text-slate-500 mb-0.5">Sub: ৳ {{ s.subtotal.toFixed(2) }}</p>
-                <p class="text-slate-400 mb-0.5">Disc: ৳ {{ s.disc.toFixed(2) }}</p>
-                <p class="font-bold text-slate-900 mb-0">৳ {{ s.total.toFixed(2) }}</p>
-              </td>
-
-              <td class="p-3 text-xs">
-                <p class="text-slate-600 mb-1 font-medium">{{ s.items }} items</p>
-                @if (s.payment === 'Due') {
-                  <span class="pms-badge-pay-due">Due</span>
-                } @else if (s.payment === 'bKash' || s.payment === 'Nagad' || s.payment === 'Rocket' || s.payment === 'MFS') {
-                  <span class="pms-badge-pay-mfs">{{ s.payment }}</span>
-                } @else if (s.payment === 'Card') {
-                  <span class="pms-badge-pay-card">Card</span>
-                } @else {
-                  <span class="pms-badge-pay-cash">{{ s.payment || 'Cash' }}</span>
-                }
-              </td>
-
-              <td class="p-3 font-mono text-xs">
-                <p class="theme-total-text font-semibold mb-0.5">Paid: ৳ {{ s.paid.toFixed(2) }}</p>
-                @if (s.due > 0) {
-                  <p class="text-rose-600 font-bold mb-0">Due: ৳ {{ s.due.toFixed(2) }}</p>
-                }
-              </td>
-
-              <td class="p-3 text-center whitespace-nowrap">
-                <div class="inline-flex items-center gap-1.5 justify-center">
-                  @if (!s.is_returned) {
-                    <button
-                      type="button"
-                      (click)="initiateReturn(s)"
-                      nz-tooltip
-                      nzTooltipTitle="Process Sale Return / Exchange"
-                      class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
-                     aria-label="Process Sale Return / Exchange">
-                      <span nz-icon nzType="rollback"></span>
-                      <span>Return</span>
-                    </button>
-                  } @else {
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded bg-slate-100 text-slate-500 border border-slate-200">
-                      <span nz-icon nzType="check-circle" class="text-emerald-500"></span>
-                      <span>Returned</span>
-                    </span>
-                  }
-                  <button
-                    type="button"
-                    (click)="viewInvoiceDetails(s)"
-                    nz-tooltip
-                    nzTooltipTitle="View Details"
-                    class="btn-tbl-action btn-tbl-view"
-                   aria-label="View Details">
-                    <span nz-icon nzType="eye"></span>
-                  </button>
-                  <button
-                    type="button"
-                    (click)="printReceipt(s)"
-                    nz-tooltip
-                    nzTooltipTitle="Print Receipt"
-                    class="btn-tbl-action btn-tbl-neutral"
-                   aria-label="Print Receipt">
-                    <span nz-icon nzType="printer"></span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="p-6 text-center">
-                <app-empty-state
-                  [title]="hasError() ? 'Failed to Load Invoices' : (hasActiveFilters() ? 'No Matching Sale Invoices' : 'No Sales Invoices Recorded')"
-                  [description]="hasError() ? 'Unable to reach sales records from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No invoices match your current search query or customer filters.' : 'Launch the POS Counter to start ringing up customer sales.')"
-                  [stateType]="hasError() ? 'error' : (hasActiveFilters() ? 'filtered' : 'empty')"
-                  icon="shopping-cart"
-                  [actionText]="hasError() ? 'Retry Loading' : (hasActiveFilters() ? 'Reset Filters' : 'Open POS Counter')"
-                  [actionIcon]="hasError() ? 'reload' : (hasActiveFilters() ? 'clear' : 'thunderbolt')"
-                  [actionRoute]="hasError() || hasActiveFilters() ? undefined : '/customer/pos'"
-                  (actionClick)="onEmptyTableAction()"
-                  [compact]="true"
-                  [transparent]="true"
-                ></app-empty-state>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+  <app-data-table
+    class="flex-1 min-h-0 flex flex-col w-full"
+    [data]="sortedSales()"
+    [columns]="tableColumns"
+    [total]="sortedSales().length"
+    [loading]="isLoading()"
+    [pageIndex]="pageIndex()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageIndexChange)="onPageIndexChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    [groupByOptions]="saleGroupByOptions"
+    [showToolbar]="true"
+    [bordered]="true"
+    size="middle"
+    scrollY="calc(100vh - 350px)"
+    scrollX="1100px"
+    [showSearch]="true"
+    searchPlaceholder="Search in table..."
+    [showBorderedTool]="true"
+    [showSizeChangerTool]="true"
+    [showColumnCustomizer]="true"
+    [errorState]="hasError()"
+    [isFiltered]="hasActiveFilters()"
+    [emptyTitle]="hasError() ? 'Failed to Load Invoices' : (hasActiveFilters() ? 'No Matching Sale Invoices' : 'No Sales Invoices Recorded')"
+    [emptyDescription]="hasError() ? 'Unable to reach sales records from server. Please check your connection and retry.' : (hasActiveFilters() ? 'No invoices match your current search query or customer filters.' : 'Launch the POS Counter to start ringing up customer sales.')"
+    [emptyActionText]="hasError() ? 'Retry Loading' : (hasActiveFilters() ? 'Reset Filters' : 'Open POS Counter')"
+    [emptyActionIcon]="hasError() ? 'reload' : (hasActiveFilters() ? 'clear' : 'thunderbolt')"
+    [emptyActionRoute]="hasError() || hasActiveFilters() ? undefined : '/customer/pos'"
+    (emptyActionClick)="onEmptyTableAction()"
+  >
+    <!-- Project Table Footer Summary Statistics -->
+    <div tableFooter class="flex items-center gap-3">
+      <span>Invoices: <strong class="text-slate-900 font-semibold font-mono">{{ sortedSales().length }}</strong></span>
+      <span class="text-slate-300">|</span>
+      <span class="font-semibold text-slate-700">Total Sales: <strong class="theme-total-text font-mono text-sm">৳ {{ totalSalesAmount() | number: '1.2-2' }}</strong></span>
+      <span class="text-slate-300">|</span>
+      <span>Total Paid: <strong class="text-emerald-700 font-mono font-semibold">৳ {{ totalPaidAmount() | number: '1.2-2' }}</strong></span>
+      <span class="text-slate-300">|</span>
+      <span>Total Due: <strong class="text-rose-700 font-mono font-semibold">৳ {{ totalDueAmount() | number: '1.2-2' }}</strong></span>
     </div>
-
-    <!-- Sticky Bottom Footer with Pagination Controls -->
-    <div class="table-sticky-footer shrink-0 bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
-      <div class="flex items-center gap-3">
-        <span>Invoices: <strong class="text-slate-900 font-semibold font-mono">{{ sortedSales().length }}</strong></span>
-        <span class="text-slate-300">|</span>
-        <span class="font-semibold text-slate-700">Total Sales: <strong class="theme-total-text font-mono text-sm">৳ {{ totalSalesAmount() | number: '1.2-2' }}</strong></span>
-        <span class="text-slate-300">|</span>
-        <span>Total Paid: <strong class="text-emerald-700 font-mono font-semibold">৳ {{ totalPaidAmount() | number: '1.2-2' }}</strong></span>
-        <span class="text-slate-300">|</span>
-        <span>Total Due: <strong class="text-rose-700 font-mono font-semibold">৳ {{ totalDueAmount() | number: '1.2-2' }}</strong></span>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <span class="text-slate-500 text-xs hidden sm:inline">
-          Showing {{ sortedSales().length > 0 ? (pageIndex() - 1) * pageSize() + 1 : 0 }} - {{ minVal(pageIndex() * pageSize(), sortedSales().length) }} of {{ sortedSales().length }}
-        </span>
-        <nz-pagination
-          [nzPageIndex]="pageIndex()"
-          [nzPageSize]="pageSize()"
-          [nzTotal]="sortedSales().length"
-          [nzPageSizeOptions]="pageSizeOptions"
-          nzShowSizeChanger
-          nzSize="small"
-          (nzPageIndexChange)="onPageIndexChange($event)"
-          (nzPageSizeChange)="onPageSizeChange($event)"
-        ></nz-pagination>
-      </div>
-    </div>
-  </div>
+  </app-data-table>
 </div>
+
+<!-- Table Column Templates -->
+<ng-template #invTpl let-s>
+  <div class="py-0.5">
+    <p class="font-bold text-slate-900 text-xs font-mono mb-0.5">{{ s.inv }}</p>
+    <p class="text-xs text-slate-400 mb-0">{{ s.date }}</p>
+  </div>
+</ng-template>
+
+<ng-template #customerTpl let-s>
+  <span class="font-semibold text-slate-800 text-xs">{{ s.customer }}</span>
+</ng-template>
+
+<ng-template #salesmanTpl let-s>
+  <span class="text-slate-600 text-xs">{{ s.salesman }}</span>
+</ng-template>
+
+<ng-template #billTpl let-s>
+  <div class="font-mono text-xs">
+    <p class="text-slate-500 mb-0.5">Sub: ৳ {{ s.subtotal | number: '1.2-2' }}</p>
+    <p class="text-slate-400 mb-0.5">Disc: ৳ {{ s.disc | number: '1.2-2' }}</p>
+    <p class="font-bold text-slate-900 mb-0">৳ {{ s.total | number: '1.2-2' }}</p>
+  </div>
+</ng-template>
+
+<ng-template #itemsModeTpl let-s>
+  <div class="text-xs">
+    <p class="text-slate-600 mb-1 font-medium">{{ s.items }} items</p>
+    @if (s.payment === 'Due') {
+      <span class="pms-badge-pay-due">Due</span>
+    } @else if (s.payment === 'bKash' || s.payment === 'Nagad' || s.payment === 'Rocket' || s.payment === 'MFS') {
+      <span class="pms-badge-pay-mfs">{{ s.payment }}</span>
+    } @else if (s.payment === 'Card') {
+      <span class="pms-badge-pay-card">Card</span>
+    } @else {
+      <span class="pms-badge-pay-cash">{{ s.payment || 'Cash' }}</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #paidDueTpl let-s>
+  <div class="font-mono text-xs">
+    <p class="theme-total-text font-semibold mb-0.5">Paid: ৳ {{ s.paid | number: '1.2-2' }}</p>
+    @if (s.due > 0) {
+      <p class="text-rose-600 font-bold mb-0">Due: ৳ {{ s.due | number: '1.2-2' }}</p>
+    }
+  </div>
+</ng-template>
+
+<ng-template #subtotalTpl let-s>
+  <span class="font-mono text-xs text-slate-700">৳ {{ s.subtotal | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #discTpl let-s>
+  <span class="font-mono text-xs text-slate-500">৳ {{ s.disc | number: '1.2-2' }}</span>
+</ng-template>
+
+<ng-template #dateTpl let-s>
+  <span class="text-xs text-slate-600">{{ s.date }}</span>
+</ng-template>
+
+<ng-template #actionTpl let-s>
+  <div class="inline-flex items-center gap-1.5 justify-center whitespace-nowrap">
+    @if (!s.is_returned) {
+      <button
+        type="button"
+        (click)="initiateReturn(s)"
+        nz-tooltip
+        nzTooltipTitle="Process Sale Return / Exchange"
+        class="btn-quick-return inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs active:scale-95"
+        aria-label="Process Sale Return / Exchange"
+      >
+        <span nz-icon nzType="rollback"></span>
+        <span>Return</span>
+      </button>
+    } @else {
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded bg-slate-100 text-slate-500 border border-slate-200">
+        <span nz-icon nzType="check-circle" class="text-emerald-500"></span>
+        <span>Returned</span>
+      </span>
+    }
+    <button
+      type="button"
+      (click)="viewInvoiceDetails(s)"
+      nz-tooltip
+      nzTooltipTitle="View Details"
+      class="btn-tbl-action btn-tbl-view"
+      aria-label="View Details"
+    >
+      <span nz-icon nzType="eye"></span>
+    </button>
+    <button
+      type="button"
+      (click)="printReceipt(s)"
+      nz-tooltip
+      nzTooltipTitle="Print Receipt"
+      class="btn-tbl-action btn-tbl-neutral"
+      aria-label="Print Receipt"
+    >
+      <span nz-icon nzType="printer"></span>
+    </button>
+  </div>
+</ng-template>
 
 <!-- Sale Invoice Details Modal -->
 <nz-modal
