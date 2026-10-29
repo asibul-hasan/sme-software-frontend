@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.41.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.40.0...v1.41.0) (2026-10-29)
+
+
+### 🚀 Features
+
+* **sale-record:** show all columns by default and pin action column to the right ([d02333c](https://github.com/asibul-hasan/sme-software-frontend/commit/d02333cd4c87fadb3af97a95dc905bad995caebb))
+
 ## [1.40.0](https://github.com/asibul-hasan/sme-software-frontend/compare/v1.39.0...v1.40.0) (2026-10-29)
 
 
